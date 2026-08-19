@@ -7,7 +7,11 @@
  */
 
 export type ServiceSectionType =
-  "troubleshooting" | "registration_guides" | "faq" | "purchase_policy";
+  | "troubleshooting"
+  | "registration_guides"
+  | "faq"
+  | "purchase_policy"
+  | "contact";
 
 export interface ServiceTemplateField {
   key: string;
@@ -123,6 +127,53 @@ export interface PolicyParseResultData {
   important_notices: string;
   contact_note: string;
   sections: PolicyParsedSection[];
+}
+
+export interface ContactChannelItem {
+  id: string;
+  type: string;
+  label_ar: string;
+  label_en?: string;
+  value: string;
+  href: string;
+  icon?: string;
+  availability?: string;
+  sort_order: number;
+  active: boolean;
+}
+
+export interface ContactServiceItem {
+  id: string;
+  title_ar: string;
+  title_en?: string;
+  description_ar: string;
+  description_en?: string;
+  icon?: string;
+  link?: string;
+  button_label_ar?: string;
+  sort_order: number;
+  active: boolean;
+}
+
+export interface ContactParseResultData {
+  hero_title_ar: string;
+  hero_title_en?: string;
+  hero_subtitle_ar: string;
+  hero_subtitle_en?: string;
+  support_intro_ar: string;
+  support_intro_en?: string;
+  email: string;
+  phone: string;
+  whatsapp: string;
+  telegram: string;
+  chat_link: string;
+  status_message_ar: string;
+  status_message_en?: string;
+  emergency_notice_ar?: string;
+  working_hours_ar: string;
+  working_hours_en?: string;
+  channels: ContactChannelItem[];
+  services: ContactServiceItem[];
 }
 
 export interface ServiceParseResult<T = any> {
