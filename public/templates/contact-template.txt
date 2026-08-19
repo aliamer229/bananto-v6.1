@@ -1,0 +1,90 @@
+# تواصل معنا وقنوات الدعم — قالب استيراد البيانات
+# ======================================================================
+# قواعد كتابة القالب (يقرأها المستورد تلقائياً):
+#   • حقل بسيط:            key=value      أو      key: value
+#   • نص طويل متعدد الأسطر: key<<EOF ثم الأسطر ثم سطر فيه EOF فقط
+#   • التعليقات تبدأ بـ #  ولا يتم استيرادها
+#   • القيم المنطقية تقبل: true/false أو نعم/لا أو 1/0
+#   • القوائم تُفصل بفاصلة أو سطر جديد
+#   • الترقيم يقبل الأرقام العربية والإنجليزية (1 أو ١)
+#   • يمكنك حذف أي حقل اختياري ولن يؤثر على الاستيراد
+# ======================================================================
+# القنوات: channel.N.type / channel.N.value  (يُبنى الرابط تلقائياً)
+# الخدمات: service.N.title_ar / service.N.description_ar
+# ======================================================================
+
+# ---------- رأس صفحة التواصل ----------
+hero_title_ar=تواصل مع فريق بنانا ستور
+hero_title_en=Contact Banana Store Support
+hero_subtitle_ar=فريق الدعم جاهز لمساعدتك في الطلبات، التفعيل، والمشاكل التقنية.
+hero_subtitle_en=Our team is ready to help with orders, activation and technical issues.
+
+support_intro_ar<<EOF
+اختر وسيلة التواصل الأنسب لك، ومتوسط زمن الرد لا يتجاوز 5 دقائق خلال أوقات العمل.
+EOF
+
+# ---------- وسائل التواصل السريعة ----------
+# إن تُركت القنوات التفصيلية فارغة، تُبنى القنوات تلقائياً من هذه الحقول
+whatsapp=+9647700000000
+telegram=@bananastore
+phone=+9647700000000
+email=support@banan.to
+chat_link=/support
+
+# ---------- أوقات العمل والحالة ----------
+working_hours_ar=يومياً من 10 صباحاً حتى 12 منتصف الليل (بتوقيت بغداد)
+working_hours_en=Daily 10 AM – 12 AM (Baghdad time)
+status_message_ar=الدعم متاح الآن — متوسط الرد 5 دقائق
+status_message_en=Support is online — average reply in 5 minutes
+emergency_notice_ar=للحالات العاجلة المتعلقة بطلب قيد التنفيذ، استخدم واتساب لأسرع استجابة.
+
+# ---------- قنوات التواصل التفصيلية ----------
+channel.1.type=whatsapp
+channel.1.label_ar=واتساب الدعم الفوري
+channel.1.label_en=WhatsApp Support
+channel.1.value=+9647700000000
+channel.1.availability=24/7
+channel.1.active=true
+
+channel.2.type=telegram
+channel.2.label_ar=تيليجرام
+channel.2.label_en=Telegram
+channel.2.value=@bananastore
+channel.2.availability=10:00 - 00:00
+channel.2.active=true
+
+channel.3.type=phone
+channel.3.label_ar=اتصال مباشر
+channel.3.value=+9647700000000
+channel.3.availability=10:00 - 22:00
+
+channel.4.type=email
+channel.4.label_ar=البريد الإلكتروني
+channel.4.value=support@banan.to
+channel.4.availability=رد خلال 12 ساعة
+
+channel.5.type=chat
+channel.5.label_ar=الدردشة داخل الموقع
+channel.5.value=/support
+channel.5.href=/support
+channel.5.availability=فوري
+
+# ---------- خدمات الدعم المعروضة في الصفحة ----------
+service.1.title_ar=متابعة الطلبات والتسليم
+service.1.description_ar=استعلم عن حالة طلبك أو أعد إرسال بيانات الحساب المشتراة.
+service.1.icon=package
+service.1.link=/orders
+service.1.button_label_ar=متابعة طلبي
+service.1.active=true
+
+service.2.title_ar=حل المشاكل التقنية
+service.2.description_ar=رموز الأخطاء، مشاكل التحميل، وتفعيل الحساب الأساسي.
+service.2.icon=wrench
+service.2.link=/support
+service.2.button_label_ar=ابدأ التشخيص
+
+service.3.title_ar=الضمان والاستبدال
+service.3.description_ar=قدّم طلب استبدال أو استرداد ضمن سياسة الضمان الذهبي.
+service.3.icon=shield
+service.3.link=/policy
+service.3.button_label_ar=اطلع على الضمان

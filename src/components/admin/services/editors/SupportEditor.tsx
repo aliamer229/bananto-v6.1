@@ -17,7 +17,11 @@ import {
 import { useI18n } from "@/i18n";
 import type { SupportData, SupportService, SupportChannel } from "@/lib/content";
 import ServiceImportModal from "../ServiceImportModal";
-import type { ServiceParseResult, TroubleshootingItem } from "@/lib/servicesImport";
+import type {
+  ContactParseResultData,
+  ServiceParseResult,
+  TroubleshootingItem,
+} from "@/lib/servicesImport";
 
 interface SupportEditorProps {
   support: SupportData;
@@ -72,6 +76,36 @@ export function SupportEditor({
     onChangeKbArticles((kbArticles || []).filter((art) => art.id !== id));
   };
 
+  // --- Contact / Channels Import Handler ---
+  const handleContactImport = (result: ServiceParseResult<ContactParseResultData>) => {
+    const d = result.data;
+    if (!d) return;
+    const pick = (next: string | undefined, current: any) =>
+      next && next.trim() ? next : current || "";
+
+    onChange({
+      ...support,
+      hero_title_ar: pick(d.hero_title_ar, support.hero_title_ar),
+      hero_title_en: pick(d.hero_title_en, support.hero_title_en),
+      hero_subtitle_ar: pick(d.hero_subtitle_ar, support.hero_subtitle_ar),
+      hero_subtitle_en: pick(d.hero_subtitle_en, support.hero_subtitle_en),
+      support_intro_ar: pick(d.support_intro_ar, support.support_intro_ar),
+      support_intro_en: pick(d.support_intro_en, support.support_intro_en),
+      email: pick(d.email, support.email),
+      phone: pick(d.phone, support.phone),
+      whatsapp: pick(d.whatsapp, support.whatsapp),
+      telegram: pick(d.telegram, support.telegram),
+      chat_link: pick(d.chat_link, support.chat_link),
+      status_message_ar: pick(d.status_message_ar, support.status_message_ar),
+      status_message_en: pick(d.status_message_en, support.status_message_en),
+      emergency_notice_ar: pick(d.emergency_notice_ar, support.emergency_notice_ar),
+      working_hours_ar: pick(d.working_hours_ar, support.working_hours_ar),
+      working_hours_en: pick(d.working_hours_en, support.working_hours_en),
+      channels: d.channels?.length ? (d.channels as any) : support.channels,
+      services: d.services?.length ? (d.services as any) : support.services,
+    });
+  };
+
   // --- Import Handler ---
   const handleImportResult = (result: ServiceParseResult<TroubleshootingItem[]>) => {
     if (result.data && Array.isArray(result.data) && onChangeKbArticles) {
@@ -113,7 +147,9 @@ export function SupportEditor({
             className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-primary/10 text-primary hover:bg-primary/20 rounded-xl transition-colors border border-primary/20"
           >
             <Sparkles className="w-4 h-4" />
-            {t("استيراد من قالب")}
+            {activeTab === "problems"
+              ? t("استيراد قالب حلول المشاكل")
+              : t("استيراد قالب تواصل معنا")}
           </button>
         </div>
       </div>
@@ -392,9 +428,11 @@ export function SupportEditor({
 
       {showImportModal && (
         <ServiceImportModal
-          type="troubleshooting"
+          type={activeTab === "problems" ? "troubleshooting" : "contact"}
           onClose={() => setShowImportModal(false)}
-          onImport={handleImportResult}
+          onImport={
+            activeTab === "problems" ? (handleImportResult as any) : (handleContactImport as any)
+          }
         />
       )}
     </div>

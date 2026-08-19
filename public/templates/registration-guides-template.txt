@@ -1,21 +1,29 @@
 # تعليمات التسجيل وتفعيل الحسابات — قالب استيراد الأدلة
-# ====================================================
-# الصيغة: key=value
-# للنصوص الطويلة: key<<EOF ... EOF
-# لتحديد الخطوات: step.1.title= / step.1.description=
-# ====================================================
+# ======================================================================
+# قواعد كتابة القالب (يقرأها المستورد تلقائياً):
+#   • حقل بسيط:            key=value      أو      key: value
+#   • نص طويل متعدد الأسطر: key<<EOF ثم الأسطر ثم سطر فيه EOF فقط
+#   • التعليقات تبدأ بـ #  ولا يتم استيرادها
+#   • القيم المنطقية تقبل: true/false أو نعم/لا أو 1/0
+#   • القوائم تُفصل بفاصلة أو سطر جديد
+#   • الترقيم يقبل الأرقام العربية والإنجليزية (1 أو ١)
+#   • يمكنك حذف أي حقل اختياري ولن يؤثر على الاستيراد
+# ======================================================================
+# دليل واحد عبر الحقول العليا، أو عدة أدلة عبر guide.N.*
+# خطوات الدليل: step.N.title_ar / step.N.description_ar
+# ======================================================================
 
-# عنوان الدليل الرئيسي [مطلوب]
+# ---------- الدليل الأول ----------
 title_ar=طريقة تفعيل الحساب الأساسي (Primary) وتحميل اللعبة
 title_en=How to Activate Primary Account & Download Games
 
-# الرابط المختصر (Slug)
+# الرابط المختصر (Slug) — يُولّد تلقائياً إن تُرك فارغاً
 slug=primary-account-activation
 
 # تصنيف الدليل (الحسابات، الاشتراكات، الأجهزة...)
 category=الحسابات والألعاب الرقمية
 
-# المدة المتوقعة للتطبيق ومستوى الصعوبة
+# المدة المتوقعة ومستوى الصعوبة
 estimated_time=3 دقائق
 difficulty=سهل جداً
 
@@ -23,32 +31,49 @@ difficulty=سهل جداً
 cover_image=
 video_url=
 
+# نشر الدليل مباشرة للعملاء
+published=true
+
 # وصف ومقدمة الدليل
 description_ar<<EOF
-خطوات سهلة ومباشرة لإضافة الحساب الجديد على جهاز نينتندو سويتش الخاص بك وتفعيله كحساب أساسي للعب بملفك الشخصي دون قيود.
+خطوات سهلة ومباشرة لإضافة الحساب الجديد على جهاز نينتندو سويتش وتفعيله كحساب أساسي للعب بملفك الشخصي دون قيود.
 EOF
 description_en<<EOF
 Step-by-step instructions to add your new account to Nintendo Switch and activate it as Primary.
 EOF
 
-# ====================================================
-# خطوات الدليل المرتبة:
-# ====================================================
-
+# ---------- خطوات الدليل ----------
 step.1.title_ar=إضافة مستخدم جديد على السويتش
 step.1.title_en=Add New User on Switch
-step.1.description_ar=اذهب إلى إعدادات الجهاز System Settings > Users > Add User > Create New User ثم اختر أي أيقونة واسم.
+step.1.description_ar=اذهب إلى System Settings > Users > Add User > Create New User ثم اختر أي أيقونة واسم.
 step.1.note_ar=يمكنك اختيار أي اسم تريده لهذا الحساب على جهازك.
+step.1.image=
 
 step.2.title_ar=ربط حساب نينتندو (Link Nintendo Account)
 step.2.title_en=Link Nintendo Account
-step.2.description_ar=اختر Link a Nintendo Account ثم Sign In with E-mail or Sign-In ID وأدخل الإيميل وكلمة السر المستلمة من بنانا ستور.
-step.2.warning_ar=تأكد من إدخال الأحرف الكبيرة والصغيرة في كلمة السر بدقة كما وصلتك.
+step.2.description_ar=اختر Link a Nintendo Account ثم Sign In with E-mail وأدخل الإيميل وكلمة السر المستلمة من بنانا ستور.
+step.2.warning_ar=أدخل الأحرف الكبيرة والصغيرة في كلمة السر بدقة كما وصلتك.
 
 step.3.title_ar=التحقق من تفعيل الحساب الأساسي (Primary)
 step.3.title_en=Verify Primary Console Status
-step.3.description_ar=افتح Nintendo eShop بالحساب الجديد، اضغط على صورة البروفايل في الزاوية العلوية، وانزل إلى خيار Primary Console وتأكد من أنه Pass / Active.
+step.3.description_ar=افتح eShop بالحساب الجديد، اضغط صورة البروفايل، وتأكد أن Primary Console = Active.
 
 step.4.title_ar=بدء تحميل اللعبة واللعب بحسابك الشخصي
 step.4.title_en=Download & Play on Your Main Profile
-step.4.description_ar=انتقل إلى قسم Redownload في القائمة الجانبية للمتجر واضغط على أيقونة السحابة بجانب اللعبة، بعد اكتمال التحميل يمكنك اللعب من ملفك الشخصي الأساسي.
+step.4.description_ar=من قائمة Redownload اضغط أيقونة السحابة بجانب اللعبة، وبعد التحميل العب من ملفك الشخصي.
+
+# ======================================================================
+# ---------- دليل إضافي في نفس الملف ----------
+# ======================================================================
+
+guide.2.title_ar=طريقة تفعيل اشتراك Nintendo Switch Online
+guide.2.category=الاشتراكات
+guide.2.estimated_time=دقيقتان
+guide.2.difficulty=سهل
+guide.2.description_ar=خطوات تفعيل كود الاشتراك والاستفادة من اللعب الأونلاين والألعاب الكلاسيكية.
+guide.2.step.1.title_ar=فتح متجر eShop
+guide.2.step.1.description_ar=ادخل إلى eShop بالحساب الذي تريد تفعيل الاشتراك عليه.
+guide.2.step.2.title_ar=إدخال كود التفعيل
+guide.2.step.2.description_ar=اختر Redeem Code وأدخل الكود المكوّن من 16 خانة ثم اضغط Confirm.
+guide.2.step.3.title_ar=التأكد من التفعيل
+guide.2.step.3.description_ar=من Nintendo Switch Online تأكد من ظهور تاريخ انتهاء الاشتراك.

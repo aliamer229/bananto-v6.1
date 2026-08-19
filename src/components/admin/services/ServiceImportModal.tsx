@@ -20,6 +20,7 @@ import {
   HelpCircle,
   Layers,
   Loader2,
+  MessageCircle,
   Play,
   ShieldCheck,
   Sparkles,
@@ -85,7 +86,17 @@ const SECTION_CONFIG: Record<
     accentColor: "text-purple-500 bg-purple-500/10 border-purple-500/20",
     sampleDescription: "وثيقة سياسة الشراء وضمان الحسابات مع تنبيهات الرأس والبنود المميزة.",
   },
+  contact: {
+    titleAr: "استيراد قالب تواصل معنا وقنوات الدعم",
+    descriptionAr:
+      "استيراد وسائل التواصل (واتساب، تيليجرام، هاتف، بريد)، أوقات العمل، وخدمات صفحة الدعم.",
+    fileName: "contact-template.txt",
+    icon: MessageCircle,
+    accentColor: "text-sky-500 bg-sky-500/10 border-sky-500/20",
+    sampleDescription: "قالب يحتوي 5 قنوات تواصل، أوقات العمل، رسائل الحالة، و3 خدمات دعم.",
+  },
 };
+
 
 export default function ServiceImportModal({ type, onClose, onImport }: ServiceImportModalProps) {
   const t = useI18n((s) => s.t);
@@ -571,8 +582,76 @@ export default function ServiceImportModal({ type, onClose, onImport }: ServiceI
                   </div>
                 </div>
               )}
+
+              {/* Preview For Contact / Support channels */}
+              {type === "contact" && (
+                <div className="space-y-4">
+                  <div className="bg-card border border-border p-5 rounded-xl space-y-2">
+                    <h3 className="text-lg font-bold text-foreground">
+                      {result.data.hero_title_ar}
+                    </h3>
+                    {result.data.hero_subtitle_ar && (
+                      <p className="text-xs text-muted-foreground">{result.data.hero_subtitle_ar}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {result.data.working_hours_ar && (
+                        <span className="text-[11px] px-2.5 py-1 rounded-lg bg-muted border border-border text-muted-foreground">
+                          🕒 {result.data.working_hours_ar}
+                        </span>
+                      )}
+                      {result.data.status_message_ar && (
+                        <span className="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600">
+                          ● {result.data.status_message_ar}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {result.data.channels?.map((ch: any, idx: number) => (
+                      <div
+                        key={ch.id || idx}
+                        className="bg-card border border-border p-4 rounded-xl space-y-1"
+                      >
+                        <div className="text-sm font-bold text-foreground flex items-center justify-between gap-2">
+                          <span>{ch.label_ar}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                            {ch.type}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground font-mono break-all">
+                          {ch.value}
+                        </div>
+                        {ch.availability && (
+                          <div className="text-[11px] text-muted-foreground">
+                            🕒 {ch.availability}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {result.data.services?.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs font-bold text-foreground">
+                        {t("خدمات الدعم المكتشفة:")} ({result.data.services.length})
+                      </div>
+                      {result.data.services.map((sv: any, idx: number) => (
+                        <div
+                          key={sv.id || idx}
+                          className="bg-muted/40 border border-border/60 p-3 rounded-lg text-xs space-y-1"
+                        >
+                          <div className="font-bold text-foreground">{sv.title_ar}</div>
+                          <div className="text-muted-foreground">{sv.description_ar}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
+
         </div>
 
         {/* Footer Actions */}
