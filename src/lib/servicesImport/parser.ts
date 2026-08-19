@@ -20,15 +20,54 @@ import type {
   TroubleshootingItem,
 } from "./types";
 
+/** Normalizes a key: lowercase, arabic-indic digits -> latin, spaces -> underscore */
+function normalizeKey(key: string): string {
+  return key
+    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/^[-*•]\s*/, "")
+    .trim()
+    .replace(/\s+/g, "_")
+    .toLowerCase();
+}
+
+/** Parses loose boolean values in Arabic/English */
+export function parseBool(value: string | undefined, fallback = false): boolean {
+  if (value == null) return fallback;
+  const v = value.trim().toLowerCase();
+  if (!v) return fallback;
+  if (["true", "1", "yes", "y", "on", "نعم", "صح", "مفعل", "مفعّل", "نشط"].includes(v)) return true;
+  if (["false", "0", "no", "n", "off", "لا", "خطأ", "معطل", "معطّل"].includes(v)) return false;
+  return fallback;
+}
+
 /**
- * Extracts raw key-value pairs and heredocs from template text
+ * Extracts raw key-value pairs and heredocs from template text.
+ * Supports:
+ *  - key=value  and  key: value
+ *  - key<<EOF ... EOF   (any terminator token: <<END, <<TEXT ...)
+ *  - comments (#, //), BOM, arabic-indic digits in indexes
+ *  - repeated keys are kept as key, key.2, key.3 (never overwritten silently)
  */
 export function extractKeyValues(text: string): Record<string, string> {
   const map: Record<string, string> = {};
-  const lines = text.split(/\r?\n/);
+  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
   let currentKey: string | null = null;
+  let terminator = "EOF";
   let heredocBuffer: string[] = [];
   let inHeredoc = false;
+
+  const put = (rawKey: string, value: string) => {
+    const key = normalizeKey(rawKey);
+    if (!key) return;
+    if (map[key] === undefined) {
+      map[key] = value;
+      return;
+    }
+    // Repeated key -> keep both (key.2, key.3 ...)
+    let n = 2;
+    while (map[`${key}.${n}`] !== undefined) n++;
+    map[`${key}.${n}`] = value;
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const rawLine = lines[i] ?? "";
@@ -36,10 +75,8 @@ export function extractKeyValues(text: string): Record<string, string> {
 
     // Check Heredoc termination
     if (inHeredoc) {
-      if (trimmed === "EOF") {
-        if (currentKey) {
-          map[currentKey] = heredocBuffer.join("\n").trim();
-        }
+      if (trimmed === terminator) {
+        if (currentKey) put(currentKey, heredocBuffer.join("\n").trim());
         inHeredoc = false;
         currentKey = null;
         heredocBuffer = [];
@@ -50,37 +87,53 @@ export function extractKeyValues(text: string): Record<string, string> {
     }
 
     // Skip empty lines and comments
-    if (!trimmed || trimmed.startsWith("#")) {
+    if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("//")) {
       continue;
     }
 
-    // Heredoc start: key<<EOF
-    if (trimmed.includes("<<EOF")) {
-      const parts = trimmed.split("<<EOF");
-      currentKey = (parts[0] ?? "").trim();
+    // Heredoc start: key<<EOF / key<<END / key<<<
+    const heredocMatch = trimmed.match(/^(.+?)\s*<<<?\s*([A-Za-z0-9_]*)\s*$/);
+    if (heredocMatch) {
+      currentKey = (heredocMatch[1] ?? "").trim();
+      terminator = heredocMatch[2] || "EOF";
       inHeredoc = true;
       heredocBuffer = [];
       continue;
     }
 
-    // Standard key=value
+    // Standard key=value (fallback to "key: value")
     const eqIdx = rawLine.indexOf("=");
-    if (eqIdx !== -1) {
-      const k = rawLine.slice(0, eqIdx).trim();
-      const v = rawLine.slice(eqIdx + 1).trim();
-      if (k) {
-        map[k] = v;
-      }
+    const colonIdx = rawLine.indexOf(":");
+    const sepIdx =
+      eqIdx !== -1 && (colonIdx === -1 || eqIdx < colonIdx)
+        ? eqIdx
+        : colonIdx !== -1 && colonIdx < 60
+          ? colonIdx
+          : -1;
+    if (sepIdx !== -1) {
+      const k = rawLine.slice(0, sepIdx).trim();
+      const v = rawLine.slice(sepIdx + 1).trim();
+      if (k && !/\s{2,}/.test(k)) put(k, v);
     }
   }
 
   // If heredoc didn't close properly, close with whatever we had
   if (inHeredoc && currentKey) {
-    map[currentKey] = heredocBuffer.join("\n").trim();
+    put(currentKey, heredocBuffer.join("\n").trim());
   }
 
   return map;
 }
+
+/** Splits a value into a clean list (newlines, commas, arabic comma, bullets, pipes) */
+export function toList(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(/\r?\n|،|,|\||;/)
+    .map((s) => s.replace(/^\s*(?:[-*•]|\d+[.)-])\s*/, "").trim())
+    .filter(Boolean);
+}
+
 
 /**
  * Parse JSON fallback if admin pasted a JSON payload
