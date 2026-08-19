@@ -88,9 +88,34 @@ export function parseGameImport(rawText: string): ParseResult {
     }));
   }
 
+  // Value-only groups (`feature.1.value=`, `verdict_pro.1.value=`, …) describe a
+  // simple list, and the editor renders those targets as `type: "list"` — i.e.
+  // string[]. Keeping them as `[{ value }]` is what surfaced as "[object Object]".
+  flattenValueOnlyGroups(structuredData);
+
   result.data = structuredData;
   return result;
 }
+
+const VALUE_ONLY_TARGETS = GAME_IMPORT_SCHEMA.filter(
+  (f) =>
+    f.type === "object" &&
+    f.repeatable &&
+    f.itemFields &&
+    Object.keys(f.itemFields).length === 1 &&
+    Boolean(f.itemFields["value"]),
+).map((f) => f.target);
+
+function flattenValueOnlyGroups(data: Record<string, any>) {
+  for (const target of VALUE_ONLY_TARGETS) {
+    const list = data[target];
+    if (!Array.isArray(list)) continue;
+    data[target] = list
+      .map((item: any) => getTextValue(item && typeof item === "object" ? item.value : item))
+      .filter((v: string) => Boolean(v && v.trim()));
+  }
+}
+
 
 function findFieldDef(key: string): FieldDef | null {
   const { baseKey } = parseKeyPath(key);
