@@ -130,6 +130,10 @@ function ProductPage() {
     );
   }
 
+  if (!game) return null;
+
+
+
   return (
     <AppShell currentView="details" hideNav onBack={() => void navigate({ to: "/" })}>
       <I18nProvider>
