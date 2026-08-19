@@ -75,9 +75,13 @@ function ProductPage() {
   const isGame = section === "game";
 
   const schema = useMemo(
-    () => (product && !isGame ? (schemaForSection(section) ?? detectSchema(product)) : undefined),
+    () =>
+      product && !isGame
+        ? ((section ? schemaForSection(section) : undefined) ?? detectSchema(product))
+        : undefined,
     [product, section, isGame],
   );
+
 
   const game = useMemo(
     () => (product && isGame ? gameFromProduct(product, locale) : null),
