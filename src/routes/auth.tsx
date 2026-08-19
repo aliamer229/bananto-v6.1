@@ -20,8 +20,11 @@ import {
 } from "@/components/auth/AuthPieces";
 import OtpBoxes from "@/components/auth/OtpBoxes";
 import TelegramLinkPrompt from "@/components/auth/TelegramLinkPrompt";
-import patternAsset from "@/assets/login_bg.webp.asset.json";
-import mascotAsset from "@/assets/bananto_logo.webp.asset.json";
+import { ASSET_BASE_URL } from "@/config/publicAssets";
+
+const patternAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Auth%20background%20.webp` };
+const mascotAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Logo.webp` };
+
 import { authPageAction } from "@/lib/authRedirect";
 import { useAuth } from "@/hooks/useAuth";
 import type { OtpChannel } from "@/lib/otp.server";
