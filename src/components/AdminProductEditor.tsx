@@ -298,16 +298,15 @@ export default function AdminProductEditor({
       size: "8.5 GB",
       numberOfPlayers: "1 Player",
       supportedLanguages: "English, Japanese, French, Spanish, German",
-      // Hardware
-      hardwareModel: "Nintendo Switch OLED Model",
-      colorEdition: "White OLED",
-      storageCapacity: "64 GB",
-      screenSpecs: "7.0-inch OLED (1280x720) Touchscreen",
-      batteryLife: "4.5 - 9.0 Hours (4310 mAh)",
-      boxContents:
-        "Nintendo Switch Console, Joy-Con (L/R), Dock, Joy-Con Grip, AC Adapter, HDMI Cable",
-      warrantyCondition: "جديد أصلي 100% بالكرتون مع ضمان سنة",
-      connectivity: "Wi-Fi 6, Bluetooth 5.0, LAN Port, HDMI 2.0, USB Type-C",
+      // Hardware — intentionally blank: these are real product specs, never demo text.
+      hardwareModel: "",
+      colorEdition: "",
+      storageCapacity: "",
+      screenSpecs: "",
+      batteryLife: "",
+      boxContents: "",
+      warrantyCondition: "",
+      connectivity: "",
       // Amiibo
       characterName: "Link",
       amiiboSeries: "The Legend of Zelda",
