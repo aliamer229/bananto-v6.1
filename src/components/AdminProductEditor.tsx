@@ -59,6 +59,7 @@ import { cn } from "../lib/utils";
 import GlobalPriceTracker from "./GlobalPriceTracker";
 import HubFields from "./admin/HubFields";
 import { ImageUploadField } from "./admin/ImageUploadField";
+import { StepsEditor } from "./admin/StepsEditor";
 import { safeRandomUUID } from "@/lib/polyfills";
 import { ProductOptionsEditor } from "./admin/ProductOptionsEditor";
 import { useCurrency } from "../context/CurrencyContext";
@@ -420,6 +421,16 @@ export default function AdminProductEditor({
       title: existing?.title ?? def.labelAr,
     };
   });
+
+  // Instruction fields are edited as an ordered list but stored both ways: the
+  // array feeds the details page, the joined text keeps legacy readers working.
+  const redemptionSteps = toStepList(formData.redemptionSteps ?? formData.redemptionGuide);
+  const setRedemptionSteps = (steps: string[]) =>
+    setFormData((prev: any) => ({
+      ...prev,
+      redemptionSteps: steps,
+      redemptionGuide: steps.filter(Boolean).join("\n"),
+    }));
 
   const handleChange = (field: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
@@ -2443,6 +2454,15 @@ export default function AdminProductEditor({
                 }));
               }
 
+              // An imported template fills `variants`; the panel edits `types`.
+              if (
+                (!Array.isArray(newData.types) || newData.types.length === 0) &&
+                Array.isArray(newData.variants) &&
+                newData.variants.length > 0
+              ) {
+                newData.types = newData.variants;
+              }
+
               // Ensure types have unique ids
               if (Array.isArray(newData.types)) {
                 newData.types = newData.types.filter(Boolean).map((t: any, idx: number) => ({
@@ -2466,9 +2486,23 @@ export default function AdminProductEditor({
                 if (Array.isArray(newData.boxContents)) newData.boxContentsList = newData.boxContents;
                 newData.boxContents = boxContentsToText(newData.boxContents);
               }
+              const importedSteps = toStepList(newData.redemptionSteps ?? newData.redemptionGuide);
+              if (importedSteps.length) {
+                newData.redemptionSteps = importedSteps;
+                newData.redemptionGuide = importedSteps.join("\n");
+              }
+
+              if (!newData.coverImage) {
+                newData.coverImage = newData.cardArtwork || newData.mainImage || prev.coverImage || "";
+              }
               if (!newData.cartridgeImage) {
                 newData.cartridgeImage =
-                  newData.packagingFrontImage || newData.boxImage || prev.cartridgeImage || "";
+                  newData.regionBanner ||
+                  newData.bannerImage ||
+                  newData.packagingFrontImage ||
+                  newData.boxImage ||
+                  prev.cartridgeImage ||
+                  "";
 
               }
 
@@ -2505,6 +2539,15 @@ export default function AdminProductEditor({
                         ? String(opt.id).trim()
                         : `opt_${Date.now()}_${idx}`,
                   }));
+              }
+
+              // An imported template fills `variants`; the panel edits `types`.
+              if (
+                (!Array.isArray(normalized.types) || normalized.types.length === 0) &&
+                Array.isArray(normalized.variants) &&
+                normalized.variants.length > 0
+              ) {
+                normalized.types = normalized.variants;
               }
 
               // Ensure types have unique ids
@@ -2548,8 +2591,24 @@ export default function AdminProductEditor({
                   "";
               }
 
+              // Redemption / setup instructions become an ordered list.
+              const importedSteps = toStepList(
+                normalized.redemptionSteps ?? normalized.redemptionGuide,
+              );
+              if (importedSteps.length) {
+                normalized.redemptionSteps = importedSteps;
+                normalized.redemptionGuide = importedSteps.join("\n");
+              }
+
+              if (!normalized.coverImage) {
+                normalized.coverImage =
+                  normalized.cardArtwork || normalized.mainImage || prev.coverImage || "";
+              }
+
               if (!normalized.cartridgeImage) {
                 normalized.cartridgeImage =
+                  normalized.regionBanner ||
+                  normalized.bannerImage ||
                   normalized.packagingFrontImage ||
                   normalized.packagingBackImage ||
                   normalized.boxImage ||
