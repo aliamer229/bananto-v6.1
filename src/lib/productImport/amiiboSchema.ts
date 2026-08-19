@@ -21,6 +21,7 @@ import {
   socialProofFields,
   sourceField,
   specGroupField,
+  setupStepsFields,
 } from "./shared";
 import type { FieldDef, ProductSchema } from "./types";
 
@@ -240,6 +241,7 @@ export const AMIIBO_SCHEMA: ProductSchema = {
     ...physicalFields(["material"]),
     specGroupField(),
     boxContentField(),
+    ...setupStepsFields(),
     ...mediaFields(),
     ...optionFields(),
     ...socialProofFields(),

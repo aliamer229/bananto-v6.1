@@ -95,6 +95,8 @@ const card: FieldDef[] = [
     group: CARD,
   },
   f.date("expiry_date", "expiryDate", "تاريخ انتهاء الصلاحية YYYY-MM-DD", { group: CARD }),
+  f.url("card_artwork", "cardArtwork", "صورة كرت التعبئة (Card Artwork)", { group: CARD }),
+  f.url("region_banner", "regionBanner", "بانر الريجون التوضيحي (Region Banner)", { group: CARD }),
 ];
 
 const delivery: FieldDef[] = [
@@ -111,7 +113,16 @@ const delivery: FieldDef[] = [
     specKey: "deliveryTime",
     group: DELIVERY,
   }),
-  f.text("redemption_guide", "redemptionGuide", "خطوات استخدام الكود بالتفصيل", {
+  {
+    key: "redeem_step",
+    type: "string",
+    target: "redemptionSteps",
+    repeatable: true,
+    templateCount: 5,
+    description: "خطوات التفعيل والشحن — خطوة واحدة في كل سطر (عدد غير محدود)",
+    group: DELIVERY,
+  },
+  f.text("redemption_guide", "redemptionGuide", "خطوات استخدام الكود كنص واحد (بديل عن redeem_step)", {
     group: DELIVERY,
   }),
   f.url("redemption_url", "redemptionUrl", "رابط صفحة استبدال الكود الرسمية", { group: DELIVERY }),

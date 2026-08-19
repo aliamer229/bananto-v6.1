@@ -165,6 +165,8 @@ export const en: Translations<Dictionary> = {
       collector: "Collector information",
       character: "Character",
       figure: "The figure",
+      howToRedeem: "How to redeem",
+      usageTerms: "Usage terms",
       gameCompatibility: "Game compatibility",
       digitalFeatures: "Digital features",
     },

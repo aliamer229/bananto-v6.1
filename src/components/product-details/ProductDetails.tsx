@@ -467,6 +467,45 @@ function DetailsBody({
         </ul>
       </Section>
 
+      <Section
+        id="how-to-redeem"
+        title={t("product.sections.howToRedeem")}
+        when={view.usageSteps.length}
+      >
+        <ol className="space-y-2">
+          {view.usageSteps.map((step, index) => (
+            <li
+              key={`${step}-${index}`}
+              className="flex items-start gap-3 rounded-xl border border-border px-4 py-3 text-[14px] leading-relaxed"
+            >
+              <span
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[12px] font-bold text-primary"
+                dir="ltr"
+              >
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+        {view.usageUrl ? (
+          <a
+            href={view.usageUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-primary hover:underline"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {t("product.officialSite")}
+          </a>
+        ) : null}
+        {view.usageTerms ? (
+          <p className="mt-3 whitespace-pre-line text-[13px] text-muted-foreground">
+            {view.usageTerms}
+          </p>
+        ) : null}
+      </Section>
+
       <Section id="gallery" title={t("product.sections.gallery")} when={view.gallery.length}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {view.gallery.map((item, index) => (

@@ -159,6 +159,10 @@ export interface ProductView {
   externalReviews: ExternalReviewItem[];
   options: OptionItem[];
   variants: VariantItem[];
+  /** Redemption / setup steps rendered as a numbered list (gift cards, bundles…). */
+  usageSteps: string[];
+  usageUrl: string;
+  usageTerms: string;
   warranty: { label: string; value: string }[];
   seo: { title: string; description: string; image: string };
 }
@@ -395,6 +399,11 @@ export function buildProductView(
         return item;
       })
       .filter((r) => r.source),
+    usageSteps: toSteps(p["redemptionSteps"] ?? p["redeemSteps"] ?? p["setupSteps"]).length
+      ? toSteps(p["redemptionSteps"] ?? p["redeemSteps"] ?? p["setupSteps"])
+      : toSteps(p["redemptionGuide"] ?? p["activationGuide"] ?? p["usageGuide"]),
+    usageUrl: str(p["redemptionUrl"] ?? ""),
+    usageTerms: str(p["usageTerms"] ?? ""),
     options: list<Record_>(p["options"])
       .map((o, index) => {
         const item: OptionItem = {
@@ -446,6 +455,24 @@ export function buildProductView(
       image: str(p["ogImage"]) || str(p["mainImage"]) || str(p["coverImage"]),
     },
   };
+}
+
+/**
+ * Steps arrive either as a list or as one blob of text; both become an array of
+ * clean lines so the page can always number them.
+ */
+function toSteps(value: unknown): string[] {
+  const raw = Array.isArray(value) ? value : value == null ? [] : [value];
+  return raw
+    .flatMap((entry) => {
+      if (entry && typeof entry === "object") {
+        const rec = entry as Record_;
+        return [String(rec["value"] ?? rec["text"] ?? rec["title"] ?? rec["name"] ?? "")];
+      }
+      return String(entry ?? "").split(/\r?\n|\s*[>›»]\s*|\s*\u2190\s*/);
+    })
+    .map((line) => line.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim())
+    .filter(Boolean);
 }
 
 /** Booleans become localized yes/no; everything else is passed through as text. */

@@ -171,6 +171,8 @@ export const tr: Translations<Dictionary> = {
       collector: "Koleksiyoner bilgileri",
       character: "Karakter",
       figure: "Figür",
+      howToRedeem: "Nasıl kullanılır",
+      usageTerms: "Kullanım şartları",
       gameCompatibility: "Oyun uyumluluğu",
       digitalFeatures: "Dijital özellikler",
     },
