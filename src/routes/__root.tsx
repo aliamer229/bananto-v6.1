@@ -183,6 +183,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             Error: {error.message}
           </span>
         )}
+        {error?.stack && (
+          <span className="block mt-2 text-[8px] font-mono text-slate-300 opacity-30 overflow-hidden text-ellipsis max-h-20 text-left ltr">
+            {error.stack}
+          </span>
+        )}
       </p>
 
       <div className="flex flex-col gap-3 w-full max-w-[200px]">
