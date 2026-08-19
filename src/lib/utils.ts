@@ -12,8 +12,9 @@ export const getTextValue = (item: unknown): string => {
     if ("value" in item) {
       const val = (item as any).value;
       if (typeof val === "string") return val;
+      // If it's another nested object with value, recurse, otherwise stringify
       if (val && typeof val === "object" && "value" in val) return getTextValue(val);
-      return String(val ?? "");
+      return val == null ? "" : String(val);
     }
     // Other common string-carrying fields
     if ("name" in item && typeof (item as any).name === "string") {

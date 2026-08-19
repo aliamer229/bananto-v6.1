@@ -1,4 +1,5 @@
 import { GAME_IMPORT_SCHEMA, FieldDef } from "./gameImportSchema";
+import { getTextValue } from "./utils";
 
 export interface ParseResult {
   data: Record<string, any>;
