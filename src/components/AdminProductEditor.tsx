@@ -1509,7 +1509,7 @@ export default function AdminProductEditor({
                   <input
                     type="text"
                     className="w-full border border-border focus:border-foreground rounded-lg px-3 py-2 text-sm outline-none bg-background"
-                    value={formData.boxContents || ""}
+                    value={boxContentsToText(formData.boxContents)}
                     onChange={(e) => handleChange("boxContents", e.target.value)}
                     placeholder="Nintendo Switch Console, Joy-Con (L/R), Dock, Joy-Con Grip, AC Adapter, HDMI Cable"
                   />
