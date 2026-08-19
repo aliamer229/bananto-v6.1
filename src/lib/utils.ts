@@ -11,7 +11,9 @@ export const getTextValue = (item: unknown): string => {
     // If it's an object with a 'value' field (common for tagged inputs/options)
     if ("value" in item) {
       const val = (item as any).value;
-      return typeof val === "string" ? val : getTextValue(val);
+      if (typeof val === "string") return val;
+      if (val && typeof val === "object" && "value" in val) return getTextValue(val);
+      return String(val ?? "");
     }
     // Other common string-carrying fields
     if ("name" in item && typeof (item as any).name === "string") {
@@ -23,8 +25,7 @@ export const getTextValue = (item: unknown): string => {
     if ("label" in item && typeof (item as any).label === "string") {
       return (item as any).label;
     }
-    // Fallback: if it has only one key, maybe that's it? 
-    // Or just return empty to avoid [object Object]
+    // Fallback: avoid [object Object]
     return "";
   }
   return item == null ? "" : String(item);

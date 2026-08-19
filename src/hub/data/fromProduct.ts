@@ -499,9 +499,9 @@ function buildCompletion(p: Record<string, unknown>): CompletionInfo | undefined
   const all = num(p["completionAll"]);
   if (!main && !extras && !all) return undefined;
   return {
-    ...(main ? { mainStoryHours: confirmed({ min: main, max: main }) } : {}),
-    ...(extras ? { mainPlusExtrasHours: confirmed({ min: extras, max: extras }) } : {}),
-    ...(all ? { hundredPercentHours: confirmed({ min: all, max: all }) } : {}),
+    ...(main ? { mainStoryHours: { min: main, max: main } } : {}),
+    ...(extras ? { mainPlusExtrasHours: { min: extras, max: extras } } : {}),
+    ...(all ? { hundredPercentHours: { min: all, max: all } } : {}),
   };
 }
 
