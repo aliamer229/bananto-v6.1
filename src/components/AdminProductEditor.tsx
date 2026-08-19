@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { boxContentsToText } from "@/lib/boxContentsText";
 import AdminImportModal from "./admin/AdminImportModal";
 import ProductImportModal from "./admin/ProductImportModal";
 import { useTranslation } from "../i18n";
