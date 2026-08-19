@@ -199,7 +199,11 @@ export default function AdminProductEditor({
         storageCapacity: product.storageCapacity || product.storage || "",
         screenSpecs: product.screenSpecs || product.screen || "",
         batteryLife: product.batteryLife || product.battery || "",
-        boxContents: product.boxContents || product.includedItems || "",
+        boxContents:
+          (typeof product.boxContents === "string" ? product.boxContents : "") ||
+          product.boxContentsText ||
+          product.includedItems ||
+          "",
         warrantyCondition: product.warrantyCondition || product.warranty || "",
         connectivity: product.connectivity || "",
         // Amiibo Specific
