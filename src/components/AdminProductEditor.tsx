@@ -646,7 +646,7 @@ export default function AdminProductEditor({
         : `prd_${Date.now().toString(36)}`);
 
     const selectedCategoryId =
-      formData.categoryId || formData.category || activeCategory || "cat_nintendo";
+      formData.categoryId || formData.category || "cat_nintendo";
 
     const cleanedData = {
       ...formData,

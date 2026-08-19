@@ -60,10 +60,10 @@ const statusLabels: Record<OrderStatus, { label: string; color: string; icon: an
 };
 
 const paymentLabels: Record<PaymentStatus, { label: string; color: string }> = {
-  pending: { label: "بانتظار الدفع", color: "bg-amber-500/10 text-amber-700 border-amber-500/20" },
+  unpaid: { label: "بانتظار الدفع", color: "bg-amber-500/10 text-amber-700 border-amber-500/20" },
+  review: { label: "قيد المراجعة", color: "bg-blue-500/10 text-blue-700 border-blue-500/20" },
   paid: { label: "مدفوع مؤكد", color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" },
   rejected: { label: "مرفوض", color: "bg-red-500/10 text-red-700 border-red-500/20" },
-  refunded: { label: "مسترجع", color: "bg-purple-500/10 text-purple-700 border-purple-500/20" },
 };
 
 export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) {
@@ -164,7 +164,7 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
 
   // Metric counts
   const pendingCount = orders.filter(
-    (o) => o.status === "pending" || o.paymentStatus === "pending",
+    (o) => o.status === "pending" || o.paymentStatus === "unpaid",
   ).length;
   const processingCount = orders.filter((o) => o.status === "processing").length;
   const completedCount = orders.filter((o) => o.status === "completed").length;
@@ -348,13 +348,8 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
                       <div key={idx} className="flex items-center gap-2 text-xs text-foreground">
                         <Package className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                         <span className="font-semibold truncate">{item.title}</span>
-                        {item.accountType && (
-                          <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground shrink-0">
-                            {item.accountType}
-                          </span>
-                        )}
                         <span className="text-muted-foreground text-[11px] shrink-0">
-                          ({Number(item.price).toLocaleString()} {order.currency || "IQD"})
+                          ({Number(item.unitPrice).toLocaleString()} {order.currency || "IQD"})
                         </span>
                       </div>
                     ))}
@@ -362,7 +357,7 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
                       <div className="text-[11px] text-blue-600 flex items-center gap-1 mt-1">
                         <MapPin className="w-3.5 h-3.5 shrink-0" />
                         <span>
-                          شحن وتوصيل: {order.address.city} - {order.address.line}
+                          شحن وتوصيل: {order.address.city} - {order.address.street || order.address.area || ""}
                         </span>
                       </div>
                     )}
@@ -395,7 +390,7 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
                       </button>
                     )}
 
-                    {order.paymentStatus === "pending" && (
+                    {order.paymentStatus === "unpaid" && (
                       <button
                         onClick={() =>
                           updatePaymentMutation.mutate({
@@ -534,14 +529,9 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
                     <div className="flex items-center justify-between font-bold text-foreground">
                       <span>{item.title}</span>
                       <span>
-                        {Number(item.price).toLocaleString()} {selectedOrder.currency || "IQD"}
+                        {Number(item.unitPrice).toLocaleString()} {selectedOrder.currency || "IQD"}
                       </span>
                     </div>
-                    {item.accountType && (
-                      <div className="text-[11px] text-muted-foreground">
-                        النوع: {item.accountType}
-                      </div>
-                    )}
                     {item.deliveryEmail && (
                       <div className="text-[11px] bg-card p-2 rounded border border-border font-mono">
                         <div>البريد المسلم: {item.deliveryEmail}</div>

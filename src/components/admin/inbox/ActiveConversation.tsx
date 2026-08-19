@@ -45,11 +45,11 @@ export class ConversationErrorBoundary extends Component<ErrorBoundaryProps, Err
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Conversation render error:", error, errorInfo);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         this.props.fallback || (
@@ -765,9 +765,20 @@ export function ActiveConversation({
             isOpen={isAccountToolsOpen}
             onClose={() => setIsAccountToolsOpen(false)}
             defaultTab={accountToolsDefaultTab}
-            linkedOrder={linkedOrder}
-            onSendPayload={(payload) => {
-              onSendMessage(payload);
+            onSendCredentials={(payload) => {
+              onSendMessage({ kind: "credentials", body: payload });
+              setIsAccountToolsOpen(false);
+            }}
+            onSendVerificationCode={(payload) => {
+              onSendMessage({ kind: "otp", body: payload });
+              setIsAccountToolsOpen(false);
+            }}
+            onSendInstructions={(payload) => {
+              onSendMessage({ kind: "instructions", body: payload });
+              setIsAccountToolsOpen(false);
+            }}
+            onSendCardCode={(payload) => {
+              onSendMessage({ kind: "card", body: payload });
               setIsAccountToolsOpen(false);
             }}
           />
@@ -790,10 +801,9 @@ export function ActiveConversation({
           <CustomerDetailsDrawer
             isOpen={isCustomerDrawerOpen}
             onClose={() => setIsCustomerDrawerOpen(false)}
-            userId={thread.userId}
-            userName={thread.userName}
+            thread={thread}
             orders={orders}
-            onSelectOrder={(orderId) => {
+            onOpenOrder={(orderId: string) => {
               setIsCustomerDrawerOpen(false);
               if (onNavigateToOrder) {
                 onNavigateToOrder(orderId);
@@ -810,12 +820,14 @@ export function ActiveConversation({
             isOpen={isOrderDrawerOpen}
             onClose={() => setIsOrderDrawerOpen(false)}
             order={linkedOrder}
-            onOpenFullOrder={() => {
-              setIsOrderDrawerOpen(false);
-              if (onNavigateToOrder) {
-                onNavigateToOrder(linkedOrder.id);
-              }
-            }}
+            onOpenFullOrder={
+              onNavigateToOrder
+                ? () => {
+                    setIsOrderDrawerOpen(false);
+                    onNavigateToOrder(linkedOrder.id);
+                  }
+                : undefined
+            }
           />
         )}
       </div>

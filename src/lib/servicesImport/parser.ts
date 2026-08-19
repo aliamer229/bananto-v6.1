@@ -31,7 +31,7 @@ export function extractKeyValues(text: string): Record<string, string> {
   let inHeredoc = false;
 
   for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i];
+    const rawLine = lines[i] ?? "";
     const trimmed = rawLine.trim();
 
     // Check Heredoc termination
@@ -57,7 +57,7 @@ export function extractKeyValues(text: string): Record<string, string> {
     // Heredoc start: key<<EOF
     if (trimmed.includes("<<EOF")) {
       const parts = trimmed.split("<<EOF");
-      currentKey = parts[0].trim();
+      currentKey = (parts[0] ?? "").trim();
       inHeredoc = true;
       heredocBuffer = [];
       continue;
@@ -108,7 +108,7 @@ export function parseTroubleshooting(text: string): ServiceParseResult<Troublesh
   const json = tryParseJson(text);
 
   if (json) {
-    const items: TroubleshootingItem[] = Array.isArray(json)
+    const items: any[] = Array.isArray(json)
       ? json
       : Array.isArray(json.problemSolutions)
         ? json.problemSolutions
@@ -116,7 +116,7 @@ export function parseTroubleshooting(text: string): ServiceParseResult<Troublesh
           ? json.kbArticles
           : [json];
 
-    const normalized = items.map((item, idx) => ({
+    const normalized: TroubleshootingItem[] = items.map((item, idx) => ({
       id: item.id || `kb_imported_${idx + 1}_${Date.now()}`,
       title: item.title || item.title_ar || `مشكلة رقم ${idx + 1}`,
       category: item.category || item.category_ar || "عام",
@@ -154,7 +154,7 @@ export function parseTroubleshooting(text: string): ServiceParseResult<Troublesh
   const problemIndices = new Set<string>();
   for (const k of Object.keys(kv)) {
     const match = k.match(/^problem\.(\d+)\./);
-    if (match) {
+    if (match && match[1]) {
       problemIndices.add(match[1]);
     }
   }
@@ -188,8 +188,9 @@ export function parseTroubleshooting(text: string): ServiceParseResult<Troublesh
       }
 
       // If single multiline steps key used
-      if (steps.length === 0 && kv[`problem.${idx}.steps`]) {
-        steps.push(...kv[`problem.${idx}.steps`].split(/\r?\n/).filter((s) => s.trim()));
+      const stepsRaw = kv[`problem.${idx}.steps`];
+      if (steps.length === 0 && stepsRaw) {
+        steps.push(...stepsRaw.split(/\r?\n/).filter((s) => s.trim()));
       }
 
       items.push({
@@ -269,7 +270,7 @@ export function parseRegistrationGuides(text: string): ServiceParseResult<Regist
 
   if (json) {
     const rawList = Array.isArray(json) ? json : Array.isArray(json.guides) ? json.guides : [json];
-    const normalized: RegistrationGuideItem[] = rawList.map((g, idx) => ({
+    const normalized: RegistrationGuideItem[] = rawList.map((g: any, idx: number) => ({
       id: g.id || `guide_${idx + 1}_${Date.now()}`,
       title_ar: g.title_ar || g.title || `دليل تفعيل ${idx + 1}`,
       title_en: g.title_en || "",
@@ -501,7 +502,7 @@ export function parseFaq(text: string): ServiceParseResult<FaqParseResultData> {
       continue;
     }
 
-    const catId = kv[`faq.${fIdx}.category_id`] || categories[0].id;
+    const catId = kv[`faq.${fIdx}.category_id`] || categories[0]?.id || "cat_general";
     const isFeatured = kv[`faq.${fIdx}.featured`]?.toLowerCase() === "true";
 
     faqs.push({
