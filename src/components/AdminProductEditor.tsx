@@ -200,22 +200,11 @@ export default function AdminProductEditor({
         screenSpecs: product.screenSpecs || product.screen || "",
         batteryLife: product.batteryLife || product.battery || "",
         boxContents:
-          (typeof product.boxContents === "string" ? product.boxContents : "") ||
-          (Array.isArray(product.boxContents)
-            ? product.boxContents
-                .map((item: any) =>
-                  typeof item === "string"
-                    ? item
-                    : [item?.name, item?.quantity > 1 ? `×${item.quantity}` : ""]
-                        .filter(Boolean)
-                        .join(" "),
-                )
-                .filter(Boolean)
-                .join("، ")
-            : "") ||
-          product.boxContentsText ||
-          product.includedItems ||
+          boxContentsToText(product.boxContents) ||
+          boxContentsToText(product.boxContentsText) ||
+          boxContentsToText(product.includedItems) ||
           "",
+
         warrantyCondition:
           product.warrantyCondition ||
           [product.warranty, product.warrantyType].filter(Boolean).join(" — ") ||
