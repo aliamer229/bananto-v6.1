@@ -104,11 +104,15 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
   // Live simulation calculation using current drafts
   const simulatedQuote = useMemo(() => {
     // Merge drafts into rules for live simulation
-    const activeRules = rules.map((r) => ({
-      ...r,
-      percent: draftPercentages[r.id] !== undefined ? draftPercentages[r.id] : Number(r.percent),
-      active: draftActive[r.id] !== undefined ? (draftActive[r.id] ? 1 : 0) : r.active,
-    }));
+    const activeRules = rules.map((r) => {
+      const dp = draftPercentages[r.id];
+      const da = draftActive[r.id];
+      return {
+        ...r,
+        percent: dp !== undefined ? dp : Number(r.percent),
+        active: da !== undefined ? (da ? 1 : 0) : r.active,
+      };
+    });
 
     const selectionsWithPayout = {
       ...simSelections,
@@ -276,12 +280,10 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
 
   const openEditRuleModal = (rule: TradeRule) => {
     setEditingRule(rule);
-    const currPct =
-      draftPercentages[rule.id] !== undefined ? draftPercentages[rule.id] : Number(rule.percent);
-    const currActive =
-      draftActive[rule.id] !== undefined
-        ? draftActive[rule.id]
-        : rule.active === 1 || rule.active === true;
+    const dp = draftPercentages[rule.id];
+    const da = draftActive[rule.id];
+    const currPct = dp !== undefined ? dp : Number(rule.percent);
+    const currActive = da !== undefined ? da : rule.active === 1 || rule.active === true;
 
     setRuleForm({
       id: rule.id,
@@ -398,16 +400,11 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
                 {/* Condition Rows */}
                 <div className="space-y-2.5">
                   {catRules.map((rule) => {
-                    const currentPercent =
-                      draftPercentages[rule.id] !== undefined
-                        ? draftPercentages[rule.id]
-                        : Number(rule.percent);
-                    const currentActive =
-                      draftActive[rule.id] !== undefined
-                        ? draftActive[rule.id]
-                        : rule.active === 1 || rule.active === true;
-                    const isDrafted =
-                      draftPercentages[rule.id] !== undefined || draftActive[rule.id] !== undefined;
+                    const dp = draftPercentages[rule.id];
+                    const da = draftActive[rule.id];
+                    const currentPercent = dp !== undefined ? dp : Number(rule.percent);
+                    const currentActive = da !== undefined ? da : rule.active === 1 || rule.active === true;
+                    const isDrafted = dp !== undefined || da !== undefined;
 
                     return (
                       <div
@@ -573,10 +570,8 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
                       className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none focus:border-primary"
                     >
                       {catRules.map((r) => {
-                        const pct =
-                          draftPercentages[r.id] !== undefined
-                            ? draftPercentages[r.id]
-                            : Number(r.percent);
+                        const dp = draftPercentages[r.id];
+                        const pct = dp !== undefined ? dp : Number(r.percent);
                         return (
                           <option key={r.key} value={r.key}>
                             {r.label_ar} ({pct > 0 ? `+${pct}%` : `${pct}%`})

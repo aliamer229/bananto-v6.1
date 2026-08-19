@@ -22,7 +22,21 @@ describe("Product saving & slug sanitization logic", () => {
 });
 
 describe("Product single save validation rules", () => {
-  const existingCatalog = [
+  type CatalogProduct = {
+    id: string;
+    title: string;
+    titleEn: string;
+    slug: string;
+    price: number;
+    cost: number;
+    options?: { id: string; name: string; price: number }[];
+    editions?: { id: string; name: string; price: number }[];
+    dlcs?: { id: string; name: string; price: number }[];
+    colors?: string[];
+    hardwareSpecs?: Record<string, string>;
+  };
+
+  const existingCatalog: CatalogProduct[] = [
     {
       id: "prd_existing_1",
       title: "Super Mario Bros Wonder",

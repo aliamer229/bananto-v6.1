@@ -374,6 +374,8 @@ export interface User {
   /** set once the optional profile step was completed or skipped */
   profileCompletedAt?: string;
   isAdmin?: boolean;
+  /** true for system/service accounts (e.g. automated bots) */
+  isService?: boolean;
   /** how the account was created: local password, Google or Apple */
   provider?: "password" | "google" | "apple";
   providerId?: string;
@@ -944,7 +946,9 @@ export type ChatRealtimeEvent =
   | {
       type: "read.update";
       payload: {
-        userId: string;
+        threadId: string;
+        readerRole: "user" | "admin";
+        readerUserId: string;
         lastReadAt: string;
       };
     }

@@ -11,6 +11,7 @@ import {
   CreditCard,
   Layers,
   Copy,
+  ExternalLink,
   Check,
 } from "lucide-react";
 import { Order } from "@/lib/types";
@@ -23,6 +24,7 @@ interface OrderPreviewDrawerProps {
   onClaim?: (orderId: string) => void;
   onComplete?: (orderId: string) => void;
   onPrepare?: (orderId: string) => void;
+  onOpenFullOrder?: () => void;
 }
 
 export function OrderPreviewDrawer({
@@ -32,6 +34,7 @@ export function OrderPreviewDrawer({
   onClaim,
   onComplete,
   onPrepare,
+  onOpenFullOrder,
 }: OrderPreviewDrawerProps) {
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
 
@@ -63,12 +66,23 @@ export function OrderPreviewDrawer({
                 </p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              {onOpenFullOrder && (
+                <button
+                  onClick={onOpenFullOrder}
+                  className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                  title="عرض الطلب كاملاً"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Body */}

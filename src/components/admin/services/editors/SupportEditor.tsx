@@ -86,8 +86,9 @@ export function SupportEditor({
         imageUrl: item.imageUrl || "",
       }));
       onChangeKbArticles([...(kbArticles || []), ...converted]);
-      if (converted.length > 0) {
-        setExpandedId(converted[0].id);
+      const firstConverted = converted[0];
+      if (firstConverted) {
+        setExpandedId(firstConverted.id);
       }
     }
   };

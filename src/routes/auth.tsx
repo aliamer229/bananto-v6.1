@@ -943,7 +943,7 @@ function OtpCard({ onNavigate, authData, setIsNewRegistration, channel, setChann
           ) : (
             <button
               type="button"
-              onClick={resend}
+              onClick={() => resend()}
               className="text-[14px] font-[900] text-[var(--ink-soft)] underline decoration-[2px] underline-offset-4 transition-opacity hover:opacity-70 sm:text-[16px]"
             >
               {tr("إعادة إرسال الرمز")}

@@ -119,6 +119,7 @@ export async function importNintendoTradeCatalog(options?: {
 
   for (let idx = 0; idx < entries.length; idx++) {
     const entry = entries[idx];
+    if (!entry) continue;
     const absoluteIndex = offset + idx + 1;
     result.totalProcessed++;
     const title = (entry.game_title || entry.name || entry.title || "").trim();

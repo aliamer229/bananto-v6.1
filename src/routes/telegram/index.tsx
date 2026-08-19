@@ -22,6 +22,7 @@ declare global {
         close: () => void;
         setHeaderColor?: (color: string) => void;
         setBackgroundColor?: (color: string) => void;
+        openTelegramLink?: (url: string) => void;
         isVersionAtLeast?: (version: string) => boolean;
         MainButton: {
           text: string;
@@ -53,6 +54,12 @@ function readStartParam(tg: NonNullable<Window["Telegram"]>["WebApp"]): string |
 function TelegramIndex() {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+  const [status, setStatus] = useState<"loading" | "ready" | "verifying" | "verified" | "failed">(
+    "loading",
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [logoFailed, setLogoFailed] = useState(false);
 
   useEffect(() => {
     if (status === "verified") {
@@ -62,12 +69,6 @@ function TelegramIndex() {
         .catch(console.error);
     }
   }, [status]);
-  const [status, setStatus] = useState<"loading" | "ready" | "verifying" | "verified" | "failed">(
-    "loading",
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [logoFailed, setLogoFailed] = useState(false);
 
   useEffect(() => {
     let active = true;

@@ -32,7 +32,7 @@ function ReferralsCenter() {
     const tg = window.Telegram?.WebApp;
     if (tg) {
       const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent("سجل في بنانا ستور واحصل على خصومات حصرية!")}`;
-      tg.openTelegramLink(shareUrl);
+      tg.openTelegramLink?.(shareUrl);
     }
   };
 

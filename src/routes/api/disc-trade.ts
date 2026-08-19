@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { body, guard, json } from "@/lib/http.server";
 import { requireAdmin, requireUser } from "@/lib/session.server";
 import { d1All, d1First, d1Run, ensureSchema } from "@/lib/d1.server";
+import { d1Batch } from "@/lib/db.server";
 import { randomId } from "@/lib/crypto.server";
 import {
   computeTradeValue,

@@ -63,7 +63,7 @@ describe("WaSenderProvider Service", () => {
       expect(result.messageId).toBe("msg_abc123");
 
       expect(fetchMock).toHaveBeenCalledTimes(1);
-      const [url, req] = fetchMock.mock.calls[0];
+      const [url, req] = fetchMock.mock.calls[0]!;
       expect(url).toBe(WASENDER_SEND_ENDPOINT);
       expect(req.method).toBe("POST");
       expect(req.headers["Authorization"]).toBe("Bearer test_session_api_key_12345678");

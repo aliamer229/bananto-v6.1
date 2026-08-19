@@ -67,6 +67,7 @@ export function FaqEditor({ categories, faq, onChangeCategories, onChangeFaq }: 
       if (result.data.faqs && result.data.faqs.length > 0) {
         const mappedFaqs: FaqItem[] = result.data.faqs.map((f) => ({
           ...f,
+          keywords: f.keywords || "",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }));
