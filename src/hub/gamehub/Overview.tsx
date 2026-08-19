@@ -79,6 +79,7 @@ export function GlanceSection() {
       label: t("glance.ageRating"),
       value: game.ageRating ? `${game.ageRating.system} ${game.ageRating.label}` : null,
     },
+    { icon: Gauge, label: t("glance.frameRate"), value: frameRateSummary(game) },
   ];
 
   const description = game.description;
