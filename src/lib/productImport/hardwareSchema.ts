@@ -301,9 +301,6 @@ const consoleBasics: FieldDef[] = [
   f.str("box_contents_text", "boxContents", "محتويات العلبة كنص واحد مفصول بفواصل", {
     group: CONSOLE,
   }),
-  f.str("storage_capacity_text", "storageCapacity", "سعة التخزين الداخلية (مثال: 64 GB)", {
-    group: CONSOLE,
-  }),
   f.str("ports_connectivity", "connectivity", "المنافذ والاتصال (Ports & Connectivity)", {
     specKey: "connectivity",
     group: CONSOLE,
