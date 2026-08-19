@@ -113,7 +113,14 @@ function setValueByPath(
 ) {
   if (value === "" && !def.required) return; // Skip empty optional fields
 
-  const typedValue = convertType(value, def.type);
+  let typedValue = convertType(value, def.type);
+
+  // If we expect a string but got something else (like an object from repeating logic),
+  // ensure we convert it back to string to avoid [object Object]
+  if (def.type === "string" || def.type === "multiline") {
+    typedValue = getTextValue(typedValue);
+  }
+
   if (typedValue === undefined && value !== "") {
     result.errors.push({
       key: `${baseKey}${indices.length ? "." + indices.join(".") : ""}`,
@@ -172,7 +179,12 @@ function setValueByPath(
     const subKey = indices[1];
     if (subKey && def.itemFields && def.itemFields[subKey]) {
       const subDef = def.itemFields[subKey];
-      const subTypedValue = convertType(value, subDef.type);
+      let subTypedValue = convertType(value, subDef.type);
+
+      // Prevention of [object Object] for strings
+      if (subDef.type === "string" || subDef.type === "multiline") {
+        subTypedValue = getTextValue(subTypedValue);
+      }
 
       if (subDef.repeatable) {
         if (!obj[def.target][objIdx][subDef.target]) obj[def.target][objIdx][subDef.target] = [];
