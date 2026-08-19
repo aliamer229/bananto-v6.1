@@ -94,6 +94,8 @@ function edgeCache(): CacheLike | undefined {
   return store && typeof store.match === "function" ? store : undefined;
 }
 
+type DurableObjectState = { id: unknown; storage: unknown };
+
 export class ChatRealtimeDO {
   private state: DurableObjectState;
   private subscribers: Set<ReadableStreamDefaultController>;

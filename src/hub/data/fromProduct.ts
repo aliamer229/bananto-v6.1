@@ -650,7 +650,7 @@ function buildCatalogOptions(p: Record<string, unknown>, locale: "ar" | "en") {
         id: offer.kind,
         name: OFFER_NAMES[offer.kind] ?? offer.kind,
         price: offer.price,
-        description: locale === "en" && offer.noteEn ? offer.noteEn : offer.note || undefined,
+        description: offer.note || undefined,
         available: true,
       }));
     if (list.length) return list;

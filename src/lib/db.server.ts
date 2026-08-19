@@ -125,7 +125,13 @@ export async function createAuditLog(
 // Export raw D1 helpers for use in other server routes
 export const d1All = d1RawAll;
 export const d1First = d1RawFirst;
-export const d1Run = d1RawRun;
+export async function d1Run(
+  sql: string,
+  ...binds: unknown[]
+): Promise<{ meta: { changes: number } }> {
+  const changes = await d1RunChanges(sql, ...binds).catch(() => 0);
+  return { meta: { changes } };
+}
 export const d1Execute = d1RawRun;
 export { randomId, hashPassword } from "./crypto.server";
 
@@ -1086,10 +1092,11 @@ export async function getPaginatedMessages(
 
       const slice = rows.map((r) => parse<ChatMessage>(r.doc, {} as ChatMessage));
       const oldest = slice[0];
-      const hasMore =
+      const hasMore = Boolean(
         totalCount > slice.length &&
-        oldest &&
-        (oldest.id !== aroundMsg.id || slice.length === limit);
+          oldest &&
+          (oldest.id !== aroundMsg.id || slice.length === limit),
+      );
 
       return {
         messages: slice,

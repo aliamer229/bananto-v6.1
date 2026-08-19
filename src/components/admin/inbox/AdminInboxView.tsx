@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useChatRealtime } from "@/hooks/useChatRealtime";
 import { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
+
+interface ThreadMessagesPage {
+  messages: ChatMessage[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
 import { api } from "@/lib/api";
 import {
   getAdminThreads,
@@ -87,7 +93,9 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     queryFn: async () => {
       if (!selectedThreadId) return null;
       try {
-        const res = await getThreadMessages({ data: { threadId: selectedThreadId, limit: 15 } });
+        const res = (await getThreadMessages({
+          data: { threadId: selectedThreadId, limit: 15 },
+        })) as ThreadMessagesPage;
         return res;
       } catch (err) {
         console.error("Error fetching thread messages:", err);
@@ -125,9 +133,9 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     const prevScrollTop = container ? container.scrollTop : 0;
 
     try {
-      const res = await getThreadMessages({
+      const res = (await getThreadMessages({
         data: { threadId: selectedThreadId, before: nextCursor, limit: 15 },
-      });
+      })) as ThreadMessagesPage;
       setLiveMessages((prev) => [...res.messages, ...prev]);
       setHasMore(res.hasMore);
       setNextCursor(res.nextCursor);

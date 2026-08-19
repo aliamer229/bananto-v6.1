@@ -90,8 +90,9 @@ export function GuidesEditor({ guides, onChange }: GuidesEditorProps) {
   const handleImportResult = (result: ServiceParseResult<GuideItem[]>) => {
     if (result.data && Array.isArray(result.data)) {
       onChange([...(guides || []), ...result.data]);
-      if (result.data.length > 0) {
-        setExpandedId(result.data[0].id);
+      const first = result.data[0];
+      if (first) {
+        setExpandedId(first.id);
       }
     }
   };

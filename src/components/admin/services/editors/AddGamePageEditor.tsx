@@ -259,7 +259,7 @@ export function AddGamePageEditor() {
                 onClick={() => {
                   const newItems: ServiceFeature[] = [
                     ...(config.trust_items || []),
-                    { id: "t-" + Date.now(), label_ar: "نقطة ثقة جديدة" },
+                    { id: "t-" + Date.now(), label_ar: "نقطة ثقة جديدة", sort_order: (config.trust_items || []).length + 1 },
                   ];
                   update("trust_items", newItems);
                 }}
@@ -601,6 +601,8 @@ export function AddGamePageEditor() {
                 title_ar: label,
                 description_ar: "",
               };
+              const currentTitleAr = item.title_ar ?? label;
+              const currentDescriptionAr = item.description_ar ?? "";
 
               return (
                 <div
@@ -620,14 +622,15 @@ export function AddGamePageEditor() {
                     </label>
                     <input
                       type="text"
-                      value={item.title_ar || ""}
+                      value={currentTitleAr}
                       onChange={(e) => {
                         const next = [...(config.status_content || [])];
                         const idx = next.findIndex((s) => s.status === status);
                         if (idx >= 0) {
-                          next[idx] = { ...next[idx], title_ar: e.target.value };
+                          const existing = next[idx]!;
+                          next[idx] = { ...existing, title_ar: e.target.value };
                         } else {
-                          next.push({ status, title_ar: e.target.value });
+                          next.push({ status, title_ar: e.target.value, description_ar: currentDescriptionAr });
                         }
                         update("status_content", next);
                       }}
@@ -641,14 +644,15 @@ export function AddGamePageEditor() {
                     </label>
                     <input
                       type="text"
-                      value={item.description_ar || ""}
+                      value={currentDescriptionAr}
                       onChange={(e) => {
                         const next = [...(config.status_content || [])];
                         const idx = next.findIndex((s) => s.status === status);
                         if (idx >= 0) {
-                          next[idx] = { ...next[idx], description_ar: e.target.value };
+                          const existing = next[idx]!;
+                          next[idx] = { ...existing, description_ar: e.target.value };
                         } else {
-                          next.push({ status, description_ar: e.target.value });
+                          next.push({ status, title_ar: currentTitleAr, description_ar: e.target.value });
                         }
                         update("status_content", next);
                       }}
@@ -850,6 +854,7 @@ function OptionsGroupEditor({
         label_ar: "خيار جديد",
         label_en: "New Option",
         active: true,
+        sort_order: options.length + 1,
       },
     ];
     onChange(next);

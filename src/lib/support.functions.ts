@@ -64,8 +64,8 @@ export const getThreadMessages = createServerFn({ method: "GET" })
       messages: result.messages.map((m) => ({
         ...m,
         id: String(m.id),
-        body: m.body || {},
-      })) as ChatMessage[],
+        body: (m.body || {}) as Record<string, any>,
+      })),
       hasMore: result.hasMore,
       nextCursor: result.nextCursor,
     };
@@ -167,7 +167,7 @@ export const sendMessage = createServerFn({ method: "POST" })
     }
 
     await saveThread(thread);
-    return msg;
+    return { ...msg, body: msg.body as Record<string, any> };
   });
 
 export const setThreadMode = createServerFn({ method: "POST" })

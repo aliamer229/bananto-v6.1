@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { ChatMessage, ChatThread } from "../lib/types";
+import type { ChatMessage, Thread } from "../lib/types";
 
 interface ChatRealtimeOptions {
   threadId: string | null;
   surface: "user" | "admin";
   onMessageCreated: (message: ChatMessage, clientMessageId?: string) => void;
-  onThreadUpdated?: (thread: ChatThread) => void;
+  onThreadUpdated?: (thread: Thread) => void;
   onTypingUpdate?: (typers: Array<{ userId: string; senderRole: string }>) => void;
   onPresenceUpdate?: (participants: Array<{ userId: string; lastSeen: number }>) => void;
   onReadUpdate?: (readInfo: {

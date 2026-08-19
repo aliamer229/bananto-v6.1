@@ -55,11 +55,11 @@ class ChatRealtimeHub {
 
   /** Broadcast event to all subscribers of a thread */
   async broadcast(threadId: string, event: Omit<ChatEvent, "threadId" | "timestamp">) {
-    const fullEvent: ChatEvent = {
+    const fullEvent = {
       ...event,
       threadId,
       timestamp: new Date().toISOString(),
-    };
+    } as ChatEvent;
 
     const obj = this.getDO(threadId);
     if (obj) {
