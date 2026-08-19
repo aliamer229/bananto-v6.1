@@ -12,6 +12,7 @@ import {
   Table,
 } from "lucide-react";
 import { parseGameImport } from "../../lib/gameImportParser";
+import { downloadTemplateFile } from "@/lib/downloadTemplate";
 import { GAME_IMPORT_SCHEMA } from "../../lib/gameImportSchema";
 import { getTextValue } from "../../lib/utils";
 import { toast } from "sonner";
@@ -169,14 +170,14 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                 >
                   {t("common.uploadFile")}
                 </label>
-                <a
-                  href="/templates/nintendo-switch-game-template.txt"
-                  download="nintendo-switch-game-template.txt"
+                <button
+                  type="button"
+                  onClick={() => void downloadTemplateFile("nintendo-switch-game-template.txt")}
                   className="text-[10px] bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1 rounded font-bold cursor-pointer transition-colors flex items-center gap-1"
                 >
                   <Download className="w-2.5 h-2.5" />
                   {t("admin.import.downloadTemplate")}
-                </a>
+                </button>
               </div>
             </div>
             <textarea

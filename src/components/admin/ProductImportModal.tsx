@@ -7,6 +7,7 @@
  * share a single implementation. Every string goes through `t()`.
  */
 
+import { downloadTemplateFile } from "@/lib/downloadTemplate";
 import {
   AlertTriangle,
   CheckCircle,
