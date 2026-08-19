@@ -505,18 +505,60 @@ export function PriceAlertDialog({ open, onClose }: { open: boolean; onClose: ()
 /* Video player                                                               */
 /* -------------------------------------------------------------------------- */
 
+/** Extracts the YouTube id from any watch / short / embed URL shape. */
+function youtubeId(url: string): string | undefined {
+  return (
+    /(?:v=|youtu\.be\/|embed\/|shorts\/|\/v\/)([\w-]{6,})/.exec(url)?.[1] ??
+    (/^[\w-]{6,15}$/.test(url) ? url : undefined)
+  );
+}
+
+/**
+ * YouTube refuses to play (error 153) when the embed is served from
+ * youtube.com without an `origin`, so the player is built from the video id
+ * with the privacy-enhanced host and an explicit origin every time.
+ */
+function playerSrc(video: GameVideo): string | undefined {
+  const id = youtubeId(video.embedUrl);
+  if (!id) return undefined;
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const params = new URLSearchParams({
+    autoplay: "1",
+    rel: "0",
+    playsinline: "1",
+    modestbranding: "1",
+  });
+  if (origin) params.set("origin", origin);
+  return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
+}
+
 export function VideoDialog({ video, onClose }: { video: GameVideo | null; onClose: () => void }) {
+  const src = video ? playerSrc(video) : undefined;
   return (
     <Modal open={video !== null} onClose={onClose} size="full" bare>
       {video && (
         <div className="aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black">
-          <iframe
-            src={`${video.embedUrl}?autoplay=1&rel=0`}
-            title={video.title}
-            className="h-full w-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          {src ? (
+            <iframe
+              src={src}
+              title={video.title}
+              className="h-full w-full border-0"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+              allowFullScreen
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <a
+                href={video.embedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-xl bg-nin px-4 py-2 text-sm font-bold text-white"
+              >
+                YouTube
+              </a>
+            </div>
+          )}
         </div>
       )}
     </Modal>
