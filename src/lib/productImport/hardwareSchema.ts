@@ -285,7 +285,7 @@ const consoleBasics: FieldDef[] = [
     specKey: "colorEdition",
     group: CONSOLE,
   }),
-  f.str("internal_storage", "storageCapacityText", "سعة التخزين الداخلية (مثال: 64 GB)", {
+  f.str("internal_storage", "storageCapacity", "سعة التخزين الداخلية (مثال: 64 GB)", {
     group: CONSOLE,
   }),
   f.str("screen_specs", "screenSpecs", "مواصفات الشاشة (Screen Specs)", {
@@ -299,7 +299,7 @@ const consoleBasics: FieldDef[] = [
   f.str("warranty_condition", "warrantyCondition", "الضمان والحالة (Warranty & Guarantee)", {
     group: CONSOLE,
   }),
-  f.str("included_in_box", "boxContentsText", "محتويات العلبة كنص واحد مفصول بفواصل", {
+  f.str("box_contents", "boxContents", "محتويات العلبة كنص واحد مفصول بفواصل", {
     group: CONSOLE,
   }),
   f.str("ports_connectivity", "connectivity", "المنافذ والاتصال (Ports & Connectivity)", {
