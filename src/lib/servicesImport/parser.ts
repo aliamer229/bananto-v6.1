@@ -571,7 +571,7 @@ export function parseFaq(text: string): ServiceParseResult<FaqParseResultData> {
       name_ar: nameAr,
       name_en: kv[`category.${cIdx}.name_en`] || "",
       sort_order: cIdx,
-      published: true,
+      published: parseBool(kv[`category.${cIdx}.published`], true),
     });
   }
 
@@ -585,6 +585,28 @@ export function parseFaq(text: string): ServiceParseResult<FaqParseResultData> {
       published: true,
     });
   }
+
+  /** Resolves a category by id or by Arabic/English name, creating it when unknown */
+  const resolveCategory = (raw: string | undefined): string => {
+    const value = (raw || "").trim();
+    if (!value) return categories[0]?.id || "cat_general";
+    const found = categories.find(
+      (c) =>
+        c.id === value ||
+        c.name_ar.trim() === value ||
+        (c.name_en || "").trim().toLowerCase() === value.toLowerCase(),
+    );
+    if (found) return found.id;
+    const newId = `cat_${categories.length + 1}_${Date.now().toString(36)}`;
+    categories.push({
+      id: newId,
+      name_ar: value,
+      name_en: "",
+      sort_order: categories.length + 1,
+      published: true,
+    });
+    return newId;
+  };
 
   // 2. Detect FAQs (faq.1.question_ar, faq.1.answer_ar...)
   const faqIndices = new Set<number>();
@@ -607,8 +629,20 @@ export function parseFaq(text: string): ServiceParseResult<FaqParseResultData> {
       continue;
     }
 
-    const catId = kv[`faq.${fIdx}.category_id`] || categories[0]?.id || "cat_general";
-    const isFeatured = kv[`faq.${fIdx}.featured`]?.toLowerCase() === "true";
+    if (!aAr) {
+      issues.push({
+        severity: "warning",
+        field: `faq.${fIdx}.answer_ar`,
+        messageAr: `السؤال "${qAr}" بدون إجابة، سيتم استيراده فارغاً`,
+        messageEn: `FAQ "${qAr}" has no answer and will be imported empty`,
+      });
+    }
+
+    const catId = resolveCategory(
+      kv[`faq.${fIdx}.category_id`] ||
+        kv[`faq.${fIdx}.category`] ||
+        kv[`faq.${fIdx}.category_ar`],
+    );
 
     faqs.push({
       id: kv[`faq.${fIdx}.id`] || `faq_${fIdx}_${Date.now().toString(36)}`,
@@ -618,11 +652,12 @@ export function parseFaq(text: string): ServiceParseResult<FaqParseResultData> {
       answer_ar: aAr || "",
       answer_en: kv[`faq.${fIdx}.answer_en`] || "",
       keywords: kv[`faq.${fIdx}.keywords`] || "",
-      featured: isFeatured,
-      published: true,
+      featured: parseBool(kv[`faq.${fIdx}.featured`], false),
+      published: parseBool(kv[`faq.${fIdx}.published`], true),
       sort_order: fIdx,
     });
   }
+
 
   if (faqs.length === 0) {
     issues.push({
