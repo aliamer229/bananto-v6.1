@@ -112,7 +112,7 @@ export function Hero() {
   const stats = buildQuickStats(game, t);
 
   return (
-    <header className="relative isolate overflow-hidden">
+    <header className="hero-dark relative isolate overflow-hidden">
       {/* ---- Backdrop stack: the art itself, blurred, then only as much wash
            as the type needs. A flat black plate is what made this look cheap. ---- */}
       <motion.div
