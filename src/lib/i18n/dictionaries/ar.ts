@@ -169,6 +169,8 @@ export const ar = {
       collector: "معلومات الجامعين",
       character: "الشخصية",
       figure: "المجسم",
+      howToRedeem: "خطوات التفعيل والشحن",
+      usageTerms: "شروط الاستخدام",
       gameCompatibility: "التوافق مع الألعاب",
       digitalFeatures: "الوظائف الرقمية",
     },
