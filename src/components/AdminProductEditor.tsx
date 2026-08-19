@@ -2460,6 +2460,16 @@ export default function AdminProductEditor({
                 newData.category = "cat_nintendo";
               }
 
+              if (newData.boxContents !== undefined) {
+                if (Array.isArray(newData.boxContents)) newData.boxContentsList = newData.boxContents;
+                newData.boxContents = boxContentsToText(newData.boxContents);
+              }
+              if (!newData.cartridgeImage) {
+                newData.cartridgeImage =
+                  newData.packagingFrontImage || newData.boxImage || prev.cartridgeImage || "";
+
+              }
+
               return newData;
             });
             setShowImportModal(false);
