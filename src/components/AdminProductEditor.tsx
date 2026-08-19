@@ -2503,6 +2503,44 @@ export default function AdminProductEditor({
                   }));
               }
 
+              // The console panel edits single text/URL inputs, while the import
+              // produces structured lists — flatten them so the boxes show text
+              // instead of "[object Object]" or staying empty.
+              if (Array.isArray(normalized.boxContents)) {
+                const items = normalized.boxContents
+                  .map((item: any) =>
+                    typeof item === "string"
+                      ? item
+                      : [item?.name, item?.quantity > 1 ? `×${item.quantity}` : ""]
+                          .filter(Boolean)
+                          .join(" "),
+                  )
+                  .filter(Boolean);
+                normalized.boxContentsList = normalized.boxContents;
+                normalized.boxContents =
+                  normalized.boxContentsText || items.join("، ") || prev.boxContents || "";
+              } else if (!normalized.boxContents && normalized.boxContentsText) {
+                normalized.boxContents = normalized.boxContentsText;
+              }
+
+              if (!normalized.warrantyCondition) {
+                normalized.warrantyCondition =
+                  [normalized.warranty, normalized.warrantyType, normalized.warrantyNotes]
+                    .filter((part: unknown) => typeof part === "string" && part.trim())
+                    .join(" — ") ||
+                  prev.warrantyCondition ||
+                  "";
+              }
+
+              if (!normalized.cartridgeImage) {
+                normalized.cartridgeImage =
+                  normalized.packagingFrontImage ||
+                  normalized.packagingBackImage ||
+                  normalized.boxImage ||
+                  prev.cartridgeImage ||
+                  "";
+              }
+
               return normalized;
             });
             setShowSchemaImport(false);
