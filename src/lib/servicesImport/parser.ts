@@ -251,10 +251,10 @@ export function parseTroubleshooting(text: string): ServiceParseResult<Troublesh
         title: pTitle,
         category: kv[`problem.${idx}.category`] || kv[`problem.${idx}.category_ar`] || "عام",
         description: kv[`problem.${idx}.description`] || kv[`problem.${idx}.description_ar`] || "",
-        errorCodes: kv[`problem.${idx}.error_codes`] || kv[`problem.${idx}.errorCodes`] || "",
+        errorCodes: kv[`problem.${idx}.error_codes`] || kv[`problem.${idx}.errorcodes`] || "",
         keywords: kv[`problem.${idx}.keywords`] || kv[`problem.${idx}.match`] || "",
         ask: kv[`problem.${idx}.ask`] || "",
-        imageUrl: kv[`problem.${idx}.image_url`] || kv[`problem.${idx}.imageUrl`] || "",
+        imageUrl: kv[`problem.${idx}.image_url`] || kv[`problem.${idx}.imageurl`] || "",
         steps: steps.length > 0 ? steps : ["يرجى التواصل مع الدعم الفني لمتابعة الحل."],
       });
     }
@@ -281,10 +281,10 @@ export function parseTroubleshooting(text: string): ServiceParseResult<Troublesh
       title: kv["title"] || kv["title_ar"] || "",
       category: kv["category"] || kv["category_ar"] || "عام",
       description: kv["description"] || kv["description_ar"] || "",
-      errorCodes: kv["error_codes"] || kv["errorCodes"] || "",
+      errorCodes: kv["error_codes"] || kv["errorcodes"] || "",
       keywords: kv["keywords"] || kv["match"] || "",
       ask: kv["ask"] || "",
-      imageUrl: kv["image_url"] || kv["imageUrl"] || "",
+      imageUrl: kv["image_url"] || kv["imageurl"] || "",
       steps:
         singleSteps.length > 0 ? singleSteps : ["يرجى اتباع الإرشادات والتواصل مع الدعم الفني."],
     });
