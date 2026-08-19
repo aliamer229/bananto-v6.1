@@ -9,7 +9,7 @@ import { env } from "node:process";
 export async function getD1() {
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
   const token = env.CLOUDFLARE_API_TOKEN;
-  const databaseId = env.D1_DATABASE_ID;
+  const databaseId = env.D1_DATABASE_ID || env.CLOUDFLARE_D1_DATABASE_ID;
 
   if (!accountId || !token || !databaseId) {
     return null;

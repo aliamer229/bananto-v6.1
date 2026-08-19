@@ -35,7 +35,8 @@ export interface D1Like {
 }
 
 import { env, getEnv, getBinding } from "./env.server";
-const envVar = env;
+const envVar = (name: string) =>
+  name === "D1_DATABASE_ID" ? env("D1_DATABASE_ID") || env("CLOUDFLARE_D1_DATABASE_ID") : env(name);
 
 export function cfEnv(): Record<string, unknown> | undefined {
   return getEnv() as Record<string, unknown>;
