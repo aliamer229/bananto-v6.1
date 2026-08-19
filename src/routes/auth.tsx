@@ -22,8 +22,6 @@ import OtpBoxes from "@/components/auth/OtpBoxes";
 import TelegramLinkPrompt from "@/components/auth/TelegramLinkPrompt";
 import { ASSET_BASE_URL } from "@/config/publicAssets";
 
-const patternAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Auth%20background%20.webp` };
-const mascotAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Logo.webp` };
 
 import { authPageAction } from "@/lib/authRedirect";
 import { useAuth } from "@/hooks/useAuth";
