@@ -301,6 +301,9 @@ const consoleBasics: FieldDef[] = [
   f.str("box_contents_text", "boxContentsText", "محتويات العلبة كنص واحد مفصول بفواصل", {
     group: CONSOLE,
   }),
+  f.url("box_package_art", "cartridgeImage", "صورة كرتون التغليف أو الملحقات (Box Package Art)", {
+    group: CONSOLE,
+  }),
   f.str("ports_connectivity", "connectivity", "المنافذ والاتصال (Ports & Connectivity)", {
     specKey: "connectivity",
     group: CONSOLE,
