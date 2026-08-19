@@ -4,6 +4,7 @@ import {
   Calendar,
   Clock,
   Gamepad2,
+  Gauge,
   HardDrive,
   Languages,
   Shapes,
@@ -31,6 +32,17 @@ import { cdnImage } from "@/lib/img";
  * individual bordered cards — the requirement is compact and integrated, not a
  * grid of floating chips.
  */
+/** First declared frame-rate across the performance profiles (e.g. "60 FPS"). */
+function frameRateSummary(game: { performance?: Array<{ modes?: Array<{ frameRate?: { value?: string } }> }> }) {
+  for (const profile of game.performance ?? []) {
+    for (const mode of profile.modes ?? []) {
+      const value = mode.frameRate?.value;
+      if (value) return value;
+    }
+  }
+  return null;
+}
+
 export function GlanceSection() {
   const { t } = useI18n();
   const { game } = useHub();
@@ -79,6 +91,7 @@ export function GlanceSection() {
       label: t("glance.ageRating"),
       value: game.ageRating ? `${game.ageRating.system} ${game.ageRating.label}` : null,
     },
+    { icon: Gauge, label: t("glance.frameRate"), value: frameRateSummary(game) },
   ];
 
   const description = game.description;

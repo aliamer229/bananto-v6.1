@@ -123,6 +123,9 @@ warranty_condition=
 # محتويات العلبة كنص واحد مفصول بفواصل
 box_contents_text=
 
+# صورة كرتون التغليف أو الملحقات (Box Package Art)
+box_package_art=
+
 # المنافذ والاتصال (Ports & Connectivity)
 ports_connectivity=
 

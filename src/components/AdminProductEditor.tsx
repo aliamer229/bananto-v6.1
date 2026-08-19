@@ -201,10 +201,25 @@ export default function AdminProductEditor({
         batteryLife: product.batteryLife || product.battery || "",
         boxContents:
           (typeof product.boxContents === "string" ? product.boxContents : "") ||
+          (Array.isArray(product.boxContents)
+            ? product.boxContents
+                .map((item: any) =>
+                  typeof item === "string"
+                    ? item
+                    : [item?.name, item?.quantity > 1 ? `×${item.quantity}` : ""]
+                        .filter(Boolean)
+                        .join(" "),
+                )
+                .filter(Boolean)
+                .join("، ")
+            : "") ||
           product.boxContentsText ||
           product.includedItems ||
           "",
-        warrantyCondition: product.warrantyCondition || product.warranty || "",
+        warrantyCondition:
+          product.warrantyCondition ||
+          [product.warranty, product.warrantyType].filter(Boolean).join(" — ") ||
+          "",
         connectivity: product.connectivity || "",
         // Amiibo Specific
         characterName: product.characterName || product.character || "",
@@ -264,7 +279,13 @@ export default function AdminProductEditor({
         trade_enabled: product.trade_enabled !== undefined ? Boolean(product.trade_enabled) : true,
         trade_value_locked: Boolean(product.trade_value_locked),
         // Media
-        cartridgeImage: product.cartridgeImage || product.image || "",
+        cartridgeImage:
+          product.cartridgeImage ||
+          product.packagingFrontImage ||
+          product.packagingBackImage ||
+          product.boxImage ||
+          product.image ||
+          "",
         coverImage: product.coverImage || product.image || "",
         bannerImages:
           Array.isArray(product.bannerImages) && product.bannerImages.length > 0
@@ -2501,6 +2522,44 @@ export default function AdminProductEditor({
                         ? String(t.id).trim()
                         : `typ_${Date.now()}_${idx}`,
                   }));
+              }
+
+              // The console panel edits single text/URL inputs, while the import
+              // produces structured lists — flatten them so the boxes show text
+              // instead of "[object Object]" or staying empty.
+              if (Array.isArray(normalized.boxContents)) {
+                const items = normalized.boxContents
+                  .map((item: any) =>
+                    typeof item === "string"
+                      ? item
+                      : [item?.name, item?.quantity > 1 ? `×${item.quantity}` : ""]
+                          .filter(Boolean)
+                          .join(" "),
+                  )
+                  .filter(Boolean);
+                normalized.boxContentsList = normalized.boxContents;
+                normalized.boxContents =
+                  normalized.boxContentsText || items.join("، ") || prev.boxContents || "";
+              } else if (!normalized.boxContents && normalized.boxContentsText) {
+                normalized.boxContents = normalized.boxContentsText;
+              }
+
+              if (!normalized.warrantyCondition) {
+                normalized.warrantyCondition =
+                  [normalized.warranty, normalized.warrantyType, normalized.warrantyNotes]
+                    .filter((part: unknown) => typeof part === "string" && part.trim())
+                    .join(" — ") ||
+                  prev.warrantyCondition ||
+                  "";
+              }
+
+              if (!normalized.cartridgeImage) {
+                normalized.cartridgeImage =
+                  normalized.packagingFrontImage ||
+                  normalized.packagingBackImage ||
+                  normalized.boxImage ||
+                  prev.cartridgeImage ||
+                  "";
               }
 
               return normalized;
