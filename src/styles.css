@@ -859,3 +859,16 @@ html {
     transform: scale(1.1);
   }
 }
+
+/* The game-hub header always sits on the artwork's own dark backdrop, so its
+   type must stay light regardless of the active theme. */
+.hero-dark {
+  color: rgb(246 247 251);
+}
+.hero-dark .muted,
+.hero-dark .eyebrow {
+  color: rgba(255, 255, 255, 0.74);
+}
+.hero-dark .text-nin-soft {
+  color: rgba(255, 255, 255, 0.88);
+}
