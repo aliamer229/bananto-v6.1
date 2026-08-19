@@ -39,6 +39,7 @@ import {
 import { toast } from "sonner";
 
 import { boxContentsToText } from "@/lib/boxContentsText";
+import { stepsToText, toStepList } from "@/lib/stepsText";
 import AdminImportModal from "./admin/AdminImportModal";
 import ProductImportModal from "./admin/ProductImportModal";
 import { useTranslation } from "../i18n";
@@ -232,7 +233,8 @@ export default function AdminProductEditor({
         region: product.region || "US",
         cardType: product.cardType || "eshop",
         deliveryMethod: product.deliveryMethod || "instant_code",
-        redemptionGuide: product.redemptionGuide || "",
+        redemptionGuide: stepsToText(product.redemptionSteps) || stepsToText(product.redemptionGuide),
+        redemptionSteps: toStepList(product.redemptionSteps ?? product.redemptionGuide),
         validity: product.validity || "no_expiry",
         // Used Specific
         usedType: product.usedType || "cartridge",
@@ -271,12 +273,14 @@ export default function AdminProductEditor({
         // Media
         cartridgeImage:
           product.cartridgeImage ||
+          product.regionBanner ||
+          product.bannerImage ||
           product.packagingFrontImage ||
           product.packagingBackImage ||
           product.boxImage ||
           product.image ||
           "",
-        coverImage: product.coverImage || product.image || "",
+        coverImage: product.coverImage || product.cardArtwork || product.mainImage || product.image || "",
         bannerImages:
           Array.isArray(product.bannerImages) && product.bannerImages.length > 0
             ? product.bannerImages
@@ -343,8 +347,8 @@ export default function AdminProductEditor({
       region: "US",
       cardType: "eshop",
       deliveryMethod: "instant_code",
-      redemptionGuide:
-        "فتح متجر Nintendo eShop > اختيار Redeem Code > كتابة الكود المكون من 16 خانة > تأكيد",
+      redemptionGuide: "",
+      redemptionSteps: [],
       validity: "no_expiry",
       // Used
       usedType: "cartridge",
@@ -1964,15 +1968,13 @@ export default function AdminProductEditor({
 
                 {/* How to Redeem Steps */}
                 <div className="sm:col-span-3">
-                  <label className="block text-xs font-bold text-foreground mb-1">
+                  <label className="block text-xs font-bold text-foreground mb-2">
                     خطوات التفعيل والشحن للمستخدم (How to Redeem Instructions):
                   </label>
-                  <input
-                    type="text"
-                    className="w-full border border-border focus:border-foreground rounded-lg px-3 py-2 text-sm outline-none bg-background"
-                    value={formData.redemptionGuide || ""}
-                    onChange={(e) => handleChange("redemptionGuide", e.target.value)}
-                    placeholder="فتح متجر eShop > اختيار Redeem Code > كتابة الكود المكون من 16 خانة > تأكيد الشحن"
+                  <StepsEditor
+                    steps={redemptionSteps}
+                    onChange={setRedemptionSteps}
+                    placeholder="مثال: افتح متجر Nintendo eShop"
                   />
                 </div>
               </div>
@@ -1987,7 +1989,7 @@ export default function AdminProductEditor({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ImageUploadField
                   label="صورة بطاقة الشحن (Card Artwork)"
-                  value={formData.coverImage || ""}
+                  value={formData.coverImage || formData.cardArtwork || formData.mainImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="square"
                   folder="giftcards"
@@ -1995,7 +1997,7 @@ export default function AdminProductEditor({
                 />
                 <ImageUploadField
                   label="بانر الريجون التوضيحي (Region Banner)"
-                  value={formData.cartridgeImage || ""}
+                  value={formData.cartridgeImage || formData.regionBanner || formData.bannerImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="banner"
                   folder="giftcards"
