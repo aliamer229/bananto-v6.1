@@ -67,9 +67,19 @@ export function getEnv(): Env {
  */
 export function env(name: string): string | undefined {
   const value = getEnv()[name];
+  if (typeof value === "string" && value.length > 0) return value;
 
-  return typeof value === "string" && value.length > 0 ? value : undefined;
+  // Some runtimes (local dev / preview) expose the platform bindings through
+  // `cloudflare:workers` while the project secrets stay on `process.env`.
+  // Fall back so secrets are never invisible just because bindings exist.
+  if (typeof process !== "undefined" && process.env) {
+    const fallback = process.env[name];
+    if (typeof fallback === "string" && fallback.length > 0) return fallback;
+  }
+
+  return undefined;
 }
+
 
 /**
  * Returns a Cloudflare Binding (D1, R2, Queue).
