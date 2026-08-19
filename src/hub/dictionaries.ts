@@ -100,6 +100,7 @@ export const ar = {
     rating: "التقييم",
     ageRating: "التصنيف العمري",
     genre: "النوع",
+    frameRate: "معدل الإطارات (FPS)",
     about: "عن اللعبة",
   },
 
@@ -636,6 +637,7 @@ export const en: Mirror<Dictionary> = {
     rating: "Rating",
     ageRating: "Age rating",
     genre: "Genre",
+    frameRate: "Frame rate (FPS)",
     about: "About the game",
   },
 
