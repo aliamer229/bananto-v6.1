@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
+import { OrbitControls } from "@react-three/drei";
 
 import { useGLTF } from "@/hub/gamehub/useGltf";
 
@@ -166,6 +167,15 @@ export function SwitchBox3D({
   }
 
   return (
+    <>
+      <OrbitControls
+        enablePan={false}
+        enableZoom={false}
+        minPolarAngle={Math.PI / 4}
+        maxPolarAngle={Math.PI / 1.5}
+        enableDamping
+        dampingFactor={0.08}
+      />
     <group ref={group} dispose={null} scale={0.65} position={[0, -0.5, 0]} rotation={[0, -Math.PI / 6, 0]}>
       <mesh geometry={nodes.box.geometry} material={materials.plastic} />
 
@@ -177,6 +187,7 @@ export function SwitchBox3D({
 
       <mesh geometry={nodes.foil.geometry} material={materials.foil} />
     </group>
+    </>
   );
 }
 
