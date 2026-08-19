@@ -1,11 +1,11 @@
 {
-  "asset_id": "2e501d67-5adf-44c3-b28c-8e50872e5996",
-  "content_type": "image/webp",
-  "created_at": "2026-08-12T20:42:14Z",
+  "version": 1,
+  "asset_id": "ce54eb06-eade-4abd-9bc7-bc90029f4613",
+  "project_id": "76556a4b-90b6-4391-bc84-836a4ef17a65",
+  "url": "/__l5e/assets-v1/ce54eb06-eade-4abd-9bc7-bc90029f4613/bananto_logo.webp",
+  "r2_key": "a/v1/76556a4b-90b6-4391-bc84-836a4ef17a65/ce54eb06-eade-4abd-9bc7-bc90029f4613/bananto_logo.webp",
   "original_filename": "bananto_logo.webp",
-  "project_id": "ed484d7a-6f89-4c21-b5d7-21a0a622f20b",
-  "r2_key": "a/v1/ed484d7a-6f89-4c21-b5d7-21a0a622f20b/2e501d67-5adf-44c3-b28c-8e50872e5996/bananto_logo.webp",
   "size": 50620,
-  "url": "/__l5e/assets-v1/2e501d67-5adf-44c3-b28c-8e50872e5996/bananto_logo.webp",
-  "version": 1
+  "content_type": "image/webp",
+  "created_at": "2026-08-19T19:39:59Z"
 }
