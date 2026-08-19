@@ -74,7 +74,7 @@ import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/product
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiOauthProviderRouteImport } from './routes/api/oauth.$provider'
-import { Route as ApiPublic_dbgsessRouteImport } from './routes/api/public/__dbgsess'
+import { Route as ApiPublicDbgsessRouteImport } from './routes/api/public/dbgsess'
 import { Route as ApiPublicDebugProductsRouteImport } from './routes/api/public/debug-products'
 import { Route as ApiPublicImgProxyRouteImport } from './routes/api/public/img-proxy'
 import { Route as ApiPublicLatestNewsRouteImport } from './routes/api/public/latest-news'
@@ -424,9 +424,9 @@ const ApiOauthProviderRoute = ApiOauthProviderRouteImport.update({
   path: '/api/oauth/$provider',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublic_dbgsessRoute = ApiPublic_dbgsessRouteImport.update({
-  id: '/api/public/__dbgsess',
-  path: '/api/public',
+const ApiPublicDbgsessRoute = ApiPublicDbgsessRouteImport.update({
+  id: '/api/public/dbgsess',
+  path: '/api/public/dbgsess',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicDebugProductsRoute = ApiPublicDebugProductsRouteImport.update({
@@ -622,7 +622,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
-  '/api/public': typeof ApiPublic_dbgsessRoute
+  '/api/public/dbgsess': typeof ApiPublicDbgsessRoute
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
   '/api/public/latest-news': typeof ApiPublicLatestNewsRoute
@@ -713,7 +713,7 @@ export interface FileRoutesByTo {
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
-  '/api/public': typeof ApiPublic_dbgsessRoute
+  '/api/public/dbgsess': typeof ApiPublicDbgsessRoute
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
   '/api/public/latest-news': typeof ApiPublicLatestNewsRoute
@@ -805,7 +805,7 @@ export interface FileRoutesById {
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
-  '/api/public/__dbgsess': typeof ApiPublic_dbgsessRoute
+  '/api/public/dbgsess': typeof ApiPublicDbgsessRoute
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
   '/api/public/latest-news': typeof ApiPublicLatestNewsRoute
@@ -898,7 +898,7 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/oauth/$provider'
-    | '/api/public'
+    | '/api/public/dbgsess'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
     | '/api/public/latest-news'
@@ -989,7 +989,7 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/oauth/$provider'
-    | '/api/public'
+    | '/api/public/dbgsess'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
     | '/api/public/latest-news'
@@ -1080,7 +1080,7 @@ export interface FileRouteTypes {
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/oauth/$provider'
-    | '/api/public/__dbgsess'
+    | '/api/public/dbgsess'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
     | '/api/public/latest-news'
@@ -1172,7 +1172,7 @@ export interface RootRouteChildren {
   ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiFilesSplatRoute: typeof ApiFilesSplatRoute
   ApiOauthProviderRoute: typeof ApiOauthProviderRouteWithChildren
-  ApiPublic_dbgsessRoute: typeof ApiPublic_dbgsessRoute
+  ApiPublicDbgsessRoute: typeof ApiPublicDbgsessRoute
   ApiPublicDebugProductsRoute: typeof ApiPublicDebugProductsRoute
   ApiPublicImgProxyRoute: typeof ApiPublicImgProxyRoute
   ApiPublicLatestNewsRoute: typeof ApiPublicLatestNewsRoute
@@ -1649,11 +1649,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOauthProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/__dbgsess': {
-      id: '/api/public/__dbgsess'
-      path: '/api/public'
-      fullPath: '/api/public'
-      preLoaderRoute: typeof ApiPublic_dbgsessRouteImport
+    '/api/public/dbgsess': {
+      id: '/api/public/dbgsess'
+      path: '/api/public/dbgsess'
+      fullPath: '/api/public/dbgsess'
+      preLoaderRoute: typeof ApiPublicDbgsessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/debug-products': {
@@ -1926,7 +1926,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiFilesSplatRoute: ApiFilesSplatRoute,
   ApiOauthProviderRoute: ApiOauthProviderRouteWithChildren,
-  ApiPublic_dbgsessRoute: ApiPublic_dbgsessRoute,
+  ApiPublicDbgsessRoute: ApiPublicDbgsessRoute,
   ApiPublicDebugProductsRoute: ApiPublicDebugProductsRoute,
   ApiPublicImgProxyRoute: ApiPublicImgProxyRoute,
   ApiPublicLatestNewsRoute: ApiPublicLatestNewsRoute,

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { setSessionCookie } from "@/lib/session.server";
 import { getUsers } from "@/lib/db.server";
 
-export const Route = createFileRoute("/api/public/__dbgsess")({
+export const Route = createFileRoute("/api/public/dbgsess")({
   server: {
     handlers: {
       GET: async () => {
