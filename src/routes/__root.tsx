@@ -178,6 +178,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       <h1 className="text-2xl font-black text-slate-900 mb-3">{tr("This page didn't load")}</h1>
       <p className="text-slate-500 text-sm max-w-xs mb-8 leading-relaxed">
         {tr("Something went wrong on our end. You can try refreshing or head back home.")}
+        {error?.message && (
+          <span className="block mt-4 text-[10px] font-mono text-slate-400 opacity-50 overflow-hidden text-ellipsis whitespace-nowrap">
+            Error: {error.message}
+          </span>
+        )}
       </p>
 
       <div className="flex flex-col gap-3 w-full max-w-[200px]">

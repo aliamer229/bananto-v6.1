@@ -20,7 +20,8 @@ import {
 } from "@/components/auth/AuthPieces";
 import OtpBoxes from "@/components/auth/OtpBoxes";
 import TelegramLinkPrompt from "@/components/auth/TelegramLinkPrompt";
-import pattern from "@/assets/login_bg.webp.asset.json";
+import patternAsset from "@/assets/login_bg.webp.asset.json";
+import mascotAsset from "@/assets/bananto_logo.webp.asset.json";
 import { authPageAction } from "@/lib/authRedirect";
 import { useAuth } from "@/hooks/useAuth";
 import type { OtpChannel } from "@/lib/otp.server";
@@ -170,7 +171,7 @@ function AuthPage() {
         <div
           className="absolute inset-0 z-0 opacity-20"
           style={{
-            backgroundImage: `url(${pattern.url})`,
+            backgroundImage: `url(${patternAsset.url})`,
             backgroundSize: "600px",
             backgroundPosition: "center",
             backgroundRepeat: "repeat",
@@ -204,7 +205,7 @@ function AuthPage() {
       <div
         className="absolute inset-0 z-0"
         style={{
-          backgroundImage: `url(${pattern.url})`,
+          backgroundImage: `url(${patternAsset.url})`,
           backgroundSize: "600px",
           backgroundPosition: "center",
           backgroundRepeat: "repeat",
@@ -273,7 +274,7 @@ function SignInCard({ onNavigate, externalError }: CardProps) {
   };
 
   return (
-    <CardWrapper title={tr("تسجيل الدخول")} subtitle="MEMBER LOGIN">
+    <CardWrapper title={tr("تسجيل الدخول")} subtitle="MEMBER LOGIN" logo={mascotAsset.url}>
       <ErrorMsg error={error} hint={hint} />
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-6">
         <InputField
@@ -404,7 +405,7 @@ function SignUpCard({
   };
 
   return (
-    <CardWrapper title={tr("إنشاء حساب جديد")} subtitle="NEW ACCOUNT">
+    <CardWrapper title={tr("إنشاء حساب جديد")} subtitle="NEW ACCOUNT" logo={mascotAsset.url}>
       <ErrorMsg error={error} hint={hint} />
 
       {needsLinking ? (

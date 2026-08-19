@@ -565,7 +565,7 @@ function buildSeries(p: Record<string, unknown>, locale: "ar" | "en"): GameSerie
           : row["value"] !== undefined
             ? row["value"]
             : row["title"] || row["name"] || row;
-      const title = getTextValue(v);
+      const title = getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
       if (!title) return null;
       return { slug: slugify(title), title };
     })
@@ -582,18 +582,16 @@ function buildVerdict(p: Record<string, unknown>, locale: "ar" | "en"): EditorVe
   const score = num(p["verdictScore"]);
   const summary = localizedValue(p, "verdictSummary", "verdictSummaryEn", locale);
   const pros = rows(p["verdictPros"])
-    .map((r) =>
-      getTextValue(
-        locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r,
-      ),
-    )
+    .map((r) => {
+      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
+    })
     .filter(Boolean);
   const cons = rows(p["verdictCons"])
-    .map((r) =>
-      getTextValue(
-        locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r,
-      ),
-    )
+    .map((r) => {
+      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
+    })
     .filter(Boolean);
   if (!score && !summary && !pros.length && !cons.length) return undefined;
   return {

@@ -378,7 +378,7 @@ export async function verifyTelegramInitData(initData: string): Promise<{
       encoder.encode("WebAppData"),
       { name: "HMAC", hash: "SHA-256" },
       false,
-      ["sign"],
+      ["sign", "verify"],
     );
     const secretKeyBuffer = await crypto.subtle.sign("HMAC", webAppDataKey, encoder.encode(token));
 
