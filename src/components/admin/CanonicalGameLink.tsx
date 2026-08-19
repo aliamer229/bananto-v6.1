@@ -101,7 +101,15 @@ export default function CanonicalGameLink({
           `/api/game-catalog?mode=search&q=${encodeURIComponent(term)}&limit=10`,
         );
         const data = (await res.json()) as { items?: CatalogRow[] };
-        if (!cancelled) setResults(data.items ?? []);
+        // Entries without a trade value are noise in the picker — hide them.
+        if (!cancelled)
+          setResults(
+            (data.items ?? []).filter(
+              (row) =>
+                Number(row.trade_value_iqd || 0) + Number((row as any).store_offer_bonus_iqd || 0) >
+                0,
+            ),
+          );
       } finally {
         if (!cancelled) setLoading(false);
       }
