@@ -1,24 +1,48 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import AppShell from "@/components/AppShell";
+import HomeView from "@/components/HomeView";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "بنانا ستور — ألعاب وحسابات ننتندو سويتش" },
+      {
+        name: "description",
+        content:
+          "متجر بنانا لألعاب وحسابات ننتندو سويتش والأجهزة والملحقات، مع تسليم فوري للحسابات ودعم مباشر عبر المحادثة.",
+      },
+      { property: "og:title", content: "بنانا ستور — ألعاب وحسابات ننتندو سويتش" },
+      {
+        property: "og:description",
+        content:
+          "متجر بنانا لألعاب وحسابات ننتندو سويتش والأجهزة والملحقات، مع تسليم فوري للحسابات ودعم مباشر عبر المحادثة.",
+      },
+    ],
+  }),
+  component: HomePage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+export function HomePage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // We removed the auto-trigger on every home page visit to focus on
+    // the extraction triggered from the admin dashboard or this specific session.
+    // The user wants the extraction to happen "inside the prompt" logic.
+  }, []);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <AppShell currentView="home">
+      <HomeView
+        onGameClick={(game: { id?: string | number }) => {
+          if (game?.id !== undefined) {
+            void navigate({ to: "/product/$productId", params: { productId: String(game.id) } });
+          }
+        }}
       />
-    </div>
+    </AppShell>
   );
 }

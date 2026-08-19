@@ -1,0 +1,897 @@
+# كروت التعبئة والبطاقات — قالب استيراد المنتجات
+# =========================================
+# الصيغة: field=value
+# النصوص الطويلة: field<<EOF ... EOF
+# العناصر المتكررة: feature.1= / feature.2= (بدون حد أقصى)
+# العناصر المركبة: gallery.1.image= / gallery.1.title=
+# المجموعات المتداخلة: spec_group.1.spec.2.value=
+# القيم المنطقية: true أو false
+# التواريخ: YYYY-MM-DD
+# اترك أي حقل فارغاً إذا لم تكن لديك المعلومة — لن يفشل الاستيراد.
+# =========================================
+
+# إصدار المخطط الحالي: 1
+schema_version=1
+
+# =========================================
+# الأساسيات
+# =========================================
+
+# اسم البطاقة [مطلوب]
+name=
+
+# اسم مختصر للعرض في البطاقات
+short_name=
+
+# الرابط الفريد (يُولَّد تلقائياً إذا تُرك فارغاً)
+slug=
+
+# العلامة التجارية (Nintendo، ASUS…) — لا تُترجم
+brand=
+
+# الشركة المصنّعة
+manufacturer=
+
+# السلسلة
+series=
+
+# الموديل
+model=
+
+# رقم الموديل
+model_number=
+
+# سنة الموديل
+model_year=
+
+# رقم القطعة
+part_number=
+
+# رمز المنتج SKU
+sku=
+
+# الباركود
+barcode=
+
+# UPC
+upc=
+
+# EAN
+ean=
+
+# GTIN
+gtin=
+
+# معرّف القسم في المتجر (يُملأ تلقائياً)
+category=
+
+# القسم الفرعي
+subcategory=
+
+# نوع المنتج
+product_type=
+
+# الجيل
+generation=
+
+# المراجعة/النسخة
+revision=
+
+# حالة المنتج: active / inactive / draft / archived
+product_status=
+
+# حالة التوفر: in_stock / out_of_stock / preorder / backorder / discontinued / coming_soon
+availability_status=
+
+# تاريخ الإعلان YYYY-MM-DD
+announcement_date=
+
+# تاريخ الإصدار YYYY-MM-DD
+release_date=
+
+# المنطقة (Global، USA، EUR، JPN)
+region=
+
+# بلد المنشأ
+country_of_origin=
+
+# الموقع الرسمي للمنتج
+official_url=
+
+# موقع الشركة المصنّعة
+manufacturer_url=
+
+# =========================================
+# الوصف
+# =========================================
+
+# سطر تعريفي قصير
+tagline=
+
+# وصف مختصر (سطر أو سطران)
+description_short<<EOF
+
+EOF
+
+# الوصف الكامل
+description_full<<EOF
+
+EOF
+
+# الوصف بالعربية
+description_ar<<EOF
+
+EOF
+
+# الوصف بالإنجليزية
+description_en<<EOF
+
+EOF
+
+# الوصف بالتركية
+description_tr<<EOF
+
+EOF
+
+# نظرة عامة
+overview<<EOF
+
+EOF
+
+# يناسب من؟
+suitable_for.1=
+suitable_for.2=
+suitable_for.3=
+
+# لا يناسب من؟
+not_suitable_for.1=
+not_suitable_for.2=
+
+# المميزات الرئيسية (عدد غير محدود)
+feature.1=
+feature.2=
+feature.3=
+feature.4=
+feature.5=
+
+# أبرز النقاط
+highlight.1=
+highlight.2=
+highlight.3=
+
+# نقاط البيع
+selling_point.1=
+selling_point.2=
+selling_point.3=
+
+# وسوم للبحث والفلاتر
+tag.1=
+tag.2=
+tag.3=
+tag.4=
+
+# =========================================
+# بيانات البطاقة
+# =========================================
+
+# نوع البطاقة: eshop / nintendo_online / nintendo_online_expansion / psn / xbox / steam / google_play / itunes / other [مطلوب]
+card_type=
+
+# القيمة الاسمية للبطاقة (10$، 20$، 3 أشهر…)
+card_value=
+
+# عملة البطاقة (USD، EUR…)
+card_currency=
+
+# ريجون البطاقة (US، EU، JP) — يجب أن يطابق ريجون الحساب
+card_region=
+
+# مقيدة بالريجون (true/false)
+region_locked=
+
+# المنصة (Nintendo Switch، Switch 2…)
+platform=
+
+# طول الكود (16 خانة…)
+code_length=
+
+# صلاحية الكود: no_expiry / 12_months / 6_months / 3_months / 1_month
+validity=
+
+# تاريخ انتهاء الصلاحية YYYY-MM-DD
+expiry_date=
+
+# =========================================
+# التسليم والاستخدام
+# =========================================
+
+# طريقة التسليم: instant_code / manual_code / email / account_topup / physical_card [مطلوب]
+delivery_method=
+
+# زمن التسليم المتوقع (فوري، خلال ساعة…)
+delivery_time=
+
+# خطوات استخدام الكود بالتفصيل
+redemption_guide<<EOF
+
+EOF
+
+# رابط صفحة استبدال الكود الرسمية
+redemption_url=
+
+# شروط الاستخدام والقيود
+usage_terms<<EOF
+
+EOF
+
+# سياسة الاسترجاع
+refund_policy<<EOF
+
+EOF
+
+# المتطلبات قبل الشراء (حساب أمريكي، اتصال بالإنترنت…)
+requirement.1=
+requirement.2=
+requirement.3=
+requirement.4=
+
+# =========================================
+# المواصفات الديناميكية
+# =========================================
+
+# مجموعات المواصفات الديناميكية (عدد غير محدود)
+# اسم المجموعة المعروض
+spec_group.1.name=
+# مفتاح المجموعة للترجمة (general, processor, display…)
+spec_group.1.key=
+# اسم المجموعة بالعربية (اختياري)
+spec_group.1.label_ar=
+# اسم المجموعة بالإنجليزية (اختياري)
+spec_group.1.label_en=
+# اسم المجموعة بالتركية (اختياري)
+spec_group.1.label_tr=
+# ترتيب المجموعة
+spec_group.1.order=
+# مواصفة داخل المجموعة
+# اسم المواصفة
+spec_group.1.spec.1.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.1.spec.1.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.1.spec.1.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.1.spec.1.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.1.spec.1.label_tr=
+# القيمة
+spec_group.1.spec.1.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.1.spec.1.unit=
+# ملاحظة
+spec_group.1.spec.1.note=
+
+# اسم المواصفة
+spec_group.1.spec.2.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.1.spec.2.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.1.spec.2.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.1.spec.2.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.1.spec.2.label_tr=
+# القيمة
+spec_group.1.spec.2.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.1.spec.2.unit=
+# ملاحظة
+spec_group.1.spec.2.note=
+
+# اسم المواصفة
+spec_group.1.spec.3.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.1.spec.3.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.1.spec.3.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.1.spec.3.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.1.spec.3.label_tr=
+# القيمة
+spec_group.1.spec.3.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.1.spec.3.unit=
+# ملاحظة
+spec_group.1.spec.3.note=
+
+# اسم المواصفة
+spec_group.1.spec.4.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.1.spec.4.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.1.spec.4.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.1.spec.4.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.1.spec.4.label_tr=
+# القيمة
+spec_group.1.spec.4.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.1.spec.4.unit=
+# ملاحظة
+spec_group.1.spec.4.note=
+
+# اسم المجموعة المعروض
+spec_group.2.name=
+# مفتاح المجموعة للترجمة (general, processor, display…)
+spec_group.2.key=
+# اسم المجموعة بالعربية (اختياري)
+spec_group.2.label_ar=
+# اسم المجموعة بالإنجليزية (اختياري)
+spec_group.2.label_en=
+# اسم المجموعة بالتركية (اختياري)
+spec_group.2.label_tr=
+# ترتيب المجموعة
+spec_group.2.order=
+# مواصفة داخل المجموعة
+# اسم المواصفة
+spec_group.2.spec.1.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.2.spec.1.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.2.spec.1.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.2.spec.1.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.2.spec.1.label_tr=
+# القيمة
+spec_group.2.spec.1.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.2.spec.1.unit=
+# ملاحظة
+spec_group.2.spec.1.note=
+
+# اسم المواصفة
+spec_group.2.spec.2.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.2.spec.2.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.2.spec.2.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.2.spec.2.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.2.spec.2.label_tr=
+# القيمة
+spec_group.2.spec.2.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.2.spec.2.unit=
+# ملاحظة
+spec_group.2.spec.2.note=
+
+# اسم المواصفة
+spec_group.2.spec.3.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.2.spec.3.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.2.spec.3.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.2.spec.3.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.2.spec.3.label_tr=
+# القيمة
+spec_group.2.spec.3.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.2.spec.3.unit=
+# ملاحظة
+spec_group.2.spec.3.note=
+
+# اسم المواصفة
+spec_group.2.spec.4.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.2.spec.4.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.2.spec.4.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.2.spec.4.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.2.spec.4.label_tr=
+# القيمة
+spec_group.2.spec.4.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.2.spec.4.unit=
+# ملاحظة
+spec_group.2.spec.4.note=
+
+# اسم المجموعة المعروض
+spec_group.3.name=
+# مفتاح المجموعة للترجمة (general, processor, display…)
+spec_group.3.key=
+# اسم المجموعة بالعربية (اختياري)
+spec_group.3.label_ar=
+# اسم المجموعة بالإنجليزية (اختياري)
+spec_group.3.label_en=
+# اسم المجموعة بالتركية (اختياري)
+spec_group.3.label_tr=
+# ترتيب المجموعة
+spec_group.3.order=
+# مواصفة داخل المجموعة
+# اسم المواصفة
+spec_group.3.spec.1.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.3.spec.1.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.3.spec.1.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.3.spec.1.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.3.spec.1.label_tr=
+# القيمة
+spec_group.3.spec.1.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.3.spec.1.unit=
+# ملاحظة
+spec_group.3.spec.1.note=
+
+# اسم المواصفة
+spec_group.3.spec.2.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.3.spec.2.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.3.spec.2.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.3.spec.2.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.3.spec.2.label_tr=
+# القيمة
+spec_group.3.spec.2.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.3.spec.2.unit=
+# ملاحظة
+spec_group.3.spec.2.note=
+
+# اسم المواصفة
+spec_group.3.spec.3.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.3.spec.3.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.3.spec.3.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.3.spec.3.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.3.spec.3.label_tr=
+# القيمة
+spec_group.3.spec.3.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.3.spec.3.unit=
+# ملاحظة
+spec_group.3.spec.3.note=
+
+# اسم المواصفة
+spec_group.3.spec.4.name=
+# مفتاح المواصفة للترجمة (bluetooth_version…)
+spec_group.3.spec.4.key=
+# اسم المواصفة بالعربية (اختياري)
+spec_group.3.spec.4.label_ar=
+# اسم المواصفة بالإنجليزية (اختياري)
+spec_group.3.spec.4.label_en=
+# اسم المواصفة بالتركية (اختياري)
+spec_group.3.spec.4.label_tr=
+# القيمة
+spec_group.3.spec.4.value=
+# الوحدة (mm, g, W, GHz…) — لا تُترجم
+spec_group.3.spec.4.unit=
+# ملاحظة
+spec_group.3.spec.4.note=
+
+# =========================================
+# الصور والوسائط
+# =========================================
+
+# الصورة الرئيسية
+main_image=
+
+# صورة البطاقة في القوائم
+listing_image=
+
+# صورة الغلاف في صفحة التفاصيل
+cover_image=
+
+# صورة مصغّرة
+thumbnail_image=
+
+# صورة البنر
+banner_image=
+
+# صورة أمامية
+front_image=
+
+# صورة خلفية
+back_image=
+
+# صورة جانبية يسار
+left_image=
+
+# صورة جانبية يمين
+right_image=
+
+# صورة العلبة من الأمام
+packaging_front_image=
+
+# صورة العلبة من الخلف
+packaging_back_image=
+
+# صورة تفاصيل مقرّبة
+close_up_image=
+
+# صور الاستخدام الواقعي
+lifestyle_image.1=
+lifestyle_image.2=
+lifestyle_image.3=
+
+# معرض الصور (عدد غير محدود)
+# رابط الصورة
+gallery.1.image=
+# عنوان الصورة
+gallery.1.title=
+# وصف الصورة
+gallery.1.description=
+# التصنيف (front, back, packaging, lifestyle…)
+gallery.1.type=
+
+# رابط الصورة
+gallery.2.image=
+# عنوان الصورة
+gallery.2.title=
+# وصف الصورة
+gallery.2.description=
+# التصنيف (front, back, packaging, lifestyle…)
+gallery.2.type=
+
+# رابط الصورة
+gallery.3.image=
+# عنوان الصورة
+gallery.3.title=
+# وصف الصورة
+gallery.3.description=
+# التصنيف (front, back, packaging, lifestyle…)
+gallery.3.type=
+
+# رابط الصورة
+gallery.4.image=
+# عنوان الصورة
+gallery.4.title=
+# وصف الصورة
+gallery.4.description=
+# التصنيف (front, back, packaging, lifestyle…)
+gallery.4.type=
+
+# الفيديوهات
+# عنوان الفيديو
+video.1.title=
+# رابط الفيديو
+video.1.url=
+# صورة مصغّرة
+video.1.thumbnail=
+# النوع: official / setup / tutorial / review / demonstration / unboxing
+video.1.type=
+
+# عنوان الفيديو
+video.2.title=
+# رابط الفيديو
+video.2.url=
+# صورة مصغّرة
+video.2.thumbnail=
+# النوع: official / setup / tutorial / review / demonstration / unboxing
+video.2.type=
+
+# عنوان الفيديو
+video.3.title=
+# رابط الفيديو
+video.3.url=
+# صورة مصغّرة
+video.3.thumbnail=
+# النوع: official / setup / tutorial / review / demonstration / unboxing
+video.3.type=
+
+# المستندات والأدلة
+# عنوان المستند
+document.1.title=
+# النوع: manual / quick_start / datasheet / compatibility_guide / driver / firmware / support_page / safety
+document.1.type=
+# رابط المستند
+document.1.url=
+# لغة المستند
+document.1.language=
+
+# عنوان المستند
+document.2.title=
+# النوع: manual / quick_start / datasheet / compatibility_guide / driver / firmware / support_page / safety
+document.2.type=
+# رابط المستند
+document.2.url=
+# لغة المستند
+document.2.language=
+
+# عنوان المستند
+document.3.title=
+# النوع: manual / quick_start / datasheet / compatibility_guide / driver / firmware / support_page / safety
+document.3.type=
+# رابط المستند
+document.3.url=
+# لغة المستند
+document.3.language=
+
+# =========================================
+# الخيارات والنسخ
+# =========================================
+
+# خيارات المنتج الرئيسية (حساب أوفلاين، حساب أونلاين، اللون، السعة…)
+# معرّف الخيار (يُستخدم في variant.N.option_id)
+option.1.id=
+# اسم الخيار (مثال: حساب أوفلاين)
+option.1.name=
+# وصف الخيار
+option.1.description=
+# صورة الخيار
+option.1.image=
+
+# معرّف الخيار (يُستخدم في variant.N.option_id)
+option.2.id=
+# اسم الخيار (مثال: حساب أوفلاين)
+option.2.name=
+# وصف الخيار
+option.2.description=
+# صورة الخيار
+option.2.image=
+
+# معرّف الخيار (يُستخدم في variant.N.option_id)
+option.3.id=
+# اسم الخيار (مثال: حساب أوفلاين)
+option.3.name=
+# وصف الخيار
+option.3.description=
+# صورة الخيار
+option.3.image=
+
+# الأنواع والإصدارات والأسعار (يمكن ربطها بخيار محدد أو تركها للكل)
+# اسم النوع/الإصدار (مثال: النسخة القياسية Standard / فاخر Deluxe)
+variant.1.name=
+# معرّف الخيار المرتبط (اتركه فارغاً ليكون متاحاً للكل)
+variant.1.option_id=
+# سعر هذا النوع (د.ع)
+variant.1.price=
+# تكلفة هذا النوع (د.ع)
+variant.1.cost=
+# محتويات أو وصف هذا الإصدار
+variant.1.description=
+# SKU الخاص بالنسخة
+variant.1.sku=
+# اللون
+variant.1.color=
+# صورة النسخة
+variant.1.image=
+
+# اسم النوع/الإصدار (مثال: النسخة القياسية Standard / فاخر Deluxe)
+variant.2.name=
+# معرّف الخيار المرتبط (اتركه فارغاً ليكون متاحاً للكل)
+variant.2.option_id=
+# سعر هذا النوع (د.ع)
+variant.2.price=
+# تكلفة هذا النوع (د.ع)
+variant.2.cost=
+# محتويات أو وصف هذا الإصدار
+variant.2.description=
+# SKU الخاص بالنسخة
+variant.2.sku=
+# اللون
+variant.2.color=
+# صورة النسخة
+variant.2.image=
+
+# اسم النوع/الإصدار (مثال: النسخة القياسية Standard / فاخر Deluxe)
+variant.3.name=
+# معرّف الخيار المرتبط (اتركه فارغاً ليكون متاحاً للكل)
+variant.3.option_id=
+# سعر هذا النوع (د.ع)
+variant.3.price=
+# تكلفة هذا النوع (د.ع)
+variant.3.cost=
+# محتويات أو وصف هذا الإصدار
+variant.3.description=
+# SKU الخاص بالنسخة
+variant.3.sku=
+# اللون
+variant.3.color=
+# صورة النسخة
+variant.3.image=
+
+# الألوان القابلة للاختيار
+# اسم اللون
+color_option.1.name=
+# كود اللون #RRGGBB
+color_option.1.hex=
+# صورة اللون
+color_option.1.image=
+
+# اسم اللون
+color_option.2.name=
+# كود اللون #RRGGBB
+color_option.2.hex=
+# صورة اللون
+color_option.2.image=
+
+# اسم اللون
+color_option.3.name=
+# كود اللون #RRGGBB
+color_option.3.hex=
+# صورة اللون
+color_option.3.image=
+
+# =========================================
+# التقييمات والأسئلة
+# =========================================
+
+# متوسط تقييم النقاد (0-10)
+review_score=
+
+# تقييم المستخدمين (0-10)
+user_score=
+
+# مراجعات مختارة
+# الجهة
+review.1.source=
+# الدرجة كما نشرتها الجهة
+review.1.score=
+# اقتباس
+review.1.quote<<EOF
+
+EOF
+# رابط المراجعة
+review.1.url=
+
+# الجهة
+review.2.source=
+# الدرجة كما نشرتها الجهة
+review.2.score=
+# اقتباس
+review.2.quote<<EOF
+
+EOF
+# رابط المراجعة
+review.2.url=
+
+# الجهة
+review.3.source=
+# الدرجة كما نشرتها الجهة
+review.3.score=
+# اقتباس
+review.3.quote<<EOF
+
+EOF
+# رابط المراجعة
+review.3.url=
+
+# الإيجابيات
+pro.1=
+pro.2=
+pro.3=
+
+# السلبيات
+con.1=
+con.2=
+con.3=
+
+# الأسئلة الشائعة
+# السؤال
+faq.1.question=
+# الإجابة
+faq.1.answer<<EOF
+
+EOF
+
+# السؤال
+faq.2.question=
+# الإجابة
+faq.2.answer<<EOF
+
+EOF
+
+# السؤال
+faq.3.question=
+# الإجابة
+faq.3.answer<<EOF
+
+EOF
+
+# =========================================
+# منتجات ذات صلة
+# =========================================
+
+# منتجات ذات صلة
+# معرّف المنتج في المتجر
+related_product.1.product_id=
+# الاسم (إذا لم يكن في المتجر)
+related_product.1.name=
+# رابط
+related_product.1.url=
+
+# معرّف المنتج في المتجر
+related_product.2.product_id=
+# الاسم (إذا لم يكن في المتجر)
+related_product.2.name=
+# رابط
+related_product.2.url=
+
+# معرّف المنتج في المتجر
+related_product.3.product_id=
+# الاسم (إذا لم يكن في المتجر)
+related_product.3.name=
+# رابط
+related_product.3.url=
+
+# =========================================
+# المصادر
+# =========================================
+
+# المصادر — الأولوية: موقع الشركة الرسمي ثم صفحة المنتج ثم التوثيق ثم الدعم
+# اسم المصدر
+source.1.name=
+# الرابط
+source.1.url=
+# النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
+source.1.type=
+# تاريخ التحقق YYYY-MM-DD
+source.1.verified_at=
+
+# اسم المصدر
+source.2.name=
+# الرابط
+source.2.url=
+# النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
+source.2.type=
+# تاريخ التحقق YYYY-MM-DD
+source.2.verified_at=
+
+# اسم المصدر
+source.3.name=
+# الرابط
+source.3.url=
+# النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
+source.3.type=
+# تاريخ التحقق YYYY-MM-DD
+source.3.verified_at=
+
+# اسم المصدر
+source.4.name=
+# الرابط
+source.4.url=
+# النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
+source.4.type=
+# تاريخ التحقق YYYY-MM-DD
+source.4.verified_at=
+
+# =========================================
+# تحسين محركات البحث
+# =========================================
+
+# كلمات البحث مفصولة بفواصل
+search_keywords=
+
+# عنوان SEO
+seo_title=
+
+# وصف SEO
+seo_description<<EOF
+
+EOF
+
+# صورة OpenGraph
+og_image=
+
+# عنوان OpenGraph
+og_title=
+
+# وصف OpenGraph
+og_description<<EOF
+
+EOF

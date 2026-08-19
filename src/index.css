@@ -1,0 +1,408 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Banana Design System
+   Nintendo-inspired · Cartoon · Friendly · Premium
+   Every visual decision in the site flows from the tokens below, so a new
+   page can be built without inventing a parallel visual language.
+   ========================================================================== */
+
+@theme {
+  /* -- Brand ------------------------------------------------------------- */
+  --color-banana-50: #fffdf2;
+  --color-banana-100: #fff8dc;
+  --color-banana-200: #ffefb0;
+  --color-banana-300: #ffe27a;
+  --color-banana-400: #ffd24d;
+  --color-banana-500: #ffc32e;
+  --color-banana-600: #f0a202;
+  --color-banana-700: #c47c04;
+
+  /* Banana peel green — success, completed steps */
+  --color-peel-100: #e4f7e9;
+  --color-peel-300: #9fdfb2;
+  --color-peel-500: #3fae6b;
+  --color-peel-700: #257a4a;
+
+  /* Playful berry — categories, badges, focus rings */
+  --color-berry-100: #ece8ff;
+  --color-berry-300: #b7a8ff;
+  --color-berry-500: #7c5cff;
+  --color-berry-700: #4c31c9;
+
+  /* Nintendo-inspired red — used sparingly, for alerts and accents */
+  --color-flare-100: #ffe6e6;
+  --color-flare-300: #ff9d9f;
+  --color-flare-500: #ef4a52;
+  --color-flare-700: #c2202a;
+
+  --color-sky-soft-100: #e2f4ff;
+  --color-sky-soft-300: #96d6f7;
+  --color-sky-soft-500: #2fa8e0;
+
+  /* -- Neutrals: warm cream surfaces, deep plum ink ---------------------- */
+  --color-cream-50: #fffdf8;
+  --color-cream-100: #fff9ec;
+  --color-cream-200: #f9efdb;
+  --color-cream-300: #eddfc6;
+
+  --color-ink-900: #211a3d;
+  --color-ink-700: #3b3163;
+  --color-ink-500: #6b6191;
+  --color-ink-300: #9a93b5;
+
+  /* -- Type -------------------------------------------------------------- */
+  --font-display: var(--font-baloo), "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-cairo), "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* -- Radii: rounded, cartoon-friendly ---------------------------------- */
+  --radius-card: 1.75rem;
+  --radius-pill: 999px;
+
+  /* -- Elevation: soft, warm-tinted shadows ------------------------------ */
+  --shadow-soft: 0 2px 8px rgba(33, 26, 61, 0.05);
+  --shadow-card: 0 10px 30px -12px rgba(33, 26, 61, 0.16);
+  --shadow-lift: 0 22px 48px -18px rgba(33, 26, 61, 0.28);
+  --shadow-glow: 0 12px 30px -10px rgba(240, 162, 2, 0.5);
+
+  /* -- Motion ------------------------------------------------------------ */
+  --ease-out-soft: cubic-bezier(0.22, 0.68, 0.32, 1);
+  --ease-pop: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --animate-float-slow: float-slow 14s var(--ease-out-soft) infinite;
+  --animate-float-mid: float-mid 11s var(--ease-out-soft) infinite;
+  --animate-drift: drift 18s linear infinite;
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) rotate(4deg);
+  }
+}
+
+@keyframes float-mid {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-3deg);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) rotate(3deg);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-24px, 10px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  :root {
+    color-scheme: light;
+    /* Height of the sticky header, used for scroll offsets on deep links. */
+    --header-h: 4.25rem;
+  }
+
+  * {
+    /* Deep links land below the sticky header instead of under it. */
+    scroll-margin-top: calc(var(--header-h) + 1.5rem);
+  }
+
+  html {
+    font-size: 14px;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-cream-100);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    /* Never allow a decorative layer to create sideways scroll. */
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  /* A single, consistent focus treatment across the whole site. */
+  :focus-visible {
+    outline: 3px solid var(--color-berry-500);
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+  }
+
+  ::selection {
+    background-color: var(--color-banana-300);
+    color: var(--color-ink-900);
+  }
+
+  /* We render our own clear button; hide the WebKit one so the field doesn't
+     show two of them. */
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Latin text inside an RTL document keeps its own direction. */
+  [dir="rtl"] .ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+}
+
+/* ==========================================================================
+   Components
+   ========================================================================== */
+
+@layer components {
+  /* -- Surfaces ---------------------------------------------------------- */
+  .bn-card {
+    background-color: var(--color-cream-50);
+    border: 1px solid var(--color-cream-300);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* -- Buttons ----------------------------------------------------------- */
+  .bn-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+      transform 0.22s var(--ease-pop),
+      box-shadow 0.22s var(--ease-out-soft),
+      background-color 0.22s var(--ease-out-soft),
+      border-color 0.22s var(--ease-out-soft);
+  }
+
+  .bn-btn-primary {
+    background-color: var(--color-banana-500);
+    color: var(--color-ink-900);
+    border: 1px solid var(--color-banana-600);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .bn-btn-primary:hover {
+    background-color: var(--color-banana-400);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+  }
+
+  .bn-btn-ghost {
+    background-color: var(--color-cream-50);
+    color: var(--color-ink-700);
+    border: 1px solid var(--color-cream-300);
+  }
+
+  .bn-btn-ghost:hover {
+    border-color: var(--color-banana-500);
+    color: var(--color-ink-900);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+
+  .bn-btn:active {
+    transform: translateY(0);
+  }
+
+  /* -- Chips / badges ---------------------------------------------------- */
+  .bn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-cream-50);
+    border: 1px solid var(--color-cream-300);
+    color: var(--color-ink-700);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      transform 0.2s var(--ease-pop),
+      background-color 0.2s var(--ease-out-soft),
+      border-color 0.2s var(--ease-out-soft),
+      color 0.2s var(--ease-out-soft),
+      box-shadow 0.2s var(--ease-out-soft);
+  }
+
+  .bn-chip:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-banana-500);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .bn-chip[aria-pressed="true"] {
+    background-color: var(--color-ink-900);
+    border-color: var(--color-ink-900);
+    color: var(--color-banana-300);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* -- Dotted "peel" divider --------------------------------------------- */
+  .bn-divider {
+    height: 1px;
+    background-image: radial-gradient(circle, var(--color-banana-500) 1.5px, transparent 1.6px);
+    background-size: 14px 14px;
+    background-repeat: repeat-x;
+    opacity: 0.55;
+  }
+
+  /* -- Skeleton ---------------------------------------------------------- */
+  .bn-skeleton {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-cream-200) 25%,
+      var(--color-cream-100) 37%,
+      var(--color-cream-200) 63%
+    );
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+    border-radius: 0.75rem;
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+@utility bn-reveal {
+  /* Scroll-reveal starting state. The `is-visible` class is added by the
+     useReveal hook once the element enters the viewport. */
+  opacity: 0;
+  transform: translate3d(0, 30px, 0);
+  transition:
+    opacity 0.6s var(--ease-out-soft),
+    transform 0.6s var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+@utility bn-reveal-zoom {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0) scale(0.965);
+  transition:
+    opacity 0.7s var(--ease-out-soft),
+    transform 0.7s var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+@utility is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+@utility bn-scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Marks the search term inside a result title. */
+@utility bn-mark {
+  background-color: var(--color-banana-300);
+  border-radius: 0.3rem;
+  padding: 0 0.15rem;
+  color: var(--color-ink-900);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Reduced motion — honour the OS setting everywhere, not just decoration.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    font-size: 14px;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Content must never stay stuck at opacity 0 when motion is off. */
+  .bn-reveal,
+  .bn-reveal-zoom {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

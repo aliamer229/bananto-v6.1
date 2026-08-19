@@ -1,0 +1,327 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { getStore, updateStore } from "@/lib/db.server";
+import { body, guard, json } from "@/lib/http.server";
+import { requireAdmin } from "@/lib/session.server";
+import { autoTranslateProduct } from "@/lib/translate.server";
+import type { Product } from "@/lib/types";
+
+export function sanitizeSlug(input: string, fallbackId: string): string {
+  const cleaned = input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (cleaned) return cleaned;
+  const fallbackClean = fallbackId.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return `product-${fallbackClean || Date.now().toString(36)}`;
+}
+
+export const Route = createFileRoute("/api/admin/products")({
+  server: {
+    handlers: {
+      GET: async ({ request }) =>
+        guard(async () => {
+          await requireAdmin(request);
+          const url = new URL(request.url);
+          const id = url.searchParams.get("id");
+          const slug = url.searchParams.get("slug");
+          const store = await getStore();
+          const products = store.products || [];
+
+          if (id) {
+            const product = products.find((p) => String(p.id) === String(id));
+            if (!product) {
+              return json({ error: "Product not found", code: "NOT_FOUND" }, { status: 404 });
+            }
+            return json({ success: true, product });
+          }
+
+          if (slug) {
+            const product = products.find(
+              (p) => p.slug && p.slug.toLowerCase() === slug.toLowerCase(),
+            );
+            if (!product) {
+              return json({ error: "Product not found", code: "NOT_FOUND" }, { status: 404 });
+            }
+            return json({ success: true, product });
+          }
+
+          return json({ success: true, products });
+        }),
+
+      POST: async ({ request }) =>
+        guard(async () => {
+          await requireAdmin(request);
+          const payload = await body<Partial<Product>>(request);
+
+          // 1. Ensure/validate stable ID
+          let productId =
+            payload.id !== undefined && payload.id !== null ? String(payload.id).trim() : "";
+          if (!productId) {
+            productId = `prd_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+          }
+
+          // 2. Validate title
+          const titleEn = (payload.titleEn || payload.title || "").trim();
+          if (!titleEn) {
+            return json(
+              { error: "Product title is required", code: "MISSING_TITLE" },
+              { status: 400 },
+            );
+          }
+
+          // 3. Validate price
+          const price = Number(payload.price);
+          if (isNaN(price) || price < 0) {
+            return json(
+              {
+                error: "Invalid price: price must be a non-negative number",
+                code: "INVALID_PRICE",
+              },
+              { status: 400 },
+            );
+          }
+
+          // 4. Validate cost
+          let cost = 0;
+          if (
+            payload.cost !== undefined &&
+            payload.cost !== null &&
+            String(payload.cost).trim() !== ""
+          ) {
+            cost = Number(payload.cost);
+            if (isNaN(cost) || cost < 0) {
+              return json(
+                { error: "Invalid cost: cost must be a non-negative number", code: "INVALID_COST" },
+                { status: 400 },
+              );
+            }
+          }
+
+          // 5. Validate & normalize slug
+          const slug = sanitizeSlug(payload.slug || titleEn, productId);
+
+          // 6. Check slug uniqueness against other products only
+          const currentStore = await getStore();
+          const existingCatalog = currentStore.products || [];
+          const slugConflict = existingCatalog.find(
+            (p) =>
+              String(p.id) !== productId &&
+              Boolean(p.slug) &&
+              String(p.slug).toLowerCase() === slug.toLowerCase(),
+          );
+          if (slugConflict) {
+            return json(
+              {
+                error: `Duplicate slug: "${slug}" is already in use by product "${slugConflict.title || slugConflict.titleEn || slugConflict.id}".`,
+                code: "DUPLICATE_SLUG",
+              },
+              { status: 400 },
+            );
+          }
+
+          // 7. Assemble product object with all fields
+          let productToSave: Product = {
+            ...payload,
+            id: productId,
+            title: payload.title || titleEn,
+            titleEn,
+            slug,
+            price,
+            cost,
+            stock: payload.isInfiniteStock ? 999999 : Number(payload.stock) || 0,
+            status: payload.status || "نشط",
+            isActive: payload.isActive !== false,
+            categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
+          };
+
+          // 8. Auto-translate ONLY this single product
+          try {
+            productToSave = await autoTranslateProduct(productToSave);
+          } catch (transErr) {
+            console.warn(
+              "[autoTranslateProduct] Translation fallback triggered for single product:",
+              transErr,
+            );
+          }
+
+          // 9. Save single product to database
+          try {
+            const updated = await updateStore((store) => {
+              const products = store.products || [];
+              const index = products.findIndex((p) => String(p.id) === productId);
+              let nextProducts: Product[];
+              if (index >= 0) {
+                nextProducts = [...products];
+                nextProducts[index] = { ...products[index], ...productToSave };
+              } else {
+                nextProducts = [productToSave, ...products];
+              }
+              return {
+                ...store,
+                products: nextProducts,
+              };
+            });
+
+            const saved =
+              (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+            return json({ success: true, product: saved });
+          } catch (dbErr: any) {
+            console.error("[SaveProduct:DatabaseError]", dbErr);
+            return json(
+              {
+                error: `Database save failed: ${dbErr?.message || "Internal database error"}`,
+                code: "DATABASE_SAVE_FAILED",
+              },
+              { status: 500 },
+            );
+          }
+        }),
+
+      PUT: async ({ request }) =>
+        guard(async () => {
+          await requireAdmin(request);
+          const payload = await body<Partial<Product>>(request);
+
+          const productId =
+            payload.id !== undefined && payload.id !== null ? String(payload.id).trim() : "";
+          if (!productId) {
+            return json(
+              { error: "Missing product id for update", code: "MISSING_PRODUCT_ID" },
+              { status: 400 },
+            );
+          }
+
+          const titleEn = (payload.titleEn || payload.title || "").trim();
+          if (!titleEn) {
+            return json(
+              { error: "Product title is required", code: "MISSING_TITLE" },
+              { status: 400 },
+            );
+          }
+
+          const price = Number(payload.price);
+          if (isNaN(price) || price < 0) {
+            return json(
+              {
+                error: "Invalid price: price must be a non-negative number",
+                code: "INVALID_PRICE",
+              },
+              { status: 400 },
+            );
+          }
+
+          let cost = 0;
+          if (
+            payload.cost !== undefined &&
+            payload.cost !== null &&
+            String(payload.cost).trim() !== ""
+          ) {
+            cost = Number(payload.cost);
+            if (isNaN(cost) || cost < 0) {
+              return json(
+                { error: "Invalid cost: cost must be a non-negative number", code: "INVALID_COST" },
+                { status: 400 },
+              );
+            }
+          }
+
+          const slug = sanitizeSlug(payload.slug || titleEn, productId);
+
+          const currentStore = await getStore();
+          const existingCatalog = currentStore.products || [];
+          const slugConflict = existingCatalog.find(
+            (p) =>
+              String(p.id) !== productId &&
+              Boolean(p.slug) &&
+              String(p.slug).toLowerCase() === slug.toLowerCase(),
+          );
+          if (slugConflict) {
+            return json(
+              {
+                error: `Duplicate slug: "${slug}" is already in use by product "${slugConflict.title || slugConflict.titleEn || slugConflict.id}".`,
+                code: "DUPLICATE_SLUG",
+              },
+              { status: 400 },
+            );
+          }
+
+          let productToSave: Product = {
+            ...payload,
+            id: productId,
+            title: payload.title || titleEn,
+            titleEn,
+            slug,
+            price,
+            cost,
+            stock: payload.isInfiniteStock ? 999999 : Number(payload.stock) || 0,
+            status: payload.status || "نشط",
+            isActive: payload.isActive !== false,
+            categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
+          };
+
+          try {
+            productToSave = await autoTranslateProduct(productToSave);
+          } catch (transErr) {
+            console.warn("[autoTranslateProduct] Translation fallback triggered:", transErr);
+          }
+
+          try {
+            const updated = await updateStore((store) => {
+              const products = store.products || [];
+              const index = products.findIndex((p) => String(p.id) === productId);
+              let nextProducts: Product[];
+              if (index >= 0) {
+                nextProducts = [...products];
+                nextProducts[index] = { ...products[index], ...productToSave };
+              } else {
+                nextProducts = [productToSave, ...products];
+              }
+              return {
+                ...store,
+                products: nextProducts,
+              };
+            });
+
+            const saved =
+              (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+            return json({ success: true, product: saved });
+          } catch (dbErr: any) {
+            console.error("[UpdateProduct:DatabaseError]", dbErr);
+            return json(
+              {
+                error: `Database save failed: ${dbErr?.message || "Internal database error"}`,
+                code: "DATABASE_SAVE_FAILED",
+              },
+              { status: 500 },
+            );
+          }
+        }),
+
+      DELETE: async ({ request }) =>
+        guard(async () => {
+          await requireAdmin(request);
+          const url = new URL(request.url);
+          let id = url.searchParams.get("id");
+          if (!id) {
+            const bodyData = await body<{ id?: string }>(request);
+            id = bodyData.id || null;
+          }
+          if (!id) {
+            return json(
+              { error: "Missing product id to delete", code: "MISSING_PRODUCT_ID" },
+              { status: 400 },
+            );
+          }
+
+          const targetId = String(id);
+          await updateStore((store) => ({
+            ...store,
+            products: (store.products || []).filter((p) => String(p.id) !== targetId),
+          }));
+
+          return json({ success: true, id: targetId });
+        }),
+    },
+  },
+});

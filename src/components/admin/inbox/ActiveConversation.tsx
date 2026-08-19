@@ -1,0 +1,825 @@
+import React, { useState, useRef, useEffect, Component, ErrorInfo, ReactNode } from "react";
+import {
+  Send,
+  Paperclip,
+  Key,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  User,
+  ShoppingBag,
+  Info,
+  ChevronDown,
+  RefreshCw,
+  ArrowRight,
+  Sparkles,
+  Lock,
+  FileText,
+  ExternalLink,
+} from "lucide-react";
+import { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
+import { MessageCard } from "./MessageCard";
+import { AccountToolsModal } from "./AccountToolsModal";
+import { QuickRepliesModal } from "./QuickRepliesModal";
+import { CustomerDetailsDrawer } from "./CustomerDetailsDrawer";
+import { OrderPreviewDrawer } from "./OrderPreviewDrawer";
+import { toast } from "sonner";
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class ConversationErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Conversation render error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <div
+            className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-card"
+            dir="rtl"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-3">
+              <AlertCircle className="w-7 h-7" />
+            </div>
+            <h3 className="text-sm font-bold text-foreground mb-1">
+              تعذر عرض هذه المحادثة بالكامل
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-sm mb-4">
+              حدث خطأ غير متوقع أثناء معالجة بيانات المحادثة. يمكنك إعادة المحاولة الآن.
+            </p>
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              className="px-4 py-2 bg-foreground text-background rounded-xl text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>إعادة المحاولة</span>
+            </button>
+          </div>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
+interface ActiveConversationProps {
+  thread: Thread | null;
+  messages: ChatMessage[];
+  orders?: Order[];
+  isLoadingMessages?: boolean;
+  isCustomerOnline?: boolean;
+  isCustomerTyping?: boolean;
+  customerLastReadAt?: string | null;
+  hasMore?: boolean;
+  isLoadingOlder?: boolean;
+  onLoadOlder?: (container: HTMLDivElement | null) => void;
+  onBackToList?: () => void;
+  onNavigateToOrder?: (orderId: string) => void;
+  onSendMessage: (payload: { text?: string; kind?: string; body?: any; imageUrl?: string }) => void;
+  onSetThreadMode: (mode: ThreadMode) => void;
+  onSetThreadStatus: (status: "open" | "closed") => void;
+  onToggleAiPause?: (paused: boolean) => void;
+  isSending?: boolean;
+}
+
+export function ActiveConversation({
+  thread,
+  messages = [],
+  orders = [],
+  isLoadingMessages = false,
+  isCustomerOnline = false,
+  isCustomerTyping = false,
+  customerLastReadAt = null,
+  hasMore = false,
+  isLoadingOlder = false,
+  onLoadOlder,
+  onBackToList,
+  onNavigateToOrder,
+  onSendMessage,
+  onSetThreadMode,
+  onSetThreadStatus,
+  onToggleAiPause,
+  isSending = false,
+}: ActiveConversationProps) {
+  const [inputText, setInputText] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Modals & Drawers state
+  const [isAccountToolsOpen, setIsAccountToolsOpen] = useState(false);
+  const [accountToolsDefaultTab, setAccountToolsDefaultTab] = useState<
+    "credentials" | "otp" | "instructions"
+  >("credentials");
+  const [isQuickRepliesOpen, setIsQuickRepliesOpen] = useState(false);
+  const [isCustomerDrawerOpen, setIsCustomerDrawerOpen] = useState(false);
+  const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
+  const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleScroll = () => {
+    const container = messagesContainerRef.current;
+    if (container && container.scrollTop === 0 && hasMore && !isLoadingOlder && onLoadOlder) {
+      onLoadOlder(container);
+    }
+  };
+
+  const linkedOrder = thread?.orderId ? orders.find((o) => o && o.id === thread.orderId) : null;
+
+  // Scroll to bottom when messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length]);
+
+  if (!thread) {
+    return (
+      <div
+        className="w-full h-full flex flex-col items-center justify-center p-8 bg-muted/10 text-center text-muted-foreground"
+        dir="rtl"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-card border border-border flex items-center justify-center text-primary shadow-xs mb-3">
+          <ShoppingBag className="w-8 h-8 opacity-60" />
+        </div>
+        <h3 className="text-sm font-bold text-foreground mb-1">اختر محادثة من القائمة</h3>
+        <p className="text-xs max-w-sm text-muted-foreground leading-relaxed">
+          انقر على أي محادثة في القائمة لعرض الرسائل وتجهيز الطلب والرد على العميل مباشرة.
+        </p>
+      </div>
+    );
+  }
+
+  // Calculate elapsed waiting time
+  const getElapsedWait = () => {
+    try {
+      const dateVal = thread.lastMessageAt || thread.createdAt;
+      if (!dateVal) return { text: "الآن", level: "green" };
+      const diffMs = Date.now() - new Date(dateVal).getTime();
+      if (isNaN(diffMs)) return { text: "الآن", level: "green" };
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1) return { text: "الآن", level: "green" };
+      if (mins < 5) return { text: `${mins} د`, level: "green" };
+      if (mins < 20) return { text: `${mins} د`, level: "amber" };
+      const hours = Math.floor(mins / 60);
+      return { text: `${hours} س`, level: "red" };
+    } catch {
+      return { text: "-", level: "green" };
+    }
+  };
+  const waitInfo = getElapsedWait();
+
+  // Handle file uploads (Private R2 upload via /api/upload)
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("حجم الملف كبير جداً (الحد ٤ ميغابايت)");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Data = reader.result as string;
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dataUrl: base64Data, folder: "chat" }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "فشل رفع الملف");
+        }
+
+        const data = await res.json();
+        if (data.url) {
+          onSendMessage({ imageUrl: data.url, text: inputText.trim() || undefined });
+          setInputText("");
+          toast.success("تم إرفاق الملف بنجاح");
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      toast.error(err.message || "حدث خطأ أثناء رفع الملف");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Handle typing state
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+
+    // Auto-resize
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+
+    // Broadcast typing
+    if (thread) {
+      import("@/lib/api").then(({ api }) => {
+        void api.sendTyping(thread.id, true, "admin");
+      });
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        import("@/lib/api").then(({ api }) => {
+          void api.sendTyping(thread.id, false, "admin");
+        });
+      }, 3000);
+    }
+  };
+
+  const handleSendText = () => {
+    if (!inputText.trim()) return;
+
+    const clientMessageId = `admin-msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    onSendMessage({ text: inputText.trim(), clientMessageId } as any);
+
+    setInputText("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+
+    if (thread) {
+      import("@/lib/api").then(({ api }) => {
+        void api.sendTyping(thread.id, false, "admin");
+      });
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      void handleFileUpload(files[0]);
+    }
+  };
+
+  // Contextual quick suggestions based on mode
+  const getContextSuggestions = () => {
+    if (thread.mode === "ORDER_PREPARATION") {
+      return [
+        "جاري تجهيز طلبك الآن وسنرسل التفاصيل خلال دقائق ⏳",
+        "تم إنشاء الحساب بنجاح، جاري تفعيل اللعبة 🎮",
+        "يرجى تزويدنا بكود التحقق الواصل إليك لإكمال الدخول 🔐",
+      ];
+    }
+    if (thread.mode === "WAITING_FOR_USER") {
+      return [
+        "ننتظر تأكيدك للدخول للحساب وإكمال العملية 👍",
+        "هل واجهتك أي مشكلة أثناء إدخال البيانات؟",
+        "يرجى تزويدنا بصورة لرسالة الخطأ التي تظهر على شاشتك 📸",
+      ];
+    }
+    if (thread.needsAdmin || thread.mode === "ESCALATED" || thread.mode === "WAITING_FOR_ADMIN") {
+      return [
+        "أهلاً بك، تم استلام المحادثة من قبل المشرف وسيتم مساعدتك فوراً.",
+        "نعتذر عن الانتظار، جاري فحص المشكلة الآن وحلها 🌟",
+      ];
+    }
+    return [
+      "أهلاً بك في متجر بنانتو! كيف يمكننا مساعدتك اليوم؟ 👋",
+      "تم حل المشكلة وتأكيد التفعيل بنجاح. سعداء بخدمتك! 🌟",
+    ];
+  };
+
+  const THREAD_MODES: { mode: ThreadMode; label: string; desc: string; color: string }[] = [
+    {
+      mode: "ADMIN_ACTIVE",
+      label: "مشرف نشط",
+      desc: "المحادثة مدارة يدويًا بواسطة المشرف",
+      color: "text-foreground bg-muted",
+    },
+    {
+      mode: "ORDER_PREPARATION",
+      label: "قيد تجهيز الطلب",
+      desc: "جاري تجهيز الحساب أو الكود للعميل",
+      color: "text-amber-700 bg-amber-500/10",
+    },
+    {
+      mode: "WAITING_FOR_USER",
+      label: "بانتظار رد العميل",
+      desc: "تم الرد وننتظر إدخال العميل للبيانات",
+      color: "text-blue-700 bg-blue-500/10",
+    },
+    {
+      mode: "WAITING_FOR_ADMIN",
+      label: "بانتظار المشرف",
+      desc: "المحادثة تتطلب ردًا عاجلاً من الإدارة",
+      color: "text-red-700 bg-red-500/10",
+    },
+    {
+      mode: "ESCALATED",
+      label: "تصعيد عاجل",
+      desc: "تم تحويل المحادثة لمشرف رئيسي",
+      color: "text-purple-700 bg-purple-500/10",
+    },
+    {
+      mode: "RESOLVED",
+      label: "تم الحل والإنهاء",
+      desc: "تم إكمال الطلب وحل الاستفسار",
+      color: "text-emerald-700 bg-emerald-500/10",
+    },
+  ];
+
+  return (
+    <ConversationErrorBoundary>
+      <div
+        className="w-full h-full flex flex-col bg-card overflow-hidden relative"
+        dir="rtl"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Drag & Drop Visual Overlay */}
+        {isDragging && (
+          <div className="absolute inset-0 z-40 bg-primary/20 backdrop-blur-xs border-2 border-dashed border-primary flex items-center justify-center pointer-events-none">
+            <div className="p-4 bg-card rounded-2xl shadow-xl flex items-center gap-2 font-bold text-xs text-primary">
+              <Paperclip className="w-5 h-5" />
+              <span>أفلت الصورة هنا لرفعها وإرسالها للعميل</span>
+            </div>
+          </div>
+        )}
+
+        {/* 1. Header Toolbar */}
+        <div className="p-3 border-b border-border bg-card flex items-center justify-between gap-3 shrink-0 shadow-2xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Back button on mobile */}
+            {onBackToList && (
+              <button
+                onClick={onBackToList}
+                className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                title="رجوع للقائمة"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            )}
+
+            <div
+              onClick={() => setIsCustomerDrawerOpen(true)}
+              className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity min-w-0"
+              title="عرض ملف العميل"
+            >
+              <div className="w-9 h-9 relative rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 border border-primary/20">
+                {thread.userName ? thread.userName.charAt(0).toUpperCase() : "U"}
+                {isCustomerOnline && (
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-card ring-2 ring-emerald-500/20" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-xs text-foreground truncate">
+                    {thread.userName || "عميل"}
+                  </span>
+                  {thread.userId && (
+                    <span className="text-[10px] text-muted-foreground font-mono bg-muted/60 px-1.5 py-0.2 rounded">
+                      {thread.userId}
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-muted-foreground truncate">
+                  {thread.subject || "محادثة الدعم"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Header Right Actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Waiting Timer Badge */}
+            <div
+              className={`hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+                waitInfo.level === "red"
+                  ? "bg-red-500/15 text-red-700 dark:text-red-400 animate-pulse"
+                  : waitInfo.level === "amber"
+                    ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                    : "bg-muted text-muted-foreground"
+              }`}
+              title="وقت الانتظار منذ آخر رسالة"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>انتظار: {waitInfo.text}</span>
+            </div>
+
+            {/* Mode Switcher Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsModeDropdownOpen(!isModeDropdownOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 hover:bg-muted border border-border rounded-xl text-xs font-bold text-foreground transition-all"
+              >
+                <span>
+                  {THREAD_MODES.find((m) => m.mode === thread.mode)?.label ||
+                    thread.mode ||
+                    "الوضع"}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+
+              {isModeDropdownOpen && (
+                <div className="absolute left-0 mt-1.5 w-56 bg-card border border-border rounded-2xl shadow-xl p-1.5 z-50 animate-in fade-in space-y-1">
+                  <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    تغيير حالة المحادثة
+                  </div>
+                  {THREAD_MODES.map((m) => (
+                    <button
+                      key={m.mode}
+                      onClick={() => {
+                        onSetThreadMode(m.mode);
+                        setIsModeDropdownOpen(false);
+                        toast.success(`تم تغيير الوضع إلى: ${m.label}`);
+                      }}
+                      className={`w-full text-right p-2 rounded-xl text-xs flex flex-col transition-colors ${
+                        thread.mode === m.mode
+                          ? "bg-primary text-primary-foreground font-bold"
+                          : "hover:bg-muted text-foreground"
+                      }`}
+                    >
+                      <span className="font-semibold">{m.label}</span>
+                      <span className="text-[10px] opacity-75">{m.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Customer info button */}
+            <button
+              onClick={() => setIsCustomerDrawerOpen(true)}
+              className="p-2 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl border border-border transition-colors"
+              title="معلومات العميل والطلبات"
+            >
+              <User className="w-4 h-4" />
+            </button>
+
+            {/* Close/Resolve Button */}
+            <button
+              onClick={() => {
+                const newStatus = thread.status === "open" ? "closed" : "open";
+                onSetThreadStatus(newStatus);
+                toast.success(
+                  newStatus === "closed" ? "تم إغلاق التذكرة" : "تمت إعادة فتح التذكرة",
+                );
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                thread.status === "open"
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                  : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+              }`}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>{thread.status === "open" ? "إغلاق التذكرة" : "إعادة الفتح"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 2. Order Context Strip (If order linked) - Lightweight, non-intrusive */}
+        {(linkedOrder || thread.orderId) && (
+          <div className="p-2.5 px-4 bg-muted/25 border-b border-border flex items-center justify-between gap-3 shrink-0 text-xs">
+            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+              <ShoppingBag className="w-4 h-4 text-blue-500 shrink-0" />
+              <span className="font-mono font-bold text-foreground">
+                #{linkedOrder?.code || (thread.orderId ? thread.orderId.slice(-6) : "")}
+              </span>
+              {linkedOrder?.items && linkedOrder.items.length > 0 && (
+                <span className="text-muted-foreground truncate max-w-xs">
+                  {linkedOrder.items.map((i) => i.title).join(", ")}
+                </span>
+              )}
+              {linkedOrder?.total !== undefined && (
+                <span className="font-bold text-foreground">
+                  {Number(linkedOrder.total).toLocaleString()} {linkedOrder.currency || "IQD"}
+                </span>
+              )}
+              {linkedOrder?.status && (
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                    linkedOrder.status === "completed"
+                      ? "bg-emerald-500/10 text-emerald-600"
+                      : linkedOrder.status === "processing"
+                        ? "bg-amber-500/10 text-amber-600"
+                        : "bg-blue-500/10 text-blue-600"
+                  }`}
+                >
+                  {linkedOrder.status === "completed"
+                    ? "تم التسليم"
+                    : linkedOrder.status === "processing"
+                      ? "قيد التجهيز"
+                      : linkedOrder.status}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsOrderDrawerOpen(true)}
+                className="text-[11px] font-bold text-primary hover:underline px-2 py-1 rounded hover:bg-primary/5"
+              >
+                معاينة الطلب
+              </button>
+              {onNavigateToOrder && (linkedOrder?.id || thread.orderId) && (
+                <button
+                  type="button"
+                  onClick={() => onNavigateToOrder(linkedOrder?.id || thread.orderId!)}
+                  className="text-[11px] font-bold text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded-lg flex items-center gap-1 border border-border"
+                  title="فتح صفحة إدارة الطلبات"
+                >
+                  <span>إدارة الطلب</span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 3. Messages Stream */}
+        <div
+          ref={messagesContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#F8FAFC] dark:bg-card/40"
+        >
+          {isLoadingMessages ? (
+            <div className="p-12 text-center text-muted-foreground text-xs space-y-2">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-primary" />
+              <div>جاري تحميل الرسائل...</div>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground text-xs space-y-2">
+              <Sparkles className="w-8 h-8 mx-auto text-muted-foreground/30" />
+              <div className="font-semibold">لا توجد رسائل سابقة في هذه المحادثة</div>
+              <p className="text-[11px] text-muted-foreground/70">
+                يمكنك كتابة رسالة أو إرسال بيانات الحساب أو استخدام الردود السريعة أدناه.
+              </p>
+            </div>
+          ) : (
+            <>
+              {isLoadingOlder && (
+                <div className="py-2 flex justify-center">
+                  <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {messages.map((msg) => (
+                <MessageCard
+                  key={msg.id}
+                  message={msg}
+                  onSelectSuggestion={(text) => setInputText(text)}
+                />
+              ))}
+            </>
+          )}
+
+          {/* Animated Typing Indicator */}
+          {isCustomerTyping && (
+            <div className="flex justify-start mb-2 px-1">
+              <div className="flex w-fit items-center gap-1.5 rounded-2xl rounded-tr-sm bg-card border border-border px-4 py-3 shadow-sm">
+                <span className="flex gap-1">
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-emerald-500/60 animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-emerald-500/60 animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-emerald-500/60 animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </span>
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  العميل يكتب...
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* 4. Contextual Suggestions Pills */}
+        <div className="px-3 py-1.5 border-t border-border bg-card/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+          <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 shrink-0">
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            اقتراحات:
+          </span>
+          {getContextSuggestions().map((sugg, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setInputText(sugg)}
+              className="whitespace-nowrap px-2.5 py-1 bg-muted/40 hover:bg-muted text-foreground text-[11px] rounded-lg transition-colors border border-border/40 shrink-0"
+            >
+              {sugg}
+            </button>
+          ))}
+        </div>
+
+        {/* 5. Modern Composer Toolbar & Input */}
+        <div className="p-3 border-t border-border bg-card space-y-2 shrink-0">
+          {/* Actions Bar */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Account Credentials Tool */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountToolsDefaultTab("credentials");
+                  setIsAccountToolsOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>تجهيز بيانات الحساب</span>
+              </button>
+
+              {/* OTP Tool */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountToolsDefaultTab("otp");
+                  setIsAccountToolsOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold transition-colors"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>كود التحقق</span>
+              </button>
+
+              {/* Instructions Tool */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountToolsDefaultTab("instructions");
+                  setIsAccountToolsOpen(true);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold transition-colors"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>تعليمات</span>
+              </button>
+
+              {/* Quick Replies */}
+              <button
+                type="button"
+                onClick={() => setIsQuickRepliesOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-1 bg-muted/50 hover:bg-muted text-foreground border border-border rounded-lg text-xs font-bold transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span>ردود جاهزة</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Text Area & Send Controls */}
+          <div className="flex items-end gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  void handleFileUpload(e.target.files[0]);
+                }
+              }}
+            />
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="p-2.5 text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted border border-border rounded-xl transition-colors shrink-0"
+              title="إرفاق صورة"
+            >
+              {isUploading ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Paperclip className="w-4 h-4" />
+              )}
+            </button>
+
+            <div className="flex-1 relative">
+              <textarea
+                ref={textareaRef}
+                value={inputText}
+                onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendText();
+                  }
+                }}
+                placeholder="اكتب ردك للعميل هنا... (Enter للإرسال)"
+                rows={1}
+                className="w-full resize-none p-2.5 pr-3 bg-muted/30 border border-border rounded-xl text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground/60 leading-relaxed max-h-32"
+              />
+            </div>
+
+            <button
+              type="button"
+              disabled={!inputText.trim() || isSending}
+              onClick={handleSendText}
+              className="p-2.5 bg-foreground hover:bg-foreground/90 disabled:opacity-40 text-background rounded-xl transition-all shadow-xs shrink-0 flex items-center justify-center"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Account Tools Modal */}
+        {isAccountToolsOpen && (
+          <AccountToolsModal
+            isOpen={isAccountToolsOpen}
+            onClose={() => setIsAccountToolsOpen(false)}
+            defaultTab={accountToolsDefaultTab}
+            linkedOrder={linkedOrder}
+            onSendPayload={(payload) => {
+              onSendMessage(payload);
+              setIsAccountToolsOpen(false);
+            }}
+          />
+        )}
+
+        {/* Quick Replies Modal */}
+        {isQuickRepliesOpen && (
+          <QuickRepliesModal
+            isOpen={isQuickRepliesOpen}
+            onClose={() => setIsQuickRepliesOpen(false)}
+            onSelectReply={(text) => {
+              setInputText(text);
+              setIsQuickRepliesOpen(false);
+            }}
+          />
+        )}
+
+        {/* Customer Details Drawer */}
+        {isCustomerDrawerOpen && (
+          <CustomerDetailsDrawer
+            isOpen={isCustomerDrawerOpen}
+            onClose={() => setIsCustomerDrawerOpen(false)}
+            userId={thread.userId}
+            userName={thread.userName}
+            orders={orders}
+            onSelectOrder={(orderId) => {
+              setIsCustomerDrawerOpen(false);
+              if (onNavigateToOrder) {
+                onNavigateToOrder(orderId);
+              } else {
+                setIsOrderDrawerOpen(true);
+              }
+            }}
+          />
+        )}
+
+        {/* Order Preview Drawer */}
+        {isOrderDrawerOpen && linkedOrder && (
+          <OrderPreviewDrawer
+            isOpen={isOrderDrawerOpen}
+            onClose={() => setIsOrderDrawerOpen(false)}
+            order={linkedOrder}
+            onOpenFullOrder={() => {
+              setIsOrderDrawerOpen(false);
+              if (onNavigateToOrder) {
+                onNavigateToOrder(linkedOrder.id);
+              }
+            }}
+          />
+        )}
+      </div>
+    </ConversationErrorBoundary>
+  );
+}
+export default ActiveConversation;

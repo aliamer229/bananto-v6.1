@@ -1,0 +1,6 @@
+{
+  "name": "Bananto-v4",
+  "description": "Nintendo gaming hub, product catalog, trade-in pricing, digital wallet, and order management platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

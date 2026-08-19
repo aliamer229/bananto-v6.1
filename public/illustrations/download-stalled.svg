@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="شريط تحميل واقف عند 42 بالمئة مع إشارة واي فاي ضعيفة">
+  <rect width="800" height="600" fill="#FFF9EC"/>
+  <circle cx="110" cy="110" r="130" fill="#E2F4FF" opacity=".6"/>
+  <circle cx="700" cy="510" r="140" fill="#FFEFB0" opacity=".45"/>
+  <rect x="108" y="152" width="592" height="304" rx="30" fill="#211A3D" opacity=".1"/>
+  <rect x="100" y="140" width="592" height="304" rx="30" fill="#FFFDF8" stroke="#EDDFC6" stroke-width="3"/>
+  <rect x="142" y="186" width="92" height="92" rx="20" fill="#7C5CFF" stroke="#211A3D" stroke-width="4"/>
+  <path d="M188 210v40M172 236l16 16 16-16" fill="none" stroke="#FFFDF8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="258" y="196" width="210" height="16" rx="8" fill="#211A3D" opacity=".75"/>
+  <rect x="258" y="226" width="130" height="12" rx="6" fill="#9A93B5"/>
+  <rect x="142" y="318" width="508" height="26" rx="13" fill="#F9EFDB"/>
+  <rect x="142" y="318" width="213" height="26" rx="13" fill="#FFC32E"/>
+  <text x="650" y="300" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="26" font-weight="700" fill="#211A3D">42%</text>
+  <g transform="translate(178 388)">
+    <circle cx="0" cy="14" r="6" fill="#EF4A52"/>
+    <path d="M-16 0a22 22 0 0 1 32 0" fill="none" stroke="#EF4A52" stroke-width="5" stroke-linecap="round"/>
+    <path d="M-30-16a44 44 0 0 1 60 0" fill="none" stroke="#EDDFC6" stroke-width="5" stroke-linecap="round"/>
+    <path d="M-44-32a66 66 0 0 1 88 0" fill="none" stroke="#EDDFC6" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <rect x="252" y="378" width="180" height="12" rx="6" fill="#9A93B5" opacity=".6"/>
+  <rect x="252" y="402" width="120" height="10" rx="5" fill="#EDDFC6"/>
+  <g transform="translate(566 372)">
+    <circle cx="0" cy="0" r="34" fill="#FFF8DC" stroke="#F0A202" stroke-width="4"/>
+    <path d="M0-16v18l12 8" fill="none" stroke="#F0A202" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

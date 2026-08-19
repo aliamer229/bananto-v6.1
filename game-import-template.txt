@@ -1,0 +1,103 @@
+[IMPORT]
+schema_version=1
+
+[GAME]
+name=Splatoon 3
+platform=Nintendo Switch
+publisher=Nintendo
+developer=Nintendo
+release_date=2022-09-09
+release_status=released
+price_usd=59.99
+metacritic=83
+opencritic=84
+players_min=1
+players_max=8
+game_size_gb=6.0
+
+[DESCRIPTION]
+short=A colorful third-person shooter where players use ink to claim territory.
+full=Splatoon 3 is the third installment in the Splatoon series. It features new weapons, stages, and a brand new story mode set in the Splatlands.
+
+[IMAGES]
+front=https://example.com/splatoon3-front.jpg
+fullcoverhq=https://example.com/splatoon3-full.jpg
+
+[TRAILER]
+title=Splatoon 3 - Launch Trailer
+url=https://www.youtube.com/watch?v=example
+
+[GENRES]
+1=Action
+2=Shooter
+3=Multiplayer
+
+[NINTENDO]
+official_store_url=https://www.nintendo.com/store/products/splatoon-3-switch/
+requires_nintendo_switch_online=true
+save_data_cloud=true
+game_key_card=true
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+
+[SWITCH_2]
+switch_2_exclusive=false
+switch_2_enhanced=true
+upgrade_price=0
+
+[EDITIONS]
+1.name=Standard Edition
+1.price_usd=59.99
+1.cover=https://example.com/std.jpg
+2.name=Deluxe Edition
+2.price_usd=79.99
+2.contents=Base Game, Art Book, Sticker Set
+
+[GAMEPLAY]
+1.title=Turf War
+1.description=The classic 4v4 mode where you ink the most territory to win.
+1.image=https://example.com/gameplay1.jpg
+2.title=Salmon Run Next Wave
+2.description=Co-op mode where you fight off waves of Salmonids.
+
+[STORY]
+world_summary=Set in the Splatlands, a sun-scorched desert inhabited by battle-hardened Inklings and Octolings.
+1.title=Return of the Mammalians
+1.text=Explore the mysterious structure known as Alterna.
+
+[GALLERY]
+1.image=https://example.com/screen1.jpg
+1.description=Battle in the Splatlands.
+2.image=https://example.com/screen2.jpg
+2.description=New weapons in action.
+
+[REVIEWS]
+metacritic=83
+1.source=IGN
+1.score=9/10
+1.quote=Splatoon 3 is the best version of the series yet.
+1.url=https://ign.com/reviews/splatoon-3
+
+[TIMELINE]
+1.date=2021-02-17
+1.title=Announcement
+1.details=Revealed during Nintendo Direct.
+
+[UPDATES]
+1.version=1.1.0
+1.date=2022-09-08
+1.changes=Launch day patch.
+
+[SERIES]
+name=Splatoon
+1.name=Splatoon
+1.platform=Wii U
+2.name=Splatoon 2
+2.platform=Nintendo Switch
+
+[STUDIO]
+name=Nintendo EPD
+location=Kyoto, Japan
+description=Nintendo's primary software development division.

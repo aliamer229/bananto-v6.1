@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="قبل المعايرة: نقطة اختبار العصا منحرفة عن المركز">
+  <rect width="800" height="600" fill="#FFF9EC"/>
+  <circle cx="700" cy="110" r="130" fill="#FFE6E6" opacity=".55"/>
+  <circle cx="100" cy="510" r="130" fill="#FFEFB0" opacity=".45"/>
+  <rect x="70" y="70" width="300" height="60" rx="30" fill="#FFE6E6" stroke="#EF4A52" stroke-width="4"/>
+  <text x="220" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#C2202A">BEFORE</text>
+  <g transform="translate(400 330)">
+    <circle cx="0" cy="0" r="170" fill="#FFFDF8" stroke="#EDDFC6" stroke-width="5"/>
+    <circle cx="0" cy="0" r="112" fill="none" stroke="#EDDFC6" stroke-width="3" stroke-dasharray="8 10"/>
+    <circle cx="0" cy="0" r="54" fill="none" stroke="#EDDFC6" stroke-width="3" stroke-dasharray="8 10"/>
+    <line x1="-170" y1="0" x2="170" y2="0" stroke="#EDDFC6" stroke-width="3"/>
+    <line x1="0" y1="-170" x2="0" y2="170" stroke="#EDDFC6" stroke-width="3"/>
+    <circle cx="0" cy="0" r="8" fill="#9A93B5"/>
+    <line x1="0" y1="0" x2="88" y2="-62" stroke="#EF4A52" stroke-width="5" stroke-dasharray="7 9" stroke-linecap="round"/>
+    <circle cx="88" cy="-62" r="26" fill="#EF4A52" opacity=".18"/>
+    <circle cx="88" cy="-62" r="15" fill="#EF4A52" stroke="#211A3D" stroke-width="4"/>
+  </g>
+  <g transform="translate(596 476)">
+    <rect x="-150" y="-34" width="300" height="68" rx="26" fill="#FFE6E6" stroke="#EF4A52" stroke-width="4"/>
+    <circle cx="-108" cy="0" r="16" fill="#EF4A52"/>
+    <path d="M-108-8v9" stroke="#FFFDF8" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="-108" cy="6" r="2.2" fill="#FFFDF8"/>
+    <rect x="-78" y="-6" width="200" height="12" rx="6" fill="#EF4A52" opacity=".55"/>
+  </g>
+</svg>

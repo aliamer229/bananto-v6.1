@@ -15,10 +15,18 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+.env
+.env.*
+!.env.example
+.data/
+*.db
+*.sqlite
+*.sqlite3
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+.dev.vars.*
 
 # Editor directories and files
 .vscode/*
@@ -30,3 +38,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# legacy link artifacts
+.legacy-link/
+package-lock.json

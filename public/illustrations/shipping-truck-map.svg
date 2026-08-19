@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="شاحنة توصيل على خط سير بين ثلاث محطات مع علامة استفهام">
+  <rect width="800" height="600" fill="#FFF9EC"/>
+  <circle cx="110" cy="110" r="130" fill="#E2F4FF" opacity=".6"/>
+  <circle cx="700" cy="510" r="140" fill="#FFEFB0" opacity=".45"/>
+  <path d="M110 430C220 430 240 250 380 250s170 150 310 150" fill="none" stroke="#EDDFC6" stroke-width="10" stroke-linecap="round" stroke-dasharray="4 26"/>
+  <path d="M110 430C220 430 240 250 380 250" fill="none" stroke="#FFC32E" stroke-width="10" stroke-linecap="round" stroke-dasharray="4 26"/>
+  <g transform="translate(110 430)">
+    <circle cx="0" cy="0" r="20" fill="#3FAE6B" stroke="#211A3D" stroke-width="4"/>
+    <path d="M-8 0l6 7 11-13" fill="none" stroke="#FFFDF8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(690 400)">
+    <circle cx="0" cy="0" r="24" fill="#FFFDF8" stroke="#9A93B5" stroke-width="4" stroke-dasharray="6 6"/>
+    <text x="0" y="9" text-anchor="middle" font-family="system-ui, sans-serif" font-size="26" font-weight="700" fill="#6B6191">?</text>
+  </g>
+  <g transform="translate(300 176)">
+    <rect x="0" y="40" width="150" height="92" rx="16" fill="#FFFDF8" stroke="#211A3D" stroke-width="5"/>
+    <path d="M150 66h48l34 40v26h-82z" fill="#FFC32E" stroke="#211A3D" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="160" y="76" width="34" height="24" rx="6" fill="#E2F4FF" stroke="#211A3D" stroke-width="4"/>
+    <rect x="24" y="62" width="60" height="46" rx="8" fill="#FFEFB0" stroke="#211A3D" stroke-width="4"/>
+    <path d="M24 85h60M54 62v46" stroke="#211A3D" stroke-width="3.5"/>
+    <circle cx="58" cy="140" r="22" fill="#211A3D"/>
+    <circle cx="58" cy="140" r="9" fill="#FFF9EC"/>
+    <circle cx="196" cy="140" r="22" fill="#211A3D"/>
+    <circle cx="196" cy="140" r="9" fill="#FFF9EC"/>
+  </g>
+  <g stroke="#9A93B5" stroke-width="6" stroke-linecap="round" opacity=".45">
+    <path d="M232 232h-40"/><path d="M256 264h-64"/>
+  </g>
+  <g transform="translate(600 150) rotate(16) scale(1.8)" opacity=".5">
+    <path d="M11 6c-1.6 0-2.8 1.3-2.7 2.9.5 8.3 3 14.6 7.4 19 4.6 4.6 11 6.8 19.2 6.8 2.2 0 3.5-2.4 2.3-4.2-1-1.5-2.6-2.2-4.3-2.3-5.6-.3-9.7-1.9-12.6-4.8-2.9-2.9-4.6-7.2-5.2-13.1C14.9 8.4 13.2 6 11 6Z" fill="#FFC32E" stroke="#211A3D" stroke-width="2.2" stroke-linejoin="round"/>
+  </g>
+</svg>

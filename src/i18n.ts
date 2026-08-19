@@ -1,0 +1,589 @@
+import { create } from "zustand";
+
+import { LEGACY_TR } from "./i18n.tr";
+import {
+  DEFAULT_LOCALE,
+  isLocale,
+  plural as pluralOf,
+  translate,
+  type Locale,
+  type TranslationKey,
+} from "./lib/i18n";
+import { LANG_COOKIE, dirOf, isLang, writeCookie, type Lang } from "./lib/prefs";
+
+type Language = Lang;
+
+interface I18nStore {
+  lang: Language;
+  setLang: (lang: Language) => void;
+  t: (key: string) => string;
+}
+
+/**
+ * Dictionary keyed by the Arabic source string, so any untranslated literal
+ * still renders correctly (the key itself is the Arabic copy).
+ *
+ * Turkish lives in `src/i18n.tr.ts` and is merged in below, which keeps this
+ * (already long) table readable and its existing entries untouched.
+ */
+const translations: Record<string, { en: string; ku: string; tr?: string }> = {
+  "جديد ومتصدر: منتجات": { en: "New & Trending", ku: "Nû û Trend" },
+  "الخدمات الأكثر شعبية": { en: "Most Popular Services", ku: "Xizmetên Navdar" },
+  "جميع المنتجات: الأعلى تقييماً": { en: "Top Rated Products", ku: "Berhemên Baş" },
+  "أكواد شحن وباقات": { en: "Top-up & Gift Cards", ku: "Kartên Diyariyê" },
+  "مكتبة الألعاب": { en: "Games Library", ku: "Pirtûkxaneya Lîstikan" },
+  "عرض الكل": { en: "View All", ku: "Hemî Bibîne" },
+  "بحث...": { en: "Search...", ku: "Lêgerîn..." },
+  "لوحة الإدارة": { en: "Admin Dashboard", ku: "Rêvebirî" },
+  "إضافة للسلة": { en: "Add to Cart", ku: "Têxe Sepetê" },
+  "شراء الآن": { en: "Buy Now", ku: "Niha Bikire" },
+  "نظرة عامة": { en: "Overview", ku: "Pêşdîtin" },
+  "تفاصيل الحساب": { en: "Account Details", ku: "Hûrguliyên Hesabê" },
+  الميديا: { en: "Media", ku: "Medya" },
+  "خيارات وشراء": { en: "Options & Buy", ku: "Vebijêrk û Kirîn" },
+  "ألعاب متعلقة": { en: "Related Games", ku: "Lîstikên Têkildar" },
+  السعر: { en: "Price", ku: "Biha" },
+  "التعليقات والمراجعات": { en: "Comments & Reviews", ku: "Şîrove û Nirxandin" },
+  "مشتريات متعلقة": { en: "Related Purchases", ku: "Kirînên Têkildar" },
+
+  // Navigation & shell
+  الرئيسية: { en: "Home", ku: "Serrûpel" },
+  المحادثة: { en: "Chat", ku: "Chat" },
+  المحادثات: { en: "Chats", ku: "Chat" },
+  السلة: { en: "Cart", ku: "Sepet" },
+  حسابي: { en: "My Account", ku: "Hesabê Min" },
+  "سوق الموز": { en: "Banana Market", ku: "Bazara Mûzê" },
+  "منصة الأشرطة": { en: "Cartridge Shelf", ku: "Refa Kartrîcan" },
+  "كل الأشرطة": { en: "All Cartridges", ku: "Hemû Kartrîc" },
+  "مرحباً بك في عالم بنانا": {
+    en: "Welcome to the Banana world",
+    ku: "Bi xêr hatî cîhana Bananto",
+  },
+  "حرّك المؤشر لتدوير الشريط": {
+    en: "Move the pointer to rotate the cartridge",
+    ku: "Nîşankerê bilivîne ji bo zivirandinê",
+  },
+  "ابحث عن منتج...": { en: "Search for a product...", ku: "Li berhemê bigere..." },
+  "ابحث عن حساب…": { en: "Search for an account…", ku: "Li hesabê bigere…" },
+  "لا توجد منتجات مطابقة": { en: "No matching products", ku: "Berhemek lihev nehat" },
+  "لا توجد ألعاب في هذا التصنيف حالياً.": {
+    en: "No games in this category yet.",
+    ku: "Di vê beşê de lîstik nînin.",
+  },
+  "تصفح المتجر": { en: "Browse the store", ku: "Li firotgehê bigere" },
+  "رجوع للمتجر": { en: "Back to store", ku: "Vegere firotgehê" },
+  الإعدادات: { en: "Settings", ku: "Rêkxistin" },
+  اللغة: { en: "Language", ku: "Ziman" },
+  العربية: { en: "Arabic", ku: "Erebî" },
+  English: { en: "English", ku: "Îngilîzî" },
+  "English (EN)": { en: "English (EN)", ku: "Îngilîzî (EN)" },
+  "العربية (AR)": { en: "Arabic (AR)", ku: "Erebî (AR)" },
+  "کوردی (KU)": { en: "Kurdish (KU)", ku: "Kurdî (KU)" },
+  کوردی: { en: "Kurdish", ku: "Kurdî" },
+  "دينار عراقي": { en: "Iraqi Dinar", ku: "Dînarê Iraqî" },
+  "دولار أمريكي": { en: "US Dollar", ku: "Dolarê Amerîkî" },
+  "اللغات المدعومة": { en: "Supported languages", ku: "Zimanên piştgirîkirî" },
+  الموقع: { en: "Location", ku: "Cih" },
+  "موقع جديد": { en: "New location", ku: "Cihê nû" },
+  "موقع جديد...": { en: "New location...", ku: "Cihê nû..." },
+  العنوان: { en: "Address", ku: "Navnîşan" },
+  العناوين: { en: "Addresses", ku: "Navnîşan" },
+  "عناويني المحفوظة": { en: "My saved addresses", ku: "Navnîşanên tomarkirî" },
+  "عناوين التوصيل الخاصة بك": { en: "Your delivery addresses", ku: "Navnîşanên gihandinê" },
+  "الخلفية والثيم": { en: "Background & theme", ku: "Rûkar û Tema" },
+  "الفاتح والداكن مجانيان، والخلفيات الأخرى تُفتح بشراء المكافأة بالموز.": {
+    en: "Light and dark are free; other backgrounds unlock by redeeming bananas.",
+    ku: "Ronî û tarî belaş in; yên din bi mûz vebûne.",
+  },
+  "فتح خلفيات جديدة من استبدال الموز": {
+    en: "Unlock new backgrounds in banana rewards",
+    ku: "Rûkarên nû bi mûz veke",
+  },
+  "مطبّقة الآن": { en: "Applied", ku: "Tê bikaranîn" },
+  متاحة: { en: "Available", ku: "Berdest" },
+  الأصوات: { en: "Sound effects", ku: "Deng" },
+  الموسيقى: { en: "Music", ku: "Muzîk" },
+  "حركة مخففة (أجهزة أقل قوة)": {
+    en: "Reduced motion (low-end devices)",
+    ku: "Livîna kêm (cîhazên qels)",
+  },
+  "تقليل الأنميشن والتأثيرات لتشغيل أسرع.": {
+    en: "Fewer animations and effects for a faster experience.",
+    ku: "Kêmtir anîmasyon ji bo lezê.",
+  },
+  المظهر: { en: "Appearance", ku: "Xuyang" },
+  العملة: { en: "Currency", ku: "Dirav" },
+  "الملف الشخصي": { en: "Profile", ku: "Profîl" },
+
+  // Product & cart
+  "معلومات المنتج": { en: "Product info", ku: "Zanyariya berhemê" },
+  "نبذة عن اللعبة": { en: "About the game", ku: "Derbarê lîstikê" },
+  "مواصفات وبيانات اللعبة": { en: "Game specs & data", ku: "Taybetmendiyên lîstikê" },
+  الوصف: { en: "Description", ku: "Rave" },
+  "العرض الترويجي": { en: "Trailer", ku: "Trailer" },
+  "العرض الترويجي الرسمي (Trailer)": { en: "Official trailer", ku: "Trailerê fermî" },
+  "انقر هنا لمشاهدة التريلر المباشر للعبة على يوتيوب": {
+    en: "Tap to watch the game trailer on YouTube",
+    ku: "Ji bo dîtina trailerê li YouTube bitikîne",
+  },
+  "فتح في يوتيوب": { en: "Open on YouTube", ku: "Li YouTube veke" },
+  "النسخ والإصدارات المتاحة": { en: "Available editions", ku: "Weşanên berdest" },
+  "منتج مقترح": { en: "Suggested product", ku: "Berhemê pêşniyarkirî" },
+  "عرض التفاصيل": { en: "View details", ku: "Hûrgulî bibîne" },
+  "لم يتم العثور على هذا المنتج.": {
+    en: "This product was not found.",
+    ku: "Ev berhem nehat dîtin.",
+  },
+  "تاريخ الإصدار": { en: "Release date", ku: "Dîroka weşanê" },
+  "حجم اللعبة": { en: "Game size", ku: "Mezinahiya lîstikê" },
+  "عدد اللاعبين": { en: "Players", ku: "Lîstikvan" },
+  الجهاز: { en: "Device", ku: "Cîhaz" },
+  الكمية: { en: "Quantity", ku: "Hejmar" },
+  "سلة المشتريات": { en: "Shopping cart", ku: "Sepeta kirînê" },
+  "السلة فارغة.": { en: "Your cart is empty.", ku: "Sepet vala ye." },
+  الإجمالي: { en: "Total", ku: "Giştî" },
+  "الإجمالي المتوقع": { en: "Estimated total", ku: "Giştiya texmînî" },
+  "عنوان التوصيل (للأجهزة)": {
+    en: "Delivery address (hardware)",
+    ku: "Navnîşana gihandinê (cîhaz)",
+  },
+  "اكتب عنوان التوصيل بالتفصيل...": {
+    en: "Write the full delivery address...",
+    ku: "Navnîşanê bi hûrgulî binivîse...",
+  },
+  "يحتاج عنوان توصيل": { en: "Needs a delivery address", ku: "Navnîşan pêwîst e" },
+  "طلبك يحتوي حسابات رقمية فقط — لا حاجة لعنوان، سيتم تسليم البيانات في محادثة الطلب.": {
+    en: "Your order is digital only — no address needed, details arrive in the order chat.",
+    ku: "Fermana te tenê dîjîtal e — navnîşan ne pêwîst e.",
+  },
+  "تسليم فوري في محادثة الطلب": {
+    en: "Instant delivery in the order chat",
+    ku: "Gihandina tavilê di chatê de",
+  },
+  "اختر طريقة الدفع لتعبئة محفظتك:": {
+    en: "Choose a payment method to top up:",
+    ku: "Rêya dayînê hilbijêre:",
+  },
+  "اختيار العملة": { en: "Select Currency", ku: "Hilbijartina Dirav" },
+  "اختر عملة العرض المناسبة لك": {
+    en: "Select your preferred display currency",
+    ku: "Diravê nîşandanê yê bijarte hilbijêre",
+  },
+  "العملتان الرئيسيتان:": { en: "Primary Currencies:", ku: "Diravên Sereke:" },
+  "ابحث عن أي عملة عالمية (SAR, EUR, GBP, ...)": {
+    en: "Search for any global currency (SAR, EUR, GBP, ...)",
+    ku: "Li her diravekî cîhanî bigere (SAR, EUR, GBP, ...)",
+  },
+  "جميع العملات العالمية:": { en: "All Global Currencies:", ku: "Hemû Diravên Cîhanî:" },
+  "لم يتم العثور على عملة بهذه المواصفات": {
+    en: "No currency found with these specifications",
+    ku: "Diravek bi van taybetmendiyan nehat dîtin",
+  },
+  "سعر الصرف العراقي الأساسي:": {
+    en: "Base Iraqi Exchange Rate:",
+    ku: "Rêjeya Guhertina Iraqî ya Bingehîn:",
+  },
+  "د.ع": { en: "IQD", ku: "IQD" },
+  "ريال سعودي": { en: "Saudi Riyal", ku: "Riyalê Siûdî" },
+  يورو: { en: "Euro", ku: "Euro" },
+  "جنيه إسترليني": { en: "British Pound", ku: "Poundê Brîtanî" },
+  "درهم إماراتي": { en: "UAE Dirham", ku: "Dirhemê Îmaratî" },
+  "دينار كويتي": { en: "Kuwaiti Dinar", ku: "Dînarê Kuweytî" },
+  "دينار بحريني": { en: "Bahraini Dinar", ku: "Dînarê Behrênî" },
+  "ريال عماني": { en: "Omani Rial", ku: "Riyalê Umanî" },
+  "ريال قطري": { en: "Qatari Riyal", ku: "Riyalê Qeterî" },
+  "جنيه مصري": { en: "Egyptian Pound", ku: "Poundê Misrî" },
+  "ليرة تركية": { en: "Turkish Lira", ku: "Lîreya Tirkî" },
+  "دينار أردني": { en: "Jordanian Dinar", ku: "Dînarê Urdunî" },
+  "دولار كندي": { en: "Canadian Dollar", ku: "Dolarê Kanadî" },
+  "دولار أسترالي": { en: "Australian Dollar", ku: "Dolarê Avusturalî" },
+  "ين ياباني": { en: "Japanese Yen", ku: "Yenê Japonî" },
+
+  // Orders & chat
+  طلباتي: { en: "My orders", ku: "Fermanên min" },
+  مشترياتي: { en: "My purchases", ku: "Kirînên min" },
+  "إجمالي مشترياتك": { en: "Your total purchases", ku: "Tevahiya kirînan" },
+  الطلب: { en: "Order", ku: "Ferman" },
+  "اختيار الطلب": { en: "Select order", ku: "Fermanê hilbijêre" },
+  "لا توجد طلبات بعد": { en: "No orders yet", ku: "Hîn ferman nînin" },
+  "لا توجد طلبات بعد.": { en: "No orders yet.", ku: "Hîn ferman nînin." },
+  "المحادثات السابقة": { en: "Previous chats", ku: "Chatên berê" },
+  "لا توجد محادثات سابقة.": { en: "No previous chats.", ku: "Chatên berê nînin." },
+  "سجّل الدخول لعرض طلباتك ومحادثاتك.": {
+    en: "Sign in to see your orders and chats.",
+    ku: "Têkeve ji bo dîtina fermanan.",
+  },
+  إرسال: { en: "Send", ku: "Bişîne" },
+  "إرسال الآن": { en: "Send now", ku: "Niha bişîne" },
+  "إرسال منتج": { en: "Send a product", ku: "Berhemê bişîne" },
+  "إرسال موقع": { en: "Send a location", ku: "Cih bişîne" },
+  "إرسال مبلغ بالمحادثة": { en: "Send an amount in chat", ku: "Mîqdar bi chatê bişîne" },
+  "تأكيد الإرسال": { en: "Confirm sending", ku: "Şandinê bipejirîne" },
+  "تأكيد وإرسال": { en: "Confirm & send", ku: "Bipejirîne û bişîne" },
+  أساعدك: { en: "Help you", ku: "Alîkarî bikim" },
+  "كيف أقدر أساعدك اليوم؟": {
+    en: "How can I help you today?",
+    ku: "Îro çawa dikarim alîkariya we bikim?",
+  },
+  "بحث في المحادثة...": { en: "Search conversation...", ku: "Di axaftinê de bigere..." },
+  "العميل يكتب...": { en: "Customer is typing...", ku: "Mişterî dinivîse..." },
+  "يكتب الآن...": { en: "Typing...", ku: "Dinivîse..." },
+  "متصل الآن": { en: "Online", ku: "Serhêl" },
+  "غير متصل": { en: "Offline", ku: "Derhêl" },
+  "تحميل الرسائل السابقة": { en: "Load older messages", ku: "Peyamên berê bar bike" },
+  "رسائل جديدة بالأسفل": { en: "New messages below", ku: "Peyamên nû li jêr" },
+  "إعادة المحاولة": { en: "Retry", ku: "Dîsa biceribîne" },
+  "فشل الإرسال": { en: "Failed to send", ku: "Şandin bi ser neket" },
+  "جاري الإرسال...": { en: "Sending...", ku: "Tê şandin..." },
+  "جاري الرفع...": { en: "Uploading...", ku: "Tê barkirin..." },
+  "الدعم الآلي": { en: "Automated Support", ku: "Piştgiriya Xweser" },
+  "محادثة الإدارة": { en: "Admin Support", ku: "Piştgiriya Rêveberiyê" },
+  "المبلغ المحول": { en: "Transferred amount", ku: "Mîqdara veguhastî" },
+
+  // Banana market
+  "مخطط السعر": { en: "Price chart", ku: "Xerîteya bihayê" },
+  "السوق مباشر": { en: "Market live", ku: "Bazar zindî" },
+  "عروض السوق": { en: "Market listings", ku: "Pêşkêşiyên bazarê" },
+  "عروضي النشطة": { en: "My active listings", ku: "Pêşkêşiyên min" },
+  "لا يوجد لديك عرض نشط.": { en: "You have no active listing.", ku: "Pêşkêşiya te ya çalak nîne." },
+  "لا توجد عروض حالياً — كن أول من يعرض موزه.": {
+    en: "No listings yet — be the first to sell bananas.",
+    ku: "Pêşkêşî nînin — bibe yekem.",
+  },
+  "لا توجد عروض مطابقة.": { en: "No matching listings.", ku: "Pêşkêşiyên lihev nînin." },
+  "عرض كل العروض": { en: "View all listings", ku: "Hemû pêşkêşî" },
+  "شراء موز": { en: "Buy bananas", ku: "Mûz bikire" },
+  "شراء الموز": { en: "Buy bananas", ku: "Mûz bikire" },
+  بيع: { en: "Sell", ku: "Bifiroşe" },
+  شراء: { en: "Buy", ku: "Bikire" },
+  "تأكيد الشراء": { en: "Confirm purchase", ku: "Kirînê bipejirîne" },
+  "تم الشراء": { en: "Purchased", ku: "Hat kirîn" },
+  "السعر لكل موزة": { en: "Price per banana", ku: "Biha ji bo her mûzê" },
+  "السعر لكل موزة (دولار)": { en: "Price per banana (USD)", ku: "Biha ji bo her mûzê (USD)" },
+  "نسبة السعر مقارنة بسعر السوق": { en: "Price vs. market rate", ku: "Biha li gorî bazarê" },
+  "مقارنة بسعر السوق": { en: "vs. market price", ku: "li gorî bihayê bazarê" },
+  "سعر السوق": { en: "Market price", ku: "Bihayê bazarê" },
+  "السعر الأساسي": { en: "Base price", ku: "Bihayê bingehîn" },
+  "تمييز العرض في أعلى القائمة": { en: "Promote listing to the top", ku: "Pêşkêşî bilind bike" },
+  "مدة الظهور": { en: "Promotion duration", ku: "Dema xuyangê" },
+  "• مميّز": { en: "• Promoted", ku: "• Taybet" },
+  "عرض خاص (بالرابط فقط)": { en: "Private listing (link only)", ku: "Pêşkêşiya taybet (bi link)" },
+  البائع: { en: "Seller", ku: "Firoşkar" },
+  المحفظة: { en: "Wallet", ku: "Cizdan" },
+  "الرصيد المتاح": { en: "Available balance", ku: "Balansê berdest" },
+  "رصيدك:": { en: "Your balance:", ku: "Balansê te:" },
+  رصيدك: { en: "Your balance", ku: "Balansê te" },
+  "رصيدك بعد الاستبدال": { en: "Balance after redeeming", ku: "Balans piştî guhertinê" },
+  "تعبئة الرصيد": { en: "Top up", ku: "Balans zêde bike" },
+  "تحويل رصيد": { en: "Transfer balance", ku: "Balans veguhêze" },
+  "استبدال الموز": { en: "Redeem bananas", ku: "Mûz biguherîne" },
+  استبدال: { en: "Redeem", ku: "Biguherîne" },
+  "تم الاستبدال": { en: "Redeemed", ku: "Hat guhertin" },
+  التكلفة: { en: "Cost", ku: "Berdel" },
+  موز: { en: "bananas", ku: "mûz" },
+  موزة: { en: "banana", ku: "mûz" },
+  "موزة واحدة": { en: "one banana", ku: "yek mûz" },
+  "موزة إلى رصيدك.": { en: "bananas added to your balance.", ku: "mûz li balansê hat zêdekirin." },
+  "اجمع الموز من عمليات الشراء والسوق ثم استبدله بما يعجبك.": {
+    en: "Collect bananas from purchases and the market, then redeem them.",
+    ku: "Mûz ji kirîn û bazarê berhev bike û biguherîne.",
+  },
+  "لا توجد مكافآت في هذا التصنيف.": {
+    en: "No rewards in this category.",
+    ku: "Xelat di vê beşê de nînin.",
+  },
+  "أكمل ملفك الشخصي للمشاركة في السوق": {
+    en: "Complete your profile to trade",
+    ku: "Profîla xwe temam bike",
+  },
+  "سجّل الدخول للمشاركة في السوق": {
+    en: "Sign in to trade in the market",
+    ku: "Têkeve ji bo bazirganiyê",
+  },
+
+  // Auth & profile
+  "تسجيل الدخول": { en: "Sign in", ku: "Têkeve" },
+  دخول: { en: "Sign in", ku: "Têkeve" },
+  "دخول / حساب جديد": { en: "Sign in / Sign up", ku: "Têkeve / Hesabê nû" },
+  "إنشاء حساب": { en: "Create account", ku: "Hesab çêke" },
+  "إنشاء حساب جديد": { en: "Create a new account", ku: "Hesabekî nû çêke" },
+  "إنشاء كلمة المرور": { en: "Create a password", ku: "Şîfre çêke" },
+  "كلمة المرور": { en: "Password", ku: "Şîfre" },
+  "كلمة المرور الجديدة": { en: "New password", ku: "Şîfreya nû" },
+  "كلمة مرور جديدة": { en: "New password", ku: "Şîfreya nû" },
+  "هل نسيت كلمة المرور؟": { en: "Forgot your password?", ku: "Şîfre ji bîr kir?" },
+  "استعادة كلمة المرور": { en: "Reset password", ku: "Şîfre nû bike" },
+  "العودة لتسجيل الدخول": { en: "Back to sign in", ku: "Vegere têketinê" },
+  "اسم المستخدم أو الهاتف أو البريد أو رقم العضوية": {
+    en: "Username, phone, email or member number",
+    ku: "Navê bikarhêner, telefon, e-name an jimara endamiyê",
+  },
+  "رقم الهاتف": { en: "Phone number", ku: "Jimara telefonê" },
+  "رمز الدولة": { en: "Country code", ku: "Koda welat" },
+  "رمز التحقق": { en: "Verification code", ku: "Koda pejirandinê" },
+  "إعادة إرسال الرمز عبر واتساب": { en: "Resend the code on WhatsApp", ku: "Kodê ji nû ve bişîne" },
+  "أدخل رقم الهاتف الموثّق في حسابك وسنرسل لك رمزاً عبر واتساب.": {
+    en: "Enter the verified phone on your account and we'll send a WhatsApp code.",
+    ku: "Jimara pejirandî binivîse, em kodê bi WhatsApp dişînin.",
+  },
+  "لإتمام التسجيل عبر Google، يرجى إدخال رقم هاتفك للتحقق عبر واتساب": {
+    en: "To finish signing up with Google, enter your phone for WhatsApp verification",
+    ku: "Ji bo bidawîkirina Google, jimara telefonê binivîse",
+  },
+  "توثيق الحساب": { en: "Verify account", ku: "Hesab pejirandin" },
+  "أو المتابعة عبر": { en: "Or continue with", ku: "An bi vê berdewam bike" },
+  "أكمل ملفك (اختياري)": {
+    en: "Complete your profile (optional)",
+    ku: "Profîl temam bike (bijarte)",
+  },
+  "الاسم، المعرّف، البريد، تاريخ الميلاد والجنس": {
+    en: "Name, username, email, birth date and gender",
+    ku: "Nav, bikarhêner, e-name, dîroka jidayikbûnê û zayend",
+  },
+  "كل الحقول اختيارية — ما تتركه فارغاً نملؤه لك تلقائياً (اسم ومعرّف وصورة عشوائية).": {
+    en: "Every field is optional — anything left blank is filled automatically.",
+    ku: "Hemû qad bijarte ne — yên vala bixweber tên dagirtin.",
+  },
+  "اسمك الظاهر": { en: "Display name", ku: "Navê xuya" },
+  الاسم: { en: "Name", ku: "Nav" },
+  "معرّف الحساب": { en: "Username", ku: "Navê bikarhêner" },
+  "البريد الإلكتروني": { en: "Email", ku: "E-name" },
+  الجنس: { en: "Gender", ku: "Zayend" },
+  "تاريخ الميلاد": { en: "Birth date", ku: "Dîroka jidayikbûnê" },
+  الصورة: { en: "Photo", ku: "Wêne" },
+  "رفع صورة من جهازي": { en: "Upload a photo", ku: "Wêne bar bike" },
+  "التصنيفات المفضلة": { en: "Favourite categories", ku: "Beşên bijarte" },
+  "تصنيفاتك المفضلة": { en: "Your favourite categories", ku: "Beşên te yên bijarte" },
+  "اختر ما تحب ونقترح لك ألعاباً مشابهة في الواجهة — يمكنك تعديلها لاحقاً من التفضيلات.": {
+    en: "Pick what you like and we'll suggest similar games — you can change this later.",
+    ku: "Ya ku hez dikî hilbijêre, em lîstikên nêz pêşniyar dikin.",
+  },
+  "نرتّب لك المقترحات في الواجهة حسب ما تختاره هنا.": {
+    en: "We order the home suggestions by what you choose here.",
+    ku: "Pêşniyar li gorî hilbijartina te tên rêzkirin.",
+  },
+  المفضلة: { en: "Favourites", ku: "Bijarte" },
+  "لا توجد منتجات في المفضلة.": { en: "No favourite products yet.", ku: "Berhemên bijarte nînin." },
+  "سجّل الدخول للوصول لحسابك وطلباتك.": {
+    en: "Sign in to access your account and orders.",
+    ku: "Têkeve ji bo hesab û fermanan.",
+  },
+  "حفظ العنوان": { en: "Save address", ku: "Navnîşan tomar bike" },
+  "إضافة عنوان": { en: "Add address", ku: "Navnîşan zêde bike" },
+  "تعيين افتراضي": { en: "Set as default", ku: "Wek bingehîn" },
+  "(افتراضي)": { en: "(default)", ku: "(bingehîn)" },
+
+  // Generic
+  المنتجات: { en: "Products", ku: "Berhem" },
+  حذف: { en: "Delete", ku: "Jê bibe" },
+  تعديل: { en: "Edit", ku: "Serrast bike" },
+  إلغاء: { en: "Cancel", ku: "Betal" },
+  إغلاق: { en: "Close", ku: "Bigire" },
+  تأكيد: { en: "Confirm", ku: "Bipejirîne" },
+  اختيار: { en: "Choose", ku: "Hilbijêre" },
+  رجوع: { en: "Back", ku: "Vegere" },
+  العودة: { en: "Back", ku: "Vegere" },
+  من: { en: "From", ku: "Ji" },
+  جديد: { en: "New", ku: "Nû" },
+  أُضيفت: { en: "Added", ku: "Hat zêdekirin" },
+  "تم بنجاح": { en: "Done", ku: "Bi serkeftin" },
+  "تم تحديث عروضك ورصيدك.": {
+    en: "Your listings and balance were updated.",
+    ku: "Pêşkêşî û balans nû bûn.",
+  },
+  "أحدث أخبار نينتندو": { en: "Latest Nintendo News", ku: "Nûçeyên Dawî yên Nintendo" },
+  "أحدث ألعاب نينتندو المضافة": {
+    en: "Latest Nintendo Games Added",
+    ku: "Lîstikên Nintendo yên Dawî Zêdekirî",
+  },
+  "الألعاب المضافة حديثاً": { en: "Recently Added Games", ku: "Lîstikên Nû Zêdekirî" },
+  "قراءة المزيد": { en: "Read more", ku: "Zêdetir bixwîne" },
+  "جاري تحميل الأخبار...": { en: "Loading news...", ku: "Nûçeyan tê barkirin..." },
+  "جاري التحميل...": { en: "Loading...", ku: "Tê barkirin..." },
+  "جاري تحميل الملف الشخصي...": { en: "Loading profile...", ku: "Profîl tê barkirin..." },
+  "جارٍ التحقق من الجلسة…": { en: "Checking your session…", ku: "Danişîn tê kontrolkirin…" },
+  ثانية: { en: "second", ku: "çirke" },
+
+  // Bundles & Packages
+  "حزم وبندلات الحسابات": { en: "Account Bundles & Packages", ku: "پاکێج و بەندڵەکانی ئەکاونت" },
+  "حزم الألعاب": { en: "Game Bundles", ku: "بەندڵەکانی یاری" },
+  "حزم الحسابات": { en: "Account Bundles", ku: "بەندڵەکانی ئەکاونت" },
+  "بندلات التوفير": { en: "Savings Bundles", ku: "بەندڵەکانی داشکاندن" },
+  "توفير كبير مع حسابات متعددة الألعاب جاهزة للعب فوراً": {
+    en: "Huge savings with multi-game accounts ready for instant play",
+    ku: "داشکاندنی گەورە لەگەڵ ئەکاونتی فرە یاری ئامادە بۆ یاری کردن ڕاستەوخۆ",
+  },
+  "عرض كل الحزم": { en: "View All Bundles", ku: "هەموو بەندڵەکان ببینە" },
+  "ألعاب مشمولة": { en: "Included Games", ku: "یارییە بەشداربووەکان" },
+  "ألعاب في الحزمة": { en: "Games in Bundle", ku: "یارییەکان لەم بەندڵەدا" },
+  "الألعاب المشمولة في الحزمة": {
+    en: "Games Included in This Bundle",
+    ku: "ئەو یارییانەی لەم بەندڵەدان",
+  },
+  "حساب رئيسي": { en: "Primary Account", ku: "ئەکاونتی سەرەکی" },
+  "حساب ثانوي": { en: "Secondary Account", ku: "ئەکاونتی لاوەکی" },
+  "حساب كامل": { en: "Full Ownership Account", ku: "ئەکاونتی تەواو" },
+  "حساب أوفلاين": { en: "Offline Account", ku: "ئەکاونتی ئۆفلاین" },
+  "حساب أونلاين": { en: "Online Account", ku: "ئەکاونتی ئۆنلاین" },
+  "نوع الحساب": { en: "Account Type", ku: "جۆری ئەکاونت" },
+  "شراء الحزمة": { en: "Buy Bundle", ku: "کڕینی بەندڵ" },
+  "إضافة الحزمة للسلة": { en: "Add Bundle to Cart", ku: "زیادکردنی بەندڵ بۆ سەبەتە" },
+  "شراء فوري من المحفظة": { en: "Instant Wallet Purchase", ku: "کڕینی ڕاستەوخۆ لە جزدان" },
+  "السعر الأصلي": { en: "Original Price", ku: "نرخی بنەڕەتی" },
+  توفير: { en: "Save", ku: "داشکاندن" },
+  وفّر: { en: "Save", ku: "داشکاندن" },
+  وفر: { en: "Save", ku: "داشکاندن" },
+  "طريقة تفعيل الحزمة على جهازك": {
+    en: "How to Activate on Your Device",
+    ku: "چۆنیەتی چالاککردن لەسەر ئامێرەکەت",
+  },
+  "لا توجد حزم حسابات متاحة حالياً.": {
+    en: "No account bundles available at the moment.",
+    ku: "لە ئێستادا هیچ بەندڵێکی ئەکاونت بەردەست نییە.",
+  },
+  "لم يتم العثور على الحزمة المطلوبة.": {
+    en: "Requested bundle not found.",
+    ku: "بەندڵی داواکراو نەدۆزرایەوە.",
+  },
+  "الرجوع للحزم": { en: "Back to Bundles", ku: "گەڕانەوە بۆ بەندڵەکان" },
+  "حزم وبندلات": { en: "Bundles & Packs", ku: "بەندڵ و پاکێجەکان" },
+
+  // Admin & Translation
+  "ترجمة ذكية تلقائية": { en: "Smart Auto-Translation", ku: "وەرگێڕانی زیرەکی خۆکار" },
+  "جاري الترجمة بالذكاء الاصطناعي...": {
+    en: "Translating with AI...",
+    ku: "خەریکی وەرگێڕان بە ژیری دەستکرد...",
+  },
+  "تمت الترجمة تلقائياً": { en: "Auto-Translated Successfully", ku: "بە سەرکەوتوویی وەرگێڕدرا" },
+  "الاسم بالعربية": { en: "Title (Arabic)", ku: "ناو بە عەرەبی" },
+  "الاسم بالإنجليزية": { en: "Title (English)", ku: "ناو بە ئینگلیزی" },
+  "الاسم بالكردية": { en: "Title (Kurdish)", ku: "ناو بە کوردی" },
+  "الوصف بالعربية": { en: "Description (Arabic)", ku: "وەسف بە عەرەبی" },
+  "الوصف بالإنجليزية": { en: "Description (English)", ku: "وەسف بە ئینگلیزی" },
+  "الوصف بالكردية": { en: "Description (Kurdish)", ku: "وەسف بە کوردی" },
+  "المميزات (بالإنجليزية)": { en: "Features (English)", ku: "تایبەتمەندییەکان (ئینگلیزی)" },
+  "المميزات (بالكردية)": { en: "Features (Kurdish)", ku: "تایبەتمەندییەکان (کوردی)" },
+  "العلامة التميزية (Badge)": { en: "Badge", ku: "نیشانەی تایبەت" },
+  "توليد وترجمة تلقائية": { en: "Auto Generate & Translate", ku: "دروستکردن و وەرگێڕانی خۆکار" },
+  "ترجمة الحزمة": { en: "Translate Bundle", ku: "وەرگێڕانی بەندڵ" },
+  "ترجمة المنتج": { en: "Translate Product", ku: "وەرگێڕانی بەرهەم" },
+  "حفظ المنتج": { en: "Save Product", ku: "پاشەکەوتکردنی بەرهەم" },
+  "حفظ الحزمة": { en: "Save Bundle", ku: "پاشەکەوتکردنی بەندڵ" },
+  "حفظ التغييرات": { en: "Save Changes", ku: "پاشەکەوتکردنی گۆڕانکارییەکان" },
+  "تسجيل الخروج": { en: "Sign Out", ku: "چوونەدەرەوە" },
+  "جميع الحزم": { en: "All Bundles", ku: "هەموو بەندڵەکان" },
+  "الأعلى توفيراً": { en: "Highest Savings", ku: "زۆرترین داشکاندن" },
+  "الأقل سعراً": { en: "Lowest Price", ku: "کەمترین نرخ" },
+  "الأعلى سعراً": { en: "Highest Price", ku: "بەرزترین نرخ" },
+  "كل أنواع الحسابات": { en: "All Account Types", ku: "هەموو جۆرەکانی ئەکاونت" },
+  "ترتيب حسب:": { en: "Sort by:", ku: "ڕیزکردن بەپێی:" },
+  "تصفية:": { en: "Filter:", ku: "فلتەرکردن:" },
+  "تصفية وبحث": { en: "Filter & Search", ku: "فلتەر و گەڕان" },
+  "تسليم فوري": { en: "Instant Delivery", ku: "گەیاندنی خێرا" },
+  "ضمان كامل": { en: "Full Warranty", ku: "گرەنتی تەواو" },
+  "دعم فني مستمر": { en: "24/7 Support", ku: "پشتیوانی بەردەوام" },
+  "إمكانية إعادة التحميل": { en: "Re-download Support", ku: "توانای داگرتنەوە" },
+  "اللعب بحسابك الشخصي": { en: "Play on Personal Profile", ku: "یاریکردن بە پرۆفایلی خۆت" },
+  "متطلبات التشغيل": { en: "System Requirements", ku: "پێداویستییەکانی سیستەم" },
+  "تفاصيل إضافية": { en: "Additional Details", ku: "وردەکاری زیاتر" },
+};
+
+for (const [source, turkish] of Object.entries(LEGACY_TR)) {
+  const entry = translations[source];
+  if (entry) entry.tr = turkish;
+}
+
+function initialLang(): Language {
+  if (typeof document === "undefined") return "en";
+  const match = /(?:^|;\s*)bananto_lang=([^;]+)/.exec(document.cookie);
+  const value = match?.[1];
+  return isLang(value) ? value : "en";
+}
+
+/** Kurdish predates the key-based dictionaries; it reads Arabic there. */
+function toLocale(lang: Language): Locale {
+  return isLocale(lang) ? lang : DEFAULT_LOCALE;
+}
+
+export const useI18n = create<I18nStore>((set, get) => ({
+  lang: initialLang(),
+  setLang: (lang) => {
+    writeCookie(LANG_COOKIE, lang);
+    // RootInner already remounts the rendered route when this state changes.
+    // Reloading the document here caused an infinite loop for signed-in users:
+    // ThemeApplier restored the profile language after every reload, which
+    // immediately reloaded the page again over the session-check screen.
+    if (get().lang !== lang) set({ lang });
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = dirOf(lang);
+    }
+  },
+  t: (key) => {
+    const lang = get().lang;
+    if (lang === "ar") return key;
+    // Arabic source string is the key, so an untranslated literal still reads
+    // correctly rather than showing a blank or a dotted path.
+    return translations[key]?.[lang] || translations[key]?.["en"] || key;
+  },
+}));
+
+/**
+ * Render-time translation without a hook. The whole tree is remounted when the
+ * language changes (see src/routes/__root.tsx), so reading the store directly
+ * stays in sync.
+ */
+export function tr(key: string) {
+  return useI18n.getState().t(key);
+}
+
+/* --------------------------- key-based translation -------------------------- */
+
+/**
+ * Contextual, typed translation: `t("product.addToCart")`.
+ *
+ * Prefer this over `tr("أضف إلى السلة")` in new code — the key carries the
+ * context, so "Order" as a purchase and "Order" as a sort position never
+ * collapse into the same string. Typos are compile errors.
+ *
+ * Reads the store directly rather than through a hook because the whole tree is
+ * remounted when the language changes (see `src/routes/__root.tsx`), exactly
+ * like `tr()` above.
+ */
+export function t(key: TranslationKey, vars?: Record<string, string | number>): string {
+  return translate(toLocale(useI18n.getState().lang), key, vars);
+}
+
+/** Plural-aware counter: `count("counts.products", 2)` → "منتجان" / "2 products". */
+export function count(
+  baseKey: string,
+  value: number,
+  vars?: Record<string, string | number>,
+): string {
+  return pluralOf(toLocale(useI18n.getState().lang), baseKey, value, vars);
+}
+
+/** Current locale for the key-based dictionaries (Kurdish resolves to Arabic). */
+export function currentLocale(): Locale {
+  return toLocale(useI18n.getState().lang);
+}
+
+/**
+ * Hook form for components that should re-render on a language change without
+ * relying on the root remount (modals rendered in a portal, for example).
+ */
+export function useTranslation() {
+  const lang = useI18n((s) => s.lang);
+  const locale = toLocale(lang);
+  return {
+    locale,
+    lang,
+    dir: dirOf(lang),
+    t: (key: TranslationKey, vars?: Record<string, string | number>) =>
+      translate(locale, key, vars),
+    count: (baseKey: string, value: number, vars?: Record<string, string | number>) =>
+      pluralOf(locale, baseKey, value, vars),
+  };
+}
+
+export type { Locale, TranslationKey };

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="شاشة تسجيل دخول تعرض رسالة خطأ">
+  <rect width="800" height="600" fill="#FFF9EC"/>
+  <circle cx="110" cy="80" r="140" fill="#FFEFB0" opacity=".5"/>
+  <circle cx="710" cy="540" r="150" fill="#ECE8FF" opacity=".55"/>
+  <g transform="translate(660 70) rotate(18) scale(1.5)" opacity=".5">
+    <path d="M11 6c-1.6 0-2.8 1.3-2.7 2.9.5 8.3 3 14.6 7.4 19 4.6 4.6 11 6.8 19.2 6.8 2.2 0 3.5-2.4 2.3-4.2-1-1.5-2.6-2.2-4.3-2.3-5.6-.3-9.7-1.9-12.6-4.8-2.9-2.9-4.6-7.2-5.2-13.1C14.9 8.4 13.2 6 11 6Z" fill="#FFC32E" stroke="#211A3D" stroke-width="2.2" stroke-linejoin="round"/>
+  </g>
+  <rect x="150" y="96" width="500" height="408" rx="34" fill="#211A3D" opacity=".1"/>
+  <rect x="142" y="84" width="500" height="408" rx="34" fill="#FFFDF8" stroke="#EDDFC6" stroke-width="3"/>
+  <circle cx="182" cy="124" r="8" fill="#EF4A52"/>
+  <circle cx="208" cy="124" r="8" fill="#FFC32E"/>
+  <circle cx="234" cy="124" r="8" fill="#3FAE6B"/>
+  <line x1="142" y1="152" x2="642" y2="152" stroke="#EDDFC6" stroke-width="3"/>
+  <circle cx="392" cy="212" r="34" fill="#FFEFB0" stroke="#211A3D" stroke-width="3"/>
+  <circle cx="392" cy="203" r="11" fill="#211A3D"/>
+  <path d="M373 231c4-9 34-9 38 0" fill="none" stroke="#211A3D" stroke-width="3" stroke-linecap="round"/>
+  <rect x="206" y="272" width="372" height="52" rx="16" fill="#FFF9EC" stroke="#EDDFC6" stroke-width="3"/>
+  <rect x="230" y="292" width="150" height="12" rx="6" fill="#9A93B5"/>
+  <rect x="206" y="342" width="372" height="52" rx="16" fill="#FFF9EC" stroke="#EF4A52" stroke-width="3"/>
+  <g fill="#211A3D">
+    <circle cx="240" cy="368" r="7"/><circle cx="264" cy="368" r="7"/><circle cx="288" cy="368" r="7"/>
+    <circle cx="312" cy="368" r="7"/><circle cx="336" cy="368" r="7"/><circle cx="360" cy="368" r="7"/>
+  </g>
+  <circle cx="548" cy="368" r="15" fill="none" stroke="#EF4A52" stroke-width="3"/>
+  <path d="M548 360v9" stroke="#EF4A52" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="548" cy="375" r="2.2" fill="#EF4A52"/>
+  <rect x="206" y="406" width="372" height="34" rx="12" fill="#FFE6E6"/>
+  <rect x="228" y="418" width="230" height="10" rx="5" fill="#EF4A52" opacity=".75"/>
+  <rect x="472" y="418" width="82" height="10" rx="5" fill="#EF4A52" opacity=".4"/>
+  <rect x="206" y="456" width="372" height="8" rx="4" fill="#EDDFC6"/>
+</svg>
