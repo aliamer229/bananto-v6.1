@@ -7,6 +7,9 @@
  */
 
 import type {
+  ContactChannelItem,
+  ContactParseResultData,
+  ContactServiceItem,
   FaqParsedCategory,
   FaqParsedItem,
   FaqParseResultData,
@@ -743,7 +746,7 @@ export function parsePurchasePolicy(text: string): ServiceParseResult<PolicyPars
   for (const sIdx of Array.from(secIndices).sort((a, b) => a - b)) {
     const titleAr = kv[`section.${sIdx}.title_ar`] || kv[`section.${sIdx}.title`];
     const bodyAr = kv[`section.${sIdx}.body_ar`] || kv[`section.${sIdx}.body`];
-    const isHighlight = kv[`section.${sIdx}.highlight`]?.toLowerCase() === "true";
+    const isHighlight = parseBool(kv[`section.${sIdx}.highlight`], false);
 
     if (!titleAr) {
       issues.push({
@@ -805,6 +808,224 @@ export function parsePurchasePolicy(text: string): ServiceParseResult<PolicyPars
 }
 
 /**
+ * 5. Parser for Contact / Support channels (تواصل معنا)
+ */
+export function parseContact(text: string): ServiceParseResult<ContactParseResultData> {
+  const issues: ParsedIssue[] = [];
+  const json = tryParseJson(text);
+  const raw = json ? json.support || json : null;
+  const kv = raw ? {} : extractKeyValues(text);
+
+  const get = (name: string, ...aliases: string[]): string => {
+    if (raw) {
+      for (const key of [name, ...aliases]) {
+        const v = raw[key];
+        if (typeof v === "string" && v.trim()) return v.trim();
+      }
+      return "";
+    }
+    for (const key of [name, ...aliases]) {
+      const v = kv[key];
+      if (v && v.trim()) return v.trim();
+    }
+    return "";
+  };
+
+  const channels: ContactChannelItem[] = [];
+  const services: ContactServiceItem[] = [];
+
+  const guessHref = (type: string, value: string): string => {
+    const v = value.trim();
+    if (!v) return "";
+    if (/^(https?:|mailto:|tel:)/i.test(v)) return v;
+    const digits = v.replace(/[^\d+]/g, "");
+    switch (type) {
+      case "whatsapp":
+        return `https://wa.me/${digits.replace(/^\+/, "")}`;
+      case "telegram":
+        return `https://t.me/${v.replace(/^@/, "")}`;
+      case "email":
+        return `mailto:${v}`;
+      case "phone":
+        return `tel:${digits}`;
+      default:
+        return v;
+    }
+  };
+
+  if (raw) {
+    for (const [i, c] of (Array.isArray(raw.channels) ? raw.channels : []).entries()) {
+      const type = String(c.type || "custom");
+      const value = String(c.value || "");
+      channels.push({
+        id: c.id || `channel_${i + 1}`,
+        type,
+        label_ar: c.label_ar || c.label || type,
+        label_en: c.label_en || "",
+        value,
+        href: c.href || guessHref(type, value),
+        icon: c.icon || type,
+        availability: c.availability || "",
+        sort_order: c.sort_order ?? i + 1,
+        active: c.active ?? true,
+      });
+    }
+    for (const [i, sv] of (Array.isArray(raw.services) ? raw.services : []).entries()) {
+      services.push({
+        id: sv.id || `service_${i + 1}`,
+        title_ar: sv.title_ar || sv.title || `خدمة ${i + 1}`,
+        title_en: sv.title_en || "",
+        description_ar: sv.description_ar || sv.description || "",
+        description_en: sv.description_en || "",
+        icon: sv.icon || "",
+        link: sv.link || "",
+        button_label_ar: sv.button_label_ar || "",
+        sort_order: sv.sort_order ?? i + 1,
+        active: sv.active ?? true,
+      });
+    }
+  } else {
+    const channelIndices = new Set<number>();
+    const serviceIndices = new Set<number>();
+    for (const k of Object.keys(kv)) {
+      const cm = k.match(/^channel\.(\d+)\./);
+      if (cm?.[1]) channelIndices.add(Number(cm[1]));
+      const sm = k.match(/^service\.(\d+)\./);
+      if (sm?.[1]) serviceIndices.add(Number(sm[1]));
+    }
+
+    for (const cIdx of Array.from(channelIndices).sort((a, b) => a - b)) {
+      const type = (kv[`channel.${cIdx}.type`] || "custom").trim().toLowerCase();
+      const value = kv[`channel.${cIdx}.value`] || "";
+      const label = kv[`channel.${cIdx}.label_ar`] || kv[`channel.${cIdx}.label`] || "";
+      if (!value && !label) {
+        issues.push({
+          severity: "warning",
+          field: `channel.${cIdx}.value`,
+          messageAr: `قناة التواصل رقم ${cIdx} فارغة، تم تخطيها`,
+          messageEn: `Contact channel #${cIdx} is empty and was skipped`,
+        });
+        continue;
+      }
+      channels.push({
+        id: kv[`channel.${cIdx}.id`] || `channel_${cIdx}_${Date.now().toString(36)}`,
+        type,
+        label_ar: label || type,
+        label_en: kv[`channel.${cIdx}.label_en`] || "",
+        value,
+        href: kv[`channel.${cIdx}.href`] || guessHref(type, value),
+        icon: kv[`channel.${cIdx}.icon`] || type,
+        availability: kv[`channel.${cIdx}.availability`] || "",
+        sort_order: cIdx,
+        active: parseBool(kv[`channel.${cIdx}.active`], true),
+      });
+    }
+
+    for (const sIdx of Array.from(serviceIndices).sort((a, b) => a - b)) {
+      const title = kv[`service.${sIdx}.title_ar`] || kv[`service.${sIdx}.title`];
+      if (!title) {
+        issues.push({
+          severity: "warning",
+          field: `service.${sIdx}.title_ar`,
+          messageAr: `الخدمة رقم ${sIdx} بدون عنوان، تم تخطيها`,
+          messageEn: `Service #${sIdx} is missing a title and was skipped`,
+        });
+        continue;
+      }
+      services.push({
+        id: kv[`service.${sIdx}.id`] || `service_${sIdx}_${Date.now().toString(36)}`,
+        title_ar: title,
+        title_en: kv[`service.${sIdx}.title_en`] || "",
+        description_ar:
+          kv[`service.${sIdx}.description_ar`] || kv[`service.${sIdx}.description`] || "",
+        description_en: kv[`service.${sIdx}.description_en`] || "",
+        icon: kv[`service.${sIdx}.icon`] || "",
+        link: kv[`service.${sIdx}.link`] || "",
+        button_label_ar: kv[`service.${sIdx}.button_label_ar`] || "",
+        sort_order: sIdx,
+        active: parseBool(kv[`service.${sIdx}.active`], true),
+      });
+    }
+  }
+
+  const email = get("email");
+  const phone = get("phone");
+  const whatsapp = get("whatsapp");
+  const telegram = get("telegram");
+  const chatLink = get("chat_link", "chat");
+
+  // Auto-generate channels from the shortcut fields when none were declared
+  if (channels.length === 0) {
+    const shortcuts: Array<[string, string, string]> = [
+      ["whatsapp", "واتساب", whatsapp],
+      ["telegram", "تيليجرام", telegram],
+      ["phone", "اتصال هاتفي", phone],
+      ["email", "البريد الإلكتروني", email],
+      ["chat", "الدردشة المباشرة", chatLink],
+    ];
+    shortcuts.forEach(([type, label, value], i) => {
+      if (!value) return;
+      channels.push({
+        id: `channel_${type}_${Date.now().toString(36)}`,
+        type,
+        label_ar: label,
+        value,
+        href: guessHref(type, value),
+        icon: type,
+        availability: "",
+        sort_order: i + 1,
+        active: true,
+      });
+    });
+  }
+
+  const data: ContactParseResultData = {
+    hero_title_ar: get("hero_title_ar", "hero_title", "title_ar", "title") || "تواصل معنا",
+    hero_title_en: get("hero_title_en", "title_en"),
+    hero_subtitle_ar: get("hero_subtitle_ar", "hero_subtitle", "subtitle_ar", "subtitle"),
+    hero_subtitle_en: get("hero_subtitle_en", "subtitle_en"),
+    support_intro_ar: get("support_intro_ar", "support_intro", "intro_ar", "intro"),
+    support_intro_en: get("support_intro_en", "intro_en"),
+    email,
+    phone,
+    whatsapp,
+    telegram,
+    chat_link: chatLink,
+    status_message_ar: get("status_message_ar", "status_message", "status"),
+    status_message_en: get("status_message_en"),
+    emergency_notice_ar: get("emergency_notice_ar", "emergency_notice"),
+    working_hours_ar: get("working_hours_ar", "working_hours", "hours"),
+    working_hours_en: get("working_hours_en"),
+    channels,
+    services,
+  };
+
+  if (channels.length === 0) {
+    issues.push({
+      severity: "error",
+      field: "channel.1.value",
+      messageAr:
+        "لم يتم العثور على أي وسيلة تواصل (whatsapp= أو channel.1.value=)، أضف وسيلة واحدة على الأقل",
+      messageEn: "No contact channel detected (whatsapp= or channel.1.value=)",
+    });
+  }
+
+  return {
+    schemaType: "contact",
+    success: issues.filter((i) => i.severity === "error").length === 0,
+    rawText: text,
+    data,
+    issues,
+    stats: {
+      totalItems: channels.length,
+      totalFieldsDetected: raw ? Object.keys(raw).length : Object.keys(kv).length,
+      totalSectionsOrSteps: services.length,
+      hasErrors: issues.some((i) => i.severity === "error"),
+    },
+  };
+}
+
+/**
  * Universal dispatcher
  */
 export function parseServiceTemplate(type: ServiceSectionType, text: string): ServiceParseResult {
@@ -817,5 +1038,9 @@ export function parseServiceTemplate(type: ServiceSectionType, text: string): Se
       return parseFaq(text);
     case "purchase_policy":
       return parsePurchasePolicy(text);
+    case "contact":
+      return parseContact(text);
+    default:
+      return parseTroubleshooting(text);
   }
 }
