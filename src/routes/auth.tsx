@@ -20,8 +20,9 @@ import {
 } from "@/components/auth/AuthPieces";
 import OtpBoxes from "@/components/auth/OtpBoxes";
 import TelegramLinkPrompt from "@/components/auth/TelegramLinkPrompt";
-import patternAsset from "@/assets/login_bg.webp.asset.json";
-import mascotAsset from "@/assets/bananto_logo.webp.asset.json";
+import { ASSET_BASE_URL } from "@/config/publicAssets";
+
+
 import { authPageAction } from "@/lib/authRedirect";
 import { useAuth } from "@/hooks/useAuth";
 import type { OtpChannel } from "@/lib/otp.server";
@@ -30,6 +31,11 @@ import { AVATAR_GALLERY } from "@/lib/avatars";
 import { GAME_GENRES } from "@/lib/genres";
 import { isPlaceholderEmail, normalizePhone } from "@/lib/phone";
 import { playSound } from "@/utils/audio";
+
+const patternAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Auth%20background%20.webp` };
+const mascotAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Logo.webp` };
+
+
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { error?: string } => {
