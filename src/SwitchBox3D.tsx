@@ -33,10 +33,6 @@ export function SwitchBox3D({
         const spineX = backWidth;
         const frontX = backWidth + spineWidth;
 
-        // Default background
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         // 1. Draw base texture if available
         try {
           const baseImg = new Image();
@@ -47,9 +43,14 @@ export function SwitchBox3D({
           });
           if (baseImg.complete && baseImg.naturalWidth > 0 && isMounted) {
             ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+          } else {
+            // Default background if base image fails
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
           }
         } catch {
-          // Ignore base image error
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         if (!isMounted) return;
@@ -77,11 +78,14 @@ export function SwitchBox3D({
               // The original sketchfab model's UV mapping wraps exactly over the entire canvas
               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             } else {
-              // Front-only cover artwork (draw on both back and front sections)
+              // Front-only cover artwork
+              // Drawing exactly on the front section (588px width, starting at 588+60=648px)
+              // And optionally on the back (0px width)
               ctx.drawImage(img, 0, 0, backWidth, canvas.height);
               ctx.drawImage(img, frontX, 0, frontWidth, canvas.height);
 
               // Styled Spine
+              // Use the red color and labels for the spine
               ctx.fillStyle = "#e60012";
               ctx.fillRect(spineX, 0, spineWidth, canvas.height);
 
@@ -161,7 +165,9 @@ export function SwitchBox3D({
 
   if (materials.plastic) {
     materials.plastic.transparent = true;
-    materials.plastic.opacity = 0.8;
+    materials.plastic.opacity = 0.5; // Reduced opacity for more realism/transparency
+    materials.plastic.roughness = 0.1;
+    materials.plastic.metalness = 0.2;
     materials.plastic.color.set(platform === "ns2" ? "#e60012" : "#ffffff");
   }
 
