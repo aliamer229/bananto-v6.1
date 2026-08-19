@@ -165,7 +165,9 @@ export function SwitchBox3D({
 
   if (materials.plastic) {
     materials.plastic.transparent = true;
-    materials.plastic.opacity = 0.8;
+    materials.plastic.opacity = 0.5; // Reduced opacity for more realism/transparency
+    materials.plastic.roughness = 0.1;
+    materials.plastic.metalness = 0.2;
     materials.plastic.color.set(platform === "ns2" ? "#e60012" : "#ffffff");
   }
 
