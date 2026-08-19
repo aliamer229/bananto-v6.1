@@ -171,10 +171,12 @@ export const CardWrapper = ({
   children,
   title,
   subtitle,
+  logo,
 }: {
   children: ReactNode;
   title: string;
   subtitle: string;
+  logo?: string;
 }) => (
   <div
     dir="rtl"
@@ -185,7 +187,13 @@ export const CardWrapper = ({
     <CornerBanana className="pointer-events-none absolute bottom-3 left-3 h-9 w-9 rotate-[-10deg] opacity-90 sm:bottom-4 sm:left-4 sm:h-12 sm:w-12" />
     <CornerBanana className="pointer-events-none absolute right-3 bottom-3 h-12 w-9 rotate-[20deg] opacity-90 sm:right-4 sm:bottom-4 sm:h-16 sm:w-12" />
     <div className="absolute -top-[clamp(38px,11vw,58px)] left-1/2 z-20 flex -translate-x-1/2 justify-center">
-      <BananaChefIcon className="h-[clamp(78px,20vw,118px)] w-[clamp(78px,20vw,118px)]" />
+      <div className="flex h-[clamp(78px,20vw,118px)] w-[clamp(78px,20vw,118px)] items-center justify-center">
+        <img
+          src={logo || mascot.url}
+          alt="شعار بنانا ستور"
+          className="h-full w-full object-contain"
+        />
+      </div>
     </div>
     <div className="mt-[clamp(1.5rem,7vw,2.5rem)] flex min-w-0 flex-col items-center">
       <h1 className="mb-0 text-center text-[clamp(20px,5.5vw,32px)] font-[900] tracking-tight text-[var(--ink-soft)]">
