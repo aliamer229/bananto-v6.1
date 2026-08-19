@@ -2518,21 +2518,14 @@ export default function AdminProductEditor({
               // produces structured lists — flatten them so the boxes show text
               // instead of "[object Object]" or staying empty.
               if (Array.isArray(normalized.boxContents)) {
-                const items = normalized.boxContents
-                  .map((item: any) =>
-                    typeof item === "string"
-                      ? item
-                      : [item?.name, item?.quantity > 1 ? `×${item.quantity}` : ""]
-                          .filter(Boolean)
-                          .join(" "),
-                  )
-                  .filter(Boolean);
                 normalized.boxContentsList = normalized.boxContents;
-                normalized.boxContents =
-                  normalized.boxContentsText || items.join("، ") || prev.boxContents || "";
-              } else if (!normalized.boxContents && normalized.boxContentsText) {
-                normalized.boxContents = normalized.boxContentsText;
               }
+              normalized.boxContents =
+                boxContentsToText(normalized.boxContents) ||
+                boxContentsToText(normalized.boxContentsText) ||
+                boxContentsToText(prev.boxContents) ||
+                "";
+
 
               if (!normalized.warrantyCondition) {
                 normalized.warrantyCondition =
