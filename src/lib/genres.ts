@@ -1,0 +1,27 @@
+export const GAME_GENRES: { id: string; label: string }[] = [
+  { id: "action", label: "أكشن" },
+  { id: "adventure", label: "مغامرات" },
+  { id: "rpg", label: "آر بي جي" },
+  { id: "platformer", label: "منصات" },
+  { id: "puzzle", label: "ألغاز" },
+  { id: "racing", label: "سباق" },
+  { id: "simulation", label: "محاكاة" },
+  { id: "sports", label: "رياضة" },
+  { id: "strategy", label: "استراتيجية" },
+  { id: "fighting", label: "قتال" },
+  { id: "shooter", label: "تصويب" },
+  { id: "party", label: "حفلات" },
+  { id: "music", label: "موسيقى" },
+  { id: "family", label: "عائلي" },
+  { id: "horror", label: "رعب" },
+  { id: "sandbox", label: "صندوق رمل" },
+  { id: "survival", label: "بقاء" },
+  { id: "stealth", label: "تسلل" },
+  { id: "metroidvania", label: "ميترويدفانيا" },
+  { id: "roguelike", label: "روجلايك" },
+  { id: "visual_novel", label: "رواية مرئية" },
+  { id: "educational", label: "تعليمي" },
+  { id: "board_game", label: "لوحية" },
+];
+
+export const genreLabel = (id: string) => GAME_GENRES.find((g) => g.id === id)?.label ?? id;

@@ -1,0 +1,11 @@
+'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+
+الملف الذي يحتوي على صفحة إضافة اللعبة (أو المنتج بشكل عام) في هذا المشروع هو:
+`src/components/AdminProductEditor.tsx`
+
+هذا الملف مسؤول عن:
+1. عرض نموذج إضافة وتعديل المنتجات.
+2. التعامل مع استيراد البيانات الحتمي (Deterministic Import).
+3. معالجة رفع الصور والبيانات الأساسية للعبة (العنوان، الوصف، القسم).
+4. إدارة تفاصيل Nintendo Switch مثل تاريخ الإصدار، التصنيف العمري، والمنصات.
+5. إدارة خيارات الشراء (Options) والأنواع (Types) والأسعار.

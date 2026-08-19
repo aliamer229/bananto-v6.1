@@ -1,0 +1,216 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import {
+  d1All,
+  d1First,
+  d1Run,
+  d1Batch,
+  randomId,
+  createAuditLog,
+  findUserById,
+} from "./db.server";
+import { requireAppAuth, requireAdmin } from "./auth.middleware";
+import type { ProductReview, Coupon } from "./types";
+
+/**
+ * Submit a review for a product linked to an order.
+ */
+export const submitProductReview = createServerFn({ method: "POST" })
+  .middleware([requireAppAuth])
+  .validator(
+    z.object({
+      productId: z.string(),
+      orderId: z.string(),
+      rating: z.number().min(1).max(5),
+      comment: z.string().min(5),
+      screenshotUrl: z.string().optional(),
+      instagramProofUrl: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const userId = context.userId;
+    const now = new Date().toISOString();
+
+    const reviewId = randomId("rev");
+    await d1Run(
+      `INSERT INTO product_reviews (id, product_id, user_id, order_id, rating, comment, screenshot_url, instagram_proof_url, status, is_auto_review, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)`,
+      reviewId,
+      data.productId,
+      userId,
+      data.orderId,
+      data.rating,
+      data.comment,
+      data.screenshotUrl || null,
+      data.instagramProofUrl || null,
+      now,
+      now,
+    );
+
+    await createAuditLog(userId, "submit_review", "product_review", reviewId);
+    return { success: true, reviewId };
+  });
+
+/**
+ * Approve a review and grant a coupon if eligible.
+ */
+export const approveReview = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .validator(
+    z.object({
+      reviewId: z.string(),
+      couponSettings: z
+        .object({
+          discountType: z.enum(["percentage", "fixed"]),
+          discountValue: z.number().positive(),
+          expirationDays: z.number().default(7),
+        })
+        .optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const adminId = context.userId;
+    const now = new Date().toISOString();
+
+    const review = await d1First<ProductReview>(
+      `SELECT * FROM product_reviews WHERE id = ? AND status = 'pending'`,
+      data.reviewId,
+    );
+
+    if (!review) throw new Error("Review not found or already processed");
+
+    // Check Cooldown: Once per 7 days
+    const cooldown = await d1First<{ last_rewarded_at: string }>(
+      `SELECT last_rewarded_at FROM review_cooldowns WHERE user_id = ?`,
+      review.userId,
+    );
+
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const isEligibleForCoupon = !cooldown || cooldown.last_rewarded_at < sevenDaysAgo;
+
+    let couponCode = null;
+
+    // Start Batch
+    const batch: { sql: string; params: unknown[] }[] = [
+      {
+        sql: `UPDATE product_reviews SET status = 'approved', approved_at = ?, approved_by = ?, updated_at = ? WHERE id = ?`,
+        params: [now, adminId, now, data.reviewId],
+      },
+    ];
+
+    if (isEligibleForCoupon && data.couponSettings) {
+      couponCode = `REV-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const expirationAt = new Date(
+        Date.now() + data.couponSettings.expirationDays * 24 * 60 * 60 * 1000,
+      ).toISOString();
+
+      batch.push({
+        sql: `INSERT INTO coupons (id, code, discount_type, discount_value, expiration_at, usage_limit, per_user_limit, eligible_users, is_active, created_at)
+              VALUES (?, ?, ?, ?, ?, 1, 1, ?, 1, ?)`,
+        params: [
+          randomId("cpn"),
+          couponCode,
+          data.couponSettings.discountType,
+          data.couponSettings.discountValue,
+          expirationAt,
+          JSON.stringify([review.userId]),
+          now,
+        ],
+      });
+
+      batch.push({
+        sql: `INSERT INTO review_cooldowns (user_id, last_rewarded_at) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET last_rewarded_at = excluded.last_rewarded_at`,
+        params: [review.userId, now],
+      });
+    }
+
+    await d1Batch(batch);
+    await createAuditLog(
+      adminId,
+      "approve_review",
+      "product_review",
+      data.reviewId,
+      { oldStatus: "pending" },
+      { newStatus: "approved", couponGranted: !!couponCode },
+    );
+
+    return { success: true, couponCode };
+  });
+
+/**
+ * Validate a coupon code server-side.
+ */
+export const validateCoupon = createServerFn({ method: "POST" })
+  .middleware([requireAppAuth])
+  .validator(
+    z.object({
+      code: z.string(),
+      orderAmount: z.number(),
+      items: z.array(
+        z.object({
+          productId: z.string(),
+          categoryId: z.string(),
+        }),
+      ),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const userId = context.userId;
+    const now = new Date().toISOString();
+
+    const coupon = await d1First<Coupon>(
+      `SELECT * FROM coupons WHERE code = ? AND is_active = 1`,
+      data.code,
+    );
+
+    if (!coupon) return { valid: false, message: "الكوبون غير موجود أو غير فعال" };
+
+    if (coupon.expirationAt && coupon.expirationAt < now) {
+      return { valid: false, message: "انتهت صلاحية الكوبون" };
+    }
+
+    // Per-user and global usage checks
+    const globalUsage = await d1First<{ total: number }>(
+      `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?`,
+      coupon.id,
+    );
+    if (coupon.usageLimit && (globalUsage?.total || 0) >= coupon.usageLimit) {
+      return { valid: false, message: "تم استنفاد عدد مرات استخدام الكوبون" };
+    }
+
+    const userUsage = await d1First<{ total: number }>(
+      `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?`,
+      coupon.id,
+      userId,
+    );
+    if ((userUsage?.total || 0) >= coupon.perUserLimit) {
+      return { valid: false, message: "لقد استخدمت هذا الكوبون مسبقاً" };
+    }
+
+    // Min Order Amount
+    if (data.orderAmount < coupon.minOrderAmount) {
+      return {
+        valid: false,
+        message: `الحد الأدنى للطلب لاستخدام الكوبون هو ${coupon.minOrderAmount} IQD`,
+      };
+    }
+
+    // Eligibility checks (JSON parsing needed for SQLite storage)
+    const eligibleUsers =
+      typeof coupon.eligibleUsers === "string"
+        ? JSON.parse(coupon.eligibleUsers)
+        : coupon.eligibleUsers;
+    if (eligibleUsers.length > 0 && !eligibleUsers.includes(userId)) {
+      return { valid: false, message: "هذا الكوبون غير مخصص لحسابك" };
+    }
+
+    return {
+      valid: true,
+      coupon: {
+        id: coupon.id,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        maxDiscountAmount: coupon.maxDiscountAmount,
+      },
+    };
+  });

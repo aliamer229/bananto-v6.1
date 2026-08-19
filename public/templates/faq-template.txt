@@ -1,0 +1,59 @@
+# الأسئلة الشائعة — قالب استيراد الأقسام والأسئلة
+# ====================================================
+# الصيغة: key=value
+# للأقسام: category.1.id= / category.1.name_ar=
+# للأسئلة: faq.1.category_id= / faq.1.question_ar= / faq.1.answer_ar=
+# ====================================================
+
+# ----------------------------------------------------
+# 1. أقسام الأسئلة (Categories)
+# ----------------------------------------------------
+category.1.id=cat_accounts
+category.1.name_ar=الحسابات والألعاب الرقمية
+category.1.name_en=Accounts & Digital Games
+
+category.2.id=cat_delivery
+category.2.name_ar=طرق الدفع والتسليم
+category.2.name_en=Payment & Delivery
+
+category.3.id=cat_warranty
+category.3.name_ar=الضمان والدعم الفني
+category.3.name_en=Warranty & Support
+
+# ----------------------------------------------------
+# 2. الأسئلة والإجابات (Questions & Answers)
+# ----------------------------------------------------
+
+# السؤال الأول
+faq.1.category_id=cat_accounts
+faq.1.question_ar=ما الفرق بين الحساب الأساسي (Primary) والحساب الثانوي (Secondary)؟
+faq.1.question_en=What is the difference between Primary and Secondary accounts?
+faq.1.answer_ar<<EOF
+الحساب الأساسي (Primary) يتيح لك تشغيل اللعبة من حسابك الشخصي وملفات حفظك الخاصة، ولا يشترط اتصالاً مستمراً بالإنترنت. بينما الحساب الثانوي (Secondary) تلعب من نفس الحساب المشترى ويتطلب اتصال إنترنت للتحقق.
+EOF
+faq.1.keywords=فرق, برايمري, سكندري, أساسي, ثانوي, save
+faq.1.featured=true
+
+# السؤال الثاني
+faq.2.category_id=cat_delivery
+faq.2.question_ar=كم يستغرق تسليم الحساب أو كود اللعبة بعد إتمام الطلب؟
+faq.2.question_en=How long does order delivery take?
+faq.2.answer_ar=التسليم فوري وتلقائي خلال دقيقة واحدة إلى 5 دقائق، حيث تظهر بيانات الحساب مباشرة في صفحة طلباتك وفي محادثة الدعم.
+faq.2.keywords=وقت, مدة, تسليم, فوري, استلام
+faq.2.featured=true
+
+# السؤال الثالث
+faq.3.category_id=cat_warranty
+faq.3.question_ar=هل الألعاب والحسابات مضمونة ضد القفل؟
+faq.3.question_en=Are games and accounts guaranteed?
+faq.3.answer_ar=نعم، جميع ألعاب وحسابات بنانا ستور رسمية 100% ومشتراة من متجر Nintendo eShop الرسمي، ومشمولة بضمان ذهبي شامل ومتابعة فنية مستمرة.
+faq.3.keywords=ضمان, قفل, رسمي, بند, حماية
+faq.3.featured=true
+
+# السؤال الرابع
+faq.4.category_id=cat_accounts
+faq.4.question_ar=هل يمكنني حذف الحساب من السويتش بعد تحميل اللعبة؟
+faq.4.question_en=Can I delete the account after downloading?
+faq.4.answer_ar=لا، يجب إبقاء الحساب موجوداً على الجهاز لتعمل اللعبة برخصتها الرسمية. حذفه يؤدي لتوقف اللعبة عن العمل حتى إعادة إضافته.
+faq.4.keywords=حذف, مسح, delete, إزالة
+faq.4.featured=false

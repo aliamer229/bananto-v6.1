@@ -10,33 +10,1173 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as Account_guidesRouteImport } from './routes/account_guides'
+import { Route as Add_gameRouteImport } from './routes/add_game'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as Banana_buyRouteImport } from './routes/banana_buy'
+import { Route as Banana_marketRouteImport } from './routes/banana_market'
+import { Route as Banana_redeemRouteImport } from './routes/banana_redeem'
+import { Route as CartRouteImport } from './routes/cart'
+import { Route as ChatRouteImport } from './routes/chat'
+import { Route as Disc_tradeRouteImport } from './routes/disc_trade'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as GamesRouteImport } from './routes/games'
+import { Route as PolicyRouteImport } from './routes/policy'
+import { Route as ProblemRouteImport } from './routes/problem'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as SwRouteImport } from './routes/sw'
+import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminImportRouteImport } from './routes/admin.import'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as ApiAdminWipeRouteImport } from './routes/api/admin-wipe'
+import { Route as ApiAuthRouteImport } from './routes/api/auth'
+import { Route as ApiBananaRouteImport } from './routes/api/banana'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiContentRouteImport } from './routes/api/content'
+import { Route as ApiDataRouteImport } from './routes/api/data'
+import { Route as ApiDiscTradeRouteImport } from './routes/api/disc-trade'
+import { Route as ApiExchangeRatesRouteImport } from './routes/api/exchange-rates'
+import { Route as ApiGameCatalogRouteImport } from './routes/api/game-catalog'
+import { Route as ApiGameRequestsRouteImport } from './routes/api/game-requests'
+import { Route as ApiImgRouteImport } from './routes/api/img'
+import { Route as ApiOrdersRouteImport } from './routes/api/orders'
+import { Route as ApiOtpRouteImport } from './routes/api/otp'
+import { Route as ApiProfileRouteImport } from './routes/api/profile'
+import { Route as ApiRevealPasswordRouteImport } from './routes/api/reveal-password'
+import { Route as ApiReviewsRouteImport } from './routes/api/reviews'
+import { Route as ApiStoreAdvisorRouteImport } from './routes/api/store-advisor'
+import { Route as ApiTelegramRouteImport } from './routes/api/telegram'
+import { Route as ApiTrackRouteImport } from './routes/api/track'
+import { Route as ApiTranslateRouteImport } from './routes/api/translate'
+import { Route as ApiUploadRouteImport } from './routes/api/upload'
+import { Route as ApiWalletRouteImport } from './routes/api/wallet'
+import { Route as BundleBundleIdRouteImport } from './routes/bundle.$bundleId'
+import { Route as BundlesIndexRouteImport } from './routes/bundles.index'
+import { Route as BundlesBundleIdRouteImport } from './routes/bundles.$bundleId'
+import { Route as CategoryCategoryIdRouteImport } from './routes/category.$categoryId'
+import { Route as OrdersIndexRouteImport } from './routes/orders.index'
+import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
+import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
+import { Route as TelegramIndexRouteImport } from './routes/telegram/index'
+import { Route as TelegramAccountRouteImport } from './routes/telegram/account'
+import { Route as TelegramContestsRouteImport } from './routes/telegram/contests'
+import { Route as TelegramNotificationsRouteImport } from './routes/telegram/notifications'
+import { Route as TelegramReferralsRouteImport } from './routes/telegram/referrals'
+import { Route as TelegramSecurityRouteImport } from './routes/telegram/security'
+import { Route as ApiAdminAssetsRouteImport } from './routes/api/admin/assets'
+import { Route as ApiAdminBananaRouteImport } from './routes/api/admin/banana'
+import { Route as ApiAdminBinanceTopupsRouteImport } from './routes/api/admin/binance-topups'
+import { Route as ApiAdminImportGameRouteImport } from './routes/api.admin.import-game'
+import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin.orders'
+import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
+import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
+import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
+import { Route as ApiOauthProviderRouteImport } from './routes/api/oauth.$provider'
+import { Route as ApiPublicDebugProductsRouteImport } from './routes/api/public/debug-products'
+import { Route as ApiPublicImgProxyRouteImport } from './routes/api/public/img-proxy'
+import { Route as ApiPublicLatestNewsRouteImport } from './routes/api/public/latest-news'
+import { Route as ApiPublicNewsImageRouteImport } from './routes/api/public/news-image'
+import { Route as ApiPublicOrderQueueRouteImport } from './routes/api/public/order-queue'
+import { Route as ApiPublicTestTelegramRouteImport } from './routes/api/public/test-telegram'
+import { Route as ApiAdminProductsProductIdRouteImport } from './routes/api/admin/products.$productId'
+import { Route as ApiAdminSystemHealthRouteImport } from './routes/api/admin/system/health'
+import { Route as ApiFilesLegacyMediaIdRouteImport } from './routes/api/files.legacy.$mediaId'
+import { Route as ApiOauthProviderCallbackRouteImport } from './routes/api/oauth.$provider.callback'
+import { Route as ApiPublicHooksContestsDrawRouteImport } from './routes/api/public/hooks/contests-draw'
+import { Route as ApiPublicHooksTradeCatalogSyncRouteImport } from './routes/api/public/hooks/trade-catalog-sync'
+import { Route as ApiPublicTelegramDiagnosticRouteImport } from './routes/api/public/telegram/diagnostic'
+import { Route as ApiPublicTelegramHealthRouteImport } from './routes/api/public/telegram/health'
+import { Route as ApiPublicTelegramSetupWebhookRouteImport } from './routes/api/public/telegram/setup-webhook'
+import { Route as ApiPublicTelegramTestSendRouteImport } from './routes/api/public/telegram/test-send'
+import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicWhatsappConfigRouteImport } from './routes/api/public/whatsapp/config'
+import { Route as ApiPublicWhatsappTestSendRouteImport } from './routes/api/public/whatsapp/test-send'
+import { Route as ApiWalletBinanceActiveIntentRouteImport } from './routes/api/wallet.binance.active-intent'
+import { Route as ApiWalletBinanceConfigRouteImport } from './routes/api/wallet.binance.config'
+import { Route as ApiWalletBinanceTopupIntentRouteImport } from './routes/api/wallet.binance.topup-intent'
+import { Route as ApiWalletBinanceVerifyRouteImport } from './routes/api/wallet.binance.verify'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Account_guidesRoute = Account_guidesRouteImport.update({
+  id: '/account_guides',
+  path: '/account_guides',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Add_gameRoute = Add_gameRouteImport.update({
+  id: '/add_game',
+  path: '/add_game',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Banana_buyRoute = Banana_buyRouteImport.update({
+  id: '/banana_buy',
+  path: '/banana_buy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Banana_marketRoute = Banana_marketRouteImport.update({
+  id: '/banana_market',
+  path: '/banana_market',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Banana_redeemRoute = Banana_redeemRouteImport.update({
+  id: '/banana_redeem',
+  path: '/banana_redeem',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Disc_tradeRoute = Disc_tradeRouteImport.update({
+  id: '/disc_trade',
+  path: '/disc_trade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesRoute = GamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PolicyRoute = PolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProblemRoute = ProblemRouteImport.update({
+  id: '/problem',
+  path: '/problem',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SwRoute = SwRouteImport.update({
+  id: '/sw',
+  path: '/sw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminImportRoute = AdminImportRouteImport.update({
+  id: '/admin/import',
+  path: '/admin/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminWipeRoute = ApiAdminWipeRouteImport.update({
+  id: '/api/admin-wipe',
+  path: '/api/admin-wipe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthRoute = ApiAuthRouteImport.update({
+  id: '/api/auth',
+  path: '/api/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBananaRoute = ApiBananaRouteImport.update({
+  id: '/api/banana',
+  path: '/api/banana',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiContentRoute = ApiContentRouteImport.update({
+  id: '/api/content',
+  path: '/api/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDataRoute = ApiDataRouteImport.update({
+  id: '/api/data',
+  path: '/api/data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDiscTradeRoute = ApiDiscTradeRouteImport.update({
+  id: '/api/disc-trade',
+  path: '/api/disc-trade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExchangeRatesRoute = ApiExchangeRatesRouteImport.update({
+  id: '/api/exchange-rates',
+  path: '/api/exchange-rates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGameCatalogRoute = ApiGameCatalogRouteImport.update({
+  id: '/api/game-catalog',
+  path: '/api/game-catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGameRequestsRoute = ApiGameRequestsRouteImport.update({
+  id: '/api/game-requests',
+  path: '/api/game-requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiImgRoute = ApiImgRouteImport.update({
+  id: '/api/img',
+  path: '/api/img',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOrdersRoute = ApiOrdersRouteImport.update({
+  id: '/api/orders',
+  path: '/api/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOtpRoute = ApiOtpRouteImport.update({
+  id: '/api/otp',
+  path: '/api/otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProfileRoute = ApiProfileRouteImport.update({
+  id: '/api/profile',
+  path: '/api/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRevealPasswordRoute = ApiRevealPasswordRouteImport.update({
+  id: '/api/reveal-password',
+  path: '/api/reveal-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReviewsRoute = ApiReviewsRouteImport.update({
+  id: '/api/reviews',
+  path: '/api/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStoreAdvisorRoute = ApiStoreAdvisorRouteImport.update({
+  id: '/api/store-advisor',
+  path: '/api/store-advisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelegramRoute = ApiTelegramRouteImport.update({
+  id: '/api/telegram',
+  path: '/api/telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTrackRoute = ApiTrackRouteImport.update({
+  id: '/api/track',
+  path: '/api/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranslateRoute = ApiTranslateRouteImport.update({
+  id: '/api/translate',
+  path: '/api/translate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUploadRoute = ApiUploadRouteImport.update({
+  id: '/api/upload',
+  path: '/api/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWalletRoute = ApiWalletRouteImport.update({
+  id: '/api/wallet',
+  path: '/api/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BundleBundleIdRoute = BundleBundleIdRouteImport.update({
+  id: '/bundle/$bundleId',
+  path: '/bundle/$bundleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BundlesIndexRoute = BundlesIndexRouteImport.update({
+  id: '/bundles/',
+  path: '/bundles/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BundlesBundleIdRoute = BundlesBundleIdRouteImport.update({
+  id: '/bundles/$bundleId',
+  path: '/bundles/$bundleId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoryCategoryIdRoute = CategoryCategoryIdRouteImport.update({
+  id: '/category/$categoryId',
+  path: '/category/$categoryId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersIndexRoute = OrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductProductIdRoute = ProductProductIdRouteImport.update({
+  id: '/product/$productId',
+  path: '/product/$productId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramIndexRoute = TelegramIndexRouteImport.update({
+  id: '/telegram/',
+  path: '/telegram/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramAccountRoute = TelegramAccountRouteImport.update({
+  id: '/telegram/account',
+  path: '/telegram/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramContestsRoute = TelegramContestsRouteImport.update({
+  id: '/telegram/contests',
+  path: '/telegram/contests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramNotificationsRoute = TelegramNotificationsRouteImport.update({
+  id: '/telegram/notifications',
+  path: '/telegram/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramReferralsRoute = TelegramReferralsRouteImport.update({
+  id: '/telegram/referrals',
+  path: '/telegram/referrals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TelegramSecurityRoute = TelegramSecurityRouteImport.update({
+  id: '/telegram/security',
+  path: '/telegram/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAssetsRoute = ApiAdminAssetsRouteImport.update({
+  id: '/api/admin/assets',
+  path: '/api/admin/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBananaRoute = ApiAdminBananaRouteImport.update({
+  id: '/api/admin/banana',
+  path: '/api/admin/banana',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminBinanceTopupsRoute = ApiAdminBinanceTopupsRouteImport.update({
+  id: '/api/admin/binance-topups',
+  path: '/api/admin/binance-topups',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminImportGameRoute = ApiAdminImportGameRouteImport.update({
+  id: '/api/admin/import-game',
+  path: '/api/admin/import-game',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminOrdersRoute = ApiAdminOrdersRouteImport.update({
+  id: '/api/admin/orders',
+  path: '/api/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminProductsRoute = ApiAdminProductsRouteImport.update({
+  id: '/api/admin/products',
+  path: '/api/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin/users',
+  path: '/api/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFilesSplatRoute = ApiFilesSplatRouteImport.update({
+  id: '/api/files/$',
+  path: '/api/files/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOauthProviderRoute = ApiOauthProviderRouteImport.update({
+  id: '/api/oauth/$provider',
+  path: '/api/oauth/$provider',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDebugProductsRoute = ApiPublicDebugProductsRouteImport.update({
+  id: '/api/public/debug-products',
+  path: '/api/public/debug-products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicImgProxyRoute = ApiPublicImgProxyRouteImport.update({
+  id: '/api/public/img-proxy',
+  path: '/api/public/img-proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicLatestNewsRoute = ApiPublicLatestNewsRouteImport.update({
+  id: '/api/public/latest-news',
+  path: '/api/public/latest-news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicNewsImageRoute = ApiPublicNewsImageRouteImport.update({
+  id: '/api/public/news-image',
+  path: '/api/public/news-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicOrderQueueRoute = ApiPublicOrderQueueRouteImport.update({
+  id: '/api/public/order-queue',
+  path: '/api/public/order-queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTestTelegramRoute = ApiPublicTestTelegramRouteImport.update({
+  id: '/api/public/test-telegram',
+  path: '/api/public/test-telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminProductsProductIdRoute =
+  ApiAdminProductsProductIdRouteImport.update({
+    id: '/$productId',
+    path: '/$productId',
+    getParentRoute: () => ApiAdminProductsRoute,
+  } as any)
+const ApiAdminSystemHealthRoute = ApiAdminSystemHealthRouteImport.update({
+  id: '/api/admin/system/health',
+  path: '/api/admin/system/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFilesLegacyMediaIdRoute = ApiFilesLegacyMediaIdRouteImport.update({
+  id: '/api/files/legacy/$mediaId',
+  path: '/api/files/legacy/$mediaId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOauthProviderCallbackRoute =
+  ApiOauthProviderCallbackRouteImport.update({
+    id: '/callback',
+    path: '/callback',
+    getParentRoute: () => ApiOauthProviderRoute,
+  } as any)
+const ApiPublicHooksContestsDrawRoute =
+  ApiPublicHooksContestsDrawRouteImport.update({
+    id: '/api/public/hooks/contests-draw',
+    path: '/api/public/hooks/contests-draw',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksTradeCatalogSyncRoute =
+  ApiPublicHooksTradeCatalogSyncRouteImport.update({
+    id: '/api/public/hooks/trade-catalog-sync',
+    path: '/api/public/hooks/trade-catalog-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTelegramDiagnosticRoute =
+  ApiPublicTelegramDiagnosticRouteImport.update({
+    id: '/api/public/telegram/diagnostic',
+    path: '/api/public/telegram/diagnostic',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTelegramHealthRoute = ApiPublicTelegramHealthRouteImport.update({
+  id: '/api/public/telegram/health',
+  path: '/api/public/telegram/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramSetupWebhookRoute =
+  ApiPublicTelegramSetupWebhookRouteImport.update({
+    id: '/api/public/telegram/setup-webhook',
+    path: '/api/public/telegram/setup-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTelegramTestSendRoute =
+  ApiPublicTelegramTestSendRouteImport.update({
+    id: '/api/public/telegram/test-send',
+    path: '/api/public/telegram/test-send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTelegramWebhookRoute =
+  ApiPublicTelegramWebhookRouteImport.update({
+    id: '/api/public/telegram/webhook',
+    path: '/api/public/telegram/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWhatsappConfigRoute = ApiPublicWhatsappConfigRouteImport.update({
+  id: '/api/public/whatsapp/config',
+  path: '/api/public/whatsapp/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWhatsappTestSendRoute =
+  ApiPublicWhatsappTestSendRouteImport.update({
+    id: '/api/public/whatsapp/test-send',
+    path: '/api/public/whatsapp/test-send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiWalletBinanceActiveIntentRoute =
+  ApiWalletBinanceActiveIntentRouteImport.update({
+    id: '/binance/active-intent',
+    path: '/binance/active-intent',
+    getParentRoute: () => ApiWalletRoute,
+  } as any)
+const ApiWalletBinanceConfigRoute = ApiWalletBinanceConfigRouteImport.update({
+  id: '/binance/config',
+  path: '/binance/config',
+  getParentRoute: () => ApiWalletRoute,
+} as any)
+const ApiWalletBinanceTopupIntentRoute =
+  ApiWalletBinanceTopupIntentRouteImport.update({
+    id: '/binance/topup-intent',
+    path: '/binance/topup-intent',
+    getParentRoute: () => ApiWalletRoute,
+  } as any)
+const ApiWalletBinanceVerifyRoute = ApiWalletBinanceVerifyRouteImport.update({
+  id: '/binance/verify',
+  path: '/binance/verify',
+  getParentRoute: () => ApiWalletRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account_guides': typeof Account_guidesRoute
+  '/add_game': typeof Add_gameRoute
+  '/auth': typeof AuthRoute
+  '/banana_buy': typeof Banana_buyRoute
+  '/banana_market': typeof Banana_marketRoute
+  '/banana_redeem': typeof Banana_redeemRoute
+  '/cart': typeof CartRoute
+  '/chat': typeof ChatRoute
+  '/disc_trade': typeof Disc_tradeRoute
+  '/faq': typeof FaqRoute
+  '/games': typeof GamesRoute
+  '/policy': typeof PolicyRoute
+  '/problem': typeof ProblemRoute
+  '/profile': typeof ProfileRoute
+  '/support': typeof SupportRoute
+  '/sw': typeof SwRoute
+  '/wallet': typeof WalletRoute
+  '/admin/import': typeof AdminImportRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/api/admin-wipe': typeof ApiAdminWipeRoute
+  '/api/auth': typeof ApiAuthRoute
+  '/api/banana': typeof ApiBananaRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/content': typeof ApiContentRoute
+  '/api/data': typeof ApiDataRoute
+  '/api/disc-trade': typeof ApiDiscTradeRoute
+  '/api/exchange-rates': typeof ApiExchangeRatesRoute
+  '/api/game-catalog': typeof ApiGameCatalogRoute
+  '/api/game-requests': typeof ApiGameRequestsRoute
+  '/api/img': typeof ApiImgRoute
+  '/api/orders': typeof ApiOrdersRoute
+  '/api/otp': typeof ApiOtpRoute
+  '/api/profile': typeof ApiProfileRoute
+  '/api/reveal-password': typeof ApiRevealPasswordRoute
+  '/api/reviews': typeof ApiReviewsRoute
+  '/api/store-advisor': typeof ApiStoreAdvisorRoute
+  '/api/telegram': typeof ApiTelegramRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/translate': typeof ApiTranslateRoute
+  '/api/upload': typeof ApiUploadRoute
+  '/api/wallet': typeof ApiWalletRouteWithChildren
+  '/bundle/$bundleId': typeof BundleBundleIdRoute
+  '/bundles/$bundleId': typeof BundlesBundleIdRoute
+  '/category/$categoryId': typeof CategoryCategoryIdRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
+  '/product/$productId': typeof ProductProductIdRoute
+  '/telegram/account': typeof TelegramAccountRoute
+  '/telegram/contests': typeof TelegramContestsRoute
+  '/telegram/notifications': typeof TelegramNotificationsRoute
+  '/telegram/referrals': typeof TelegramReferralsRoute
+  '/telegram/security': typeof TelegramSecurityRoute
+  '/admin/': typeof AdminIndexRoute
+  '/bundles/': typeof BundlesIndexRoute
+  '/orders/': typeof OrdersIndexRoute
+  '/telegram/': typeof TelegramIndexRoute
+  '/api/admin/assets': typeof ApiAdminAssetsRoute
+  '/api/admin/banana': typeof ApiAdminBananaRoute
+  '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
+  '/api/admin/import-game': typeof ApiAdminImportGameRoute
+  '/api/admin/orders': typeof ApiAdminOrdersRoute
+  '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
+  '/api/admin/users': typeof ApiAdminUsersRoute
+  '/api/files/$': typeof ApiFilesSplatRoute
+  '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
+  '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
+  '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
+  '/api/public/latest-news': typeof ApiPublicLatestNewsRoute
+  '/api/public/news-image': typeof ApiPublicNewsImageRoute
+  '/api/public/order-queue': typeof ApiPublicOrderQueueRoute
+  '/api/public/test-telegram': typeof ApiPublicTestTelegramRoute
+  '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
+  '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
+  '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
+  '/api/oauth/$provider/callback': typeof ApiOauthProviderCallbackRoute
+  '/api/public/hooks/contests-draw': typeof ApiPublicHooksContestsDrawRoute
+  '/api/public/hooks/trade-catalog-sync': typeof ApiPublicHooksTradeCatalogSyncRoute
+  '/api/public/telegram/diagnostic': typeof ApiPublicTelegramDiagnosticRoute
+  '/api/public/telegram/health': typeof ApiPublicTelegramHealthRoute
+  '/api/public/telegram/setup-webhook': typeof ApiPublicTelegramSetupWebhookRoute
+  '/api/public/telegram/test-send': typeof ApiPublicTelegramTestSendRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/whatsapp/config': typeof ApiPublicWhatsappConfigRoute
+  '/api/public/whatsapp/test-send': typeof ApiPublicWhatsappTestSendRoute
+  '/api/wallet/binance/active-intent': typeof ApiWalletBinanceActiveIntentRoute
+  '/api/wallet/binance/config': typeof ApiWalletBinanceConfigRoute
+  '/api/wallet/binance/topup-intent': typeof ApiWalletBinanceTopupIntentRoute
+  '/api/wallet/binance/verify': typeof ApiWalletBinanceVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account_guides': typeof Account_guidesRoute
+  '/add_game': typeof Add_gameRoute
+  '/auth': typeof AuthRoute
+  '/banana_buy': typeof Banana_buyRoute
+  '/banana_market': typeof Banana_marketRoute
+  '/banana_redeem': typeof Banana_redeemRoute
+  '/cart': typeof CartRoute
+  '/chat': typeof ChatRoute
+  '/disc_trade': typeof Disc_tradeRoute
+  '/faq': typeof FaqRoute
+  '/games': typeof GamesRoute
+  '/policy': typeof PolicyRoute
+  '/problem': typeof ProblemRoute
+  '/profile': typeof ProfileRoute
+  '/support': typeof SupportRoute
+  '/sw': typeof SwRoute
+  '/wallet': typeof WalletRoute
+  '/admin/import': typeof AdminImportRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/api/admin-wipe': typeof ApiAdminWipeRoute
+  '/api/auth': typeof ApiAuthRoute
+  '/api/banana': typeof ApiBananaRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/content': typeof ApiContentRoute
+  '/api/data': typeof ApiDataRoute
+  '/api/disc-trade': typeof ApiDiscTradeRoute
+  '/api/exchange-rates': typeof ApiExchangeRatesRoute
+  '/api/game-catalog': typeof ApiGameCatalogRoute
+  '/api/game-requests': typeof ApiGameRequestsRoute
+  '/api/img': typeof ApiImgRoute
+  '/api/orders': typeof ApiOrdersRoute
+  '/api/otp': typeof ApiOtpRoute
+  '/api/profile': typeof ApiProfileRoute
+  '/api/reveal-password': typeof ApiRevealPasswordRoute
+  '/api/reviews': typeof ApiReviewsRoute
+  '/api/store-advisor': typeof ApiStoreAdvisorRoute
+  '/api/telegram': typeof ApiTelegramRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/translate': typeof ApiTranslateRoute
+  '/api/upload': typeof ApiUploadRoute
+  '/api/wallet': typeof ApiWalletRouteWithChildren
+  '/bundle/$bundleId': typeof BundleBundleIdRoute
+  '/bundles/$bundleId': typeof BundlesBundleIdRoute
+  '/category/$categoryId': typeof CategoryCategoryIdRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
+  '/product/$productId': typeof ProductProductIdRoute
+  '/telegram/account': typeof TelegramAccountRoute
+  '/telegram/contests': typeof TelegramContestsRoute
+  '/telegram/notifications': typeof TelegramNotificationsRoute
+  '/telegram/referrals': typeof TelegramReferralsRoute
+  '/telegram/security': typeof TelegramSecurityRoute
+  '/admin': typeof AdminIndexRoute
+  '/bundles': typeof BundlesIndexRoute
+  '/orders': typeof OrdersIndexRoute
+  '/telegram': typeof TelegramIndexRoute
+  '/api/admin/assets': typeof ApiAdminAssetsRoute
+  '/api/admin/banana': typeof ApiAdminBananaRoute
+  '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
+  '/api/admin/import-game': typeof ApiAdminImportGameRoute
+  '/api/admin/orders': typeof ApiAdminOrdersRoute
+  '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
+  '/api/admin/users': typeof ApiAdminUsersRoute
+  '/api/files/$': typeof ApiFilesSplatRoute
+  '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
+  '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
+  '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
+  '/api/public/latest-news': typeof ApiPublicLatestNewsRoute
+  '/api/public/news-image': typeof ApiPublicNewsImageRoute
+  '/api/public/order-queue': typeof ApiPublicOrderQueueRoute
+  '/api/public/test-telegram': typeof ApiPublicTestTelegramRoute
+  '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
+  '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
+  '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
+  '/api/oauth/$provider/callback': typeof ApiOauthProviderCallbackRoute
+  '/api/public/hooks/contests-draw': typeof ApiPublicHooksContestsDrawRoute
+  '/api/public/hooks/trade-catalog-sync': typeof ApiPublicHooksTradeCatalogSyncRoute
+  '/api/public/telegram/diagnostic': typeof ApiPublicTelegramDiagnosticRoute
+  '/api/public/telegram/health': typeof ApiPublicTelegramHealthRoute
+  '/api/public/telegram/setup-webhook': typeof ApiPublicTelegramSetupWebhookRoute
+  '/api/public/telegram/test-send': typeof ApiPublicTelegramTestSendRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/whatsapp/config': typeof ApiPublicWhatsappConfigRoute
+  '/api/public/whatsapp/test-send': typeof ApiPublicWhatsappTestSendRoute
+  '/api/wallet/binance/active-intent': typeof ApiWalletBinanceActiveIntentRoute
+  '/api/wallet/binance/config': typeof ApiWalletBinanceConfigRoute
+  '/api/wallet/binance/topup-intent': typeof ApiWalletBinanceTopupIntentRoute
+  '/api/wallet/binance/verify': typeof ApiWalletBinanceVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account_guides': typeof Account_guidesRoute
+  '/add_game': typeof Add_gameRoute
+  '/auth': typeof AuthRoute
+  '/banana_buy': typeof Banana_buyRoute
+  '/banana_market': typeof Banana_marketRoute
+  '/banana_redeem': typeof Banana_redeemRoute
+  '/cart': typeof CartRoute
+  '/chat': typeof ChatRoute
+  '/disc_trade': typeof Disc_tradeRoute
+  '/faq': typeof FaqRoute
+  '/games': typeof GamesRoute
+  '/policy': typeof PolicyRoute
+  '/problem': typeof ProblemRoute
+  '/profile': typeof ProfileRoute
+  '/support': typeof SupportRoute
+  '/sw': typeof SwRoute
+  '/wallet': typeof WalletRoute
+  '/admin/import': typeof AdminImportRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/api/admin-wipe': typeof ApiAdminWipeRoute
+  '/api/auth': typeof ApiAuthRoute
+  '/api/banana': typeof ApiBananaRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/content': typeof ApiContentRoute
+  '/api/data': typeof ApiDataRoute
+  '/api/disc-trade': typeof ApiDiscTradeRoute
+  '/api/exchange-rates': typeof ApiExchangeRatesRoute
+  '/api/game-catalog': typeof ApiGameCatalogRoute
+  '/api/game-requests': typeof ApiGameRequestsRoute
+  '/api/img': typeof ApiImgRoute
+  '/api/orders': typeof ApiOrdersRoute
+  '/api/otp': typeof ApiOtpRoute
+  '/api/profile': typeof ApiProfileRoute
+  '/api/reveal-password': typeof ApiRevealPasswordRoute
+  '/api/reviews': typeof ApiReviewsRoute
+  '/api/store-advisor': typeof ApiStoreAdvisorRoute
+  '/api/telegram': typeof ApiTelegramRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/translate': typeof ApiTranslateRoute
+  '/api/upload': typeof ApiUploadRoute
+  '/api/wallet': typeof ApiWalletRouteWithChildren
+  '/bundle/$bundleId': typeof BundleBundleIdRoute
+  '/bundles/$bundleId': typeof BundlesBundleIdRoute
+  '/category/$categoryId': typeof CategoryCategoryIdRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
+  '/product/$productId': typeof ProductProductIdRoute
+  '/telegram/account': typeof TelegramAccountRoute
+  '/telegram/contests': typeof TelegramContestsRoute
+  '/telegram/notifications': typeof TelegramNotificationsRoute
+  '/telegram/referrals': typeof TelegramReferralsRoute
+  '/telegram/security': typeof TelegramSecurityRoute
+  '/admin/': typeof AdminIndexRoute
+  '/bundles/': typeof BundlesIndexRoute
+  '/orders/': typeof OrdersIndexRoute
+  '/telegram/': typeof TelegramIndexRoute
+  '/api/admin/assets': typeof ApiAdminAssetsRoute
+  '/api/admin/banana': typeof ApiAdminBananaRoute
+  '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
+  '/api/admin/import-game': typeof ApiAdminImportGameRoute
+  '/api/admin/orders': typeof ApiAdminOrdersRoute
+  '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
+  '/api/admin/users': typeof ApiAdminUsersRoute
+  '/api/files/$': typeof ApiFilesSplatRoute
+  '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
+  '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
+  '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
+  '/api/public/latest-news': typeof ApiPublicLatestNewsRoute
+  '/api/public/news-image': typeof ApiPublicNewsImageRoute
+  '/api/public/order-queue': typeof ApiPublicOrderQueueRoute
+  '/api/public/test-telegram': typeof ApiPublicTestTelegramRoute
+  '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
+  '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
+  '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
+  '/api/oauth/$provider/callback': typeof ApiOauthProviderCallbackRoute
+  '/api/public/hooks/contests-draw': typeof ApiPublicHooksContestsDrawRoute
+  '/api/public/hooks/trade-catalog-sync': typeof ApiPublicHooksTradeCatalogSyncRoute
+  '/api/public/telegram/diagnostic': typeof ApiPublicTelegramDiagnosticRoute
+  '/api/public/telegram/health': typeof ApiPublicTelegramHealthRoute
+  '/api/public/telegram/setup-webhook': typeof ApiPublicTelegramSetupWebhookRoute
+  '/api/public/telegram/test-send': typeof ApiPublicTelegramTestSendRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/whatsapp/config': typeof ApiPublicWhatsappConfigRoute
+  '/api/public/whatsapp/test-send': typeof ApiPublicWhatsappTestSendRoute
+  '/api/wallet/binance/active-intent': typeof ApiWalletBinanceActiveIntentRoute
+  '/api/wallet/binance/config': typeof ApiWalletBinanceConfigRoute
+  '/api/wallet/binance/topup-intent': typeof ApiWalletBinanceTopupIntentRoute
+  '/api/wallet/binance/verify': typeof ApiWalletBinanceVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/account_guides'
+    | '/add_game'
+    | '/auth'
+    | '/banana_buy'
+    | '/banana_market'
+    | '/banana_redeem'
+    | '/cart'
+    | '/chat'
+    | '/disc_trade'
+    | '/faq'
+    | '/games'
+    | '/policy'
+    | '/problem'
+    | '/profile'
+    | '/support'
+    | '/sw'
+    | '/wallet'
+    | '/admin/import'
+    | '/admin/orders'
+    | '/api/admin-wipe'
+    | '/api/auth'
+    | '/api/banana'
+    | '/api/chat'
+    | '/api/content'
+    | '/api/data'
+    | '/api/disc-trade'
+    | '/api/exchange-rates'
+    | '/api/game-catalog'
+    | '/api/game-requests'
+    | '/api/img'
+    | '/api/orders'
+    | '/api/otp'
+    | '/api/profile'
+    | '/api/reveal-password'
+    | '/api/reviews'
+    | '/api/store-advisor'
+    | '/api/telegram'
+    | '/api/track'
+    | '/api/translate'
+    | '/api/upload'
+    | '/api/wallet'
+    | '/bundle/$bundleId'
+    | '/bundles/$bundleId'
+    | '/category/$categoryId'
+    | '/orders/$orderId'
+    | '/product/$productId'
+    | '/telegram/account'
+    | '/telegram/contests'
+    | '/telegram/notifications'
+    | '/telegram/referrals'
+    | '/telegram/security'
+    | '/admin/'
+    | '/bundles/'
+    | '/orders/'
+    | '/telegram/'
+    | '/api/admin/assets'
+    | '/api/admin/banana'
+    | '/api/admin/binance-topups'
+    | '/api/admin/import-game'
+    | '/api/admin/orders'
+    | '/api/admin/products'
+    | '/api/admin/users'
+    | '/api/files/$'
+    | '/api/oauth/$provider'
+    | '/api/public/debug-products'
+    | '/api/public/img-proxy'
+    | '/api/public/latest-news'
+    | '/api/public/news-image'
+    | '/api/public/order-queue'
+    | '/api/public/test-telegram'
+    | '/api/admin/products/$productId'
+    | '/api/admin/system/health'
+    | '/api/files/legacy/$mediaId'
+    | '/api/oauth/$provider/callback'
+    | '/api/public/hooks/contests-draw'
+    | '/api/public/hooks/trade-catalog-sync'
+    | '/api/public/telegram/diagnostic'
+    | '/api/public/telegram/health'
+    | '/api/public/telegram/setup-webhook'
+    | '/api/public/telegram/test-send'
+    | '/api/public/telegram/webhook'
+    | '/api/public/whatsapp/config'
+    | '/api/public/whatsapp/test-send'
+    | '/api/wallet/binance/active-intent'
+    | '/api/wallet/binance/config'
+    | '/api/wallet/binance/topup-intent'
+    | '/api/wallet/binance/verify'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/account_guides'
+    | '/add_game'
+    | '/auth'
+    | '/banana_buy'
+    | '/banana_market'
+    | '/banana_redeem'
+    | '/cart'
+    | '/chat'
+    | '/disc_trade'
+    | '/faq'
+    | '/games'
+    | '/policy'
+    | '/problem'
+    | '/profile'
+    | '/support'
+    | '/sw'
+    | '/wallet'
+    | '/admin/import'
+    | '/admin/orders'
+    | '/api/admin-wipe'
+    | '/api/auth'
+    | '/api/banana'
+    | '/api/chat'
+    | '/api/content'
+    | '/api/data'
+    | '/api/disc-trade'
+    | '/api/exchange-rates'
+    | '/api/game-catalog'
+    | '/api/game-requests'
+    | '/api/img'
+    | '/api/orders'
+    | '/api/otp'
+    | '/api/profile'
+    | '/api/reveal-password'
+    | '/api/reviews'
+    | '/api/store-advisor'
+    | '/api/telegram'
+    | '/api/track'
+    | '/api/translate'
+    | '/api/upload'
+    | '/api/wallet'
+    | '/bundle/$bundleId'
+    | '/bundles/$bundleId'
+    | '/category/$categoryId'
+    | '/orders/$orderId'
+    | '/product/$productId'
+    | '/telegram/account'
+    | '/telegram/contests'
+    | '/telegram/notifications'
+    | '/telegram/referrals'
+    | '/telegram/security'
+    | '/admin'
+    | '/bundles'
+    | '/orders'
+    | '/telegram'
+    | '/api/admin/assets'
+    | '/api/admin/banana'
+    | '/api/admin/binance-topups'
+    | '/api/admin/import-game'
+    | '/api/admin/orders'
+    | '/api/admin/products'
+    | '/api/admin/users'
+    | '/api/files/$'
+    | '/api/oauth/$provider'
+    | '/api/public/debug-products'
+    | '/api/public/img-proxy'
+    | '/api/public/latest-news'
+    | '/api/public/news-image'
+    | '/api/public/order-queue'
+    | '/api/public/test-telegram'
+    | '/api/admin/products/$productId'
+    | '/api/admin/system/health'
+    | '/api/files/legacy/$mediaId'
+    | '/api/oauth/$provider/callback'
+    | '/api/public/hooks/contests-draw'
+    | '/api/public/hooks/trade-catalog-sync'
+    | '/api/public/telegram/diagnostic'
+    | '/api/public/telegram/health'
+    | '/api/public/telegram/setup-webhook'
+    | '/api/public/telegram/test-send'
+    | '/api/public/telegram/webhook'
+    | '/api/public/whatsapp/config'
+    | '/api/public/whatsapp/test-send'
+    | '/api/wallet/binance/active-intent'
+    | '/api/wallet/binance/config'
+    | '/api/wallet/binance/topup-intent'
+    | '/api/wallet/binance/verify'
+  id:
+    | '__root__'
+    | '/'
+    | '/account_guides'
+    | '/add_game'
+    | '/auth'
+    | '/banana_buy'
+    | '/banana_market'
+    | '/banana_redeem'
+    | '/cart'
+    | '/chat'
+    | '/disc_trade'
+    | '/faq'
+    | '/games'
+    | '/policy'
+    | '/problem'
+    | '/profile'
+    | '/support'
+    | '/sw'
+    | '/wallet'
+    | '/admin/import'
+    | '/admin/orders'
+    | '/api/admin-wipe'
+    | '/api/auth'
+    | '/api/banana'
+    | '/api/chat'
+    | '/api/content'
+    | '/api/data'
+    | '/api/disc-trade'
+    | '/api/exchange-rates'
+    | '/api/game-catalog'
+    | '/api/game-requests'
+    | '/api/img'
+    | '/api/orders'
+    | '/api/otp'
+    | '/api/profile'
+    | '/api/reveal-password'
+    | '/api/reviews'
+    | '/api/store-advisor'
+    | '/api/telegram'
+    | '/api/track'
+    | '/api/translate'
+    | '/api/upload'
+    | '/api/wallet'
+    | '/bundle/$bundleId'
+    | '/bundles/$bundleId'
+    | '/category/$categoryId'
+    | '/orders/$orderId'
+    | '/product/$productId'
+    | '/telegram/account'
+    | '/telegram/contests'
+    | '/telegram/notifications'
+    | '/telegram/referrals'
+    | '/telegram/security'
+    | '/admin/'
+    | '/bundles/'
+    | '/orders/'
+    | '/telegram/'
+    | '/api/admin/assets'
+    | '/api/admin/banana'
+    | '/api/admin/binance-topups'
+    | '/api/admin/import-game'
+    | '/api/admin/orders'
+    | '/api/admin/products'
+    | '/api/admin/users'
+    | '/api/files/$'
+    | '/api/oauth/$provider'
+    | '/api/public/debug-products'
+    | '/api/public/img-proxy'
+    | '/api/public/latest-news'
+    | '/api/public/news-image'
+    | '/api/public/order-queue'
+    | '/api/public/test-telegram'
+    | '/api/admin/products/$productId'
+    | '/api/admin/system/health'
+    | '/api/files/legacy/$mediaId'
+    | '/api/oauth/$provider/callback'
+    | '/api/public/hooks/contests-draw'
+    | '/api/public/hooks/trade-catalog-sync'
+    | '/api/public/telegram/diagnostic'
+    | '/api/public/telegram/health'
+    | '/api/public/telegram/setup-webhook'
+    | '/api/public/telegram/test-send'
+    | '/api/public/telegram/webhook'
+    | '/api/public/whatsapp/config'
+    | '/api/public/whatsapp/test-send'
+    | '/api/wallet/binance/active-intent'
+    | '/api/wallet/binance/config'
+    | '/api/wallet/binance/topup-intent'
+    | '/api/wallet/binance/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  Account_guidesRoute: typeof Account_guidesRoute
+  Add_gameRoute: typeof Add_gameRoute
+  AuthRoute: typeof AuthRoute
+  Banana_buyRoute: typeof Banana_buyRoute
+  Banana_marketRoute: typeof Banana_marketRoute
+  Banana_redeemRoute: typeof Banana_redeemRoute
+  CartRoute: typeof CartRoute
+  ChatRoute: typeof ChatRoute
+  Disc_tradeRoute: typeof Disc_tradeRoute
+  FaqRoute: typeof FaqRoute
+  GamesRoute: typeof GamesRoute
+  PolicyRoute: typeof PolicyRoute
+  ProblemRoute: typeof ProblemRoute
+  ProfileRoute: typeof ProfileRoute
+  SupportRoute: typeof SupportRoute
+  SwRoute: typeof SwRoute
+  WalletRoute: typeof WalletRoute
+  AdminImportRoute: typeof AdminImportRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  ApiAdminWipeRoute: typeof ApiAdminWipeRoute
+  ApiAuthRoute: typeof ApiAuthRoute
+  ApiBananaRoute: typeof ApiBananaRoute
+  ApiChatRoute: typeof ApiChatRoute
+  ApiContentRoute: typeof ApiContentRoute
+  ApiDataRoute: typeof ApiDataRoute
+  ApiDiscTradeRoute: typeof ApiDiscTradeRoute
+  ApiExchangeRatesRoute: typeof ApiExchangeRatesRoute
+  ApiGameCatalogRoute: typeof ApiGameCatalogRoute
+  ApiGameRequestsRoute: typeof ApiGameRequestsRoute
+  ApiImgRoute: typeof ApiImgRoute
+  ApiOrdersRoute: typeof ApiOrdersRoute
+  ApiOtpRoute: typeof ApiOtpRoute
+  ApiProfileRoute: typeof ApiProfileRoute
+  ApiRevealPasswordRoute: typeof ApiRevealPasswordRoute
+  ApiReviewsRoute: typeof ApiReviewsRoute
+  ApiStoreAdvisorRoute: typeof ApiStoreAdvisorRoute
+  ApiTelegramRoute: typeof ApiTelegramRoute
+  ApiTrackRoute: typeof ApiTrackRoute
+  ApiTranslateRoute: typeof ApiTranslateRoute
+  ApiUploadRoute: typeof ApiUploadRoute
+  ApiWalletRoute: typeof ApiWalletRouteWithChildren
+  BundleBundleIdRoute: typeof BundleBundleIdRoute
+  BundlesBundleIdRoute: typeof BundlesBundleIdRoute
+  CategoryCategoryIdRoute: typeof CategoryCategoryIdRoute
+  OrdersOrderIdRoute: typeof OrdersOrderIdRoute
+  ProductProductIdRoute: typeof ProductProductIdRoute
+  TelegramAccountRoute: typeof TelegramAccountRoute
+  TelegramContestsRoute: typeof TelegramContestsRoute
+  TelegramNotificationsRoute: typeof TelegramNotificationsRoute
+  TelegramReferralsRoute: typeof TelegramReferralsRoute
+  TelegramSecurityRoute: typeof TelegramSecurityRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  BundlesIndexRoute: typeof BundlesIndexRoute
+  OrdersIndexRoute: typeof OrdersIndexRoute
+  TelegramIndexRoute: typeof TelegramIndexRoute
+  ApiAdminAssetsRoute: typeof ApiAdminAssetsRoute
+  ApiAdminBananaRoute: typeof ApiAdminBananaRoute
+  ApiAdminBinanceTopupsRoute: typeof ApiAdminBinanceTopupsRoute
+  ApiAdminImportGameRoute: typeof ApiAdminImportGameRoute
+  ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
+  ApiAdminProductsRoute: typeof ApiAdminProductsRouteWithChildren
+  ApiAdminUsersRoute: typeof ApiAdminUsersRoute
+  ApiFilesSplatRoute: typeof ApiFilesSplatRoute
+  ApiOauthProviderRoute: typeof ApiOauthProviderRouteWithChildren
+  ApiPublicDebugProductsRoute: typeof ApiPublicDebugProductsRoute
+  ApiPublicImgProxyRoute: typeof ApiPublicImgProxyRoute
+  ApiPublicLatestNewsRoute: typeof ApiPublicLatestNewsRoute
+  ApiPublicNewsImageRoute: typeof ApiPublicNewsImageRoute
+  ApiPublicOrderQueueRoute: typeof ApiPublicOrderQueueRoute
+  ApiPublicTestTelegramRoute: typeof ApiPublicTestTelegramRoute
+  ApiAdminSystemHealthRoute: typeof ApiAdminSystemHealthRoute
+  ApiFilesLegacyMediaIdRoute: typeof ApiFilesLegacyMediaIdRoute
+  ApiPublicHooksContestsDrawRoute: typeof ApiPublicHooksContestsDrawRoute
+  ApiPublicHooksTradeCatalogSyncRoute: typeof ApiPublicHooksTradeCatalogSyncRoute
+  ApiPublicTelegramDiagnosticRoute: typeof ApiPublicTelegramDiagnosticRoute
+  ApiPublicTelegramHealthRoute: typeof ApiPublicTelegramHealthRoute
+  ApiPublicTelegramSetupWebhookRoute: typeof ApiPublicTelegramSetupWebhookRoute
+  ApiPublicTelegramTestSendRoute: typeof ApiPublicTelegramTestSendRoute
+  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
+  ApiPublicWhatsappConfigRoute: typeof ApiPublicWhatsappConfigRoute
+  ApiPublicWhatsappTestSendRoute: typeof ApiPublicWhatsappTestSendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +1188,741 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account_guides': {
+      id: '/account_guides'
+      path: '/account_guides'
+      fullPath: '/account_guides'
+      preLoaderRoute: typeof Account_guidesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/add_game': {
+      id: '/add_game'
+      path: '/add_game'
+      fullPath: '/add_game'
+      preLoaderRoute: typeof Add_gameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/banana_buy': {
+      id: '/banana_buy'
+      path: '/banana_buy'
+      fullPath: '/banana_buy'
+      preLoaderRoute: typeof Banana_buyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/banana_market': {
+      id: '/banana_market'
+      path: '/banana_market'
+      fullPath: '/banana_market'
+      preLoaderRoute: typeof Banana_marketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/banana_redeem': {
+      id: '/banana_redeem'
+      path: '/banana_redeem'
+      fullPath: '/banana_redeem'
+      preLoaderRoute: typeof Banana_redeemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disc_trade': {
+      id: '/disc_trade'
+      path: '/disc_trade'
+      fullPath: '/disc_trade'
+      preLoaderRoute: typeof Disc_tradeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games': {
+      id: '/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/policy': {
+      id: '/policy'
+      path: '/policy'
+      fullPath: '/policy'
+      preLoaderRoute: typeof PolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/problem': {
+      id: '/problem'
+      path: '/problem'
+      fullPath: '/problem'
+      preLoaderRoute: typeof ProblemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sw': {
+      id: '/sw'
+      path: '/sw'
+      fullPath: '/sw'
+      preLoaderRoute: typeof SwRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/import': {
+      id: '/admin/import'
+      path: '/admin/import'
+      fullPath: '/admin/import'
+      preLoaderRoute: typeof AdminImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin-wipe': {
+      id: '/api/admin-wipe'
+      path: '/api/admin-wipe'
+      fullPath: '/api/admin-wipe'
+      preLoaderRoute: typeof ApiAdminWipeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth': {
+      id: '/api/auth'
+      path: '/api/auth'
+      fullPath: '/api/auth'
+      preLoaderRoute: typeof ApiAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/banana': {
+      id: '/api/banana'
+      path: '/api/banana'
+      fullPath: '/api/banana'
+      preLoaderRoute: typeof ApiBananaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/content': {
+      id: '/api/content'
+      path: '/api/content'
+      fullPath: '/api/content'
+      preLoaderRoute: typeof ApiContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/data': {
+      id: '/api/data'
+      path: '/api/data'
+      fullPath: '/api/data'
+      preLoaderRoute: typeof ApiDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/disc-trade': {
+      id: '/api/disc-trade'
+      path: '/api/disc-trade'
+      fullPath: '/api/disc-trade'
+      preLoaderRoute: typeof ApiDiscTradeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/exchange-rates': {
+      id: '/api/exchange-rates'
+      path: '/api/exchange-rates'
+      fullPath: '/api/exchange-rates'
+      preLoaderRoute: typeof ApiExchangeRatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/game-catalog': {
+      id: '/api/game-catalog'
+      path: '/api/game-catalog'
+      fullPath: '/api/game-catalog'
+      preLoaderRoute: typeof ApiGameCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/game-requests': {
+      id: '/api/game-requests'
+      path: '/api/game-requests'
+      fullPath: '/api/game-requests'
+      preLoaderRoute: typeof ApiGameRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/img': {
+      id: '/api/img'
+      path: '/api/img'
+      fullPath: '/api/img'
+      preLoaderRoute: typeof ApiImgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/orders': {
+      id: '/api/orders'
+      path: '/api/orders'
+      fullPath: '/api/orders'
+      preLoaderRoute: typeof ApiOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/otp': {
+      id: '/api/otp'
+      path: '/api/otp'
+      fullPath: '/api/otp'
+      preLoaderRoute: typeof ApiOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/profile': {
+      id: '/api/profile'
+      path: '/api/profile'
+      fullPath: '/api/profile'
+      preLoaderRoute: typeof ApiProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/reveal-password': {
+      id: '/api/reveal-password'
+      path: '/api/reveal-password'
+      fullPath: '/api/reveal-password'
+      preLoaderRoute: typeof ApiRevealPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/reviews': {
+      id: '/api/reviews'
+      path: '/api/reviews'
+      fullPath: '/api/reviews'
+      preLoaderRoute: typeof ApiReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/store-advisor': {
+      id: '/api/store-advisor'
+      path: '/api/store-advisor'
+      fullPath: '/api/store-advisor'
+      preLoaderRoute: typeof ApiStoreAdvisorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telegram': {
+      id: '/api/telegram'
+      path: '/api/telegram'
+      fullPath: '/api/telegram'
+      preLoaderRoute: typeof ApiTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/track': {
+      id: '/api/track'
+      path: '/api/track'
+      fullPath: '/api/track'
+      preLoaderRoute: typeof ApiTrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/translate': {
+      id: '/api/translate'
+      path: '/api/translate'
+      fullPath: '/api/translate'
+      preLoaderRoute: typeof ApiTranslateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/upload': {
+      id: '/api/upload'
+      path: '/api/upload'
+      fullPath: '/api/upload'
+      preLoaderRoute: typeof ApiUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wallet': {
+      id: '/api/wallet'
+      path: '/api/wallet'
+      fullPath: '/api/wallet'
+      preLoaderRoute: typeof ApiWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bundle/$bundleId': {
+      id: '/bundle/$bundleId'
+      path: '/bundle/$bundleId'
+      fullPath: '/bundle/$bundleId'
+      preLoaderRoute: typeof BundleBundleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bundles/': {
+      id: '/bundles/'
+      path: '/bundles'
+      fullPath: '/bundles/'
+      preLoaderRoute: typeof BundlesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bundles/$bundleId': {
+      id: '/bundles/$bundleId'
+      path: '/bundles/$bundleId'
+      fullPath: '/bundles/$bundleId'
+      preLoaderRoute: typeof BundlesBundleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/category/$categoryId': {
+      id: '/category/$categoryId'
+      path: '/category/$categoryId'
+      fullPath: '/category/$categoryId'
+      preLoaderRoute: typeof CategoryCategoryIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders/': {
+      id: '/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof OrdersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders/$orderId': {
+      id: '/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof OrdersOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/product/$productId': {
+      id: '/product/$productId'
+      path: '/product/$productId'
+      fullPath: '/product/$productId'
+      preLoaderRoute: typeof ProductProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram/': {
+      id: '/telegram/'
+      path: '/telegram'
+      fullPath: '/telegram/'
+      preLoaderRoute: typeof TelegramIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram/account': {
+      id: '/telegram/account'
+      path: '/telegram/account'
+      fullPath: '/telegram/account'
+      preLoaderRoute: typeof TelegramAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram/contests': {
+      id: '/telegram/contests'
+      path: '/telegram/contests'
+      fullPath: '/telegram/contests'
+      preLoaderRoute: typeof TelegramContestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram/notifications': {
+      id: '/telegram/notifications'
+      path: '/telegram/notifications'
+      fullPath: '/telegram/notifications'
+      preLoaderRoute: typeof TelegramNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram/referrals': {
+      id: '/telegram/referrals'
+      path: '/telegram/referrals'
+      fullPath: '/telegram/referrals'
+      preLoaderRoute: typeof TelegramReferralsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/telegram/security': {
+      id: '/telegram/security'
+      path: '/telegram/security'
+      fullPath: '/telegram/security'
+      preLoaderRoute: typeof TelegramSecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/assets': {
+      id: '/api/admin/assets'
+      path: '/api/admin/assets'
+      fullPath: '/api/admin/assets'
+      preLoaderRoute: typeof ApiAdminAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/banana': {
+      id: '/api/admin/banana'
+      path: '/api/admin/banana'
+      fullPath: '/api/admin/banana'
+      preLoaderRoute: typeof ApiAdminBananaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/binance-topups': {
+      id: '/api/admin/binance-topups'
+      path: '/api/admin/binance-topups'
+      fullPath: '/api/admin/binance-topups'
+      preLoaderRoute: typeof ApiAdminBinanceTopupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/import-game': {
+      id: '/api/admin/import-game'
+      path: '/api/admin/import-game'
+      fullPath: '/api/admin/import-game'
+      preLoaderRoute: typeof ApiAdminImportGameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/orders': {
+      id: '/api/admin/orders'
+      path: '/api/admin/orders'
+      fullPath: '/api/admin/orders'
+      preLoaderRoute: typeof ApiAdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/products': {
+      id: '/api/admin/products'
+      path: '/api/admin/products'
+      fullPath: '/api/admin/products'
+      preLoaderRoute: typeof ApiAdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/users': {
+      id: '/api/admin/users'
+      path: '/api/admin/users'
+      fullPath: '/api/admin/users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/files/$': {
+      id: '/api/files/$'
+      path: '/api/files/$'
+      fullPath: '/api/files/$'
+      preLoaderRoute: typeof ApiFilesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/oauth/$provider': {
+      id: '/api/oauth/$provider'
+      path: '/api/oauth/$provider'
+      fullPath: '/api/oauth/$provider'
+      preLoaderRoute: typeof ApiOauthProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/debug-products': {
+      id: '/api/public/debug-products'
+      path: '/api/public/debug-products'
+      fullPath: '/api/public/debug-products'
+      preLoaderRoute: typeof ApiPublicDebugProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/img-proxy': {
+      id: '/api/public/img-proxy'
+      path: '/api/public/img-proxy'
+      fullPath: '/api/public/img-proxy'
+      preLoaderRoute: typeof ApiPublicImgProxyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/latest-news': {
+      id: '/api/public/latest-news'
+      path: '/api/public/latest-news'
+      fullPath: '/api/public/latest-news'
+      preLoaderRoute: typeof ApiPublicLatestNewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/news-image': {
+      id: '/api/public/news-image'
+      path: '/api/public/news-image'
+      fullPath: '/api/public/news-image'
+      preLoaderRoute: typeof ApiPublicNewsImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/order-queue': {
+      id: '/api/public/order-queue'
+      path: '/api/public/order-queue'
+      fullPath: '/api/public/order-queue'
+      preLoaderRoute: typeof ApiPublicOrderQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/test-telegram': {
+      id: '/api/public/test-telegram'
+      path: '/api/public/test-telegram'
+      fullPath: '/api/public/test-telegram'
+      preLoaderRoute: typeof ApiPublicTestTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/products/$productId': {
+      id: '/api/admin/products/$productId'
+      path: '/$productId'
+      fullPath: '/api/admin/products/$productId'
+      preLoaderRoute: typeof ApiAdminProductsProductIdRouteImport
+      parentRoute: typeof ApiAdminProductsRoute
+    }
+    '/api/admin/system/health': {
+      id: '/api/admin/system/health'
+      path: '/api/admin/system/health'
+      fullPath: '/api/admin/system/health'
+      preLoaderRoute: typeof ApiAdminSystemHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/files/legacy/$mediaId': {
+      id: '/api/files/legacy/$mediaId'
+      path: '/api/files/legacy/$mediaId'
+      fullPath: '/api/files/legacy/$mediaId'
+      preLoaderRoute: typeof ApiFilesLegacyMediaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/oauth/$provider/callback': {
+      id: '/api/oauth/$provider/callback'
+      path: '/callback'
+      fullPath: '/api/oauth/$provider/callback'
+      preLoaderRoute: typeof ApiOauthProviderCallbackRouteImport
+      parentRoute: typeof ApiOauthProviderRoute
+    }
+    '/api/public/hooks/contests-draw': {
+      id: '/api/public/hooks/contests-draw'
+      path: '/api/public/hooks/contests-draw'
+      fullPath: '/api/public/hooks/contests-draw'
+      preLoaderRoute: typeof ApiPublicHooksContestsDrawRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/trade-catalog-sync': {
+      id: '/api/public/hooks/trade-catalog-sync'
+      path: '/api/public/hooks/trade-catalog-sync'
+      fullPath: '/api/public/hooks/trade-catalog-sync'
+      preLoaderRoute: typeof ApiPublicHooksTradeCatalogSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/diagnostic': {
+      id: '/api/public/telegram/diagnostic'
+      path: '/api/public/telegram/diagnostic'
+      fullPath: '/api/public/telegram/diagnostic'
+      preLoaderRoute: typeof ApiPublicTelegramDiagnosticRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/health': {
+      id: '/api/public/telegram/health'
+      path: '/api/public/telegram/health'
+      fullPath: '/api/public/telegram/health'
+      preLoaderRoute: typeof ApiPublicTelegramHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/setup-webhook': {
+      id: '/api/public/telegram/setup-webhook'
+      path: '/api/public/telegram/setup-webhook'
+      fullPath: '/api/public/telegram/setup-webhook'
+      preLoaderRoute: typeof ApiPublicTelegramSetupWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/test-send': {
+      id: '/api/public/telegram/test-send'
+      path: '/api/public/telegram/test-send'
+      fullPath: '/api/public/telegram/test-send'
+      preLoaderRoute: typeof ApiPublicTelegramTestSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/webhook': {
+      id: '/api/public/telegram/webhook'
+      path: '/api/public/telegram/webhook'
+      fullPath: '/api/public/telegram/webhook'
+      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/whatsapp/config': {
+      id: '/api/public/whatsapp/config'
+      path: '/api/public/whatsapp/config'
+      fullPath: '/api/public/whatsapp/config'
+      preLoaderRoute: typeof ApiPublicWhatsappConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/whatsapp/test-send': {
+      id: '/api/public/whatsapp/test-send'
+      path: '/api/public/whatsapp/test-send'
+      fullPath: '/api/public/whatsapp/test-send'
+      preLoaderRoute: typeof ApiPublicWhatsappTestSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wallet/binance/active-intent': {
+      id: '/api/wallet/binance/active-intent'
+      path: '/binance/active-intent'
+      fullPath: '/api/wallet/binance/active-intent'
+      preLoaderRoute: typeof ApiWalletBinanceActiveIntentRouteImport
+      parentRoute: typeof ApiWalletRoute
+    }
+    '/api/wallet/binance/config': {
+      id: '/api/wallet/binance/config'
+      path: '/binance/config'
+      fullPath: '/api/wallet/binance/config'
+      preLoaderRoute: typeof ApiWalletBinanceConfigRouteImport
+      parentRoute: typeof ApiWalletRoute
+    }
+    '/api/wallet/binance/topup-intent': {
+      id: '/api/wallet/binance/topup-intent'
+      path: '/binance/topup-intent'
+      fullPath: '/api/wallet/binance/topup-intent'
+      preLoaderRoute: typeof ApiWalletBinanceTopupIntentRouteImport
+      parentRoute: typeof ApiWalletRoute
+    }
+    '/api/wallet/binance/verify': {
+      id: '/api/wallet/binance/verify'
+      path: '/binance/verify'
+      fullPath: '/api/wallet/binance/verify'
+      preLoaderRoute: typeof ApiWalletBinanceVerifyRouteImport
+      parentRoute: typeof ApiWalletRoute
+    }
   }
 }
 
+interface ApiWalletRouteChildren {
+  ApiWalletBinanceActiveIntentRoute: typeof ApiWalletBinanceActiveIntentRoute
+  ApiWalletBinanceConfigRoute: typeof ApiWalletBinanceConfigRoute
+  ApiWalletBinanceTopupIntentRoute: typeof ApiWalletBinanceTopupIntentRoute
+  ApiWalletBinanceVerifyRoute: typeof ApiWalletBinanceVerifyRoute
+}
+
+const ApiWalletRouteChildren: ApiWalletRouteChildren = {
+  ApiWalletBinanceActiveIntentRoute: ApiWalletBinanceActiveIntentRoute,
+  ApiWalletBinanceConfigRoute: ApiWalletBinanceConfigRoute,
+  ApiWalletBinanceTopupIntentRoute: ApiWalletBinanceTopupIntentRoute,
+  ApiWalletBinanceVerifyRoute: ApiWalletBinanceVerifyRoute,
+}
+
+const ApiWalletRouteWithChildren = ApiWalletRoute._addFileChildren(
+  ApiWalletRouteChildren,
+)
+
+interface ApiAdminProductsRouteChildren {
+  ApiAdminProductsProductIdRoute: typeof ApiAdminProductsProductIdRoute
+}
+
+const ApiAdminProductsRouteChildren: ApiAdminProductsRouteChildren = {
+  ApiAdminProductsProductIdRoute: ApiAdminProductsProductIdRoute,
+}
+
+const ApiAdminProductsRouteWithChildren =
+  ApiAdminProductsRoute._addFileChildren(ApiAdminProductsRouteChildren)
+
+interface ApiOauthProviderRouteChildren {
+  ApiOauthProviderCallbackRoute: typeof ApiOauthProviderCallbackRoute
+}
+
+const ApiOauthProviderRouteChildren: ApiOauthProviderRouteChildren = {
+  ApiOauthProviderCallbackRoute: ApiOauthProviderCallbackRoute,
+}
+
+const ApiOauthProviderRouteWithChildren =
+  ApiOauthProviderRoute._addFileChildren(ApiOauthProviderRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  Account_guidesRoute: Account_guidesRoute,
+  Add_gameRoute: Add_gameRoute,
+  AuthRoute: AuthRoute,
+  Banana_buyRoute: Banana_buyRoute,
+  Banana_marketRoute: Banana_marketRoute,
+  Banana_redeemRoute: Banana_redeemRoute,
+  CartRoute: CartRoute,
+  ChatRoute: ChatRoute,
+  Disc_tradeRoute: Disc_tradeRoute,
+  FaqRoute: FaqRoute,
+  GamesRoute: GamesRoute,
+  PolicyRoute: PolicyRoute,
+  ProblemRoute: ProblemRoute,
+  ProfileRoute: ProfileRoute,
+  SupportRoute: SupportRoute,
+  SwRoute: SwRoute,
+  WalletRoute: WalletRoute,
+  AdminImportRoute: AdminImportRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  ApiAdminWipeRoute: ApiAdminWipeRoute,
+  ApiAuthRoute: ApiAuthRoute,
+  ApiBananaRoute: ApiBananaRoute,
+  ApiChatRoute: ApiChatRoute,
+  ApiContentRoute: ApiContentRoute,
+  ApiDataRoute: ApiDataRoute,
+  ApiDiscTradeRoute: ApiDiscTradeRoute,
+  ApiExchangeRatesRoute: ApiExchangeRatesRoute,
+  ApiGameCatalogRoute: ApiGameCatalogRoute,
+  ApiGameRequestsRoute: ApiGameRequestsRoute,
+  ApiImgRoute: ApiImgRoute,
+  ApiOrdersRoute: ApiOrdersRoute,
+  ApiOtpRoute: ApiOtpRoute,
+  ApiProfileRoute: ApiProfileRoute,
+  ApiRevealPasswordRoute: ApiRevealPasswordRoute,
+  ApiReviewsRoute: ApiReviewsRoute,
+  ApiStoreAdvisorRoute: ApiStoreAdvisorRoute,
+  ApiTelegramRoute: ApiTelegramRoute,
+  ApiTrackRoute: ApiTrackRoute,
+  ApiTranslateRoute: ApiTranslateRoute,
+  ApiUploadRoute: ApiUploadRoute,
+  ApiWalletRoute: ApiWalletRouteWithChildren,
+  BundleBundleIdRoute: BundleBundleIdRoute,
+  BundlesBundleIdRoute: BundlesBundleIdRoute,
+  CategoryCategoryIdRoute: CategoryCategoryIdRoute,
+  OrdersOrderIdRoute: OrdersOrderIdRoute,
+  ProductProductIdRoute: ProductProductIdRoute,
+  TelegramAccountRoute: TelegramAccountRoute,
+  TelegramContestsRoute: TelegramContestsRoute,
+  TelegramNotificationsRoute: TelegramNotificationsRoute,
+  TelegramReferralsRoute: TelegramReferralsRoute,
+  TelegramSecurityRoute: TelegramSecurityRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  BundlesIndexRoute: BundlesIndexRoute,
+  OrdersIndexRoute: OrdersIndexRoute,
+  TelegramIndexRoute: TelegramIndexRoute,
+  ApiAdminAssetsRoute: ApiAdminAssetsRoute,
+  ApiAdminBananaRoute: ApiAdminBananaRoute,
+  ApiAdminBinanceTopupsRoute: ApiAdminBinanceTopupsRoute,
+  ApiAdminImportGameRoute: ApiAdminImportGameRoute,
+  ApiAdminOrdersRoute: ApiAdminOrdersRoute,
+  ApiAdminProductsRoute: ApiAdminProductsRouteWithChildren,
+  ApiAdminUsersRoute: ApiAdminUsersRoute,
+  ApiFilesSplatRoute: ApiFilesSplatRoute,
+  ApiOauthProviderRoute: ApiOauthProviderRouteWithChildren,
+  ApiPublicDebugProductsRoute: ApiPublicDebugProductsRoute,
+  ApiPublicImgProxyRoute: ApiPublicImgProxyRoute,
+  ApiPublicLatestNewsRoute: ApiPublicLatestNewsRoute,
+  ApiPublicNewsImageRoute: ApiPublicNewsImageRoute,
+  ApiPublicOrderQueueRoute: ApiPublicOrderQueueRoute,
+  ApiPublicTestTelegramRoute: ApiPublicTestTelegramRoute,
+  ApiAdminSystemHealthRoute: ApiAdminSystemHealthRoute,
+  ApiFilesLegacyMediaIdRoute: ApiFilesLegacyMediaIdRoute,
+  ApiPublicHooksContestsDrawRoute: ApiPublicHooksContestsDrawRoute,
+  ApiPublicHooksTradeCatalogSyncRoute: ApiPublicHooksTradeCatalogSyncRoute,
+  ApiPublicTelegramDiagnosticRoute: ApiPublicTelegramDiagnosticRoute,
+  ApiPublicTelegramHealthRoute: ApiPublicTelegramHealthRoute,
+  ApiPublicTelegramSetupWebhookRoute: ApiPublicTelegramSetupWebhookRoute,
+  ApiPublicTelegramTestSendRoute: ApiPublicTelegramTestSendRoute,
+  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
+  ApiPublicWhatsappConfigRoute: ApiPublicWhatsappConfigRoute,
+  ApiPublicWhatsappTestSendRoute: ApiPublicWhatsappTestSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

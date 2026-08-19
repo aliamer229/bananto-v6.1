@@ -1,0 +1,54 @@
+# تعليمات التسجيل وتفعيل الحسابات — قالب استيراد الأدلة
+# ====================================================
+# الصيغة: key=value
+# للنصوص الطويلة: key<<EOF ... EOF
+# لتحديد الخطوات: step.1.title= / step.1.description=
+# ====================================================
+
+# عنوان الدليل الرئيسي [مطلوب]
+title_ar=طريقة تفعيل الحساب الأساسي (Primary) وتحميل اللعبة
+title_en=How to Activate Primary Account & Download Games
+
+# الرابط المختصر (Slug)
+slug=primary-account-activation
+
+# تصنيف الدليل (الحسابات، الاشتراكات، الأجهزة...)
+category=الحسابات والألعاب الرقمية
+
+# المدة المتوقعة للتطبيق ومستوى الصعوبة
+estimated_time=3 دقائق
+difficulty=سهل جداً
+
+# صورة الغلاف ورابط الفيديو الإرشادي (اختياري)
+cover_image=
+video_url=
+
+# وصف ومقدمة الدليل
+description_ar<<EOF
+خطوات سهلة ومباشرة لإضافة الحساب الجديد على جهاز نينتندو سويتش الخاص بك وتفعيله كحساب أساسي للعب بملفك الشخصي دون قيود.
+EOF
+description_en<<EOF
+Step-by-step instructions to add your new account to Nintendo Switch and activate it as Primary.
+EOF
+
+# ====================================================
+# خطوات الدليل المرتبة:
+# ====================================================
+
+step.1.title_ar=إضافة مستخدم جديد على السويتش
+step.1.title_en=Add New User on Switch
+step.1.description_ar=اذهب إلى إعدادات الجهاز System Settings > Users > Add User > Create New User ثم اختر أي أيقونة واسم.
+step.1.note_ar=يمكنك اختيار أي اسم تريده لهذا الحساب على جهازك.
+
+step.2.title_ar=ربط حساب نينتندو (Link Nintendo Account)
+step.2.title_en=Link Nintendo Account
+step.2.description_ar=اختر Link a Nintendo Account ثم Sign In with E-mail or Sign-In ID وأدخل الإيميل وكلمة السر المستلمة من بنانا ستور.
+step.2.warning_ar=تأكد من إدخال الأحرف الكبيرة والصغيرة في كلمة السر بدقة كما وصلتك.
+
+step.3.title_ar=التحقق من تفعيل الحساب الأساسي (Primary)
+step.3.title_en=Verify Primary Console Status
+step.3.description_ar=افتح Nintendo eShop بالحساب الجديد، اضغط على صورة البروفايل في الزاوية العلوية، وانزل إلى خيار Primary Console وتأكد من أنه Pass / Active.
+
+step.4.title_ar=بدء تحميل اللعبة واللعب بحسابك الشخصي
+step.4.title_en=Download & Play on Your Main Profile
+step.4.description_ar=انتقل إلى قسم Redownload في القائمة الجانبية للمتجر واضغط على أيقونة السحابة بجانب اللعبة، بعد اكتمال التحميل يمكنك اللعب من ملفك الشخصي الأساسي.

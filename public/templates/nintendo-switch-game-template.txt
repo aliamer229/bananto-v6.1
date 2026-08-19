@@ -1,0 +1,547 @@
+# Nintendo Switch Game Import Template
+# =========================================
+# الصيغة: field=value
+# النصوص الطويلة: field<<EOF ... EOF
+# العناصر المتكررة: genre.1=Action, genre.2=RPG
+# =========================================
+
+schema_version=
+
+# اسم اللعبة
+name=
+
+# رابط اللعبة (Slug) - اختياري، سيتم توليده تلقائياً إذا كان فارغاً
+# الرابط الفريد (اختياري)
+slug=
+
+# المنصة: switch1 / switch2 / both
+platform=
+
+# الإصدار (Standard, Deluxe, etc.)
+edition=
+
+# المنطقة (Global, USA, EUR, JPN)
+region=
+
+# تاريخ الإصدار YYYY-MM-DD
+release_date=
+
+# حالة الإصدار (نشط، قادم)
+release_status=
+
+# المطور
+developer=
+
+# الناشر
+publisher=
+
+# عدد اللاعبين
+players_count=
+
+# التصنيف العمري
+age_rating=
+
+# تقييم Metacritic (0-100)
+metacritic_score=
+
+# رابط Metacritic
+metacritic_url=
+
+# تقييم Opencritic (0-100)
+opencritic_score=
+
+# تقييم اللاعبين (0-10)
+user_score=
+
+# حجم اللعبة بالجيجابايت
+game_size_gb=
+
+# رابط الموقع الرسمي
+official_url=
+
+# رابط eShop
+eshop_url=
+
+# ترتيب العرض
+display_order=
+
+# نوع المنتج (account, physical, etc.)
+kind=
+
+# معرف القسم
+category=
+
+# هل اللعبة اوفلاين
+game_is_offline=
+
+# هل تستطيع اللعب اونلاين
+game_is_online=
+
+# هل فيها قفل لغة اقليمي
+game_language_locked=
+
+# الوصف المختصر
+description_short=
+
+# الوصف الكامل
+description_full<<EOF
+
+EOF
+
+# الوصف بالعربية
+description_ar<<EOF
+
+EOF
+
+# صورة الكارتلج (تظهر في الرئيسية)
+cartridge_image=
+
+# صورة الغلاف (تظهر في تفاصيل المنتج)
+cover_image=
+
+# صورة الغلاف الأمامي
+box_front_url=
+
+# صورة الغلاف الخلفي
+box_back_url=
+
+# صور البنر
+banner_image.1=
+banner_image.2=
+banner_image.3=
+
+# رابط التريلر (يوتيوب)
+trailer_url=
+
+# قائمة الفيديوهات
+# قائمة الفيديوهات (1)
+video.1.title=
+video.1.url=
+# قائمة الفيديوهات (2)
+video.2.title=
+video.2.url=
+# قائمة الفيديوهات (3)
+video.3.title=
+video.3.url=
+
+# NSUID
+nsuid=
+
+# Title ID
+title_id=
+
+# Product Code
+product_code=
+
+# الأنواع
+genre.1=
+genre.2=
+genre.3=
+
+# رابط eShop الرسمي
+nintendo_official_url=
+
+# تتطلب Switch Online
+nintendo_requires_switch_online=
+
+# يدعم الحفظ السحابي
+nintendo_cloud_save=
+
+# بطاقة مفتاح اللعبة
+nintendo_game_key_card=
+
+# النسخة الفعلية تتطلب تنزيلاً
+nintendo_physical_requires_download=
+
+# أنماط اللعب (تلفاز، محمول، طاولة)
+nintendo_play_modes=
+
+# ملاحظات نينتندو
+nintendo_notes<<EOF
+
+EOF
+
+# نسخة محسنة لـ Switch 2
+switch2_enhanced=
+
+# مزايا Switch 2
+switch2_feature.1=
+switch2_feature.2=
+switch2_feature.3=
+
+# سطر التعريف
+overview_tagline=
+
+# تناسب من؟
+# تناسب من؟ (1)
+overview_suitable_for.1.value=
+# تناسب من؟ (2)
+overview_suitable_for.2.value=
+# تناسب من؟ (3)
+overview_suitable_for.3.value=
+
+# لا تناسب من؟
+# لا تناسب من؟ (1)
+overview_not_suitable_for.1.value=
+# لا تناسب من؟ (2)
+overview_not_suitable_for.2.value=
+# لا تناسب من؟ (3)
+overview_not_suitable_for.3.value=
+
+# ساعات القصة الرئيسية
+main_story_hours=
+
+# ساعات الإكمال الكامل
+completionist_hours=
+
+# النسخ والإصدارات
+# النسخ والإصدارات (1)
+edition.1.name=
+edition.1.cover_image=
+edition.1.content=
+# النسخ والإصدارات (2)
+edition.2.name=
+edition.2.cover_image=
+edition.2.content=
+# النسخ والإصدارات (3)
+edition.3.name=
+edition.3.cover_image=
+edition.3.content=
+
+# ركائز اللعب
+# ركائز اللعب (1)
+gameplay_pillar.1.title=
+gameplay_pillar.1.description=
+gameplay_pillar.1.image=
+# ركائز اللعب (2)
+gameplay_pillar.2.title=
+gameplay_pillar.2.description=
+gameplay_pillar.2.image=
+# ركائز اللعب (3)
+gameplay_pillar.3.title=
+gameplay_pillar.3.description=
+gameplay_pillar.3.image=
+
+# ملخص عالم اللعبة
+world_summary<<EOF
+
+EOF
+
+# فصول القصة
+# فصول القصة (1)
+story_chapter.1.title=
+story_chapter.1.text=
+story_chapter.1.image=
+# فصول القصة (2)
+story_chapter.2.title=
+story_chapter.2.text=
+story_chapter.2.image=
+# فصول القصة (3)
+story_chapter.3.title=
+story_chapter.3.text=
+story_chapter.3.image=
+
+# معرض الصور
+# معرض الصور (1)
+gallery.1.image=
+gallery.1.description=
+# معرض الصور (2)
+gallery.2.image=
+gallery.2.description=
+# معرض الصور (3)
+gallery.3.image=
+gallery.3.description=
+
+# المميزات
+# المميزات (1)
+feature.1.value=
+# المميزات (2)
+feature.2.value=
+# المميزات (3)
+feature.3.value=
+
+# الدقة (تلفاز)
+performance_tv_resolution=
+
+# الدقة (محمول)
+performance_handheld_resolution=
+
+# الإطارات في الثانية
+performance_fps=
+
+# يدعم HDR
+performance_hdr=
+
+# ملاحظات الأداء
+performance_notes<<EOF
+
+EOF
+
+# حجم التنزيل (GB)
+storage_download_size_gb=
+
+# المساحة المطلوبة (GB)
+storage_required_space_gb=
+
+# ينصح ببطاقة microSD
+storage_micro_sd_recommended=
+
+# ملاحظات التخزين
+storage_notes<<EOF
+
+EOF
+
+# لغات الصوت
+audio_language.1=
+audio_language.2=
+audio_language.3=
+
+# لغات النصوص
+text_language.1=
+text_language.2=
+text_language.3=
+
+# اللغات المدعومة (نص حر)
+supported_languages_raw=
+
+# يدعم العربية
+supports_arabic=
+
+# لعب محلي
+multiplayer_local=
+
+# لعب أونلاين
+multiplayer_online=
+
+# لعب تعاوني
+multiplayer_cooperative=
+
+# لعب تنافسي
+multiplayer_competitive=
+
+# شاشة مقسومة
+multiplayer_split_screen=
+
+# لاسلكي محلي
+multiplayer_local_wireless=
+
+# الإضافات
+# الإضافات (1)
+dlc.1.title=
+dlc.1.description=
+dlc.1.image=
+# الإضافات (2)
+dlc.2.title=
+dlc.2.description=
+dlc.2.image=
+# الإضافات (3)
+dlc.3.title=
+dlc.3.description=
+dlc.3.image=
+
+# الأدلة
+# الأدلة (1)
+guide.1.title=
+guide.1.summary=
+guide.1.url=
+# الأدلة (2)
+guide.2.title=
+guide.2.summary=
+guide.2.url=
+# الأدلة (3)
+guide.3.title=
+guide.3.summary=
+guide.3.url=
+
+# القصة الرئيسية (ساعة)
+completion_main_story_hours=
+
+# القصة + الإضافات (ساعة)
+completion_story_plus_dlc_hours=
+
+# إكمال 100% (ساعة)
+completion_100_percent_hours=
+
+# الأسئلة الشائعة
+# الأسئلة الشائعة (1)
+faq.1.question=
+faq.1.answer=
+# الأسئلة الشائعة (2)
+faq.2.question=
+faq.2.answer=
+# الأسئلة الشائعة (3)
+faq.3.question=
+faq.3.answer=
+
+# الحكم النهائي من 10
+verdict_score=
+
+# الخلاصة
+verdict_summary<<EOF
+
+EOF
+
+# الإيجابيات
+# الإيجابيات (1)
+verdict_pro.1.value=
+# الإيجابيات (2)
+verdict_pro.2.value=
+# الإيجابيات (3)
+verdict_pro.3.value=
+
+# السلبيات
+# السلبيات (1)
+verdict_con.1.value=
+# السلبيات (2)
+verdict_con.2.value=
+# السلبيات (3)
+verdict_con.3.value=
+
+# مراجعات مختارة
+# مراجعات مختارة (1)
+review.1.source=
+review.1.score=
+review.1.quote=
+review.1.url=
+# مراجعات مختارة (2)
+review.2.source=
+review.2.score=
+review.2.quote=
+review.2.url=
+# مراجعات مختارة (3)
+review.3.source=
+review.3.score=
+review.3.quote=
+review.3.url=
+
+# الخط الزمني
+# الخط الزمني (1)
+timeline.1.date=
+timeline.1.title=
+timeline.1.details=
+# الخط الزمني (2)
+timeline.2.date=
+timeline.2.title=
+timeline.2.details=
+# الخط الزمني (3)
+timeline.3.date=
+timeline.3.title=
+timeline.3.details=
+
+# التحديثات
+# التحديثات (1)
+update.1.version=
+update.1.date=
+update.1.changes=
+# التحديثات (2)
+update.2.version=
+update.2.date=
+update.2.changes=
+# التحديثات (3)
+update.3.version=
+update.3.date=
+update.3.changes=
+
+# الموسيقى
+# الموسيقى (1)
+music.1.title=
+music.1.url=
+# الموسيقى (2)
+music.2.title=
+music.2.url=
+# الموسيقى (3)
+music.3.title=
+music.3.url=
+
+# اسم السلسلة
+series_name=
+
+# أجزاء السلسلة
+# أجزاء السلسلة (1)
+series_game.1.value=
+# أجزاء السلسلة (2)
+series_game.2.value=
+# أجزاء السلسلة (3)
+series_game.3.value=
+
+# اسم الاستوديو
+studio_name=
+
+# موقع الاستوديو
+studio_website=
+
+# مقر الاستوديو
+studio_location=
+
+# عن الاستوديو
+studio_description<<EOF
+
+EOF
+
+# المتطلبات
+# المتطلبات (1)
+setting_requirement.1.value=
+# المتطلبات (2)
+setting_requirement.2.value=
+# المتطلبات (3)
+setting_requirement.3.value=
+
+# المصادر
+# المصادر (1)
+source.1.name=
+source.1.url=
+# المصادر (2)
+source.2.name=
+source.2.url=
+# المصادر (3)
+source.3.name=
+source.3.url=
+
+# =========================================
+# الخيارات والأنواع والإصدارات (Options & Types)
+# =========================================
+# يمكنك تحديد خيارات رئيسية (مثل: حساب أوفلاين، حساب أونلاين، أو ألوان الأجهزة)
+# ثم ربط كل نوع أو نسخة بسعر وتكلفة محددة مع إمكانية ربطه بخيار معين عبر option_id أو تركه فارغاً ليظهر مع كل الخيارات.
+
+# خيارات المنتج الرئيسية (Options)
+# خيار 1
+option.1.id=opt_offline
+option.1.name=حساب أوفلاين (Offline)
+option.1.description=لعب على حساب المتجر بدون اتصال بالإنترنت
+
+# خيار 2
+option.2.id=opt_online
+option.2.name=حساب أونلاين (Online)
+option.2.description=لعب كامل على حسابك الشخصي مع دعم الأونلاين
+
+# خيار 3 (اختياري)
+option.3.id=
+option.3.name=
+option.3.description=
+
+# أنواع وإصدارات وأسعار المنتج (Types & Variants)
+# نوع / إصدار 1 (متاح للكل إذا كان option_id فارغاً)
+type.1.id=typ_std
+type.1.name=النسخة القياسية Standard
+type.1.option_id=
+type.1.price=25000
+type.1.cost=18000
+type.1.description=اللعبة الأساسية كاملة
+
+# نوع / إصدار 2
+type.2.id=typ_dlx
+type.2.name=نسخة ديلوكس مع التوسعات Deluxe
+type.2.option_id=
+type.2.price=35000
+type.2.cost=25000
+type.2.description=تشمل التوسعات وحزم المحتوى الإضافي
+
+# نوع / إصدار 3 (خاص بخيار معين مثلاً opt_offline)
+type.3.id=typ_ult
+type.3.name=النسخة الفاخرة Ultimate
+type.3.option_id=opt_offline
+type.3.price=40000
+type.3.cost=28000
+type.3.description=جميع الإضافات وتثبيت خاص
+
+

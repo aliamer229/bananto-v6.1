@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="شاشة لعبة متوقفة مع رسالة إغلاق البرنامج">
+  <rect width="800" height="600" fill="#FFF9EC"/>
+  <circle cx="120" cy="110" r="130" fill="#ECE8FF" opacity=".55"/>
+  <circle cx="700" cy="520" r="140" fill="#FFEFB0" opacity=".5"/>
+  <rect x="128" y="122" width="544" height="360" rx="26" fill="#211A3D" opacity=".1"/>
+  <rect x="120" y="110" width="544" height="360" rx="26" fill="#211A3D"/>
+  <rect x="142" y="132" width="500" height="316" rx="14" fill="#3B3163"/>
+  <g opacity=".5">
+    <rect x="142" y="380" width="500" height="68" fill="#4FB477" opacity=".35"/>
+    <circle cx="240" cy="230" r="26" fill="#FFC32E" opacity=".5"/>
+    <rect x="470" y="300" width="60" height="80" rx="8" fill="#96D6F7" opacity=".5"/>
+  </g>
+  <rect x="212" y="212" width="360" height="164" rx="22" fill="#FFFDF8" stroke="#EDDFC6" stroke-width="3"/>
+  <circle cx="392" cy="262" r="24" fill="#FFE6E6" stroke="#EF4A52" stroke-width="3"/>
+  <path d="M383 253l18 18M401 253l-18 18" stroke="#EF4A52" stroke-width="3.4" stroke-linecap="round"/>
+  <rect x="256" y="306" width="272" height="12" rx="6" fill="#211A3D" opacity=".7"/>
+  <rect x="292" y="330" width="200" height="10" rx="5" fill="#9A93B5" opacity=".6"/>
+  <rect x="330" y="352" width="124" height="12" rx="6" fill="#FFC32E"/>
+  <rect x="300" y="494" width="184" height="16" rx="8" fill="#EDDFC6"/>
+  <rect x="252" y="524" width="280" height="10" rx="5" fill="#EDDFC6" opacity=".7"/>
+</svg>

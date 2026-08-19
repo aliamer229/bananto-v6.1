@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="بعد المعايرة: نقطة اختبار العصا ثابتة في المركز">
+  <rect width="800" height="600" fill="#FFF9EC"/>
+  <circle cx="700" cy="110" r="130" fill="#E4F7E9" opacity=".7"/>
+  <circle cx="100" cy="510" r="130" fill="#FFEFB0" opacity=".45"/>
+  <rect x="70" y="70" width="280" height="60" rx="30" fill="#E4F7E9" stroke="#3FAE6B" stroke-width="4"/>
+  <text x="210" y="110" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#257A4A">AFTER</text>
+  <g transform="translate(400 330)">
+    <circle cx="0" cy="0" r="170" fill="#FFFDF8" stroke="#EDDFC6" stroke-width="5"/>
+    <circle cx="0" cy="0" r="112" fill="none" stroke="#EDDFC6" stroke-width="3" stroke-dasharray="8 10"/>
+    <circle cx="0" cy="0" r="54" fill="none" stroke="#3FAE6B" stroke-width="3" stroke-dasharray="8 10"/>
+    <line x1="-170" y1="0" x2="170" y2="0" stroke="#EDDFC6" stroke-width="3"/>
+    <line x1="0" y1="-170" x2="0" y2="170" stroke="#EDDFC6" stroke-width="3"/>
+    <circle cx="0" cy="0" r="34" fill="#3FAE6B" opacity=".16"/>
+    <circle cx="0" cy="0" r="15" fill="#3FAE6B" stroke="#211A3D" stroke-width="4"/>
+  </g>
+  <g transform="translate(596 476)">
+    <rect x="-150" y="-34" width="300" height="68" rx="26" fill="#E4F7E9" stroke="#3FAE6B" stroke-width="4"/>
+    <circle cx="-108" cy="0" r="16" fill="#3FAE6B"/>
+    <path d="M-115 0l5 6 10-11" fill="none" stroke="#FFFDF8" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="-78" y="-6" width="200" height="12" rx="6" fill="#3FAE6B" opacity=".55"/>
+  </g>
+</svg>
