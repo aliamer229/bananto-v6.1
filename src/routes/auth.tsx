@@ -32,6 +32,11 @@ import { GAME_GENRES } from "@/lib/genres";
 import { isPlaceholderEmail, normalizePhone } from "@/lib/phone";
 import { playSound } from "@/utils/audio";
 
+const patternAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Auth%20background%20.webp` };
+const mascotAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Logo.webp` };
+
+
+
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { error?: string } => {
     const error = search["error"];
