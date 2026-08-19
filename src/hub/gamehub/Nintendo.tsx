@@ -54,7 +54,8 @@ export function NintendoSection() {
   const nin = game.nintendo;
 
   // We show the section if nintendo data exists OR if our new metadata fields are present
-  if (!nin && !game.gameIsOffline && !game.gameIsOnline && !game.gameLanguageLocked) return null;
+  const hasMeta = game.gameIsOffline || game.gameIsOnline || game.gameLanguageLocked;
+  if (!nin && !hasMeta) return null;
 
   const featureLabels: Record<string, string> = {
     motion: t("nintendo.motion"),
@@ -273,9 +274,7 @@ export function NintendoSection() {
         </Reveal>
       )}
       {/* Benana Store Specific Meta */}
-      {(game.gameIsOffline !== undefined ||
-        game.gameIsOnline !== undefined ||
-        game.gameLanguageLocked !== undefined) && (
+      {(game.gameIsOffline || game.gameIsOnline || game.gameLanguageLocked) && (
         <Reveal delay={140}>
           <Panel className="mt-4 p-5 sm:p-6">
             <p className="eyebrow mb-4">{t("nintendo.availabilityDetails")}</p>
