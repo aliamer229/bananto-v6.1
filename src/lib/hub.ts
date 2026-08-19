@@ -30,19 +30,21 @@ export const getTextValue = (item: unknown): string => {
   if (typeof item === "string") return item;
   if (item && typeof item === "object") {
     if ("value" in item) {
-      return String((item as any).value ?? "");
+      const val = (item as any).value;
+      return typeof val === "string" ? val : getTextValue(val);
     }
     if ("name" in item && typeof (item as any).name === "string") {
-      return String((item as any).name ?? "");
+      return (item as any).name;
     }
     if ("title" in item && typeof (item as any).title === "string") {
-      return String((item as any).title ?? "");
+      return (item as any).title;
     }
     if ("label" in item && typeof (item as any).label === "string") {
-      return String((item as any).label ?? "");
+      return (item as any).label;
     }
+    return "";
   }
-  return "";
+  return item == null ? "" : String(item);
 };
 
 export const str = (v: unknown): string => {
