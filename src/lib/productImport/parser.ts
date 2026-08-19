@@ -232,7 +232,9 @@ function assign(
       return;
     }
 
-    const list = (container[def.target] as unknown[]) ?? [];
+    const existing = container[def.target];
+    // A scalar field may share the same target; never index into a string.
+    const list = Array.isArray(existing) ? (existing as unknown[]) : [];
     container[def.target] = list;
     const slot = index - 1;
 
