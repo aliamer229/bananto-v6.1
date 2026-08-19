@@ -371,60 +371,111 @@ export function parseRegistrationGuides(text: string): ServiceParseResult<Regist
   const kv = extractKeyValues(text);
   const guides: RegistrationGuideItem[] = [];
 
-  // Parse steps for single guide
-  const steps: GuideStepItem[] = [];
-  const stepIndices = new Set<number>();
-  for (const k of Object.keys(kv)) {
-    const match = k.match(/^step\.(\d+)\./);
-    if (match) stepIndices.add(Number(match[1]));
-  }
+  const slugify = (value: string, fallback: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || fallback;
 
-  for (const sIdx of Array.from(stepIndices).sort((a, b) => a - b)) {
-    const stepTitle = kv[`step.${sIdx}.title_ar`] || kv[`step.${sIdx}.title`] || `الخطوة ${sIdx}`;
-    const stepDesc = kv[`step.${sIdx}.description_ar`] || kv[`step.${sIdx}.description`] || "";
-    steps.push({
-      id: `step_${sIdx}_${Date.now().toString(36)}`,
-      title_ar: stepTitle,
-      title_en: kv[`step.${sIdx}.title_en`] || "",
-      description_ar: stepDesc,
-      description_en: kv[`step.${sIdx}.description_en`] || "",
-      image: kv[`step.${sIdx}.image`] || "",
-      video: kv[`step.${sIdx}.video`] || "",
-      note_ar: kv[`step.${sIdx}.note_ar`] || kv[`step.${sIdx}.note`] || "",
-      warning_ar: kv[`step.${sIdx}.warning_ar`] || kv[`step.${sIdx}.warning`] || "",
-      sort_order: sIdx,
-    });
-  }
+  /** Builds one guide from a key prefix ("" for a single guide, "guide.2." for blocks) */
+  const buildGuide = (prefix: string, order: number): RegistrationGuideItem | null => {
+    const get = (name: string) => kv[`${prefix}${name}`];
+    const titleAr = get("title_ar") || get("title");
+    if (!titleAr) return null;
 
-  const titleAr = kv["title_ar"] || kv["title"];
-  if (titleAr) {
-    guides.push({
-      id: kv["id"] || `guide_${Date.now().toString(36)}`,
+    const stepIndices = new Set<number>();
+    const stepRe = new RegExp(`^${prefix.replace(/\./g, "\\.")}step\\.(\\d+)\\.`);
+    for (const k of Object.keys(kv)) {
+      const match = k.match(stepRe);
+      if (match?.[1]) stepIndices.add(Number(match[1]));
+    }
+
+    const steps: GuideStepItem[] = Array.from(stepIndices)
+      .sort((a, b) => a - b)
+      .map((sIdx, i) => ({
+        id: `step_${order}_${sIdx}_${Date.now().toString(36)}`,
+        title_ar:
+          get(`step.${sIdx}.title_ar`) || get(`step.${sIdx}.title`) || `الخطوة ${i + 1}`,
+        title_en: get(`step.${sIdx}.title_en`) || "",
+        description_ar:
+          get(`step.${sIdx}.description_ar`) || get(`step.${sIdx}.description`) || "",
+        description_en: get(`step.${sIdx}.description_en`) || "",
+        image: get(`step.${sIdx}.image`) || get(`step.${sIdx}.image_url`) || "",
+        video: get(`step.${sIdx}.video`) || get(`step.${sIdx}.video_url`) || "",
+        note_ar: get(`step.${sIdx}.note_ar`) || get(`step.${sIdx}.note`) || "",
+        warning_ar: get(`step.${sIdx}.warning_ar`) || get(`step.${sIdx}.warning`) || "",
+        sort_order: i + 1,
+      }));
+
+    // Fallback: steps given as one multiline block
+    const stepsRaw = get("steps");
+    if (steps.length === 0 && stepsRaw) {
+      toList(stepsRaw).forEach((line, i) => {
+        steps.push({
+          id: `step_${order}_${i + 1}_${Date.now().toString(36)}`,
+          title_ar: `الخطوة ${i + 1}`,
+          description_ar: line,
+          sort_order: i + 1,
+        });
+      });
+    }
+
+    if (steps.length === 0) {
+      issues.push({
+        severity: "warning",
+        field: `${prefix}step.1.title_ar`,
+        messageAr: `الدليل "${titleAr}" لا يحتوي على أي خطوات`,
+        messageEn: `Guide "${titleAr}" has no steps`,
+      });
+    }
+
+    return {
+      id: get("id") || `guide_${order}_${Date.now().toString(36)}`,
       title_ar: titleAr,
-      title_en: kv["title_en"] || "",
-      slug:
-        kv["slug"] ||
-        titleAr
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "") ||
-        `guide-${Date.now()}`,
-      category: kv["category"] || "الحسابات والألعاب الرقمية",
-      description_ar: kv["description_ar"] || kv["description"] || "",
-      description_en: kv["description_en"] || "",
-      cover_image: kv["cover_image"] || "",
-      video_url: kv["video_url"] || "",
-      estimated_time: kv["estimated_time"] || "3 دقائق",
-      difficulty: kv["difficulty"] || "سهل جداً",
-      sort_order: 1,
-      published: true,
+      title_en: get("title_en") || "",
+      slug: get("slug") || slugify(titleAr, `guide-${order}-${Date.now().toString(36)}`),
+      category: get("category") || get("category_ar") || "الحسابات والألعاب الرقمية",
+      description_ar: get("description_ar") || get("description") || "",
+      description_en: get("description_en") || "",
+      cover_image: get("cover_image") || get("image") || "",
+      video_url: get("video_url") || get("video") || "",
+      estimated_time: get("estimated_time") || "3 دقائق",
+      difficulty: get("difficulty") || "سهل جداً",
+      sort_order: order,
+      published: parseBool(get("published"), true),
       steps,
-    });
-  } else {
+    };
+  };
+
+  // Single (top-level) guide
+  const single = buildGuide("", 1);
+  if (single) guides.push(single);
+
+  // Multiple guides: guide.1.* / guide.2.* ...
+  const guideIndices = new Set<number>();
+  for (const k of Object.keys(kv)) {
+    const match = k.match(/^guide\.(\d+)\./);
+    if (match?.[1]) guideIndices.add(Number(match[1]));
+  }
+  for (const gIdx of Array.from(guideIndices).sort((a, b) => a - b)) {
+    const guide = buildGuide(`guide.${gIdx}.`, guides.length + 1);
+    if (guide) {
+      guides.push(guide);
+    } else {
+      issues.push({
+        severity: "warning",
+        field: `guide.${gIdx}.title_ar`,
+        messageAr: `الدليل رقم ${gIdx} بدون عنوان، تم تخطيه`,
+        messageEn: `Guide #${gIdx} is missing a title and was skipped`,
+      });
+    }
+  }
+
+  if (guides.length === 0) {
     issues.push({
       severity: "error",
       field: "title_ar",
-      messageAr: "يرجى تحديد عنوان الدليل في القالب (title_ar=...)",
+      messageAr: "يرجى تحديد عنوان الدليل في القالب (title_ar=... أو guide.1.title_ar=...)",
       messageEn: "Guide title_ar is missing in the template",
     });
   }
@@ -438,11 +489,12 @@ export function parseRegistrationGuides(text: string): ServiceParseResult<Regist
     stats: {
       totalItems: guides.length,
       totalFieldsDetected: Object.keys(kv).length,
-      totalSectionsOrSteps: steps.length,
+      totalSectionsOrSteps: guides.reduce((acc, g) => acc + g.steps.length, 0),
       hasErrors: issues.some((i) => i.severity === "error"),
     },
   };
 }
+
 
 /**
  * 3. Parser for FAQ (Categories and Questions)
