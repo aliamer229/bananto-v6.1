@@ -85,7 +85,17 @@ const SECTION_CONFIG: Record<
     accentColor: "text-purple-500 bg-purple-500/10 border-purple-500/20",
     sampleDescription: "وثيقة سياسة الشراء وضمان الحسابات مع تنبيهات الرأس والبنود المميزة.",
   },
+  contact: {
+    titleAr: "استيراد قالب تواصل معنا وقنوات الدعم",
+    descriptionAr:
+      "استيراد وسائل التواصل (واتساب، تيليجرام، هاتف، بريد)، أوقات العمل، وخدمات صفحة الدعم.",
+    fileName: "contact-template.txt",
+    icon: MessageCircle,
+    accentColor: "text-sky-500 bg-sky-500/10 border-sky-500/20",
+    sampleDescription: "قالب يحتوي 5 قنوات تواصل، أوقات العمل، رسائل الحالة، و3 خدمات دعم.",
+  },
 };
+
 
 export default function ServiceImportModal({ type, onClose, onImport }: ServiceImportModalProps) {
   const t = useI18n((s) => s.t);
