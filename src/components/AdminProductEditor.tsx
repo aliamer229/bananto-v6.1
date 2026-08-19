@@ -279,7 +279,13 @@ export default function AdminProductEditor({
         trade_enabled: product.trade_enabled !== undefined ? Boolean(product.trade_enabled) : true,
         trade_value_locked: Boolean(product.trade_value_locked),
         // Media
-        cartridgeImage: product.cartridgeImage || product.image || "",
+        cartridgeImage:
+          product.cartridgeImage ||
+          product.packagingFrontImage ||
+          product.packagingBackImage ||
+          product.boxImage ||
+          product.image ||
+          "",
         coverImage: product.coverImage || product.image || "",
         bannerImages:
           Array.isArray(product.bannerImages) && product.bannerImages.length > 0
