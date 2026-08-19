@@ -364,10 +364,7 @@ export default function AdminProductEditor({
       store_offer_bonus_iqd: 0,
       trade_enabled: true,
       trade_value_locked: false,
-      id:
-        true
-          ? `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`
-          : `prd_${Date.now().toString(36)}`,
+      id: `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`,
     };
   });
 
