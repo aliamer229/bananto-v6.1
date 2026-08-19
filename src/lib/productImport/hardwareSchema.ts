@@ -285,9 +285,6 @@ const consoleBasics: FieldDef[] = [
     specKey: "colorEdition",
     group: CONSOLE,
   }),
-  f.str("internal_storage", "storageCapacity", "سعة التخزين الداخلية (مثال: 64 GB)", {
-    group: CONSOLE,
-  }),
   f.str("screen_specs", "screenSpecs", "مواصفات الشاشة (Screen Specs)", {
     specKey: "screenSpecs",
     group: CONSOLE,
