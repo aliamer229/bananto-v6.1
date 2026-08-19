@@ -637,11 +637,7 @@ export default function AdminProductEditor({
       return;
     }
 
-    const stableId =
-      formData.id ||
-      (true
-        ? `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`
-        : `prd_${Date.now().toString(36)}`);
+    const stableId = formData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
 
     const selectedCategoryId =
       formData.categoryId || formData.category || "cat_nintendo";
