@@ -57,6 +57,7 @@ import { cn } from "../lib/utils";
 import GlobalPriceTracker from "./GlobalPriceTracker";
 import HubFields from "./admin/HubFields";
 import { ImageUploadField } from "./admin/ImageUploadField";
+import { safeRandomUUID } from "@/lib/polyfills";
 import { ProductOptionsEditor } from "./admin/ProductOptionsEditor";
 import { useCurrency } from "../context/CurrencyContext";
 
@@ -364,8 +365,8 @@ export default function AdminProductEditor({
       trade_enabled: true,
       trade_value_locked: false,
       id:
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? `prd_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`
+        true
+          ? `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`
           : `prd_${Date.now().toString(36)}`,
     };
   });
@@ -641,8 +642,8 @@ export default function AdminProductEditor({
 
     const stableId =
       formData.id ||
-      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? `prd_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`
+      (true
+        ? `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`
         : `prd_${Date.now().toString(36)}`);
 
     const selectedCategoryId =
