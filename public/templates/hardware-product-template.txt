@@ -102,6 +102,31 @@ official_url=
 manufacturer_url=
 
 # =========================================
+# مواصفات الجهاز ومحتويات العلبة
+# =========================================
+
+# موديل الجهاز (Console / Model)
+hardware_model=
+
+# اللون أو طبعة الإصدار (Color / Special Edition)
+color_edition=
+
+# مواصفات الشاشة (Screen Specs)
+screen_specs=
+
+# عمر وسعة البطارية (Battery Life & Capacity)
+battery_life=
+
+# الضمان والحالة (Warranty & Guarantee)
+warranty_condition=
+
+# محتويات العلبة كنص واحد مفصول بفواصل
+box_contents_text=
+
+# المنافذ والاتصال (Ports & Connectivity)
+ports_connectivity=
+
+# =========================================
 # الضمان والدعم
 # =========================================
 

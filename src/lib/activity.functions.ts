@@ -1,12 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { safeRandomUUID } from "./polyfills";
+
 /** Get or create a persistent session ID for tracking */
 export function getSessionId() {
   if (typeof window === "undefined") return null;
   let sid = window.localStorage.getItem("bnt_sid");
   if (!sid) {
-    sid = `sid_${crypto.randomUUID().replace(/-/g, "")}`;
+    sid = `sid_${safeRandomUUID().replace(/-/g, "")}`;
     window.localStorage.setItem("bnt_sid", sid);
   }
   return sid;

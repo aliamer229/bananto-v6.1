@@ -269,6 +269,42 @@ const requirements: FieldDef[] = [
   }),
 ];
 
+const CONSOLE = "مواصفات الجهاز ومحتويات العلبة";
+
+/**
+ * The console panel in the admin editor (موديل الجهاز، اللون، الشاشة…) used to
+ * have no counterpart in the import file, so those boxes stayed empty after an
+ * import. These keys feed exactly the fields that panel edits.
+ */
+const consoleBasics: FieldDef[] = [
+  f.str("hardware_model", "hardwareModel", "موديل الجهاز (Console / Model)", {
+    specKey: "hardwareModel",
+    group: CONSOLE,
+  }),
+  f.str("color_edition", "colorEdition", "اللون أو طبعة الإصدار (Color / Special Edition)", {
+    specKey: "colorEdition",
+    group: CONSOLE,
+  }),
+  f.str("screen_specs", "screenSpecs", "مواصفات الشاشة (Screen Specs)", {
+    specKey: "screenSpecs",
+    group: CONSOLE,
+  }),
+  f.str("battery_life", "batteryLife", "عمر وسعة البطارية (Battery Life & Capacity)", {
+    specKey: "batteryLife",
+    group: CONSOLE,
+  }),
+  f.str("warranty_condition", "warrantyCondition", "الضمان والحالة (Warranty & Guarantee)", {
+    group: CONSOLE,
+  }),
+  f.str("box_contents_text", "boxContentsText", "محتويات العلبة كنص واحد مفصول بفواصل", {
+    group: CONSOLE,
+  }),
+  f.str("ports_connectivity", "connectivity", "المنافذ والاتصال (Ports & Connectivity)", {
+    specKey: "connectivity",
+    group: CONSOLE,
+  }),
+];
+
 export const HARDWARE_SCHEMA: ProductSchema = {
   id: "hardware",
   version: 1,
@@ -279,6 +315,7 @@ export const HARDWARE_SCHEMA: ProductSchema = {
   templateFile: "hardware-product-template.txt",
   fields: [
     ...identityFields("اسم الجهاز"),
+    ...consoleBasics,
     ...warrantyFields(),
     ...descriptionFields(),
     ...performance,

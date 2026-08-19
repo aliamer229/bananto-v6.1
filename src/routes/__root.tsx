@@ -331,6 +331,27 @@ function RootInner() {
   });
   const store = catalogue.data;
 
+  // Any image that fails through the edge proxy (rate limit, upstream 4xx/5xx)
+  // is retried once against its original URL, so a proxy hiccup never leaves a
+  // product card with a broken thumbnail.
+  useEffect(() => {
+    const onImgError = (event: Event) => {
+      const img = event.target as HTMLImageElement | null;
+      if (!img || img.tagName !== "IMG" || img.dataset["imgFallback"] === "1") return;
+      const src = img.getAttribute("src") || "";
+      const match = /\/api\/img\?u=([^&]+)/.exec(src);
+      if (!match) return;
+      img.dataset["imgFallback"] = "1";
+      try {
+        img.src = decodeURIComponent(match[1]!);
+      } catch {
+        /* leave as-is */
+      }
+    };
+    document.addEventListener("error", onImgError, true);
+    return () => document.removeEventListener("error", onImgError, true);
+  }, []);
+
   useEffect(() => {
     // 1. Prioritize critical audio (non-blocking)
     import("../utils/audio")

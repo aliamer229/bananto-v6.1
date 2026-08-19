@@ -20,10 +20,13 @@ export const Route = createFileRoute("/api/img")({
           const remote = url.searchParams.get("u") ?? "";
           const safeUrl = safeRemoteImageUrl(remote);
           if (!safeUrl) return new Response("Bad request", { status: 400 });
+          // Catalogue pages can legitimately request hundreds of thumbnails
+          // from the same host, so the budget has to be generous or real
+          // product images start disappearing behind 429s.
           const throttle = await consumeRateLimit(
             request,
             "image-proxy",
-            120,
+            1200,
             60 * 60,
             safeUrl.hostname,
           );

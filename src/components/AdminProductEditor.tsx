@@ -57,6 +57,7 @@ import { cn } from "../lib/utils";
 import GlobalPriceTracker from "./GlobalPriceTracker";
 import HubFields from "./admin/HubFields";
 import { ImageUploadField } from "./admin/ImageUploadField";
+import { safeRandomUUID } from "@/lib/polyfills";
 import { ProductOptionsEditor } from "./admin/ProductOptionsEditor";
 import { useCurrency } from "../context/CurrencyContext";
 
@@ -198,7 +199,11 @@ export default function AdminProductEditor({
         storageCapacity: product.storageCapacity || product.storage || "",
         screenSpecs: product.screenSpecs || product.screen || "",
         batteryLife: product.batteryLife || product.battery || "",
-        boxContents: product.boxContents || product.includedItems || "",
+        boxContents:
+          (typeof product.boxContents === "string" ? product.boxContents : "") ||
+          product.boxContentsText ||
+          product.includedItems ||
+          "",
         warrantyCondition: product.warrantyCondition || product.warranty || "",
         connectivity: product.connectivity || "",
         // Amiibo Specific
@@ -297,16 +302,15 @@ export default function AdminProductEditor({
       size: "8.5 GB",
       numberOfPlayers: "1 Player",
       supportedLanguages: "English, Japanese, French, Spanish, German",
-      // Hardware
-      hardwareModel: "Nintendo Switch OLED Model",
-      colorEdition: "White OLED",
-      storageCapacity: "64 GB",
-      screenSpecs: "7.0-inch OLED (1280x720) Touchscreen",
-      batteryLife: "4.5 - 9.0 Hours (4310 mAh)",
-      boxContents:
-        "Nintendo Switch Console, Joy-Con (L/R), Dock, Joy-Con Grip, AC Adapter, HDMI Cable",
-      warrantyCondition: "جديد أصلي 100% بالكرتون مع ضمان سنة",
-      connectivity: "Wi-Fi 6, Bluetooth 5.0, LAN Port, HDMI 2.0, USB Type-C",
+      // Hardware — intentionally blank: these are real product specs, never demo text.
+      hardwareModel: "",
+      colorEdition: "",
+      storageCapacity: "",
+      screenSpecs: "",
+      batteryLife: "",
+      boxContents: "",
+      warrantyCondition: "",
+      connectivity: "",
       // Amiibo
       characterName: "Link",
       amiiboSeries: "The Legend of Zelda",
@@ -363,10 +367,7 @@ export default function AdminProductEditor({
       store_offer_bonus_iqd: 0,
       trade_enabled: true,
       trade_value_locked: false,
-      id:
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? `prd_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`
-          : `prd_${Date.now().toString(36)}`,
+      id: `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`,
     };
   });
 
@@ -639,11 +640,7 @@ export default function AdminProductEditor({
       return;
     }
 
-    const stableId =
-      formData.id ||
-      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? `prd_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`
-        : `prd_${Date.now().toString(36)}`);
+    const stableId = formData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
 
     const selectedCategoryId =
       formData.categoryId || formData.category || "cat_nintendo";
@@ -1433,14 +1430,21 @@ export default function AdminProductEditor({
                   </label>
                   <select
                     className="w-full border border-border focus:border-foreground rounded-lg px-3 py-2 text-sm outline-none bg-background"
-                    value={formData.storageCapacity || "64 GB"}
+                    value={formData.storageCapacity || ""}
                     onChange={(e) => handleChange("storageCapacity", e.target.value)}
                   >
+                    <option value="">— غير محدد —</option>
                     <option value="32 GB">32 GB (Switch Standard / Lite)</option>
                     <option value="64 GB">64 GB (Switch OLED)</option>
                     <option value="256 GB">256 GB (Switch 2 / Extended)</option>
                     <option value="512 GB">512 GB (High Capacity)</option>
                     <option value="1 TB">1 TB (Max Storage)</option>
+                    {formData.storageCapacity &&
+                    !["32 GB", "64 GB", "256 GB", "512 GB", "1 TB"].includes(
+                      formData.storageCapacity,
+                    ) ? (
+                      <option value={formData.storageCapacity}>{formData.storageCapacity}</option>
+                    ) : null}
                   </select>
                 </div>
 
