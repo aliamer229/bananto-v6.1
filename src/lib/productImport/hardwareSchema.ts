@@ -24,6 +24,7 @@ import {
   specGroupField,
   updateField,
   warrantyFields,
+  setupStepsFields,
 } from "./shared";
 import type { FieldDef, ProductSchema } from "./types";
 
@@ -331,6 +332,7 @@ export const HARDWARE_SCHEMA: ProductSchema = {
     specGroupField(),
     compatibilityField("التوافق مع الأجهزة والمنصات (Nintendo Switch، PC، PlayStation…)"),
     boxContentField(),
+    ...setupStepsFields(),
     ...mediaFields(),
     ...optionFields(),
     ...socialProofFields(),

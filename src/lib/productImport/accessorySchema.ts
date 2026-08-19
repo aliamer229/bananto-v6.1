@@ -25,6 +25,7 @@ import {
   specGroupField,
   updateField,
   warrantyFields,
+  setupStepsFields,
 } from "./shared";
 import type { FieldDef, ProductSchema } from "./types";
 
@@ -291,6 +292,7 @@ export const ACCESSORY_SCHEMA: ProductSchema = {
     ...physicalFields(),
     specGroupField(),
     boxContentField(),
+    ...setupStepsFields(),
     ...mediaFields(),
     ...optionFields(),
     ...socialProofFields(),

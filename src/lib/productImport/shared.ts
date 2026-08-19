@@ -712,6 +712,26 @@ export function updateField(): FieldDef {
   };
 }
 
+/**
+ * Ordered usage / setup instructions. Every section can carry them, and the
+ * product page renders them as a numbered list.
+ */
+export function setupStepsFields(): FieldDef[] {
+  const g = "خطوات الاستخدام والتفعيل";
+  return [
+    {
+      key: "setup_step",
+      type: "string",
+      target: "setupSteps",
+      repeatable: true,
+      templateCount: 5,
+      description: "خطوة واحدة في كل سطر (عدد غير محدود)",
+      group: g,
+    },
+    f.text("usage_terms", "usageTerms", "شروط الاستخدام والقيود", { group: g }),
+  ];
+}
+
 export function relatedField(): FieldDef {
   return {
     key: "related_product",

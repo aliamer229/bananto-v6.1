@@ -20,6 +20,7 @@ import {
   sourceField,
   specGroupField,
   warrantyFields,
+  setupStepsFields,
 } from "./shared";
 import type { FieldDef, ProductSchema } from "./types";
 
@@ -158,6 +159,7 @@ export const USED_SCHEMA: ProductSchema = {
     specGroupField(),
     boxContentField(),
     ...warrantyFields(),
+    ...setupStepsFields(),
     ...mediaFields(),
     ...optionFields(),
     ...socialProofFields(),

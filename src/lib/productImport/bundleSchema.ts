@@ -17,6 +17,7 @@ import {
   socialProofFields,
   sourceField,
   specGroupField,
+  setupStepsFields,
 } from "./shared";
 import type { FieldDef, ProductSchema } from "./types";
 
@@ -110,6 +111,7 @@ export const BUNDLE_SCHEMA: ProductSchema = {
     ...bundle,
     ...access,
     specGroupField(),
+    ...setupStepsFields(),
     ...mediaFields(),
     ...optionFields(),
     ...socialProofFields(),
