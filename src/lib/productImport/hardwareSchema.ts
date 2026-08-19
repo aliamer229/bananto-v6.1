@@ -296,7 +296,9 @@ const consoleBasics: FieldDef[] = [
   f.str("warranty_condition", "warrantyCondition", "الضمان والحالة (Warranty & Guarantee)", {
     group: CONSOLE,
   }),
-  f.str("box_contents_text", "boxContentsText", "محتويات العلبة كنص واحد مفصول بفواصل", {
+  // The admin console panel edits `boxContents`, so the import must land there
+  // directly — writing to `boxContentsText` left the box-contents input empty.
+  f.str("box_contents_text", "boxContents", "محتويات العلبة كنص واحد مفصول بفواصل", {
     group: CONSOLE,
   }),
   f.str("ports_connectivity", "connectivity", "المنافذ والاتصال (Ports & Connectivity)", {
