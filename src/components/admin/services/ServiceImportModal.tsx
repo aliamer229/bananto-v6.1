@@ -20,6 +20,7 @@ import {
   HelpCircle,
   Layers,
   Loader2,
+  MessageCircle,
   Play,
   ShieldCheck,
   Sparkles,
