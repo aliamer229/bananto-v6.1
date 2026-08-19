@@ -4,26 +4,36 @@
  * 2. Registration Guides (تعليمات التسجيل وتفعيل الحسابات)
  * 3. FAQ (الأسئلة الشائعة)
  * 4. Purchase Policy (سياسة الشراء وحقوقك والضمان)
+ * 5. Contact (تواصل معنا وقنوات الدعم)
  */
 
 import type { ServiceSectionType } from "./types";
 
-export const TROUBLESHOOTING_TEMPLATE = `# حلول المشاكل التقنية — قالب استيراد البيانات
-# ====================================================
-# الصيغة: key=value
-# للنصوص الطويلة: key<<EOF
-# محتوى النص
-# EOF
-# للخطوات: step.1= / step.2= أو عبر problem.1.step.1=
-# ====================================================
+/** Shared header explaining the syntax rules understood by the parser */
+const SYNTAX_HEADER = `# ======================================================================
+# قواعد كتابة القالب (يقرأها المستورد تلقائياً):
+#   • حقل بسيط:            key=value      أو      key: value
+#   • نص طويل متعدد الأسطر: key<<EOF ثم الأسطر ثم سطر فيه EOF فقط
+#   • التعليقات تبدأ بـ #  ولا يتم استيرادها
+#   • القيم المنطقية تقبل: true/false أو نعم/لا أو 1/0
+#   • القوائم تُفصل بفاصلة أو سطر جديد
+#   • الترقيم يقبل الأرقام العربية والإنجليزية (1 أو ١)
+#   • يمكنك حذف أي حقل اختياري ولن يؤثر على الاستيراد
+# ======================================================================`;
 
-# المعرّف الفريد للمشكلة (اختياري)
+export const TROUBLESHOOTING_TEMPLATE = `# حلول المشاكل التقنية — قالب استيراد البيانات
+${SYNTAX_HEADER}
+# يمكن استيراد مشكلة واحدة (حقول عليا) أو عدة مشاكل عبر problem.N.*
+# ======================================================================
+
+# ---------- المشكلة الأولى ----------
+# المعرّف الفريد (اختياري - يُنشأ تلقائياً إن تُرك فارغاً)
 id=kb_login_error_2124
 
 # عنوان المشكلة [مطلوب]
 title=مشكلة رمز الخطأ 2124-4508 أو تعذر الاتصال بخوادم نينتندو
 
-# التصنيف (حسابات، شبكة، جهاز، متجر...)
+# التصنيف (حسابات، شبكة، جهاز، متجر، تحميل...)
 category=مشاكل الحسابات والاتصال
 
 # وصف المشكلة بالتفصيل
@@ -34,7 +44,7 @@ EOF
 # رموز الأخطاء المرتبطة (مفصولة بفاصلة)
 error_codes=2124-4508, 2811-5003, 2137-8056
 
-# الكلمات المفتاحية لمطابقة بحث العملاء
+# الكلمات المفتاحية لمطابقة بحث العملاء (كلما زادت زادت دقة المساعد الآلي)
 keywords=مايدخل, الباس غلط, خطأ اتصال, تعذر الاتصال, 2124, كود 2124
 
 # سؤال توضيحي يطرحه المساعد قبل عرض الخطوات (اختياري)
@@ -43,44 +53,59 @@ ask=هل جهازك متصل بشبكة Wi-Fi ومحدث لآخر إصدار ل�
 # رابط صورة أو رسم توضيحي للحل (اختياري)
 image_url=
 
-# خطوات الحل المرتبة:
+# خطوات الحل المرتبة (step.1 ... step.N)
 step.1=تأكد من تاريخ ووقت الجهاز واجعله على الوضع التلقائي (Synchronize Clock via Internet).
-step.2=قم بإعادة تشغيل جهاز السويتش بالكامل بالضغط المطول على زر التشغيل Power لمدة 3 ثوانٍ ثم Restart.
-step.3=ادخل إلى إعدادات الشبكة وانتقل إلى DNS وضع الأساسي 8.8.8.8 والثانوي 8.8.4.4 ثم أعد فحص الاتصال.
-step.4=افتح متجر eShop باستخدام الحساب المخصص للتحقق من نجاح المزامنة وتحميل اللعبة.
+step.2=أعد تشغيل الجهاز بالضغط المطول على زر Power لمدة 3 ثوانٍ ثم Restart.
+step.3=من إعدادات الشبكة غيّر DNS إلى 8.8.8.8 و 8.8.4.4 ثم أعد فحص الاتصال.
+step.4=افتح متجر eShop بالحساب المخصص للتأكد من نجاح المزامنة.
 
-# ====================================================
-# يمكنك إضافة مشكلة ثانية وثالثة بنفس الملف كالتالي:
-# ====================================================
+# بديل: يمكن كتابة الخطوات دفعة واحدة هكذا
+# steps<<EOF
+# الخطوة الأولى
+# الخطوة الثانية
+# EOF
+
+# ======================================================================
+# ---------- مشاكل إضافية في نفس الملف ----------
+# ======================================================================
 
 problem.2.title=حل مشكلة الشاشة السوداء أو تجمد الجهاز فجأة
 problem.2.category=مشاكل النظام والجهاز
 problem.2.description=عند تجمد الجهاز أثناء اللعب أو عدم استجابته للشحن.
 problem.2.error_codes=2162-0002, 2002-0001
 problem.2.keywords=معلق, شاشة سوداء, ما يشتغل, طافي, freeze
-problem.2.step.1=اضغط باستمرار على زر التشغيل Power لمدة 15 ثانية متواصلة لإجبار الجهاز على إيقاف التشغيل.
+problem.2.ask=هل يظهر ضوء الشحن عند توصيل الشاحن الأصلي؟
+problem.2.image_url=
+problem.2.step.1=اضغط باستمرار على زر Power لمدة 15 ثانية لإجبار الجهاز على الإطفاء.
 problem.2.step.2=ضع الجهاز في الشاحن الأصلي مباشرة وانتظر 20 دقيقة.
-problem.2.step.3=اضغط زر التشغيل مرة واحدة لتشغيل الجهاز بصورة طبيعية.
+problem.2.step.3=اضغط زر Power مرة واحدة لتشغيل الجهاز بصورة طبيعية.
+
+problem.3.title=اللعبة لا تظهر في قائمة إعادة التحميل Redownload
+problem.3.category=مشاكل المتجر والتحميل
+problem.3.description=بعد تفعيل الحساب لا تظهر اللعبة ضمن سجل المشتريات.
+problem.3.keywords=ما تظهر اللعبة, redownload, سجل المشتريات
+problem.3.step.1=تأكد من تسجيل الدخول بالحساب المُسلَّم من المتجر وليس حسابك الشخصي.
+problem.3.step.2=افتح eShop ثم الملف الشخصي ثم Redownload وانتظر تحديث القائمة.
+problem.3.step.3=إن استمرت المشكلة راسل الدعم مع رقم الطلب وصورة للشاشة.
 `;
 
 export const REGISTRATION_GUIDES_TEMPLATE = `# تعليمات التسجيل وتفعيل الحسابات — قالب استيراد الأدلة
-# ====================================================
-# الصيغة: key=value
-# للنصوص الطويلة: key<<EOF ... EOF
-# لتحديد الخطوات: step.1.title= / step.1.description=
-# ====================================================
+${SYNTAX_HEADER}
+# دليل واحد عبر الحقول العليا، أو عدة أدلة عبر guide.N.*
+# خطوات الدليل: step.N.title_ar / step.N.description_ar
+# ======================================================================
 
-# عنوان الدليل الرئيسي [مطلوب]
+# ---------- الدليل الأول ----------
 title_ar=طريقة تفعيل الحساب الأساسي (Primary) وتحميل اللعبة
 title_en=How to Activate Primary Account & Download Games
 
-# الرابط المختصر (Slug)
+# الرابط المختصر (Slug) — يُولّد تلقائياً إن تُرك فارغاً
 slug=primary-account-activation
 
 # تصنيف الدليل (الحسابات، الاشتراكات، الأجهزة...)
 category=الحسابات والألعاب الرقمية
 
-# المدة المتوقعة للتطبيق ومستوى الصعوبة
+# المدة المتوقعة ومستوى الصعوبة
 estimated_time=3 دقائق
 difficulty=سهل جداً
 
@@ -88,156 +113,249 @@ difficulty=سهل جداً
 cover_image=
 video_url=
 
+# نشر الدليل مباشرة للعملاء
+published=true
+
 # وصف ومقدمة الدليل
 description_ar<<EOF
-خطوات سهلة ومباشرة لإضافة الحساب الجديد على جهاز نينتندو سويتش الخاص بك وتفعيله كحساب أساسي للعب بملفك الشخصي دون قيود.
+خطوات سهلة ومباشرة لإضافة الحساب الجديد على جهاز نينتندو سويتش وتفعيله كحساب أساسي للعب بملفك الشخصي دون قيود.
 EOF
 description_en<<EOF
 Step-by-step instructions to add your new account to Nintendo Switch and activate it as Primary.
 EOF
 
-# ====================================================
-# خطوات الدليل المرتبة:
-# ====================================================
-
+# ---------- خطوات الدليل ----------
 step.1.title_ar=إضافة مستخدم جديد على السويتش
 step.1.title_en=Add New User on Switch
-step.1.description_ar=اذهب إلى إعدادات الجهاز System Settings > Users > Add User > Create New User ثم اختر أي أيقونة واسم.
+step.1.description_ar=اذهب إلى System Settings > Users > Add User > Create New User ثم اختر أي أيقونة واسم.
 step.1.note_ar=يمكنك اختيار أي اسم تريده لهذا الحساب على جهازك.
+step.1.image=
 
 step.2.title_ar=ربط حساب نينتندو (Link Nintendo Account)
 step.2.title_en=Link Nintendo Account
-step.2.description_ar=اختر Link a Nintendo Account ثم Sign In with E-mail or Sign-In ID وأدخل الإيميل وكلمة السر المستلمة من بنانا ستور.
-step.2.warning_ar=تأكد من إدخال الأحرف الكبيرة والصغيرة في كلمة السر بدقة كما وصلتك.
+step.2.description_ar=اختر Link a Nintendo Account ثم Sign In with E-mail وأدخل الإيميل وكلمة السر المستلمة من بنانا ستور.
+step.2.warning_ar=أدخل الأحرف الكبيرة والصغيرة في كلمة السر بدقة كما وصلتك.
 
 step.3.title_ar=التحقق من تفعيل الحساب الأساسي (Primary)
 step.3.title_en=Verify Primary Console Status
-step.3.description_ar=افتح Nintendo eShop بالحساب الجديد، اضغط على صورة البروفايل في الزاوية العلوية، وانزل إلى خيار Primary Console وتأكد من أنه Pass / Active.
+step.3.description_ar=افتح eShop بالحساب الجديد، اضغط صورة البروفايل، وتأكد أن Primary Console = Active.
 
 step.4.title_ar=بدء تحميل اللعبة واللعب بحسابك الشخصي
 step.4.title_en=Download & Play on Your Main Profile
-step.4.description_ar=انتقل إلى قسم Redownload في القائمة الجانبية للمتجر واضغط على أيقونة السحابة بجانب اللعبة، بعد اكتمال التحميل يمكنك اللعب من ملفك الشخصي الأساسي.
+step.4.description_ar=من قائمة Redownload اضغط أيقونة السحابة بجانب اللعبة، وبعد التحميل العب من ملفك الشخصي.
+
+# ======================================================================
+# ---------- دليل إضافي في نفس الملف ----------
+# ======================================================================
+
+guide.2.title_ar=طريقة تفعيل اشتراك Nintendo Switch Online
+guide.2.category=الاشتراكات
+guide.2.estimated_time=دقيقتان
+guide.2.difficulty=سهل
+guide.2.description_ar=خطوات تفعيل كود الاشتراك والاستفادة من اللعب الأونلاين والألعاب الكلاسيكية.
+guide.2.step.1.title_ar=فتح متجر eShop
+guide.2.step.1.description_ar=ادخل إلى eShop بالحساب الذي تريد تفعيل الاشتراك عليه.
+guide.2.step.2.title_ar=إدخال كود التفعيل
+guide.2.step.2.description_ar=اختر Redeem Code وأدخل الكود المكوّن من 16 خانة ثم اضغط Confirm.
+guide.2.step.3.title_ar=التأكد من التفعيل
+guide.2.step.3.description_ar=من Nintendo Switch Online تأكد من ظهور تاريخ انتهاء الاشتراك.
 `;
 
 export const FAQ_TEMPLATE = `# الأسئلة الشائعة — قالب استيراد الأقسام والأسئلة
-# ====================================================
-# الصيغة: key=value
-# للأقسام: category.1.id= / category.1.name_ar=
-# للأسئلة: faq.1.category_id= / faq.1.question_ar= / faq.1.answer_ar=
-# ====================================================
+${SYNTAX_HEADER}
+# الأقسام: category.N.id / category.N.name_ar
+# الأسئلة: faq.N.question_ar / faq.N.answer_ar
+# يمكن ربط السؤال بالقسم عبر category_id أو باسم القسم مباشرة (category=)
+# ======================================================================
 
-# ----------------------------------------------------
-# 1. أقسام الأسئلة (Categories)
-# ----------------------------------------------------
+# ---------- الأقسام ----------
 category.1.id=cat_accounts
-category.1.name_ar=الحسابات والألعاب الرقمية
-category.1.name_en=Accounts & Digital Games
+category.1.name_ar=الحسابات والتفعيل
+category.1.name_en=Accounts & Activation
+category.1.published=true
 
 category.2.id=cat_delivery
-category.2.name_ar=طرق الدفع والتسليم
-category.2.name_en=Payment & Delivery
+category.2.name_ar=الطلبات والتسليم
+category.2.name_en=Orders & Delivery
+category.2.published=true
 
 category.3.id=cat_warranty
-category.3.name_ar=الضمان والدعم الفني
-category.3.name_en=Warranty & Support
+category.3.name_ar=الضمان والاسترجاع
+category.3.name_en=Warranty & Refunds
+category.3.published=true
 
-# ----------------------------------------------------
-# 2. الأسئلة والإجابات (Questions & Answers)
-# ----------------------------------------------------
-
-# السؤال الأول
+# ---------- الأسئلة ----------
 faq.1.category_id=cat_accounts
-faq.1.question_ar=ما الفرق بين الحساب الأساسي (Primary) والحساب الثانوي (Secondary)؟
-faq.1.question_en=What is the difference between Primary and Secondary accounts?
+faq.1.question_ar=هل يمكنني اللعب بحسابي الشخصي بعد شراء اللعبة الرقمية؟
+faq.1.question_en=Can I play with my own profile after buying a digital game?
 faq.1.answer_ar<<EOF
-الحساب الأساسي (Primary) يتيح لك تشغيل اللعبة من حسابك الشخصي وملفات حفظك الخاصة، ولا يشترط اتصالاً مستمراً بالإنترنت. بينما الحساب الثانوي (Secondary) تلعب من نفس الحساب المشترى ويتطلب اتصال إنترنت للتحقق.
+نعم، بعد تفعيل الحساب المُسلَّم كحساب أساسي (Primary) على جهازك يمكنك تحميل اللعبة واللعب بملفك الشخصي وبدون إنترنت.
 EOF
-faq.1.keywords=فرق, برايمري, سكندري, أساسي, ثانوي, save
+faq.1.keywords=حسابي الشخصي, primary, اللعب اوفلاين
 faq.1.featured=true
+faq.1.published=true
 
-# السؤال الثاني
 faq.2.category_id=cat_delivery
-faq.2.question_ar=كم يستغرق تسليم الحساب أو كود اللعبة بعد إتمام الطلب؟
-faq.2.question_en=How long does order delivery take?
-faq.2.answer_ar=التسليم فوري وتلقائي خلال دقيقة واحدة إلى 5 دقائق، حيث تظهر بيانات الحساب مباشرة في صفحة طلباتك وفي محادثة الدعم.
-faq.2.keywords=وقت, مدة, تسليم, فوري, استلام
+faq.2.question_ar=كم يستغرق تسليم الطلب بعد الدفع؟
+faq.2.answer_ar=غالباً خلال 5 إلى 30 دقيقة داخل أوقات العمل، وفي أوقات الذروة قد يصل إلى ساعة كحد أقصى.
+faq.2.keywords=مدة التسليم, متى يوصل الطلب
 faq.2.featured=true
 
-# السؤال الثالث
 faq.3.category_id=cat_warranty
-faq.3.question_ar=هل الألعاب والحسابات مضمونة ضد القفل؟
-faq.3.question_en=Are games and accounts guaranteed?
-faq.3.answer_ar=نعم، جميع ألعاب وحسابات بنانا ستور رسمية 100% ومشتراة من متجر Nintendo eShop الرسمي، ومشمولة بضمان ذهبي شامل ومتابعة فنية مستمرة.
-faq.3.keywords=ضمان, قفل, رسمي, بند, حماية
-faq.3.featured=true
+faq.3.question_ar=ما هي مدة الضمان على الحسابات الرقمية؟
+faq.3.answer_ar=الضمان يغطي صلاحية الحساب وعمل اللعبة طوال فترة الضمان المذكورة في صفحة المنتج، مع استبدال فوري عند أي خلل.
+faq.3.keywords=ضمان, استبدال, تعويض
 
-# السؤال الرابع
-faq.4.category_id=cat_accounts
-faq.4.question_ar=هل يمكنني حذف الحساب من السويتش بعد تحميل اللعبة؟
-faq.4.question_en=Can I delete the account after downloading?
-faq.4.answer_ar=لا، يجب إبقاء الحساب موجوداً على الجهاز لتعمل اللعبة برخصتها الرسمية. حذفه يؤدي لتوقف اللعبة عن العمل حتى إعادة إضافته.
-faq.4.keywords=حذف, مسح, delete, إزالة
-faq.4.featured=false
+# مثال: ربط السؤال بالقسم عبر الاسم بدل المعرّف (سيُنشأ القسم تلقائياً إن لم يوجد)
+faq.4.category=الدفع والأسعار
+faq.4.question_ar=ما هي طرق الدفع المتاحة؟
+faq.4.answer_ar=زين كاش، آسيا حوالة، ماستر كارد، والدفع عند الاستلام داخل بغداد.
+faq.4.keywords=دفع, زين كاش, ماستر كارد
 `;
 
-export const PURCHASE_POLICY_TEMPLATE = `# سياسة الشراء وحقوقك والضمان — قالب استيراد البنود
-# ====================================================
-# الصيغة: key=value
-# للنصوص الطويلة: key<<EOF ... EOF
-# للبنود: section.1.title_ar= / section.1.body_ar=
-# ====================================================
+export const PURCHASE_POLICY_TEMPLATE = `# سياسة الشراء وحقوقك والضمان — قالب استيراد الوثيقة
+${SYNTAX_HEADER}
+# بنود الوثيقة عبر section.N.title_ar / section.N.body_ar
+# ======================================================================
 
-# عنوان وثيقة السياسة [مطلوب]
-title_ar=سياسة الشراء والضمان وحقوق العملاء
-title_en=Purchase, Warranty & Customer Rights Policy
+# عنوان الوثيقة
+title_ar=سياسة الشراء وحقوق العميل والضمان الذهبي
+title_en=Purchase Policy, Customer Rights & Warranty
 
-# الوصف الفرعي
-subtitle_ar=شروط الاستخدام، سياسات الاستبدال، وحماية حقوق المشتري في بنانا ستور
-subtitle_en=Terms of service, warranty coverage, and customer buyer protection
+# العنوان الفرعي
+subtitle_ar=كل ما تحتاج معرفته قبل إتمام الطلب: الضمان، الاستبدال، وحقوقك الكاملة.
+subtitle_en=Everything you need to know before completing your order.
 
-# رقم الإصدار وتاريخ السريان
+# إصدار الوثيقة وتاريخ سريانها
 version=v2.4
 effective_date=2026-01-01
 
 # ملاحظة هامة تظهر في رأس الصفحة
 important_notices<<EOF
-يرجى قراءة بنود الشراء والضمان بدقة قبل إتمام الطلب. إتمام عملية الشراء يُعد موافقة كاملة على كافة الضوابط والحقوق الموضحة أدناه لضمان تجربة آمنة وموثوقة.
+يرجى قراءة بنود الشراء والضمان بدقة قبل إتمام الطلب. إتمام عملية الشراء يُعد موافقة كاملة على كافة الضوابط والحقوق الموضحة أدناه.
 EOF
 
 # وسيلة التواصل للشكاوى والاستفسارات
-contact_note=في حال واجهت أي استفسار أو مشكلة متعلقة بالضمان، فريق الدعم الفني متواجد على مدار الساعة عبر الدعم المباشر أو واتساب لمساعدتك فوراً.
+contact_note=لأي استفسار متعلق بالضمان، فريق الدعم متواجد على مدار الساعة عبر الدردشة المباشرة أو واتساب.
 
-# ====================================================
-# بنود وفقرات السياسة:
-# ====================================================
-
+# ---------- بنود وفقرات السياسة ----------
 section.1.title_ar=1. الضمان الرسمي والمصدر المعتمد
 section.1.title_en=1. Official Warranty & Authorized Sourcing
 section.1.body_ar<<EOF
-جميع المنتجات والألعاب الرقمية المتوفرة في بنانا ستور يتم شراؤها وتفعيلها عبر قنوات رسمية 100% ومن متجر Nintendo eShop المعتمد بدون أي برمجيات معدلة أو حسابات غير موثوقة.
+جميع المنتجات والألعاب الرقمية في بنانا ستور يتم شراؤها وتفعيلها عبر قنوات رسمية 100% ومن متجر Nintendo eShop المعتمد بدون أي برمجيات معدلة أو حسابات غير موثوقة.
 EOF
 section.1.highlight=true
 
 section.2.title_ar=2. حقوق العميل في الاستبدال والتعويض
 section.2.title_en=2. Replacement & Compensation Rights
 section.2.body_ar<<EOF
-يحق للعميل استبدال فوري للمنتج أو استرداد كامل المبلغ في حال وجود أي خطأ بالبيانات المسلمة أو تعذر تشغيل المنتج لأسباب فنية لم يتم حلها من قبل فريق الدعم الفني خلال 24 ساعة.
+يحق للعميل استبدال فوري للمنتج أو استرداد كامل المبلغ في حال وجود خطأ بالبيانات المسلمة أو تعذر تشغيل المنتج لأسباب فنية لم تُحل خلال 24 ساعة.
 EOF
 section.2.highlight=true
 
 section.3.title_ar=3. شروط استخدام الحسابات الرقمية
 section.3.title_en=3. Digital Account Usage Terms
 section.3.body_ar<<EOF
-يلتزم المشتري بعدم تغيير البريد الإلكتروني للحساب أو محاولة مشاركته مع أجهزة أخرى غير المصرح بها، لضمان استمرار سريان الضمان الشامل وحماية الحساب من أي تعارض أمني.
+يلتزم المشتري بعدم تغيير البريد الإلكتروني للحساب أو مشاركته مع أجهزة غير مصرح بها، لضمان استمرار سريان الضمان وحماية الحساب.
 EOF
 section.3.highlight=false
 
 section.4.title_ar=4. خصوصية وأمان المعاملات المالية
 section.4.title_en=4. Payment Security & Privacy
 section.4.body_ar<<EOF
-تتم كافة عمليات الدفع عبر بوابات مشفرة وآمنة تماماً، ولا يتم تخزين أي بيانات بنكية أو بطاقات دفع حساسة على خوادم المتجر نهائياً.
+تتم كافة عمليات الدفع عبر بوابات مشفرة وآمنة، ولا يتم تخزين أي بيانات بنكية أو بطاقات دفع على خوادم المتجر.
 EOF
 section.4.highlight=false
+
+section.5.title_ar=5. حالات لا يشملها الضمان
+section.5.title_en=5. Warranty Exclusions
+section.5.body_ar<<EOF
+لا يشمل الضمان تغيير بيانات الحساب من قبل العميل، أو مشاركته مع طرف ثالث، أو الحظر الناتج عن مخالفة شروط نينتندو.
+EOF
+section.5.highlight=false
+`;
+
+export const CONTACT_TEMPLATE = `# تواصل معنا وقنوات الدعم — قالب استيراد البيانات
+${SYNTAX_HEADER}
+# القنوات: channel.N.type / channel.N.value  (يُبنى الرابط تلقائياً)
+# الخدمات: service.N.title_ar / service.N.description_ar
+# ======================================================================
+
+# ---------- رأس صفحة التواصل ----------
+hero_title_ar=تواصل مع فريق بنانا ستور
+hero_title_en=Contact Banana Store Support
+hero_subtitle_ar=فريق الدعم جاهز لمساعدتك في الطلبات، التفعيل، والمشاكل التقنية.
+hero_subtitle_en=Our team is ready to help with orders, activation and technical issues.
+
+support_intro_ar<<EOF
+اختر وسيلة التواصل الأنسب لك، ومتوسط زمن الرد لا يتجاوز 5 دقائق خلال أوقات العمل.
+EOF
+
+# ---------- وسائل التواصل السريعة ----------
+# إن تُركت القنوات التفصيلية فارغة، تُبنى القنوات تلقائياً من هذه الحقول
+whatsapp=+9647700000000
+telegram=@bananastore
+phone=+9647700000000
+email=support@banan.to
+chat_link=/support
+
+# ---------- أوقات العمل والحالة ----------
+working_hours_ar=يومياً من 10 صباحاً حتى 12 منتصف الليل (بتوقيت بغداد)
+working_hours_en=Daily 10 AM – 12 AM (Baghdad time)
+status_message_ar=الدعم متاح الآن — متوسط الرد 5 دقائق
+status_message_en=Support is online — average reply in 5 minutes
+emergency_notice_ar=للحالات العاجلة المتعلقة بطلب قيد التنفيذ، استخدم واتساب لأسرع استجابة.
+
+# ---------- قنوات التواصل التفصيلية ----------
+channel.1.type=whatsapp
+channel.1.label_ar=واتساب الدعم الفوري
+channel.1.label_en=WhatsApp Support
+channel.1.value=+9647700000000
+channel.1.availability=24/7
+channel.1.active=true
+
+channel.2.type=telegram
+channel.2.label_ar=تيليجرام
+channel.2.label_en=Telegram
+channel.2.value=@bananastore
+channel.2.availability=10:00 - 00:00
+channel.2.active=true
+
+channel.3.type=phone
+channel.3.label_ar=اتصال مباشر
+channel.3.value=+9647700000000
+channel.3.availability=10:00 - 22:00
+
+channel.4.type=email
+channel.4.label_ar=البريد الإلكتروني
+channel.4.value=support@banan.to
+channel.4.availability=رد خلال 12 ساعة
+
+channel.5.type=chat
+channel.5.label_ar=الدردشة داخل الموقع
+channel.5.value=/support
+channel.5.href=/support
+channel.5.availability=فوري
+
+# ---------- خدمات الدعم المعروضة في الصفحة ----------
+service.1.title_ar=متابعة الطلبات والتسليم
+service.1.description_ar=استعلم عن حالة طلبك أو أعد إرسال بيانات الحساب المشتراة.
+service.1.icon=package
+service.1.link=/orders
+service.1.button_label_ar=متابعة طلبي
+service.1.active=true
+
+service.2.title_ar=حل المشاكل التقنية
+service.2.description_ar=رموز الأخطاء، مشاكل التحميل، وتفعيل الحساب الأساسي.
+service.2.icon=wrench
+service.2.link=/support
+service.2.button_label_ar=ابدأ التشخيص
+
+service.3.title_ar=الضمان والاستبدال
+service.3.description_ar=قدّم طلب استبدال أو استرداد ضمن سياسة الضمان الذهبي.
+service.3.icon=shield
+service.3.link=/policy
+service.3.button_label_ar=اطلع على الضمان
 `;
 
 export function getTemplateForSection(type: ServiceSectionType): string {
@@ -250,5 +368,9 @@ export function getTemplateForSection(type: ServiceSectionType): string {
       return FAQ_TEMPLATE;
     case "purchase_policy":
       return PURCHASE_POLICY_TEMPLATE;
+    case "contact":
+      return CONTACT_TEMPLATE;
+    default:
+      return TROUBLESHOOTING_TEMPLATE;
   }
 }
