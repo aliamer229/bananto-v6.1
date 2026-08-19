@@ -120,11 +120,17 @@ export function getD1(): D1Like | undefined {
     (envData["DB"] as D1Like) ||
     (envData["BANANTO_DB"] as D1Like);
 
-  if (db && typeof db.prepare === "function") return db;
-
   const restConfigAvailable = Boolean(
     envVar("CLOUDFLARE_ACCOUNT_ID") && envVar("CLOUDFLARE_API_TOKEN") && envVar("D1_DATABASE_ID"),
   );
+
+  // In local dev / preview the platform hands us an *empty local* D1 binding.
+  // Writes there vanish and the admin sees "nothing was saved", so whenever
+  // REST credentials for the real database are configured we prefer them.
+  const preferRest = restConfigAvailable && Boolean(import.meta.env?.DEV);
+
+  if (!preferRest && db && typeof db.prepare === "function") return db;
+
   const nextCacheKey = restConfigAvailable
     ? `${envVar("CLOUDFLARE_ACCOUNT_ID")}:${envVar("D1_DATABASE_ID")}:${envVar("CLOUDFLARE_API_TOKEN")}`
     : "";
@@ -132,8 +138,11 @@ export function getD1(): D1Like | undefined {
     restCacheKey = nextCacheKey;
     restCache = restD1();
   }
-  return restCache ?? undefined;
+  if (restCache) return restCache;
+  if (db && typeof db.prepare === "function") return db;
+  return undefined;
 }
+
 
 function stmt(db: D1Like, sql: string, binds: unknown[]) {
   const prepared = db.prepare(sql);
