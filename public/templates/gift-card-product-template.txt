@@ -201,6 +201,12 @@ validity=
 # تاريخ انتهاء الصلاحية YYYY-MM-DD
 expiry_date=
 
+# صورة كرت التعبئة (Card Artwork)
+card_artwork=
+
+# بانر الريجون التوضيحي (Region Banner)
+region_banner=
+
 # =========================================
 # التسليم والاستخدام
 # =========================================
@@ -211,7 +217,14 @@ delivery_method=
 # زمن التسليم المتوقع (فوري، خلال ساعة…)
 delivery_time=
 
-# خطوات استخدام الكود بالتفصيل
+# خطوات التفعيل والشحن — خطوة واحدة في كل سطر (عدد غير محدود)
+redeem_step.1=
+redeem_step.2=
+redeem_step.3=
+redeem_step.4=
+redeem_step.5=
+
+# خطوات استخدام الكود كنص واحد (بديل عن redeem_step)
 redemption_guide<<EOF
 
 EOF
