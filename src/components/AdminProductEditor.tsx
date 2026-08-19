@@ -1426,14 +1426,21 @@ export default function AdminProductEditor({
                   </label>
                   <select
                     className="w-full border border-border focus:border-foreground rounded-lg px-3 py-2 text-sm outline-none bg-background"
-                    value={formData.storageCapacity || "64 GB"}
+                    value={formData.storageCapacity || ""}
                     onChange={(e) => handleChange("storageCapacity", e.target.value)}
                   >
+                    <option value="">— غير محدد —</option>
                     <option value="32 GB">32 GB (Switch Standard / Lite)</option>
                     <option value="64 GB">64 GB (Switch OLED)</option>
                     <option value="256 GB">256 GB (Switch 2 / Extended)</option>
                     <option value="512 GB">512 GB (High Capacity)</option>
                     <option value="1 TB">1 TB (Max Storage)</option>
+                    {formData.storageCapacity &&
+                    !["32 GB", "64 GB", "256 GB", "512 GB", "1 TB"].includes(
+                      formData.storageCapacity,
+                    ) ? (
+                      <option value={formData.storageCapacity}>{formData.storageCapacity}</option>
+                    ) : null}
                   </select>
                 </div>
 
