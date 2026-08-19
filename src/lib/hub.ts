@@ -31,7 +31,9 @@ export const getTextValue = (item: unknown): string => {
   if (item && typeof item === "object") {
     if ("value" in item) {
       const val = (item as any).value;
-      return typeof val === "string" ? val : getTextValue(val);
+      if (typeof val === "string") return val;
+      if (val && typeof val === "object" && "value" in val) return getTextValue(val);
+      return String(val ?? "");
     }
     if ("name" in item && typeof (item as any).name === "string") {
       return (item as any).name;
