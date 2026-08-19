@@ -114,7 +114,16 @@ function Field({
 
   if (field.type === "list") {
     if (!field.itemFields || field.itemFields.length === 0) {
-      const items: string[] = Array.isArray(value) ? (value as string[]) : [];
+      // Records imported before the parser flattened value-only groups still hold
+      // `{ value: "..." }` rows; render their text instead of "[object Object]".
+      const items: string[] = Array.isArray(value)
+        ? (value as unknown[]).map((row) =>
+            row && typeof row === "object"
+              ? String((row as Record<string, unknown>)["value"] ?? "")
+              : String(row ?? ""),
+          )
+        : [];
+
       return (
         <div className="space-y-3">
           <Label field={field} />
