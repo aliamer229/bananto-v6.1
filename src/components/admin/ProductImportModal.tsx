@@ -151,7 +151,7 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
                 </label>
                 <button
                   type="button"
-                  onClick={() => void downloadTemplateFile(schema.templateFile)}
+                  onClick={() => void downloadTemplateFile(schema.templateFile, schema)}
                   className="flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary transition-colors hover:bg-primary/20"
                 >
                   <Download className="h-2.5 w-2.5" />

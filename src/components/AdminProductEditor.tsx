@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { boxContentsToText } from "@/lib/boxContentsText";
 import AdminImportModal from "./admin/AdminImportModal";
 import ProductImportModal from "./admin/ProductImportModal";
 import { useTranslation } from "../i18n";
@@ -200,22 +201,11 @@ export default function AdminProductEditor({
         screenSpecs: product.screenSpecs || product.screen || "",
         batteryLife: product.batteryLife || product.battery || "",
         boxContents:
-          (typeof product.boxContents === "string" ? product.boxContents : "") ||
-          (Array.isArray(product.boxContents)
-            ? product.boxContents
-                .map((item: any) =>
-                  typeof item === "string"
-                    ? item
-                    : [item?.name, item?.quantity > 1 ? `×${item.quantity}` : ""]
-                        .filter(Boolean)
-                        .join(" "),
-                )
-                .filter(Boolean)
-                .join("، ")
-            : "") ||
-          product.boxContentsText ||
-          product.includedItems ||
+          boxContentsToText(product.boxContents) ||
+          boxContentsToText(product.boxContentsText) ||
+          boxContentsToText(product.includedItems) ||
           "",
+
         warrantyCondition:
           product.warrantyCondition ||
           [product.warranty, product.warrantyType].filter(Boolean).join(" — ") ||
@@ -1519,7 +1509,7 @@ export default function AdminProductEditor({
                   <input
                     type="text"
                     className="w-full border border-border focus:border-foreground rounded-lg px-3 py-2 text-sm outline-none bg-background"
-                    value={formData.boxContents || ""}
+                    value={boxContentsToText(formData.boxContents)}
                     onChange={(e) => handleChange("boxContents", e.target.value)}
                     placeholder="Nintendo Switch Console, Joy-Con (L/R), Dock, Joy-Con Grip, AC Adapter, HDMI Cable"
                   />
@@ -2470,6 +2460,16 @@ export default function AdminProductEditor({
                 newData.category = "cat_nintendo";
               }
 
+              if (newData.boxContents !== undefined) {
+                if (Array.isArray(newData.boxContents)) newData.boxContentsList = newData.boxContents;
+                newData.boxContents = boxContentsToText(newData.boxContents);
+              }
+              if (!newData.cartridgeImage) {
+                newData.cartridgeImage =
+                  newData.packagingFrontImage || newData.boxImage || prev.cartridgeImage || "";
+
+              }
+
               return newData;
             });
             setShowImportModal(false);
@@ -2528,21 +2528,14 @@ export default function AdminProductEditor({
               // produces structured lists — flatten them so the boxes show text
               // instead of "[object Object]" or staying empty.
               if (Array.isArray(normalized.boxContents)) {
-                const items = normalized.boxContents
-                  .map((item: any) =>
-                    typeof item === "string"
-                      ? item
-                      : [item?.name, item?.quantity > 1 ? `×${item.quantity}` : ""]
-                          .filter(Boolean)
-                          .join(" "),
-                  )
-                  .filter(Boolean);
                 normalized.boxContentsList = normalized.boxContents;
-                normalized.boxContents =
-                  normalized.boxContentsText || items.join("، ") || prev.boxContents || "";
-              } else if (!normalized.boxContents && normalized.boxContentsText) {
-                normalized.boxContents = normalized.boxContentsText;
               }
+              normalized.boxContents =
+                boxContentsToText(normalized.boxContents) ||
+                boxContentsToText(normalized.boxContentsText) ||
+                boxContentsToText(prev.boxContents) ||
+                "";
+
 
               if (!normalized.warrantyCondition) {
                 normalized.warrantyCondition =
