@@ -1,59 +1,59 @@
 # الأسئلة الشائعة — قالب استيراد الأقسام والأسئلة
-# ====================================================
-# الصيغة: key=value
-# للأقسام: category.1.id= / category.1.name_ar=
-# للأسئلة: faq.1.category_id= / faq.1.question_ar= / faq.1.answer_ar=
-# ====================================================
+# ======================================================================
+# قواعد كتابة القالب (يقرأها المستورد تلقائياً):
+#   • حقل بسيط:            key=value      أو      key: value
+#   • نص طويل متعدد الأسطر: key<<EOF ثم الأسطر ثم سطر فيه EOF فقط
+#   • التعليقات تبدأ بـ #  ولا يتم استيرادها
+#   • القيم المنطقية تقبل: true/false أو نعم/لا أو 1/0
+#   • القوائم تُفصل بفاصلة أو سطر جديد
+#   • الترقيم يقبل الأرقام العربية والإنجليزية (1 أو ١)
+#   • يمكنك حذف أي حقل اختياري ولن يؤثر على الاستيراد
+# ======================================================================
+# الأقسام: category.N.id / category.N.name_ar
+# الأسئلة: faq.N.question_ar / faq.N.answer_ar
+# يمكن ربط السؤال بالقسم عبر category_id أو باسم القسم مباشرة (category=)
+# ======================================================================
 
-# ----------------------------------------------------
-# 1. أقسام الأسئلة (Categories)
-# ----------------------------------------------------
+# ---------- الأقسام ----------
 category.1.id=cat_accounts
-category.1.name_ar=الحسابات والألعاب الرقمية
-category.1.name_en=Accounts & Digital Games
+category.1.name_ar=الحسابات والتفعيل
+category.1.name_en=Accounts & Activation
+category.1.published=true
 
 category.2.id=cat_delivery
-category.2.name_ar=طرق الدفع والتسليم
-category.2.name_en=Payment & Delivery
+category.2.name_ar=الطلبات والتسليم
+category.2.name_en=Orders & Delivery
+category.2.published=true
 
 category.3.id=cat_warranty
-category.3.name_ar=الضمان والدعم الفني
-category.3.name_en=Warranty & Support
+category.3.name_ar=الضمان والاسترجاع
+category.3.name_en=Warranty & Refunds
+category.3.published=true
 
-# ----------------------------------------------------
-# 2. الأسئلة والإجابات (Questions & Answers)
-# ----------------------------------------------------
-
-# السؤال الأول
+# ---------- الأسئلة ----------
 faq.1.category_id=cat_accounts
-faq.1.question_ar=ما الفرق بين الحساب الأساسي (Primary) والحساب الثانوي (Secondary)؟
-faq.1.question_en=What is the difference between Primary and Secondary accounts?
+faq.1.question_ar=هل يمكنني اللعب بحسابي الشخصي بعد شراء اللعبة الرقمية؟
+faq.1.question_en=Can I play with my own profile after buying a digital game?
 faq.1.answer_ar<<EOF
-الحساب الأساسي (Primary) يتيح لك تشغيل اللعبة من حسابك الشخصي وملفات حفظك الخاصة، ولا يشترط اتصالاً مستمراً بالإنترنت. بينما الحساب الثانوي (Secondary) تلعب من نفس الحساب المشترى ويتطلب اتصال إنترنت للتحقق.
+نعم، بعد تفعيل الحساب المُسلَّم كحساب أساسي (Primary) على جهازك يمكنك تحميل اللعبة واللعب بملفك الشخصي وبدون إنترنت.
 EOF
-faq.1.keywords=فرق, برايمري, سكندري, أساسي, ثانوي, save
+faq.1.keywords=حسابي الشخصي, primary, اللعب اوفلاين
 faq.1.featured=true
+faq.1.published=true
 
-# السؤال الثاني
 faq.2.category_id=cat_delivery
-faq.2.question_ar=كم يستغرق تسليم الحساب أو كود اللعبة بعد إتمام الطلب؟
-faq.2.question_en=How long does order delivery take?
-faq.2.answer_ar=التسليم فوري وتلقائي خلال دقيقة واحدة إلى 5 دقائق، حيث تظهر بيانات الحساب مباشرة في صفحة طلباتك وفي محادثة الدعم.
-faq.2.keywords=وقت, مدة, تسليم, فوري, استلام
+faq.2.question_ar=كم يستغرق تسليم الطلب بعد الدفع؟
+faq.2.answer_ar=غالباً خلال 5 إلى 30 دقيقة داخل أوقات العمل، وفي أوقات الذروة قد يصل إلى ساعة كحد أقصى.
+faq.2.keywords=مدة التسليم, متى يوصل الطلب
 faq.2.featured=true
 
-# السؤال الثالث
 faq.3.category_id=cat_warranty
-faq.3.question_ar=هل الألعاب والحسابات مضمونة ضد القفل؟
-faq.3.question_en=Are games and accounts guaranteed?
-faq.3.answer_ar=نعم، جميع ألعاب وحسابات بنانا ستور رسمية 100% ومشتراة من متجر Nintendo eShop الرسمي، ومشمولة بضمان ذهبي شامل ومتابعة فنية مستمرة.
-faq.3.keywords=ضمان, قفل, رسمي, بند, حماية
-faq.3.featured=true
+faq.3.question_ar=ما هي مدة الضمان على الحسابات الرقمية؟
+faq.3.answer_ar=الضمان يغطي صلاحية الحساب وعمل اللعبة طوال فترة الضمان المذكورة في صفحة المنتج، مع استبدال فوري عند أي خلل.
+faq.3.keywords=ضمان, استبدال, تعويض
 
-# السؤال الرابع
-faq.4.category_id=cat_accounts
-faq.4.question_ar=هل يمكنني حذف الحساب من السويتش بعد تحميل اللعبة؟
-faq.4.question_en=Can I delete the account after downloading?
-faq.4.answer_ar=لا، يجب إبقاء الحساب موجوداً على الجهاز لتعمل اللعبة برخصتها الرسمية. حذفه يؤدي لتوقف اللعبة عن العمل حتى إعادة إضافته.
-faq.4.keywords=حذف, مسح, delete, إزالة
-faq.4.featured=false
+# مثال: ربط السؤال بالقسم عبر الاسم بدل المعرّف (سيُنشأ القسم تلقائياً إن لم يوجد)
+faq.4.category=الدفع والأسعار
+faq.4.question_ar=ما هي طرق الدفع المتاحة؟
+faq.4.answer_ar=زين كاش، آسيا حوالة، ماستر كارد، والدفع عند الاستلام داخل بغداد.
+faq.4.keywords=دفع, زين كاش, ماستر كارد
