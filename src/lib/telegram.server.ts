@@ -431,7 +431,7 @@ export async function verifyTelegramInitData(initData: string): Promise<{
       ...(startParam ? { startParam } : {}),
     };
   } catch (err) {
-    console.error("[telegram:error] initData verification failed:", err);
+    console.error("[telegram:error] initData verification failed:", err instanceof Error ? err.message : String(err));
     return { valid: false, reason: "malformed" };
   }
 }
