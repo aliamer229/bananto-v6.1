@@ -528,11 +528,6 @@ export const adminApi = {
       method: "POST",
       body: JSON.stringify({ action: "reject_recharge", requestId, adminNotes }),
     }),
-  createBananCode: (amount: number) =>
-    request<{ success: boolean; code: any }>("/api/admin/users", {
-      method: "POST",
-      body: JSON.stringify({ action: "create_banan_code", amount }),
-    }),
   upload: (dataUrl: string, folder?: string) =>
     request<{ url: string }>("/api/upload", {
       method: "POST",
