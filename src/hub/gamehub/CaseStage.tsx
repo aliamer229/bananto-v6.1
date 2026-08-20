@@ -66,7 +66,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
               <directionalLight position={[-5, -5, -5]} intensity={0.5} />
               <SwitchBox3D
                 coverImage={cdnImage(caseProps.sleeve?.url || caseProps.coverUrl || "") || null}
-                platform={caseProps.isSwitch2 ? "ns2" : "ns1"}
+                platform={(caseProps as any).platform === 'Switch 2' || caseProps.isSwitch2 ? "ns2" : "ns1"}
                 gameName={caseProps.title}
                 onReady={handleModelReady}
               />
