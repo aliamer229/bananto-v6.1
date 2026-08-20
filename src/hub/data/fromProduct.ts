@@ -766,10 +766,9 @@ export function gameFromProduct(
     ? dataSourceRows
         .map((row) => {
           const label = getTextValue(
-            locale === "en" && row["nameEn"]
-              ? row["nameEn"]
-              : row["name"] || row["source"] || row["label"] || row["title"] || row,
+            row["nameEn"] || row["name"] || row["source"] || row["label"] || row["title"] || row,
           );
+
           const url = str(row["url"] || row["link"] || row["sourceUrl"]);
           if (!label && !url) return null;
           return {
