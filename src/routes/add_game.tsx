@@ -420,7 +420,7 @@ function AddGamePage() {
                                 {p.images?.[0] ? (
                                   <img
                                     src={p.images[0]}
-                                    alt={p.titleEn || p.english_name || p.title}
+                                    alt={(p as any).titleEn || (p as any).english_name || p.title}
                                     loading="lazy"
                                     className="w-12 h-12 rounded-lg object-cover shrink-0"
                                   />
@@ -434,7 +434,7 @@ function AddGamePage() {
                                 )}
                                 <span className="flex-1 min-w-0">
                                   <span className="block font-bold text-xs truncate text-foreground">
-                                    {p.titleEn || p.english_name || p.title}
+                                    {(p as any).titleEn || (p as any).english_name || p.title}
                                   </span>
                                   {typeof p.price === "number" && (
                                     <span className="block text-xs font-black text-primary mt-0.5">
@@ -477,7 +477,13 @@ function AddGamePage() {
                                   {g.cover_url ? (
                                     <img
                                       src={g.cover_url}
-                                      alt={g.titleEn || g.english_name || g.title}
+                                      alt={
+                                        (g as any).titleEn ||
+                                        (g as any).english_name ||
+                                        (g as any).title ||
+                                        (g as any).name ||
+                                        ""
+                                      }
                                       loading="lazy"
                                       className="w-12 h-16 rounded-xl object-cover shrink-0 shadow-sm"
                                     />
@@ -491,7 +497,11 @@ function AddGamePage() {
                                   )}
                                   <span className="min-w-0">
                                     <span className="block font-bold text-sm text-foreground line-clamp-2">
-                                      {g.titleEn || g.english_name || g.title}
+                                      {(g as any).titleEn ||
+                                        (g as any).english_name ||
+                                        (g as any).title ||
+                                        (g as any).name ||
+                                        ""}
                                     </span>
                                     {g.platform && (
                                       <span className="inline-block mt-1 text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
@@ -589,14 +599,24 @@ function AddGamePage() {
                         {picked.cover_url && (
                           <img
                             src={picked.cover_url}
-                            alt={picked.titleEn || picked.english_name || picked.title}
+                            alt={
+                              (picked as any).titleEn ||
+                              (picked as any).english_name ||
+                              (picked as any).title ||
+                              (picked as any).name ||
+                              ""
+                            }
                             loading="lazy"
                             className="w-11 h-14 rounded-lg object-cover shadow-sm"
                           />
                         )}
                         <div>
                           <p className="font-bold text-sm text-foreground">
-                            {picked.titleEn || picked.english_name || picked.title}
+                            {(picked as any).titleEn ||
+                              (picked as any).english_name ||
+                              (picked as any).title ||
+                              (picked as any).name ||
+                              ""}
                           </p>
                           <p className="text-xs text-muted-foreground">{picked.platform}</p>
                         </div>
@@ -899,7 +919,7 @@ function AddGamePage() {
                           </p>
                         </div>
                         <span className="rounded-full bg-primary/10 text-primary px-3.5 py-1 text-xs font-black">
-                          {copy.titleEn || copy.title}
+                          {copy.title}
                         </span>
                       </div>
                       {terminal ? (

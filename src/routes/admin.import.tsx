@@ -84,7 +84,7 @@ function AdminImportPage() {
         parsed = { data: legacyData, errors: parsedImport.errors.map((e) => e.message) };
       }
 
-      const validated = validateGameData(parsed.data);
+      const validated = validateGameData(parsed.data as any);
 
       // Merge parser errors
       validated.errors = [

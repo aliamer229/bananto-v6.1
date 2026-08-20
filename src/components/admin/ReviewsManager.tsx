@@ -46,7 +46,10 @@ export default function ReviewsManager() {
     await load();
   };
 
-  const pendingCount = useMemo(() => reviews.filter((r) => r.status === "pending").length, [reviews]);
+  const pendingCount = useMemo(
+    () => reviews.filter((r) => r.status === "pending").length,
+    [reviews],
+  );
 
   const rows = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -104,7 +107,10 @@ export default function ReviewsManager() {
       ) : (
         <div className="space-y-3">
           {rows.map((r) => (
-            <div key={r.id} className="rounded-2xl border border-border bg-card p-4 space-y-2 shadow-sm">
+            <div
+              key={r.id}
+              className="rounded-2xl border border-border bg-card p-4 space-y-2 shadow-sm"
+            >
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-foreground text-sm">
@@ -126,8 +132,12 @@ export default function ReviewsManager() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-amber-400 font-bold">{"★".repeat(Math.max(1, Math.min(5, r.rating)))}</span>
-                  <span className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar")}</span>
+                  <span className="text-amber-400 font-bold">
+                    {"★".repeat(Math.max(1, Math.min(5, r.rating)))}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {new Date(r.created_at).toLocaleDateString("ar")}
+                  </span>
                   {r.status === "pending" && (
                     <span className="rounded-lg bg-amber-500/15 px-2 py-0.5 text-amber-600 font-bold">
                       بانتظار الموافقة
@@ -139,7 +149,9 @@ export default function ReviewsManager() {
                     </span>
                   )}
                   {r.status === "hidden" && (
-                    <span className="rounded-lg bg-red-500/15 px-2 py-0.5 text-red-500 font-bold">مخفي</span>
+                    <span className="rounded-lg bg-red-500/15 px-2 py-0.5 text-red-500 font-bold">
+                      مخفي
+                    </span>
                   )}
                 </div>
               </div>

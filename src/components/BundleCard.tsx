@@ -122,7 +122,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                     src={
                       g.image || (g as any).cartridgeImage || (g as any).coverImage || bundle.image
                     }
-                    alt={g.titleEn || g.english_name || g.title}
+                    alt={String(g.titleEn || (g as any).english_name || g.title || "")}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -136,7 +136,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                 bundle.image ||
                 "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
               }
-              alt={bundle.titleEn || bundle.title}
+              alt={String(bundle.titleEn || bundle.title || "")}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
@@ -249,14 +249,14 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                   src={
                     g.image || (g as any).cartridgeImage || (g as any).coverImage || bundle.image
                   }
-                  alt={g.titleEn || g.english_name || g.title}
+                  alt={String(g.titleEn || (g as any).english_name || g.title || "")}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-2 inset-x-1 text-center">
                   <span className="text-[10px] font-bold text-white/90 line-clamp-1 drop-shadow-sm px-1">
-                    {g.titleEn || g.english_name || g.title}
+                    {String(g.titleEn || (g as any).english_name || g.title || "")}
                   </span>
                 </div>
               </div>
@@ -268,7 +268,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
               bundle.image ||
               "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
             }
-            alt={bundle.titleEn || bundle.title}
+            alt={String(bundle.titleEn || bundle.title || "")}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             loading="lazy"
           />
@@ -306,7 +306,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                 key={g.id}
                 className="inline-flex items-center gap-1 text-[11px] font-medium bg-muted/50 hover:bg-muted text-foreground/80 px-2 py-0.5 rounded-md border border-border/40"
               >
-                🎮 {g.titleEn || g.english_name || g.title}
+                🎮 {String(g.titleEn || (g as any).english_name || g.title || "")}
               </span>
             ))}
           </div>

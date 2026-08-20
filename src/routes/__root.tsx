@@ -18,94 +18,7 @@ import { useI18n, tr } from "../i18n";
 import GlobalMusicPlayer from "../components/GlobalMusicPlayer";
 import { useQuery } from "@tanstack/react-query";
 import { ensureNintendoCategory } from "../lib/nintendo-setup";
-
-// Global error recovery for "Failed to fetch dynamically imported module" / "Importing a module script failed"
-if (typeof window !== "undefined") {
-  const CHUNK_RELOAD_KEY = "bananto_chunk_reload_at";
-  const handleReload = () => {
-    // A stale chunk can justify one recovery reload, but never an endless
-    // reload cycle. Keep the guard across the reload in sessionStorage.
-    const previousReload = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
-    if (Date.now() - previousReload < 20_000) return;
-    window.sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
-
-    const doReload = () => {
-      try {
-        window.location.reload();
-      } catch {
-        // noop
-      }
-    };
-
-    try {
-      if (typeof navigator !== "undefined" && navigator.serviceWorker) {
-        navigator.serviceWorker
-          .getRegistrations()
-          .then((regs) => {
-            for (const reg of regs) {
-              try {
-                void reg.unregister();
-              } catch {
-                // ignore
-              }
-            }
-            if (typeof caches !== "undefined" && caches.keys) {
-              caches
-                .keys()
-                .then((keys) =>
-                  Promise.all(keys.map((key) => caches.delete(key).catch(() => undefined))),
-                )
-                .catch(() => undefined)
-                .finally(doReload);
-            } else {
-              doReload();
-            }
-          })
-          .catch(doReload);
-      } else if (typeof caches !== "undefined" && caches.keys) {
-        caches
-          .keys()
-          .then((keys) => Promise.all(keys.map((key) => caches.delete(key).catch(() => undefined))))
-          .catch(() => undefined)
-          .finally(doReload);
-      } else {
-        doReload();
-      }
-    } catch {
-      doReload();
-    }
-  };
-
-  const isScriptImportError = (errString: string) => {
-    const s = errString.toLowerCase();
-    return (
-      s.includes("importing a module script failed") ||
-      s.includes("dynamically imported module") ||
-      s.includes("error loading dynamically imported module") ||
-      s.includes("failed to fetch dynamically imported module") ||
-      s.includes("failed to load module script") ||
-      s.includes("chunkloaderror")
-    );
-  };
-
-  window.addEventListener(
-    "error",
-    (e: ErrorEvent) => {
-      const msg = String(e.message || e.error?.message || e.error || "");
-      if (isScriptImportError(msg)) {
-        handleReload();
-      }
-    },
-    true,
-  );
-
-  window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
-    const reasonMsg = String(e.reason?.message || e.reason || "");
-    if (isScriptImportError(reasonMsg)) {
-      handleReload();
-    }
-  });
-}
+import { isScriptImportError, handleModuleReload } from "../lib/polyfills";
 
 function NotFoundComponent() {
   return (
@@ -141,12 +54,25 @@ function ErrorComponent({ error: rootError, reset }: { error: any; reset: () => 
           : String(error);
 
   const is404 = (error as any)?.status === 404 || message.includes("404");
+  const isChunkError = isScriptImportError(message);
 
   console.error(error);
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+    if (isChunkError) {
+      handleModuleReload();
+    }
+  }, [error, isChunkError]);
+
+  const handleRetry = () => {
+    if (isChunkError) {
+      handleModuleReload(true);
+      return;
+    }
+    router.invalidate();
+    reset();
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 text-center select-none overflow-hidden">
@@ -203,10 +129,7 @@ function ErrorComponent({ error: rootError, reset }: { error: any; reset: () => 
 
       <div className="flex flex-col gap-3 w-full max-w-[200px]">
         <button
-          onClick={() => {
-            router.invalidate();
-            reset();
-          }}
+          onClick={handleRetry}
           className="w-full bg-[var(--brand-red)] text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-rose-500/20 active:scale-[0.98] transition-all text-sm"
         >
           {tr("Try again")}

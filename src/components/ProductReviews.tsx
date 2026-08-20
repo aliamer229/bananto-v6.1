@@ -47,7 +47,9 @@ export default function ProductReviews({ productId }: { productId: string }) {
         setComment(data.myReview.comment);
       }
       setSummary(data.summary ?? { count: 0, average: 0 });
-    } catch {}
+    } catch {
+      // ignore
+    }
   }, [productId]);
 
   useEffect(() => {
@@ -78,7 +80,9 @@ export default function ProductReviews({ productId }: { productId: string }) {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">تقييمات وتجارب اللاعبين</h2>
         <span className="text-sm text-muted-foreground">
-          {summary.count ? `${summary.average} ★ من ${summary.count} تقييم معتمد` : "لا توجد تقييمات معتمدة بعد"}
+          {summary.count
+            ? `${summary.average} ★ من ${summary.count} تقييم معتمد`
+            : "لا توجد تقييمات معتمدة بعد"}
         </span>
       </div>
 
@@ -239,7 +243,9 @@ export default function ProductReviews({ productId }: { productId: string }) {
                       />
                     ))}
                   </div>
-                  <span className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar")}</span>
+                  <span className="text-muted-foreground">
+                    {new Date(r.created_at).toLocaleDateString("ar")}
+                  </span>
                 </div>
               </div>
 

@@ -730,9 +730,7 @@ function CartPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground font-medium">{tr("إجمالي المبلغ")}:</span>
-                  <span className="text-foreground font-black">
-                    {formatIQDPrice(total)}
-                  </span>
+                  <span className="text-foreground font-black">{formatIQDPrice(total)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground font-medium">{tr("رصيدك الحالي")}:</span>

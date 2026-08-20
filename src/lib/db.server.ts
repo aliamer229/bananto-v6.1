@@ -1358,11 +1358,55 @@ export async function appendMessage(
 
 export async function getWalletTransactions(userId: string): Promise<WalletTransaction[]> {
   if (await d1Ready()) {
-    const rows = await d1All<WalletTransaction>(
+    // Auto-repair legacy bugged banan code transactions with fractional amounts
+    try {
+      const bugged = await d1All<{
+        id: string;
+        user_id: string;
+        amount: number;
+        description: string;
+      }>(
+        `SELECT id, user_id, amount, description FROM wallet_transactions WHERE user_id = ? AND description LIKE 'Banan Code:% (% IQD)' AND amount < 500`,
+        userId,
+      );
+      for (const tx of bugged) {
+        const match = tx.description?.match(/\((\d+)\s*IQD\)/i);
+        if (match && match[1]) {
+          const correctAmount = Number(match[1]);
+          if (correctAmount > 0 && tx.amount < correctAmount) {
+            const diff = correctAmount - tx.amount;
+            await d1Execute(
+              `UPDATE wallet_transactions SET amount = ? WHERE id = ?`,
+              correctAmount,
+              tx.id,
+            );
+            await d1Execute(
+              `UPDATE users SET wallet_balance = ROUND(COALESCE(wallet_balance, 0) + ?) WHERE id = ?`,
+              diff,
+              tx.user_id,
+            );
+          }
+        }
+      }
+    } catch {
+      // Ignore repair error if any
+    }
+
+    const rows = await d1All<any>(
       `SELECT * FROM wallet_transactions WHERE user_id = ? ORDER BY created_at DESC`,
       userId,
     );
-    return rows;
+    return rows.map((r) => ({
+      id: r.id,
+      userId: r.user_id || r.userId,
+      kind: r.kind,
+      amount: Number(r.amount) || 0,
+      description: r.description || "",
+      orderId: r.order_id || r.orderId || "",
+      referenceType: r.reference_type || r.referenceType || "",
+      referenceId: r.reference_id || r.referenceId || "",
+      createdAt: r.created_at || r.createdAt || new Date().toISOString(),
+    }));
   }
   return []; // Filesystem fallback omitted for brevity
 }
@@ -1521,14 +1565,7 @@ export async function consumeBananCode(
   );
   if (!bc) return { success: false, error: "كود غير صالح أو مستخدم مسبقاً" };
 
-  // Get exchange rate if stored in dinars
   const store = await getStore();
-  const usdRate = Number(store.settings?.["usdExchangeRate"] || 1500);
-
-  // Convert IQD to USD for wallet balance if needed
-  // (Assuming internal wallet is USD as per previous implementation)
-  const usdValue = bc.value / usdRate;
-
   const now = new Date().toISOString();
   const claimed = await d1RunChanges(
     `UPDATE banan_codes SET is_used = 1, used_by = ?, used_at = ?
@@ -1539,11 +1576,12 @@ export async function consumeBananCode(
   );
   if (claimed !== 1) return { success: false, error: "كود غير صالح أو مستخدم مسبقاً" };
 
+  // Credit full amount directly in IQD (Iraqi Dinar)
   await adjustUserWalletBalance(
     userId,
-    usdValue,
+    bc.value,
     "deposit",
-    `Banan Code: ${code} (${bc.value} IQD)`,
+    `كود بنانتو: ${code} (${bc.value.toLocaleString("en-US")} د.ع)`,
   );
 
   // Reward user with bananas based on dinarPerBanana setting

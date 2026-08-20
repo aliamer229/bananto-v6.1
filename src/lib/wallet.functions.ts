@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { d1First, d1Run, d1All, d1Batch, findUserById } from "./db.server";
+import { d1First, d1Run, d1All, d1Batch, findUserById, getWalletTransactions } from "./db.server";
 import { WalletTransaction, WalletRechargeRequest, RechargeMethod } from "./types";
 import { randomId } from "./crypto.server";
 import { requireAppAuth } from "./auth.middleware";
@@ -12,10 +12,7 @@ export const getWalletData = createServerFn({ method: "GET" })
     const user = await findUserById(userId);
     if (!user) throw new Error("User not found");
 
-    const transactions = await d1All<WalletTransaction>(
-      `SELECT * FROM wallet_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`,
-      userId,
-    );
+    const transactions = await getWalletTransactions(userId);
 
     const pendingRequests = await d1All<WalletRechargeRequest>(
       `SELECT * FROM recharge_requests WHERE user_id = ? AND status = 'pending' ORDER BY created_at DESC`,

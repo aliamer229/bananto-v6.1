@@ -157,12 +157,16 @@ export function TopUpModal({
             </div>
 
             <div className="space-y-2">
-              <label className="text-[12px] font-bold px-1">{tr("المبلغ المطلوب شحنه ($)")}</label>
+              <label className="text-[12px] font-bold px-1">
+                {method === "zain_cash" || method === "rafidain"
+                  ? tr("المبلغ المطلوب شحنه (د.ع)")
+                  : tr("المبلغ المطلوب شحنه ($)")}
+              </label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
+                placeholder={method === "zain_cash" || method === "rafidain" ? "25000" : "10.00"}
                 className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:ring-2 ring-zinc-900/10 font-black text-xl"
               />
               {method === "eshop_card" && amount && nintendoBonusEnabled && (

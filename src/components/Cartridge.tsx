@@ -7,6 +7,8 @@ import { cdnImage } from "@/lib/img";
 export interface CartridgeGame {
   id: string | number;
   title?: string;
+  titleEn?: string;
+  english_name?: string;
   subtitle?: string;
   image?: string;
   rating?: string | number | null;

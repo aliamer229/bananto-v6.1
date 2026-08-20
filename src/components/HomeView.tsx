@@ -328,7 +328,7 @@ export default function HomeView({
 
                       // 1. Try YYYY-MM-DD or YYYY-M-D (like 2026-7-23)
                       const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
-                      if (ymdMatch) {
+                      if (ymdMatch && ymdMatch[1] && ymdMatch[2] && ymdMatch[3]) {
                         return new Date(
                           `${ymdMatch[1]}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[3].padStart(2, "0")}`,
                         ).getTime();
@@ -336,7 +336,7 @@ export default function HomeView({
 
                       // 2. Try DD/MM/YYYY or DD-MM-YYYY
                       const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-                      if (dmMatch) {
+                      if (dmMatch && dmMatch[1] && dmMatch[2] && dmMatch[3]) {
                         return new Date(
                           `${dmMatch[3]}-${dmMatch[2].padStart(2, "0")}-${dmMatch[1].padStart(2, "0")}`,
                         ).getTime();

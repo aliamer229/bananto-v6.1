@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/reviews")({
                 productId,
                 user.id,
               );
-              if (myRows.length > 0) {
+              if (myRows.length > 0 && myRows[0]) {
                 myReview = myRows[0];
               }
             }

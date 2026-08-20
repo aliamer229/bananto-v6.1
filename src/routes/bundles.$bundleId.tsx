@@ -224,13 +224,13 @@ function BundleDetailPage() {
                             (g as any).coverImage ||
                             bundle.image
                           }
-                          alt={g.titleEn || g.english_name || g.title}
+                          alt={String(g.titleEn || (g as any).english_name || g.title || "")}
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                         <div className="absolute bottom-3 inset-x-2 text-center">
                           <span className="text-xs font-black text-white line-clamp-1 drop-shadow-md px-1">
-                            {g.titleEn || g.english_name || g.title}
+                            {String(g.titleEn || (g as any).english_name || g.title || "")}
                           </span>
                         </div>
                       </div>
@@ -242,7 +242,7 @@ function BundleDetailPage() {
                       bundle.image ||
                       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
                     }
-                    alt={bundle.titleEn || bundle.title}
+                    alt={String(bundle.titleEn || bundle.title || "")}
                     className="w-full h-full object-cover"
                   />
                 )}
@@ -479,7 +479,7 @@ function BundleDetailPage() {
                       (game as any).coverImage ||
                       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
                     }
-                    alt={game.titleEn || game.english_name || game.title}
+                    alt={String(game.titleEn || (game as any).english_name || game.title || "")}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -502,7 +502,7 @@ function BundleDetailPage() {
                   </div>
 
                   <h4 className="font-extrabold text-sm text-foreground line-clamp-1 group-hover:text-red-500 transition-colors">
-                    {game.titleEn || game.english_name || game.title}
+                    {String(game.titleEn || (game as any).english_name || game.title || "")}
                   </h4>
 
                   {game.description && (

@@ -1,5 +1,5 @@
 import { tr } from "@/i18n";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import AppShell from "@/components/AppShell";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/wallet")({
 
 function WalletPage() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
 
   const { data: store } = useQuery({
@@ -36,7 +37,11 @@ function WalletPage() {
     mutationFn: (code: string) => walletApi.consumeBanan(code),
     onSuccess: (res: any) => {
       if (res.success) {
-        toast.success(`تم تفعيل الكود بنجاح وإضافة ${res.amount.toLocaleString()} د.ع لرصيدك`);
+        toast.success(
+          `تم تفعيل الكود بنجاح وإضافة ${Number(res.amount).toLocaleString()} د.ع لرصيدك`,
+        );
+        queryClient.invalidateQueries({ queryKey: ["me"] });
+        queryClient.invalidateQueries({ queryKey: ["wallet-transactions"] });
         transactions.refetch();
         setIsTopUpOpen(false);
       } else {
@@ -49,6 +54,8 @@ function WalletPage() {
     mutationFn: (payload: any) => walletApi.recharge({ ...payload, action: "recharge" }),
     onSuccess: () => {
       toast.success("تم إرسال طلب الشحن للمراجعة");
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet-transactions"] });
       transactions.refetch();
       setIsTopUpOpen(false);
     },

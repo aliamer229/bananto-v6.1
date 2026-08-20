@@ -59,7 +59,13 @@ export const Route = createFileRoute("/api/admin/orders")({
         }),
       POST: async ({ request }) =>
         guard(async () => {
-          const admin = await requireAdmin(request);
+          const admin = (await requireAdmin(request)) as {
+            id: string;
+            isAdmin: boolean;
+            role: string;
+            name?: string;
+          };
+          const adminName = admin.name || "الإدارة";
           const data = await body<AdminOrderBody>(request);
           const order = data.orderId ? await getOrder(data.orderId) : undefined;
           if (!order) return json({ error: "not_found" }, { status: 404 });
@@ -71,7 +77,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               next = { ...order, paymentStatus: data.paymentStatus ?? "paid", updatedAt: now };
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "system",
                 body: {
                   text:
@@ -109,7 +115,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               }
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "item_credentials",
                 body: {
                   itemId: item.id,
@@ -127,7 +133,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                 return json({ error: "missing_fields" }, { status: 400 });
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "item_verification_code",
                 body: { itemId: data.itemId, code: data.code },
               });
@@ -137,7 +143,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             case "send_instructions": {
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "instructions",
                 body: { text: data.text ?? "" },
               });
@@ -154,7 +160,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               next = { ...next, status: "delivering" };
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "shipping_update",
                 body: { text: data.text ?? "تم شحن طلبك 🚚" },
               });
@@ -165,7 +171,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               next = patchItem(order, data.itemId, { deliveredAt: now });
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "shipping_update",
                 body: { text: data.text ?? "تم تسليم طلبك ✅" },
               });
@@ -175,7 +181,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               next = { ...order, status: "completed", updatedAt: now };
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "order_completed",
                 body: { code: order.code },
               });
@@ -191,7 +197,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             case "send_discount": {
               await appendMessage(order.threadId, {
                 senderRole: "admin",
-                senderName: admin.name,
+                senderName: adminName,
                 kind: "discount_code",
                 body: { code: data.code ?? "", text: data.text ?? "كود خصم لطلبك القادم 🎁" },
               });

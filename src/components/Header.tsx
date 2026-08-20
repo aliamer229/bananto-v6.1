@@ -198,7 +198,10 @@ export default function Header({
           isMenuOpen ? "bottom-0 pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="px-4 pt-6 pb-4 flex items-center gap-3 w-full [&>*]:pointer-events-auto relative" dir="ltr">
+        <div
+          className="px-4 pt-6 pb-4 flex items-center gap-3 w-full [&>*]:pointer-events-auto relative"
+          dir="ltr"
+        >
           {!isHome && (
             <button
               onClick={(e) => {
