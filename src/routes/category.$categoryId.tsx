@@ -104,9 +104,10 @@ function CategoryPage() {
     // Get all products that belong to this category to extract relevant genres
     const categoryProducts = store.products.filter((p: any) => {
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
+      const pKind = String(p.kind || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      const isMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" || 
-                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      const isMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" || 
+                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
       return isMatch;
     });
 
