@@ -100,6 +100,8 @@ export function SwitchBox3D({
     materials.plastic.transparent = true;
     materials.plastic.opacity = 0.8;
     materials.plastic.color.set(platform === 'ns2' ? '#e60012' : '#ffffff');
+    materials.plastic.roughness = 0.05;
+    materials.plastic.metalness = 0.4;
   }
 
   return (
@@ -111,7 +113,7 @@ export function SwitchBox3D({
         makeDefault
       />
       
-      <group ref={group} dispose={null} scale={0.55} position={[0, -0.4, 0]} rotation={[0, -Math.PI / 6, 0]}>
+      <group ref={group} dispose={null} scale={0.5} position={[0, -0.4, 0]} rotation={[0, -Math.PI / 6, 0]}>
         <mesh geometry={nodes.box.geometry} material={materials.plastic} />
         
         {texture && (

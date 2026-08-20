@@ -1,5 +1,5 @@
 import { GAME_IMPORT_SCHEMA, FieldDef } from "./gameImportSchema";
-import { getTextValue } from "./utils";
+import { getTextValue, str } from "./utils";
 
 export interface ParseResult {
   data: Record<string, any>;
@@ -111,7 +111,10 @@ function flattenValueOnlyGroups(data: Record<string, any>) {
     const list = data[target];
     if (!Array.isArray(list)) continue;
     data[target] = list
-      .map((item: any) => getTextValue(item && typeof item === "object" ? item.value : item))
+      .map((item: any) => {
+        const val = item && typeof item === "object" ? item.value : item;
+        return str(val);
+      })
       .filter((v: string) => Boolean(v && v.trim()));
   }
 }

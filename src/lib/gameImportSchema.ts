@@ -158,9 +158,9 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   {
     key: "banner_image",
     type: "url",
-    target: "bannerImages",
+    target: "galleryImages",
     repeatable: true,
-    description: "صور البنر",
+    description: "صور البنر / المعرض الرئيسي",
   },
 
   // MEDIA
@@ -313,7 +313,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
       description: { key: "description", type: "multiline", target: "description" },
       image: { key: "image", type: "url", target: "imageUrl" },
     },
-    description: "ركائز اللعب",
+    description: "ركائز اللعب (تجربة اللعبة)",
   },
 
   // STORY
