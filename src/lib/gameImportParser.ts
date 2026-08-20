@@ -15,8 +15,9 @@ export function parseGameImport(rawText: string): ParseResult {
 
   let i = 0;
   while (i < lines.length) {
-    const line = lines[i]?.trim();
-    if (!line || line.startsWith("#")) {
+    const rawLine = lines[i] || "";
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#") || line.startsWith("//")) {
       i++;
       continue;
     }
@@ -62,7 +63,8 @@ export function parseGameImport(rawText: string): ParseResult {
   // Map raw pairs to schema
   const structuredData: Record<string, any> = {};
 
-  for (const [key, value] of Object.entries(rawPairs)) {
+  for (const [rawKey, value] of Object.entries(rawPairs)) {
+    const key = rawKey.toLowerCase();
     const fieldDef = findFieldDef(key);
     if (!fieldDef) {
       result.unknownFields.push(key);
@@ -123,7 +125,8 @@ function flattenValueOnlyGroups(data: Record<string, any>) {
 
 function findFieldDef(key: string): FieldDef | null {
   const { baseKey } = parseKeyPath(key);
-  return GAME_IMPORT_SCHEMA.find((f) => f.key === baseKey) || null;
+  const searchKey = baseKey.toLowerCase();
+  return GAME_IMPORT_SCHEMA.find((f) => f.key.toLowerCase() === searchKey) || null;
 }
 
 function parseKeyPath(key: string): { baseKey: string; indices: string[] } {

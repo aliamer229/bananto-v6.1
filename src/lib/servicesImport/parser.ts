@@ -112,13 +112,13 @@ export function extractKeyValues(text: string): Record<string, string> {
     const sepIdx =
       eqIdx !== -1 && (colonIdx === -1 || eqIdx < colonIdx)
         ? eqIdx
-        : colonIdx !== -1 && colonIdx < 60
+        : colonIdx !== -1 && colonIdx < 100
           ? colonIdx
           : -1;
     if (sepIdx !== -1) {
       const k = rawLine.slice(0, sepIdx).trim();
       const v = rawLine.slice(sepIdx + 1).trim();
-      if (k && !/\s{2,}/.test(k)) put(k, v);
+      if (k) put(k, v);
     }
   }
 

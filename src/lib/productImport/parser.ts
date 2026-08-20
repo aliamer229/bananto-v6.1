@@ -113,7 +113,7 @@ export function parseProductImport(rawText: string, schema: ProductSchema): Pars
   // Resolve the conditional driver first so `showFor` warnings are accurate
   // regardless of where the field sits in the file.
   if (schema.conditionalOn) {
-    const driver = pairs.find((p) => p.key === schema.conditionalOn);
+    const driver = pairs.find((p) => p.key.toLowerCase() === schema.conditionalOn!.toLowerCase());
     if (driver?.value) ctx.conditionalValue = driver.value.toLowerCase();
   }
 
