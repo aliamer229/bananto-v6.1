@@ -189,7 +189,7 @@ export default function FlowerMenu({
                   "flex size-full touch-manipulation cursor-pointer items-center justify-center rounded-full transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 active:scale-95",
                   isOpen ? "pointer-events-auto" : "pointer-events-none",
                   "hover:scale-110 focus-visible:scale-110 backdrop-blur-md shadow-md border border-white/25",
-                  "min-w-[48px] min-h-[48px] [&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-[26px] sm:[&>svg]:h-[26px]",
+                  "[&>svg]:h-5 [&>svg]:w-5",
                   isActiveSubMenu && "ring-2 ring-white/50 scale-110 bg-card/20",
                 )}
                 style={{
@@ -257,7 +257,7 @@ export default function FlowerMenu({
                             "flex size-full touch-manipulation cursor-pointer items-center justify-center rounded-full transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 active:scale-95",
                             isActiveSubMenu ? "pointer-events-auto" : "pointer-events-none",
                             "hover:scale-110 focus-visible:scale-110 backdrop-blur-md shadow-md border border-white/30 bg-card/20",
-                            "min-w-[48px] min-h-[48px] [&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6",
+                            "[&>svg]:h-5 [&>svg]:w-5",
                           )}
                           style={{
                             backgroundColor,

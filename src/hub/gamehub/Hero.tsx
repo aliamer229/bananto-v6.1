@@ -139,10 +139,10 @@ export function Hero() {
         )}
       </motion.div>
       {/* Thin wash only — enough contrast for white type, no black plate. */}
-      <div aria-hidden className="absolute inset-0 -z-20 bg-ink-900/55" />
+      <div aria-hidden className="absolute inset-0 -z-20 bg-ink-900/40" />
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(8,9,13,0.42)_0%,rgba(11,13,19,0.16)_40%,rgba(11,13,19,0.78)_84%,rgb(11,13,19)_100%)]"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(8,9,13,0.36)_0%,rgba(11,13,19,0.12)_38%,rgba(11,13,19,0.66)_82%,rgb(11,13,19)_100%)]"
       />
       <div
         aria-hidden
@@ -415,11 +415,11 @@ export function Hero() {
 
         {/* ---- Quick stats strip: compact, seamed, full width ---- */}
         {stats.length > 0 && (
-          <div className="mt-9 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-white/[0.14] sm:grid-cols-3 lg:grid-cols-6">
+          <div className="mt-9 grid grid-cols-2 gap-2 overflow-hidden rounded-xl border border-white/15 bg-white/[0.07] p-2 backdrop-blur-md sm:grid-cols-3 lg:grid-cols-6">
             {stats.map((stat) => (
-              <div key={stat.label} className="min-w-0 bg-ink-900/95 px-3.5 py-3 backdrop-blur">
-                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider muted">
-                  <stat.icon className="h-3.5 w-3.5 shrink-0 opacity-90" />
+              <div key={stat.label} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.08] px-3.5 py-3">
+                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/80">
+                  <stat.icon className="h-4 w-4 shrink-0 text-white" strokeWidth={2.25} />
                   <span className="truncate">{stat.label}</span>
                 </span>
                 <span

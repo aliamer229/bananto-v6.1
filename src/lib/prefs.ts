@@ -20,6 +20,7 @@ export type Motion = "full" | "lite";
 
 export const THEME_COOKIE = "bananto_theme";
 export const LANG_COOKIE = "bananto_lang";
+export const LANG_MANUAL_COOKIE = "bananto_lang_manual";
 export const MOTION_COOKIE = "bananto_motion";
 
 const MAX_AGE = 60 * 60 * 24 * 365;
@@ -120,6 +121,12 @@ export function writeCookie(name: string, value: string) {
       savePreferences({ data: { prefs } }).catch(() => {});
     })
     .catch(() => {});
+}
+
+/** Records an explicit language choice separately from automatic detection. */
+export function writeManualLanguage(lang: Lang) {
+  writeCookie(LANG_COOKIE, lang);
+  writeCookie(LANG_MANUAL_COOKIE, "1");
 }
 
 export function isLang(value: unknown): value is Lang {

@@ -9,7 +9,7 @@ import {
   type Locale,
   type TranslationKey,
 } from "./lib/i18n";
-import { LANG_COOKIE, dirOf, isLang, writeCookie, type Lang } from "./lib/prefs";
+import { dirOf, isLang, writeManualLanguage, type Lang } from "./lib/prefs";
 
 type Language = Lang;
 
@@ -508,7 +508,7 @@ function toLocale(lang: Language): Locale {
 export const useI18n = create<I18nStore>((set, get) => ({
   lang: initialLang(),
   setLang: (lang) => {
-    writeCookie(LANG_COOKIE, lang);
+    writeManualLanguage(lang);
     // RootInner already remounts the rendered route when this state changes.
     // Reloading the document here caused an infinite loop for signed-in users:
     // ThemeApplier restored the profile language after every reload, which

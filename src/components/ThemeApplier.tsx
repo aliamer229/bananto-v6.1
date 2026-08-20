@@ -3,7 +3,15 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import { DEFAULT_THEME, findTheme } from "@/lib/themes";
-import { MOTION_COOKIE, THEME_COOKIE, readCookie, writeCookie, isLang, dirOf } from "@/lib/prefs";
+import {
+  LANG_COOKIE,
+  MOTION_COOKIE,
+  THEME_COOKIE,
+  readCookie,
+  writeCookie,
+  isLang,
+  dirOf,
+} from "@/lib/prefs";
 
 /** Applies the pack to <html> — data-theme drives tokens, `dark` drives dark: utilities. */
 function apply(id: string) {
@@ -35,7 +43,9 @@ export default function ThemeApplier() {
 
   // Language from the profile (falls back to whatever the cookie already had).
   useEffect(() => {
-    const language = settings?.language;
+    // A cookie is the most recent browser choice. Do not let a stale profile
+    // response undo a language the member just selected in this session.
+    const language = readCookie(LANG_COOKIE) || settings?.language;
     if (!isLang(language)) return;
     if (language !== currentLanguage) setLang(language);
     document.documentElement.lang = language;

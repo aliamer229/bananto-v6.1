@@ -219,9 +219,9 @@ export default function Header({
               menuItems={menuItems}
               startAngle={90}
               endAngle={180}
-              togglerSize={52}
-              itemSize={44}
-              petalGap={30}
+              togglerSize={48}
+              itemSize={40}
+              petalGap={24}
               backgroundColor="rgba(0, 0, 0, 0.55)"
               iconColor="white"
               onOpenChange={(isOpen) => {
@@ -229,7 +229,7 @@ export default function Header({
                 if (isOpen) playSound("bumper_end", 0.6);
               }}
             >
-              <div className="w-[52px] h-[52px] rounded-full overflow-hidden border-2 border-white/25 shrink-0 bg-foreground shadow-md relative group flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-white/25 shrink-0 bg-foreground shadow-md relative group flex items-center justify-center">
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
