@@ -127,19 +127,19 @@ export function SwitchBox3D({
       />
       
       <group ref={group} dispose={null} scale={0.5} position={[0, -0.4, 0]} rotation={[0, -Math.PI / 6, 0]}>
+        {/* The plastic outer case */}
         <mesh geometry={nodes.box.geometry} material={materials.plastic} />
         
+        {/* The printed sleeve (the artwork) */}
         {texture ? (
           <mesh geometry={nodes.placeholder.geometry}>
             <meshStandardMaterial 
               map={texture} 
-              roughness={0.05} 
-              metalness={0.15} 
+              roughness={0.1} 
+              metalness={0.1} 
               side={THREE.DoubleSide} 
               transparent={false} 
-              opacity={1} 
-              emissive={new THREE.Color('#ffffff')}
-              emissiveIntensity={0.05}
+              opacity={1}
             />
           </mesh>
         ) : (
@@ -148,6 +148,7 @@ export function SwitchBox3D({
           </mesh>
         )}
         
+        {/* The foil overlay */}
         <mesh geometry={nodes.foil.geometry} material={materials.foil} />
       </group>
     </>
