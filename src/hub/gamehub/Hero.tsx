@@ -150,13 +150,12 @@ export function Hero() {
       />
 
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:pb-12 sm:pt-12 lg:px-6">
-        <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:gap-12">
+        <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)] lg:gap-12">
           {/* ================= Product ================= */}
           <div className="flex flex-col items-center">
-            <div className="relative w-full aspect-[3/4] flex items-center justify-center">
-              <CaseStage
-                key={game.slug}
-                coverUrl={game.coverUrl}
+            <CaseStage
+              key={game.slug}
+              coverUrl={game.coverUrl}
               // Explicit artwork wins; otherwise resolve from the game code.
               sleeve={game.caseSleeve ?? sleeveFor(game.nintendoGameCode)}
               title={game.title}
@@ -171,9 +170,8 @@ export function Hero() {
               }
               size="lg"
               onClick={() => images[0] && openLightbox(images[0].id)}
-                className="w-full h-full will-change-transform"
-              />
-            </div>
+              className="scale-90 sm:scale-100 will-change-transform"
+            />
 
             {/* SKU selector — only when both cases genuinely exist. */}
             {skus.length > 1 && (
