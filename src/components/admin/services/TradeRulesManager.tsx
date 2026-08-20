@@ -863,6 +863,14 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
           </div>
         </div>
       )}
+
+      {showImportModal && (
+        <ServiceImportModal
+          type="trade_rules"
+          onClose={() => setShowImportModal(false)}
+          onImport={handleImportRules as any}
+        />
+      )}
     </div>
   );
 }
