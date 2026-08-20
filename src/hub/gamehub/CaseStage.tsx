@@ -53,9 +53,9 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
 
   return (
     <div className={cn("relative", className)}>
-      {/* Background loading state (static case) only while model is not ready */}
+      {/* Background loading state (static case) always visible while model is not ready */}
       {!modelReady && (
-        <div className="opacity-50 transition-opacity duration-300">
+        <div className="transition-opacity duration-300">
           <GameCase3D {...caseProps} />
         </div>
       )}
@@ -69,12 +69,13 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
         <SafeBoundary onError={() => setModelReady(false)}>
           <Suspense fallback={null}>
             <Canvas
-              camera={{ position: [0, 0, 12], fov: 35 }}
-              style={{ touchAction: "none", cursor: "grab", userSelect: "none" }}
+              camera={{ position: [0, 0, 10], fov: 40 }}
+              style={{ touchAction: "none", cursor: "grab", userSelect: "none", width: "100%", height: "100%" }}
+              gl={{ antialias: true, alpha: true }}
             >
-              <ambientLight intensity={1.5} />
-              <directionalLight position={[5, 10, 5]} intensity={1.5} />
-              <directionalLight position={[-5, -5, -5]} intensity={0.5} />
+              <ambientLight intensity={1.8} />
+              <pointLight position={[10, 10, 10]} intensity={1.5} />
+              <pointLight position={[-10, 5, 5]} intensity={0.8} />
               <SwitchBox3D
                 coverImage={cdnImage(caseProps.sleeve?.url || caseProps.coverUrl || "") || null}
                 platform={caseProps.isSwitch2 ? "ns2" : "ns1"}
