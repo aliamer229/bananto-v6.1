@@ -58,7 +58,7 @@ export function GlanceSection() {
         .join(" · "),
       accent: true,
     },
-    { icon: Shapes, label: t("glance.genre"), value: (game.genres ?? []).join(" · ") },
+    { icon: Shapes, label: t("glance.genre"), value: <span translate="no">{(game.genres ?? []).join(" · ")}</span> },
     { icon: Users, label: t("glance.players"), value: formatRange(game.multiplayer?.players) },
     {
       icon: Clock,
