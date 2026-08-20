@@ -53,7 +53,7 @@ export function SwitchBox3D({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const load = (src: string) =>
+    const loadElement = (src: string) =>
       new Promise<HTMLImageElement | null>((resolve) => {
         const image = new Image();
         if (!src.startsWith("data:")) image.crossOrigin = "anonymous";
@@ -61,6 +61,26 @@ export function SwitchBox3D({
         image.onerror = () => resolve(null);
         image.src = src;
       });
+
+    const load = async (src: string) => {
+      // Browsers mark <img> requests with Sec-Fetch-Dest:image; the app's route
+      // shell may answer those before the image endpoint does. Fetch the bytes
+      // first and decode a same-origin Blob so Canvas can safely read them.
+      if (src.startsWith("/api/img")) {
+        try {
+          const response = await fetch(src);
+          if (response.ok) {
+            const objectUrl = URL.createObjectURL(await response.blob());
+            const image = await loadElement(objectUrl);
+            URL.revokeObjectURL(objectUrl);
+            if (image) return image;
+          }
+        } catch {
+          // The normal image path below remains a safe visual fallback.
+        }
+      }
+      return loadElement(src);
+    };
 
     const drawCover = (
       image: HTMLImageElement,
