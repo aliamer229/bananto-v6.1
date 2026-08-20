@@ -15,6 +15,7 @@ import {
 import { useI18n } from "@/i18n";
 import type { GuideItem, GuideStep } from "@/lib/content";
 import ServiceImportModal from "../ServiceImportModal";
+import { ImageUploadField } from "../../ImageUploadField";
 import type { ServiceParseResult } from "@/lib/servicesImport";
 
 interface GuidesEditorProps {
@@ -239,6 +240,16 @@ export function GuidesEditor({ guides, onChange }: GuidesEditorProps) {
                       />
                     </div>
                     <div className="sm:col-span-2 lg:col-span-3">
+                      <ImageUploadField
+                        label={t("صورة توضيحية للدليل (الغلاف)")}
+                        value={guide.cover_image || ""}
+                        onChange={(url) => updateGuide(guide.id, { cover_image: url })}
+                        folder="guides"
+                        aspect="banner"
+                        helperText={t("تظهر في أعلى الدليل داخل صفحة تعليمات التسجيل.")}
+                      />
+                    </div>
+                    <div className="sm:col-span-2 lg:col-span-3">
                       <label className="block text-xs font-bold mb-1">
                         {t("وصف ومقدمة الدليل")}
                       </label>
@@ -311,6 +322,15 @@ export function GuidesEditor({ guides, onChange }: GuidesEditorProps) {
                                 placeholder={t("شرح وتفاصيل الخطوة بالتفصيل...")}
                                 rows={2}
                                 className="w-full bg-background border border-border rounded-lg p-2.5 text-xs focus:border-primary outline-none"
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <ImageUploadField
+                                label={t("صورة توضيحية للخطوة")}
+                                value={step.image || ""}
+                                onChange={(url) => updateStep(guide.id, step.id, { image: url })}
+                                folder="guides"
+                                aspect="video"
                               />
                             </div>
                             <div>

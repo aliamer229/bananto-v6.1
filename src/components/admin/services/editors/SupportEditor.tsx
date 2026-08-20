@@ -17,6 +17,7 @@ import {
 import { useI18n } from "@/i18n";
 import type { SupportData, SupportService, SupportChannel } from "@/lib/content";
 import ServiceImportModal from "../ServiceImportModal";
+import { ImageUploadField } from "../../ImageUploadField";
 import type {
   ContactParseResultData,
   ServiceParseResult,
@@ -327,6 +328,16 @@ export function SupportEditor({
                             rows={4}
                             placeholder={`1. أعد تشغيل الجهاز بالكامل.\n2. تأكد من ضبط الوقت تلقائياً عبر الإنترنت.\n3. أعد محاولة تسجيل الدخول.`}
                             className="w-full bg-background border border-border rounded-xl p-3 text-xs leading-relaxed focus:border-primary outline-none"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <ImageUploadField
+                            label={t("صورة توضيحية للمشكلة أو الحل")}
+                            value={art.imageUrl || ""}
+                            onChange={(url) => updateProblem(art.id, { imageUrl: url })}
+                            folder="support"
+                            aspect="video"
+                            helperText={t("تظهر مع الحل للعميل داخل صفحة الدعم والمساعد الآلي.")}
                           />
                         </div>
                       </div>
