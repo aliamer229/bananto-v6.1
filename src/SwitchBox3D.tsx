@@ -20,6 +20,7 @@ export function SwitchBox3D({
   onReady?: () => void
 }) {
   const { nodes, materials } = useGLTF(glbAsset.url) as any;
+
   const group = useRef<THREE.Group>(null);
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
