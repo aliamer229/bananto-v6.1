@@ -134,7 +134,7 @@ export function SwitchBox3D({
         
         {/* The printed sleeve (the artwork) */}
         {texture ? (
-          <mesh geometry={nodes.placeholder.geometry}>
+          <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
             <meshStandardMaterial 
               map={texture} 
               roughness={0.1} 
