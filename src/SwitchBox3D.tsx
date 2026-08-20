@@ -37,7 +37,7 @@ export function SwitchBox3D({
     const canvas = document.createElement('canvas');
     canvas.width = 1236;
     canvas.height = 951;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     const drawTexture = async () => {
