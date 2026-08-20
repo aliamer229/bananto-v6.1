@@ -1,13 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-
-const ASSET_GLB = '/__l5e/assets-v1/863bd171-ee8b-413b-beee-1d41744e74cd/SwitchCase.glb';
-const ASSET_TEXTURE = '/__l5e/assets-v1/096a6d55-e8ed-44c4-8844-5418a3cdb209/GZAfvAF3.jpg';
+import glbAsset from "@/assets/3d/SwitchCase.glb.asset.json";
+import textureAsset from "@/assets/3d/GZAfvAF3.jpg.asset.json";
 
 /**
- * Interactive Switch retail case implementation restored from untitled_6.
- * Uses the real SwitchCase.glb model and GZAfvAF3.jpg base texture.
+ * Rebuilt SwitchBox3D component using authentic 3D assets from the provided reference project.
+ * Implements full wrap-around texture mapping and calibrated materials.
  */
 export function SwitchBox3D({ 
   coverImage, 
@@ -20,9 +19,8 @@ export function SwitchBox3D({
   gameName: string,
   onReady?: () => void
 }) {
-  const { nodes, materials } = useGLTF(ASSET_GLB) as any;
+  const { nodes, materials } = useGLTF(glbAsset.url) as any;
   const group = useRef<THREE.Group>(null);
-  
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
@@ -35,10 +33,10 @@ export function SwitchBox3D({
 
     const drawTexture = async () => {
       try {
-        // 1. Draw base texture (the original image from the zip)
+        // 1. Draw authentic base texture
         const baseImg = new Image();
         baseImg.crossOrigin = 'anonymous';
-        baseImg.src = ASSET_TEXTURE;
+        baseImg.src = textureAsset.url;
         await new Promise((resolve, reject) => {
           baseImg.onload = resolve;
           baseImg.onerror = reject;
@@ -47,7 +45,7 @@ export function SwitchBox3D({
         if (!isMounted) return;
         ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
 
-        // 2. Draw uploaded cover image
+        // 2. Overlay game-specific cover image
         if (coverImage) {
           const img = new Image();
           if (!coverImage.startsWith('data:')) {
@@ -58,15 +56,13 @@ export function SwitchBox3D({
           await new Promise((resolve, reject) => {
             img.onload = resolve;
             img.onerror = (e) => {
-              console.warn("Image load failed", e);
+              console.warn("Cover image load failed", e);
               resolve(null);
             };
           });
           
           if (!isMounted) return;
-          
-          // The uploaded cover is a full retail box insert (FRONT + SPINE + BACK)
-          // Draw it over the entire canvas (1236x951)
+          // The cover is a full wrap (back, spine, front) mapping to 1236x951
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
@@ -94,7 +90,7 @@ export function SwitchBox3D({
     };
   }, [coverImage, platform, gameName, onReady]);
 
-  // Make sure foil has alpha
+  // Configure materials for realistic transparency and reflections
   if (materials.foil) {
     materials.foil.transparent = true;
     materials.foil.opacity = 0.5;
@@ -132,5 +128,5 @@ export function SwitchBox3D({
   );
 }
 
-useGLTF.preload(ASSET_GLB);
+useGLTF.preload(glbAsset.url);
 export default SwitchBox3D;
