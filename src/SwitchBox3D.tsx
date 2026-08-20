@@ -151,7 +151,7 @@ export function SwitchBox3D({
         )}
         
         {/* The foil overlay */}
-        <mesh geometry={nodes.foil.geometry} material={materials.foil} />
+        <mesh geometry={nodes.foil.geometry} material={materials.foil} renderOrder={2} />
       </group>
     </>
   );
