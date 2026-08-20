@@ -4,7 +4,12 @@ import { Star } from "lucide-react";
 
 import { cdnImage } from "@/lib/img";
 
-export function ProductCard({ product }: { product: any }) {
+export function ProductCard({ product, forceStandardImage }: { product: any; forceStandardImage?: boolean }) {
+  // If forceStandardImage is true, we ignore cartridgeImage and use the standard product image
+  const displayImage = forceStandardImage 
+    ? (product.image || product.coverImage || product.coverUrl)
+    : (product.cartridgeImage || product.image || product.coverImage || product.coverUrl);
+
   return (
     <Link
       to="/product/$productId"
@@ -14,7 +19,7 @@ export function ProductCard({ product }: { product: any }) {
       <div className="overflow-hidden rounded-xl mb-3 relative">
         <img
           src={cdnImage(
-            product.image ||
+            displayImage ||
               "https://images.unsplash.com/photo-1612404730960-5c71577fca11?q=80&w=400&h=400&fit=crop",
           )}
           loading="lazy"
