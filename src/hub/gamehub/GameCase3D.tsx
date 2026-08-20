@@ -72,6 +72,7 @@ export interface GameCase3DProps {
   editionLabel?: string | undefined;
   size?: "sm" | "md" | "lg" | undefined;
   className?: string | undefined;
+  platform?: string | undefined;
   onClick?: (() => void) | undefined;
 }
 
