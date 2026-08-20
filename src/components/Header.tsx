@@ -22,7 +22,7 @@ import LanguageCurrencyModal from "./LanguageCurrencyModal";
 import FlowerMenu from "./FlowerMenu";
 import { cdnImage } from "@/lib/img";
 import { useSettingsStore } from "../store/useSettingsStore";
-import { THEME_COOKIE, writeCookie } from "../lib/prefs";
+import { LANG_COOKIE, THEME_COOKIE, langFromPhone, readCookie, writeCookie } from "../lib/prefs";
 
 export default function Header({
   currentView,
@@ -47,6 +47,20 @@ export default function Header({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { soundEnabled, musicEnabled, setSoundEnabled, setMusicEnabled } = useSettingsStore();
+
+  /*
+    First visit for a signed-in member: their registered phone number is a
+    better signal than the browser locale. An Arab dial code means Arabic,
+    anything else English. An explicit choice (cookie) always wins.
+  */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (readCookie(LANG_COOKIE)) return;
+    const guess = langFromPhone((user as any)?.phone);
+    if (!guess || guess === lang) return;
+    writeCookie(LANG_COOKIE, guess);
+    useI18n.setState({ lang: guess as never });
+  }, [user, lang]);
 
   const handleSelectTheme = (themeId: string, isDark: boolean) => {
     playSound("bumper_end", 0.6);
