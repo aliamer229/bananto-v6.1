@@ -45,7 +45,10 @@ function CategoryPage() {
       // Category check
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      if (pCat !== targetCat && p.kind !== targetCat && categoryId !== "all") return false;
+      const isCatMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" ||
+                        (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      
+      if (!isCatMatch) return false;
 
       // Platform filter
       if (platform !== "all") {
@@ -96,11 +99,15 @@ function CategoryPage() {
     if (!store?.products) return [];
     const genreSet = new Set<string>();
     
+    console.log("Extracting genres for category:", categoryId);
+    
     // Get all products that belong to this category to extract relevant genres
     const categoryProducts = store.products.filter((p: any) => {
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      return pCat === targetCat || p.kind === targetCat || categoryId === "all";
+      const isMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" || 
+                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      return isMatch;
     });
 
     categoryProducts.forEach((p: any) => {
@@ -179,7 +186,7 @@ function CategoryPage() {
         </div>
 
         {/* Toolbar Section */}
-        <div className="sticky top-0 z-30 bg-[var(--page)]/80 backdrop-blur-xl border-b border-border px-4 py-3">
+        <div className="sticky top-16 z-30 bg-[var(--page)]/80 backdrop-blur-xl border-b border-border px-4 py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
               <button 
