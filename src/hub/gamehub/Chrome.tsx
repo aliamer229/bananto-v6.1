@@ -27,9 +27,14 @@ export function HubNav({ items }: { items: NavItem[] }) {
   const active = useActiveSection(items.map((item) => item.id));
   const railRef = useRef<HTMLDivElement | null>(null);
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
+  const [buyBarVisible, setBuyBarVisible] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolledPastHero(window.scrollY > 520);
+    const onScroll = () => {
+      setScrolledPastHero(window.scrollY > 520);
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 380;
+      setBuyBarVisible(window.scrollY > 560 && !nearBottom);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -49,8 +54,19 @@ export function HubNav({ items }: { items: NavItem[] }) {
     });
   }, [active]);
 
+  const isBuyBarVisible = buyBarVisible && bestOffer;
+
   return (
-    <div className="sticky top-[env(safe-area-inset-top,0px)] z-40 border-b border-white/[0.06] bg-ink-900/90 backdrop-blur-xl">
+    <div 
+      className={cn(
+        "z-40 border-white/[0.06] bg-ink-900/90 backdrop-blur-xl transition-all duration-300",
+        "lg:sticky lg:top-[env(safe-area-inset-top,0px)] lg:border-b",
+        "max-lg:fixed max-lg:inset-x-0 max-lg:border-t"
+      )}
+      style={{
+        bottom: `calc(${isBuyBarVisible ? 72 : 0}px + env(safe-area-inset-bottom, 0px))`
+      }}
+    >
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 lg:px-6">
         <div
           ref={railRef}

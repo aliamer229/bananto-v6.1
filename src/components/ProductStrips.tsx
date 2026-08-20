@@ -49,7 +49,7 @@ export function CartridgeStrip({
 
 export function CartridgeSkeleton() {
   return (
-    <div className="flex gap-3.5 overflow-x-auto pt-2 px-8 no-scrollbar items-end">
+    <div className="flex gap-3.5 overflow-x-auto pt-2 px-8 no-scrollbar items-end" dir="ltr">
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
@@ -82,7 +82,7 @@ export function ProductStrip({
 
   if (loading && products.length === 0) {
     return (
-      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-8">
+      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-8" dir="ltr">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
@@ -94,7 +94,7 @@ export function ProductStrip({
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-8">
+    <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-8" dir="ltr">
       {visible.map((product, i) => (
         <StaggerItem key={product.id || i} className="shrink-0" delay={delayFor(i)}>
           <div
@@ -122,7 +122,7 @@ export function ProductStrip({
               )}
             </div>
             <h4 className="font-bold text-sm sm:text-base text-foreground truncate" dir="ltr">
-              {product.title}
+              {product.titleEn || product.english_name || product.title}
             </h4>
             <p className="text-xs sm:text-sm text-muted-foreground truncate" dir="ltr">
               {product.subtitle}

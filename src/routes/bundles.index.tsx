@@ -216,7 +216,7 @@ function BundlesIndexPage() {
         {/* Bundles Grid */}
         <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" dir="ltr">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
@@ -225,7 +225,7 @@ function BundlesIndexPage() {
               ))}
             </div>
           ) : filteredBundles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" dir="ltr">
               {filteredBundles.map((bundle) => (
                 <BundleCard
                   key={bundle.id}

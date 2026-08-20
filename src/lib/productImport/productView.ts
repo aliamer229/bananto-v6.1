@@ -289,7 +289,7 @@ export function buildProductView(
 
   return {
     schema,
-    title: str(p["title"]) || str(p["name"]),
+    title: str(p["titleEn"]) || str(p["english_name"]) || str(p["title"]) || str(p["name"]),
     subtitle: str(p["shortName"]) || str(p["tagline"]),
     brand: str(p["brand"]),
     model: str(p["model"]),

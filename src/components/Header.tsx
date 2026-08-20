@@ -193,7 +193,7 @@ export default function Header({
       {/* The header floats over page content, so the bar itself must not eat
           pointer events — only its actual controls do. */}
       <header
-        dir="rtl"
+        dir={lang === "en" ? "ltr" : "rtl"}
         className={`z-50 fixed top-0 w-full transition-all duration-300 transform-gpu ${
           isMenuOpen ? "bottom-0 pointer-events-auto" : "pointer-events-none"
         }`}
@@ -294,13 +294,8 @@ export default function Header({
                           className="w-10 h-10 rounded-lg object-cover bg-white/10"
                           alt=""
                         />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-white font-bold text-sm truncate">{p.title}</div>
-                          {p.titleEn && (
-                            <div className="text-white/50 text-xs truncate uppercase tracking-wider">
-                              {p.titleEn}
-                            </div>
-                          )}
+                        <div className="flex-1 min-w-0" dir="ltr">
+                          <div className="text-white font-bold text-sm truncate">{p.titleEn || p.english_name || p.title}</div>
                         </div>
                       </button>
                     ))}

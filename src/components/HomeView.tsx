@@ -294,9 +294,10 @@ export default function HomeView({
               </div>
             </div>
 
-            <ProductStrip
-              products={adminProducts
-                .filter((p) => {
+            <div dir="ltr">
+              <ProductStrip
+                products={adminProducts
+                  .filter((p) => {
                   const catId = (p.category || p.categoryId || "").toLowerCase();
                   const kind = (p.kind || "").toLowerCase();
                   // Include Nintendo switch games
@@ -310,39 +311,45 @@ export default function HomeView({
                     kind === "offline_account" ||
                     kind === "online_account" ||
                     kind === "physical" ||
-                    Boolean(p.releaseDate || p.release_date || p.releaseYear || p.release_year)
+                    Boolean(p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year)
                   );
                 })
                 .sort((a, b) => {
-                  const getYear = (val: any) => {
-                    if (!val) return 0;
-                    const dateStr = String(val);
-                    // Match 4 digits for year
-                    const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
-                    if (match) return parseInt(match[0], 10);
-                    const timestamp = new Date(val).getTime();
-                    return isNaN(timestamp) ? 0 : new Date(timestamp).getFullYear();
+                  const getVal = (p: any) => {
+                    let val = 0;
+                    const d = p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year;
+                    if (d) {
+                      // Attempt to parse standard dates
+                      val = new Date(d).getTime();
+                      if (isNaN(val)) {
+                        // Handle DD/MM/YYYY or DD-MM-YYYY
+                        const dmMatch = String(d).match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                        if (dmMatch) {
+                          val = new Date(`${dmMatch[3]}-${dmMatch[2]}-${dmMatch[1]}`).getTime();
+                        }
+                        if (isNaN(val)) {
+                          // Fallback: extract year
+                          const match = String(d).match(/\b(20\d{2}|19\d{2})\b/);
+                          if (match) val = new Date(match[0]).getTime();
+                        }
+                      }
+                    }
+                    return isNaN(val) ? 0 : val;
                   };
-
-                  const yearA = getYear(a.releaseDate || a.release_date || a.releaseYear || a.release_year);
-                  const yearB = getYear(b.releaseDate || b.release_date || b.releaseYear || b.release_year);
-
-                  if (yearA !== yearB) {
-                    return yearB - yearA;
+                  
+                  const valA = getVal(a);
+                  const valB = getVal(b);
+                  
+                  if (valA !== valB) {
+                    return valB - valA; // Descending by release date
                   }
-
-                  // If years are same, fall back to full date
-                  const dateA = new Date(a.releaseDate || a.release_date || 0).getTime();
-                  const dateB = new Date(b.releaseDate || b.release_date || 0).getTime();
-
-                  if (dateA !== dateB && !isNaN(dateA) && !isNaN(dateB)) {
-                    return dateB - dateA;
-                  }
-
-                  // Final fallback to ID or creation to ensure deterministic order
+                  
+                  // Secondary sort by created_at if release dates are exactly the same or both missing
                   const createA = new Date(a.createdAt || a.created_at || a.created_time || 0).getTime();
                   const createB = new Date(b.createdAt || b.created_at || b.created_time || 0).getTime();
-                  if (createA !== createB && !isNaN(createA) && !isNaN(createB)) return createB - createA;
+                  if (createA !== createB && !isNaN(createA) && !isNaN(createB)) {
+                    return createB - createA;
+                  }
                   
                   return String(b.id || "").localeCompare(String(a.id || ""));
                 })
@@ -353,11 +360,11 @@ export default function HomeView({
                     const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
                     return match ? match[0] : null;
                   };
-                  const year = getYear(p.releaseDate || p.release_date || p.releaseYear || p.release_year);
+                  const year = getYear(p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year);
                   
                   return {
                     id: p.id,
-                    title: p.title,
+                    title: p.titleEn || p.english_name || p.title,
                     price: p.price,
                     image:
                       getNintendoCardImage(p) ||
@@ -375,6 +382,7 @@ export default function HomeView({
               ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
               loading={isPending}
             />
+            </div>
           </section>
         </LazySection>
 
@@ -382,7 +390,7 @@ export default function HomeView({
         {adminCategories.map((category, index) => {
           const mapGame = (p: any) => ({
             id: p.id,
-            title: p.title,
+            title: p.titleEn || p.english_name || p.title,
             price: p.price,
             image:
               getNintendoCardImage(p) ||
@@ -504,7 +512,7 @@ export default function HomeView({
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
-                  title: p.title,
+                  title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Hardware",
                   price: p.price,
                   image:
@@ -541,7 +549,7 @@ export default function HomeView({
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
-                  title: p.title,
+                  title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Amiibo",
                   price: p.price,
                   image:
@@ -578,7 +586,7 @@ export default function HomeView({
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
-                  title: p.title,
+                  title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Accessory",
                   price: p.price,
                   image:
@@ -610,7 +618,7 @@ export default function HomeView({
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
-                  title: p.title,
+                  title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Gift Card",
                   price: p.price,
                   image:
@@ -647,7 +655,7 @@ export default function HomeView({
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
-                  title: p.title,
+                  title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Used",
                   price: p.price,
                   image:

@@ -294,6 +294,13 @@ const SCHEMA: string[] = [
     confidence REAL DEFAULT 0, verified INTEGER DEFAULT 0, is_primary INTEGER DEFAULT 0,
     evidence TEXT, created_at TEXT NOT NULL, verified_at TEXT)`,
   `CREATE INDEX IF NOT EXISTS game_images_game_idx ON game_images (game_id, kind)`,
+  `CREATE TABLE IF NOT EXISTS game_variants (
+    id TEXT PRIMARY KEY, game_id TEXT NOT NULL, variant_type TEXT NOT NULL, name TEXT NOT NULL,
+    price_usd REAL, features TEXT, created_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS game_variants_game_idx ON game_variants (game_id)`,
+  `CREATE TABLE IF NOT EXISTS game_import_logs (
+    id TEXT PRIMARY KEY, game_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS game_import_logs_game_idx ON game_import_logs (game_id)`,
   `CREATE TABLE IF NOT EXISTS game_price_history (
     id TEXT PRIMARY KEY, game_id TEXT NOT NULL, old_value_iqd INTEGER, new_value_iqd INTEGER,
     source TEXT, actor TEXT, created_at TEXT NOT NULL)`,
@@ -1296,7 +1303,7 @@ export function ensureUsersSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 5;
+const RUNTIME_SCHEMA_VERSION = 6;
 
 async function runSchemaStatements(
   db: D1Like,

@@ -125,7 +125,7 @@ const SwipeableCartItem = ({
       >
         <div className="flex items-start justify-between gap-3 px-4">
           <div className="flex-1 pr-1">
-            <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug mb-1">
+            <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug mb-1" dir="ltr">
               {line.title}
             </h2>
 
@@ -243,7 +243,7 @@ function CartPage() {
 
       return {
         productId: item.product_id,
-        title: entity?.title || "منتج غير معروف",
+        title: entity?.titleEn || (entity as any)?.english_name || entity?.title || "منتج غير معروف",
         image: ((entity?.image || entity?.cartridgeImage || entity?.coverImage) as string) || "",
         price: entity?.price || 0,
         kind,

@@ -109,7 +109,7 @@ function BundleDetailPage() {
     try {
       addLocalCart({
         productId: bundle.id,
-        title: bundle.title,
+        title: bundle.titleEn || bundle.title,
         image: bundle.image || games[0]?.image || "",
         price: bundle.price,
         kind: "bundle",
@@ -128,7 +128,7 @@ function BundleDetailPage() {
       }
 
       setAdded(true);
-      toast.success(`تمت إضافة "${bundle.title}" إلى السلة`);
+      toast.success(`تمت إضافة "${bundle.titleEn || bundle.title}" إلى السلة`);
 
       if (directCheckout) {
         void navigate({ to: "/cart" });
@@ -200,7 +200,7 @@ function BundleDetailPage() {
               حزم الحسابات (Bundles)
             </Link>
             <ChevronLeft className="w-3.5 h-3.5" />
-            <span className="text-foreground line-clamp-1">{bundle.title}</span>
+            <span className="text-foreground line-clamp-1">{bundle.titleEn || bundle.title}</span>
           </div>
         </div>
 
@@ -211,7 +211,7 @@ function BundleDetailPage() {
             <div className="lg:col-span-7 space-y-4">
               <div className="relative rounded-3xl overflow-hidden bg-slate-950 border border-border shadow-xl aspect-[16/9]">
                 {games.length >= 2 ? (
-                  <div className="absolute inset-0 flex">
+                  <div className="absolute inset-0 flex" dir="ltr">
                     {games.slice(0, 4).map((g, idx) => (
                       <div
                         key={g.id || idx}
@@ -224,13 +224,13 @@ function BundleDetailPage() {
                             (g as any).coverImage ||
                             bundle.image
                           }
-                          alt={g.title}
+                          alt={g.titleEn || g.english_name || g.title}
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                         <div className="absolute bottom-3 inset-x-2 text-center">
                           <span className="text-xs font-black text-white line-clamp-1 drop-shadow-md px-1">
-                            {g.title}
+                            {g.titleEn || g.english_name || g.title}
                           </span>
                         </div>
                       </div>
@@ -242,7 +242,7 @@ function BundleDetailPage() {
                       bundle.image ||
                       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
                     }
-                    alt={bundle.title}
+                    alt={bundle.titleEn || bundle.title}
                     className="w-full h-full object-cover"
                   />
                 )}
@@ -305,11 +305,9 @@ function BundleDetailPage() {
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-                  {bundle.title}
+                  {bundle.titleEn || bundle.title}
                 </h1>
-                {bundle.titleEn && (
-                  <p className="text-xs text-muted-foreground font-mono">{bundle.titleEn}</p>
-                )}
+                {/* If bundle.title and bundle.titleEn are identical, don't show it twice. Already handled by prefer-english above */}
 
                 {bundle.description && (
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed pt-1">
@@ -459,7 +457,7 @@ function BundleDetailPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" dir="ltr">
             {games.map((game, idx) => (
               <div
                 key={game.id || idx}
@@ -481,7 +479,7 @@ function BundleDetailPage() {
                       (game as any).coverImage ||
                       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
                     }
-                    alt={game.title}
+                    alt={game.titleEn || game.english_name || game.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -504,7 +502,7 @@ function BundleDetailPage() {
                   </div>
 
                   <h4 className="font-extrabold text-sm text-foreground line-clamp-1 group-hover:text-red-500 transition-colors">
-                    {game.title}
+                    {game.titleEn || game.english_name || game.title}
                   </h4>
 
                   {game.description && (

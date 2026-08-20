@@ -165,7 +165,7 @@ function ProductSelectionView({
   const getProducts = () => {
     if (tab === "search")
       return products
-        .filter((product) => String(product.title ?? "").includes(searchQuery))
+        .filter((product) => String((product.titleEn || product.english_name || product.title) ?? "").includes(searchQuery))
         .slice(0, 30);
     if (tab === "fav")
       return products.filter((product) =>
@@ -222,16 +222,16 @@ function ProductSelectionView({
               {product.image ? (
                 <img
                   src={cdnImage(String(product.image))}
-                  alt={String(product.title ?? "")}
+                  alt={String((product.titleEn || product.english_name || product.title) ?? "")}
                   className="h-full w-full object-cover"
                 />
               ) : (
-                String(product.title ?? "?").slice(0, 1)
+                String((product.titleEn || product.english_name || product.title) ?? "?").slice(0, 1)
               )}
             </div>
             <div className="flex-1 text-right">
-              <h3 className="line-clamp-1 text-[14px] font-semibold text-[var(--ink)]">
-                {String(product.title ?? "")}
+              <h3 className="line-clamp-1 text-[14px] font-semibold text-[var(--ink)]" dir="ltr">
+                {String((product.titleEn || product.english_name || product.title) ?? "")}
               </h3>
               <p className="mb-1 text-[11px] text-[var(--muted-ink)]">
                 {String(product.genre ?? product.publisher ?? "")}
@@ -1949,7 +1949,7 @@ export default function ChatView({
                       purchased={purchased}
                       onSend={(product) => {
                         setSelectedNav(null);
-                        const text = `أرغب بالاستفسار عن: ${String(product.title ?? "")}`;
+                        const text = `أرغب بالاستفسار عن: ${String((product.titleEn || product.english_name || product.title) ?? "")}`;
                         if (isHumanChat) void handleSend(text);
                         else
                           pushLocal({
@@ -1958,7 +1958,7 @@ export default function ChatView({
                             text,
                             type: "product",
                             payload: {
-                              name: String(product.title ?? ""),
+                              name: String((product.titleEn || product.english_name || product.title) ?? ""),
                               id: product.id,
                               image: product.image,
                             },

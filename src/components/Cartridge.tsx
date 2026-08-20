@@ -191,9 +191,9 @@ export default function Cartridge({
           <h4
             className="text-white text-[9px] font-semibold leading-[1.2] line-clamp-3 break-words"
             dir="ltr"
-            title={game.title}
+            title={game.titleEn || game.english_name || game.title}
           >
-            {game.title}
+            {game.titleEn || game.english_name || game.title}
           </h4>
           <div className="flex justify-between items-end gap-1">
             <p className="text-[#a0a0a0] text-[8px] truncate min-w-0" dir="ltr">

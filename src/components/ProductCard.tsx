@@ -35,7 +35,7 @@ export function ProductCard({ product, forceStandardImage }: { product: any; for
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
       </div>
       <h4 className="font-bold text-sm sm:text-base text-foreground truncate" dir="ltr">
-        {product.title}
+        {product.titleEn || product.english_name || product.title}
       </h4>
       <p className="text-xs sm:text-sm text-muted-foreground truncate" dir="ltr">
         {product.subtitle || product.category}

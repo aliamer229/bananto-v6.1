@@ -231,26 +231,46 @@ function CategoryPage() {
           return (Number(b.price) || 0) - (Number(a.price) || 0);
         case "rating":
           return (Number(b.metacriticRating) || 0) - (Number(a.metacriticRating) || 0);
-        case "release_date": {
-          const dateA = new Date(a.releaseDate || a.release_date || 0).getTime();
-          const dateB = new Date(b.releaseDate || b.release_date || 0).getTime();
-          return dateB - dateA;
-        }
+        case "release_date":
         case "newest":
         default: {
           const getVal = (p: any) => {
             let val = 0;
-            if (p.releaseDate) val = new Date(p.releaseDate).getTime();
-            else if (p.release_date) val = new Date(p.release_date).getTime();
-            else if (p.metadata?.releaseDate) val = new Date(p.metadata.releaseDate).getTime();
-            else if (p.metadata?.release_date) val = new Date(p.metadata.release_date).getTime();
-            
-            if (!val || isNaN(val)) {
-              val = new Date(p.createdAt || 0).getTime();
+            const d = p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year;
+            if (d) {
+              // Attempt to parse standard dates
+              val = new Date(d).getTime();
+              if (isNaN(val)) {
+                // Handle DD/MM/YYYY or DD-MM-YYYY
+                const dmMatch = String(d).match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                if (dmMatch) {
+                  val = new Date(`${dmMatch[3]}-${dmMatch[2]}-${dmMatch[1]}`).getTime();
+                }
+                if (isNaN(val)) {
+                  // Fallback: extract year
+                  const match = String(d).match(/\b(20\d{2}|19\d{2})\b/);
+                  if (match) val = new Date(match[0]).getTime();
+                }
+              }
             }
             return isNaN(val) ? 0 : val;
           };
-          return getVal(b) - getVal(a);
+          
+          const valA = getVal(a);
+          const valB = getVal(b);
+          
+          if (valA !== valB) {
+            return valB - valA; // Descending by release date
+          }
+          
+          // Secondary sort by created_at if release dates are exactly the same or missing
+          const createA = new Date(a.createdAt || a.created_at || a.created_time || 0).getTime();
+          const createB = new Date(b.createdAt || b.created_at || b.created_time || 0).getTime();
+          if (createA !== createB && !isNaN(createA) && !isNaN(createB)) {
+            return createB - createA;
+          }
+          
+          return String(b.id || "").localeCompare(String(a.id || ""));
         }
       }
     });
@@ -593,7 +613,7 @@ function CategoryPage() {
           {/* Product Cards Grid */}
           <div className="flex-1">
             {isLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6" dir="ltr">
                 {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                   <div
                     key={i}
@@ -603,7 +623,7 @@ function CategoryPage() {
               </div>
             ) : products.length > 0 ? (
               <div className="flex flex-col gap-6">
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6" dir="ltr">
                   {products.map((p: any) => (
                     <motion.div
                       key={p.id}

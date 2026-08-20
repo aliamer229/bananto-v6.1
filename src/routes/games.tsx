@@ -53,7 +53,7 @@ function GamesPage() {
         .filter((p) => p["kind"] !== "hardware")
         .map((p) => ({
           id: p["id"],
-          title: p["title"],
+          title: p["titleEn"] || p["english_name"] || p["title"],
           subtitle: p["developer"] || p["publisher"] || "Nintendo Switch",
           image:
             p["cartridgeImage"] ||

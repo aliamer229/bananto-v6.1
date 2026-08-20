@@ -47,7 +47,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
       // Local store for fast instant UI update
       addLocalCart({
         productId: bundle.id,
-        title: bundle.title,
+        title: bundle.titleEn || bundle.title,
         image: bundle.image || games[0]?.image || "",
         price: bundle.price,
         kind: "bundle",
@@ -66,7 +66,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
       }
 
       setAdded(true);
-      toast.success(`تمت إضافة "${bundle.title}" إلى السلة`);
+      toast.success(`تمت إضافة "${bundle.titleEn || bundle.title}" إلى السلة`);
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       toast.error("حدث خطأ أثناء الإضافة للسلة");
@@ -122,7 +122,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                     src={
                       g.image || (g as any).cartridgeImage || (g as any).coverImage || bundle.image
                     }
-                    alt={g.title}
+                    alt={g.titleEn || g.english_name || g.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -136,7 +136,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                 bundle.image ||
                 "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
               }
-              alt={bundle.title}
+              alt={bundle.titleEn || bundle.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
@@ -157,11 +157,11 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
         {/* Content */}
         <div className="space-y-2 flex-1 flex flex-col justify-between">
           <div>
-            <h4 className="font-bold text-sm sm:text-base text-foreground line-clamp-1 group-hover:text-red-500 transition-colors">
-              {bundle.title}
+            <h4 className="font-bold text-sm sm:text-base text-foreground line-clamp-1 group-hover:text-red-500 transition-colors" dir="ltr">
+              {bundle.titleEn || bundle.title}
             </h4>
             <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-              {games.map((g) => g.title).join(" • ") || bundle.description}
+              {games.map((g) => g.titleEn || g.english_name || g.title).join(" • ") || bundle.description}
             </p>
           </div>
 
@@ -245,14 +245,14 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                   src={
                     g.image || (g as any).cartridgeImage || (g as any).coverImage || bundle.image
                   }
-                  alt={g.title}
+                  alt={g.titleEn || g.english_name || g.title}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-2 inset-x-1 text-center">
                   <span className="text-[10px] font-bold text-white/90 line-clamp-1 drop-shadow-sm px-1">
-                    {g.title}
+                    {g.titleEn || g.english_name || g.title}
                   </span>
                 </div>
               </div>
@@ -264,7 +264,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
               bundle.image ||
               "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
             }
-            alt={bundle.title}
+            alt={bundle.titleEn || bundle.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             loading="lazy"
           />
@@ -283,8 +283,8 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
       {/* Title and Included Games List */}
       <div className="space-y-3 flex-1 flex flex-col justify-between z-10">
         <div>
-          <h3 className="font-extrabold text-base sm:text-lg text-foreground group-hover:text-red-500 transition-colors">
-            {bundle.title}
+          <h3 className="font-extrabold text-base sm:text-lg text-foreground group-hover:text-red-500 transition-colors" dir="ltr">
+            {bundle.titleEn || bundle.title}
           </h3>
           {bundle.description && (
             <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
@@ -299,7 +299,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                 key={g.id}
                 className="inline-flex items-center gap-1 text-[11px] font-medium bg-muted/50 hover:bg-muted text-foreground/80 px-2 py-0.5 rounded-md border border-border/40"
               >
-                🎮 {g.title}
+                🎮 {g.titleEn || g.english_name || g.title}
               </span>
             ))}
           </div>
