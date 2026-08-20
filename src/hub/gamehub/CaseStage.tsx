@@ -55,7 +55,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
 
       <div
         className={cn(
-          "absolute inset-0 touch-none",
+          "absolute inset-0 touch-none transition-opacity duration-300",
           modelReady ? "opacity-100" : "opacity-0",
         )}
       >
