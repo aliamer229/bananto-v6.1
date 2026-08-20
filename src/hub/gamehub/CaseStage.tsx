@@ -31,18 +31,12 @@ function hasWebGL(): boolean {
 }
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
-  console.log("CaseStage Rendering:", caseProps.title);
-
   const [modelReady, setModelReady] = useState(false);
   const handleModelReady = useCallback(() => setModelReady(true), []);
 
-  // Check preferences for reduced motion
   const { motion } = readPrefs();
   const isReduced = motion === "lite";
 
-  // The user explicitly wants the 3D model to be the primary view.
-  // We only fall back to the static 2D version if the user has manually
-  // enabled "Reduced Motion" in their settings.
   if (isReduced) {
     return (
       <div className={cn("relative", className)}>
@@ -52,12 +46,10 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
   }
 
   return (
-    <div className={cn("relative", className)}>
-      {/* Static background is removed entirely to fulfill user requirement */}
-
+    <div className={cn("relative min-h-[400px]", className)}>
       <div
         className={cn(
-          "absolute inset-0 touch-none transition-opacity duration-300",
+          "absolute inset-0 touch-none transition-opacity duration-700",
           modelReady ? "opacity-100" : "opacity-0",
         )}
       >
