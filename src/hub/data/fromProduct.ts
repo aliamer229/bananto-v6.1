@@ -500,7 +500,7 @@ function buildGuides(p: Record<string, unknown>, locale: "ar" | "en"): Guide[] |
       `Guide ${i + 1}`,
 
     category: "tips" as const,
-    summary: localizedValue(row, "summary", "summaryEn", locale),
+    summary: str(row["summaryEn"]) || str(row["summary"]),
     ...(str(row["url"]) ? { sections: [{ body: str(row["url"]) }] } : {}),
   }));
 }
