@@ -331,17 +331,16 @@ export default function HomeView({
                     return yearB - yearA;
                   }
 
-                  // If years are same, fall back to full date or creation date
+                  // If years are same, fall back to full date
                   const dateA = new Date(a.releaseDate || a.release_date || 0).getTime();
                   const dateB = new Date(b.releaseDate || b.release_date || 0).getTime();
 
-                  if (dateA !== dateB && dateA !== 0 && dateB !== 0) {
+                  if (dateA !== dateB && !isNaN(dateA) && !isNaN(dateB)) {
                     return dateB - dateA;
                   }
 
-                  const createA = new Date(a.createdAt || a.created_at || 0).getTime();
-                  const createB = new Date(b.createdAt || b.created_at || 0).getTime();
-                  return createB - createA;
+                  // Final fallback to ID or creation
+                  return String(b.id).localeCompare(String(a.id));
                 })
                 .slice(0, 12)
                 .map((p) => ({
