@@ -148,7 +148,7 @@ function CategoryPage() {
         bannerSet.add(p.gallery[0]);
       }
       else if (p.gallery && typeof p.gallery === 'string') {
-        const parts = p.gallery.split(',').map(s => s.trim()).filter(Boolean);
+        const parts = p.gallery.split(',').map((s: string) => s.trim()).filter(Boolean);
         if (parts.length > 0) bannerSet.add(parts[0]);
       }
     });
