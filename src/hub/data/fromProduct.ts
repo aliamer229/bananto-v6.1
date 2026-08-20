@@ -462,9 +462,9 @@ function buildDlc(p: Record<string, unknown>, locale: "ar" | "en"): Dlc[] | unde
   if (!list.length) return undefined;
   const filtered = list
     .filter((row) => {
-      const name =
-        localizedValue(row, "name", "nameEn", locale) ||
-        localizedValue(row, "title", "titleEn", locale);
+        str(row["nameEn"]) || str(row["name"]) ||
+        str(row["titleEn"]) || str(row["title"]);
+
       return Boolean(name && name.trim());
     })
     .map((row, i) => {
