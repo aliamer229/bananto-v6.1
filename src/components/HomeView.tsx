@@ -302,9 +302,8 @@ export default function HomeView({
 
           if (categoryProducts.length === 0) return null;
 
-          // If the user called it "Nintendo Switch games" (the specific name mentioned), 
-          // we might want to hide its duplicate if it matches the first section.
-          if (index > 0 && category.id === "nintendo-switch-games") return null;
+          // Handle Nintendo Switch Games section visibility
+          const isNintendoGames = category.id === "nintendo-switch-games" || category.title?.toLowerCase().includes("nintendo switch");
 
           if (index === 0) {
             return (
@@ -357,7 +356,7 @@ export default function HomeView({
               <section className="-mx-4 mt-4">
                 <div className="flex items-center justify-between gap-2 mb-4 px-8">
                   <h3 className="text-xl font-bold text-foreground">{t(category.title)}</h3>
-                  {category.id === "nintendo-switch-games" && (
+                  {isNintendoGames && (
                     <Link
                       to="/category/$categoryId"
                       params={{ categoryId: category.id }}
