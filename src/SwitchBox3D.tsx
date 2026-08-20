@@ -56,6 +56,8 @@ export function SwitchBox3D({
         });
         
         if (!isMounted) return;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
 
         // 2. Overlay game-specific cover image
@@ -63,7 +65,6 @@ export function SwitchBox3D({
           const img = new Image();
           img.crossOrigin = 'anonymous';
           
-          // Use a promise to load the image
           await new Promise((resolve) => {
             img.onload = resolve;
             img.onerror = (e) => {
@@ -74,6 +75,7 @@ export function SwitchBox3D({
           });
           
           if (isMounted && img.complete && img.naturalWidth > 0) {
+            // Re-draw authentic template to ensure it wraps correctly even with custom image
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           }
         }
@@ -102,20 +104,21 @@ export function SwitchBox3D({
     return () => {
       isMounted = false;
     };
-  }, [coverImage, platform, gameName, onReady]);
+  }, [coverImage, platform, gameName]);
 
   // Configure materials for realistic transparency and reflections
   if (materials.foil) {
     materials.foil.transparent = true;
     materials.foil.opacity = 0.4;
     materials.foil.depthWrite = false;
+    materials.foil.depthTest = true;
   }
   
   if (materials.plastic) {
     materials.plastic.transparent = true;
     materials.plastic.opacity = 0.8;
     materials.plastic.depthWrite = true;
-    // Fix: Ensure Switch 2 platform is correctly colored (Red) and Switch 1 is default (Clear/White)
+    materials.plastic.depthTest = true;
     materials.plastic.color.set(platform === 'ns2' ? '#e60012' : '#ffffff');
     materials.plastic.roughness = 0.02;
     materials.plastic.metalness = 0.5;
@@ -133,7 +136,7 @@ export function SwitchBox3D({
         makeDefault
       />
       
-      <group ref={group} dispose={null} scale={0.55} position={[0, 0, 0]} rotation={[0, -Math.PI / 6, 0]}>
+      <group ref={group} dispose={null} scale={0.52} position={[0, -0.2, 0]} rotation={[0, -Math.PI / 6, 0]}>
         {/* The plastic outer case */}
         <mesh geometry={nodes.box.geometry} material={materials.plastic} renderOrder={0} />
         
@@ -142,7 +145,7 @@ export function SwitchBox3D({
           <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
             <meshStandardMaterial 
               map={texture} 
-              roughness={0.1} 
+              roughness={0.15} 
               metalness={0.1} 
               side={THREE.DoubleSide} 
               transparent={false} 
@@ -150,7 +153,7 @@ export function SwitchBox3D({
             />
           </mesh>
         ) : (
-          <mesh geometry={nodes.placeholder.geometry}>
+          <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
             <meshStandardMaterial color="#ffffff" roughness={0.6} metalness={0.1} side={THREE.DoubleSide} />
           </mesh>
         )}
