@@ -121,6 +121,8 @@ export function SwitchBox3D({
         enableZoom={false}
         enablePan={false}
         enableRotate={true}
+        autoRotate={!readPrefs().motion || readPrefs().motion === "full"}
+        autoRotateSpeed={1.5}
         makeDefault
       />
       
