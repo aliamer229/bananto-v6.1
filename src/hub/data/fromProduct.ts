@@ -539,8 +539,9 @@ function buildTimeline(
     id: `timeline-${i}`,
     date: str(row["date"]),
     kind: "update" as const,
-    title: localizedValue(row, "title", "titleEn", locale),
-    ...(str(row["body"]) ? { detail: localizedValue(row, "body", "bodyEn", locale) } : {}),
+    title: str(row["titleEn"]) || str(row["title"]),
+    ...(str(row["body"]) ? { detail: str(row["bodyEn"]) || str(row["body"]) } : {}),
+
   }));
 }
 
