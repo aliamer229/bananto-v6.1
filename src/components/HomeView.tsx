@@ -339,7 +339,11 @@ export default function HomeView({
                     return dateB - dateA;
                   }
 
-                  // Final fallback to ID or creation
+                  // Final fallback to ID or creation to ensure deterministic order
+                  const createA = new Date(a.createdAt || a.created_at || 0).getTime();
+                  const createB = new Date(b.createdAt || b.created_at || 0).getTime();
+                  if (createA !== createB) return createB - createA;
+                  
                   return String(b.id).localeCompare(String(a.id));
                 })
                 .slice(0, 12)
