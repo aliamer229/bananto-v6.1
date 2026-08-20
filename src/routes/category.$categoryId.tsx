@@ -44,9 +44,11 @@ function CategoryPage() {
       
       // Category check
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
+      const pKind = String(p.kind || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      const isCatMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" ||
-                        (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      
+      const isCatMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" ||
+                        (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
       
       if (!isCatMatch) return false;
 
