@@ -201,15 +201,84 @@ export function invalidateStoreCache() {
   storeCache = undefined;
 }
 
+/**
+ * D1 rejects single column values above ~1MB, and the catalogue blob passed
+ * that ceiling once products carried full hub data. The heavy sections are
+ * therefore stored in their own rows (and split into chunks when a single
+ * section is still too big), so saving a product never fails on size.
+ */
+const HEAVY_SECTIONS = ["products", "banners", "content", "bundles"] as const;
+const CHUNK_LIMIT = 600_000;
+
+function chunkJson(value: unknown): string[] {
+  const raw = JSON.stringify(value ?? null);
+  if (raw.length <= CHUNK_LIMIT) return [raw];
+  const parts: string[] = [];
+  for (let i = 0; i < raw.length; i += CHUNK_LIMIT) parts.push(raw.slice(i, i + CHUNK_LIMIT));
+  return parts;
+}
+
 async function loadStore(): Promise<StoreDoc> {
   if (await d1Ready()) {
-    const row = await d1First<{ value: string }>(
-      `SELECT value FROM store_kv WHERE key = ?`,
-      "store",
+    const rows = await d1RawAll<{ key: string; value: string }>(
+      `SELECT key, value FROM store_kv WHERE key = 'store' OR key LIKE 'store:%'`,
     );
-    return { ...emptyStore, ...parse<Partial<StoreDoc>>(row?.value, {}) };
+    const base = rows.find((r) => r.key === "store");
+    const doc = { ...emptyStore, ...parse<Partial<StoreDoc>>(base?.value, {}) } as Record<
+      string,
+      unknown
+    >;
+
+    for (const section of HEAVY_SECTIONS) {
+      const parts = rows
+        .filter((r) => r.key === `store:${section}` || r.key.startsWith(`store:${section}#`))
+        .sort((a, b) => a.key.localeCompare(b.key, "en", { numeric: true }))
+        .map((r) => r.value)
+        .join("");
+      if (!parts) continue;
+      const parsed = parse<unknown>(parts, undefined as unknown);
+      if (parsed !== undefined) doc[section] = parsed;
+    }
+
+    return doc as unknown as StoreDoc;
   }
   return readJson<StoreDoc>(STORE_KEY, emptyStore);
+}
+
+async function persistStore(next: StoreDoc) {
+  const now = new Date().toISOString();
+  const write = (key: string, value: string) =>
+    d1Execute(
+      `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+      key,
+      value,
+      now,
+    );
+
+  const base = { ...(next as unknown as Record<string, unknown>) };
+  for (const section of HEAVY_SECTIONS) delete base[section];
+  await write("store", JSON.stringify(base));
+
+  for (const section of HEAVY_SECTIONS) {
+    const parts = chunkJson((next as unknown as Record<string, unknown>)[section]);
+    if (parts.length === 1) {
+      await write(`store:${section}`, parts[0]!);
+    } else {
+      // Multi-part payloads are stored as `store:section#001…` so the loader can
+      // stitch them back together in order.
+      await write(`store:${section}`, "");
+      for (let i = 0; i < parts.length; i++) {
+        await write(`store:${section}#${String(i + 1).padStart(3, "0")}`, parts[i]!);
+      }
+    }
+    // Drop stale chunks from a previous, longer save.
+    await d1Execute(
+      `DELETE FROM store_kv WHERE key LIKE ? AND key > ?`,
+      `store:${section}#%`,
+      `store:${section}#${String(parts.length === 1 ? 0 : parts.length).padStart(3, "0")}`,
+    );
+  }
 }
 
 export async function getStore(): Promise<StoreDoc> {
@@ -235,25 +304,11 @@ export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Prom
   const next = mutate(current);
 
   if (await d1Ready()) {
-    const value = JSON.stringify(next);
-    const limit = 1000000; // ~1MB safe limit for D1 REST/binding JSON
-    if (value.length > limit) {
-      console.warn(
-        `Store size (${value.length}) exceeds safety limit (${limit}). Reducing banners.`,
-      );
-      next.banners = next.banners.slice(0, 5); // Keep only top 5 banners to save space
-    }
-
-    await d1Execute(
-      `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-      "store",
-      JSON.stringify(next),
-      new Date().toISOString(),
-    );
+    await persistStore(next);
   } else {
     await mutateJson<StoreDoc>(STORE_KEY, emptyStore, mutate);
   }
+
 
   storeCache = { doc: next, at: Date.now() };
 
