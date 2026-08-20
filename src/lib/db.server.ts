@@ -240,7 +240,7 @@ async function loadStore(): Promise<StoreDoc> {
       if (parsed !== undefined) doc[section] = parsed;
     }
 
-    return doc as StoreDoc;
+    return doc as unknown as StoreDoc;
   }
   return readJson<StoreDoc>(STORE_KEY, emptyStore);
 }
@@ -256,12 +256,12 @@ async function persistStore(next: StoreDoc) {
       now,
     );
 
-  const base = { ...(next as Record<string, unknown>) };
+  const base = { ...(next as unknown as Record<string, unknown>) };
   for (const section of HEAVY_SECTIONS) delete base[section];
   await write("store", JSON.stringify(base));
 
   for (const section of HEAVY_SECTIONS) {
-    const parts = chunkJson((next as Record<string, unknown>)[section]);
+    const parts = chunkJson((next as unknown as Record<string, unknown>)[section]);
     if (parts.length === 1) {
       await write(`store:${section}`, parts[0]!);
     } else {
