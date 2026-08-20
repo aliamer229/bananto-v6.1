@@ -622,10 +622,9 @@ function buildCatalogOptions(p: Record<string, unknown>, locale: "ar" | "en") {
     const list = rawOptions
       .map((opt, i) => {
         const name = getTextValue(
-          locale === "en" && opt["nameEn"]
-            ? opt["nameEn"]
-            : (opt["name"] ?? opt["title"] ?? opt["value"] ?? opt),
+          opt["nameEn"] ?? opt["name"] ?? opt["title"] ?? opt["value"] ?? opt,
         );
+
         if (!name) return null;
         return {
           id: str(opt["id"]) || `opt-${i}`,
