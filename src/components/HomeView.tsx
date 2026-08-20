@@ -285,7 +285,7 @@ export default function HomeView({
             id: p.id,
             title: p.title,
             price: p.price,
-            image: getNintendoCardImage(p),
+            image: getNintendoCardImage(p) || "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
             banner: p.banner,
             gallery: p.gallery,
             subtitle: p.developer || p.publisher || category.title,
