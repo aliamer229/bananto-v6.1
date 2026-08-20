@@ -420,8 +420,9 @@ function buildGameplayPillars(
   if (!list.length) return undefined;
   return list.map((row, i) => {
     const title =
-      localizedValue(row, "title", "titleEn", locale) ||
-      (locale === "en" ? `Pillar ${i + 1}` : `ركيزة ${i + 1}`);
+      str(row["titleEn"]) || str(row["title"]) ||
+      `Pillar ${i + 1}`;
+
     const match = PILLAR_MATCHERS.find((m) => m.re.test(title));
     return {
       id: match?.id ?? "exploration",
