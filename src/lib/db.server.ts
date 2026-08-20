@@ -161,6 +161,8 @@ export const emptyStore: StoreDoc = {
   problemSolutions: [],
 };
 
+
+
 const defaultSettings: UserSettings = {
   language: "ar",
   theme: "light",
@@ -169,7 +171,7 @@ const defaultSettings: UserSettings = {
 };
 
 /** True when running on Cloudflare with the D1 binding available. */
-async function d1Ready() {
+export async function d1Ready() {
   if (!getD1()) return false;
   // When D1 is configured, schema/query failures must fail closed. Silently
   // falling back to JSON storage here creates a split-brain production store.
@@ -1471,12 +1473,25 @@ export async function approveRechargeRequest(
   );
   if (claimed !== 1) return false;
 
+  const store = await getStore();
+  let finalAmount = req.amount;
+
+  // Apply Nintendo Bonus if applicable
+  if (req.method === "eshop_card") {
+    const bonusEnabled = store.settings?.["nintendoBonusEnabled"] !== false;
+    const bonusPercent = Number(store.settings?.["nintendoBonusPercent"] || 15);
+    if (bonusEnabled) {
+      finalAmount = req.amount * (1 + bonusPercent / 100);
+    }
+  }
+
   await adjustUserWalletBalance(
     req.userId,
-    req.amount,
+    finalAmount,
     "deposit",
-    `Recharge approved: ${req.method} (${requestId})`,
+    `Recharge approved: ${req.method} (${requestId})${finalAmount > req.amount ? " + Bonus" : ""}`,
   );
+
 
   return true;
 }
