@@ -70,20 +70,13 @@ export default defineConfig(({ mode }) => {
             const ssrPath = path.resolve(nitro.options.output.serverDir, "_ssr/ssr.mjs");
             const indexPath = path.resolve(nitro.options.output.serverDir, "index.mjs");
             if (fs.existsSync(ssrPath) && fs.existsSync(indexPath)) {
-              const ssrContent = fs.readFileSync(ssrPath, "utf-8");
-              const match = ssrContent.match(/ssr_exports as ([A-Za-z0-9_$]+)/);
-              if (match) {
-                const exportName = match[1];
-                fs.appendFileSync(
-                  indexPath,
-                  `\nimport { ${exportName} } from "./_ssr/ssr.mjs";\nexport const ChatRealtimeDO = ${exportName}.ChatRealtimeDO;\n`,
-                );
-                console.log(
-                  `\n[Nitro Hook] Successfully appended ChatRealtimeDO export using ${exportName}\n`,
-                );
-              } else {
-                console.warn("\n[Nitro Hook] Could not find ssr_exports in ssr.mjs\n");
-              }
+              fs.appendFileSync(
+                indexPath,
+                `\nexport { ChatRealtimeDO } from "./_ssr/ssr.mjs";\n`,
+              );
+              console.log(
+                `\n[Nitro Hook] Successfully appended ChatRealtimeDO export\n`,
+              );
             }
           },
         },
