@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
+import ServiceImportModal from "./ServiceImportModal";
+import type { ServiceParseResult, TradeRulesParseResultData } from "@/lib/servicesImport";
 import {
   CATEGORY_LABEL_AR,
   type TradeRule,
@@ -47,6 +49,7 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
 
   // Modal State for adding/editing rule details
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingRule, setEditingRule] = useState<TradeRule | null>(null);
   const [ruleForm, setRuleForm] = useState<{
     id?: string;
@@ -177,6 +180,56 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
       );
     } catch (err: any) {
       toast.error(err.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Import rules from a template — always appended on top of existing rules
+  const handleImportRules = async (result: ServiceParseResult<TradeRulesParseResultData>) => {
+    const incoming = result?.data?.rules ?? [];
+    if (incoming.length === 0) {
+      toast.error(lang === "ar" ? "لا توجد بنود صالحة في القالب" : "No valid rules in template");
+      return;
+    }
+
+    const existingKeys = new Set(rules.map((r) => `${r.category}::${r.key}`));
+    const toSave = incoming
+      .filter((r) => !existingKeys.has(`${r.category}::${r.key}`))
+      .map((r) => ({
+        id: r.id,
+        category: r.category,
+        key: r.key,
+        label_ar: r.label_ar,
+        label_en: r.label_en || null,
+        percent: r.percent,
+        sort_order: r.sort_order,
+        active: r.active ? 1 : 0,
+      }));
+
+    if (toSave.length === 0) {
+      toast.info(lang === "ar" ? "كل البنود موجودة مسبقاً" : "All rules already exist");
+      setShowImportModal(false);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/game-catalog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "bulk_save_rules", rules: toSave }),
+      });
+      if (!res.ok) throw new Error("Import failed");
+      await queryClient.invalidateQueries({ queryKey: ["trade-rules"] });
+      toast.success(
+        lang === "ar"
+          ? `تمت إضافة ${toSave.length} بند مقايضة جديد`
+          : `${toSave.length} new trade rules added`,
+      );
+      setShowImportModal(false);
+    } catch (err: any) {
+      toast.error(err.message || "Import failed");
     } finally {
       setSaving(false);
     }
@@ -333,6 +386,15 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
           >
             <RotateCcw className="w-3.5 h-3.5" />
             {lang === "ar" ? "استعادة الافتراضي" : "Reset Defaults"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowImportModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs font-bold transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            {lang === "ar" ? "استيراد من قالب البنود" : "Import Rules Template"}
           </button>
 
           <button
