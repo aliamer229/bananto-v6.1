@@ -427,7 +427,7 @@ function buildGameplayPillars(
     return {
       id: match?.id ?? "exploration",
       title,
-      description: localizedValue(row, "description", "descriptionEn", locale),
+      description: str(row["descriptionEn"]) || str(row["description"]),
     };
   });
 }
