@@ -379,8 +379,9 @@ function buildEditions(p: Record<string, unknown>, locale: "ar" | "en"): GameEdi
           : [];
 
     const name =
-      localizedValue(row, "name", "nameEn", locale) ||
-      (locale === "en" ? `Edition ${i + 1}` : `نسخة ${i + 1}`);
+      localizedValue(row, "name", "nameEn", "en") ||
+      `Edition ${i + 1}`;
+
 
     return {
       id: str(row["id"]) || `edition-${i}`,
