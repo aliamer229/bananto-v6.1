@@ -45,7 +45,8 @@ function AdminImportPage() {
       // but prefer the field=value standard
       let parsed;
       if (inputText.includes("[GAME]")) {
-        parsed = parseGameData(inputText);
+        const legacyData = parseGameData(inputText);
+        parsed = { data: legacyData, errors: [] };
       } else {
         // Map the new flat format to the legacy nested format expected by validateGameData and mapper.ts
         const flat = parsedImport.data;

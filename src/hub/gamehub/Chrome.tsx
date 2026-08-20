@@ -61,11 +61,15 @@ export function HubNav({ items }: { items: NavItem[] }) {
       className={cn(
         "z-40 border-white/[0.06] bg-ink-900/90 backdrop-blur-xl transition-all duration-300",
         "lg:sticky lg:top-[env(safe-area-inset-top,0px)] lg:border-b",
-        "max-lg:fixed max-lg:inset-x-0 max-lg:border-t"
+        isBuyBarVisible
+          ? "max-lg:fixed max-lg:inset-x-0 max-lg:border-t"
+          : "max-lg:sticky max-lg:top-[env(safe-area-inset-top,0px)] max-lg:border-b"
       )}
-      style={{
-        bottom: `calc(${isBuyBarVisible ? 72 : 0}px + env(safe-area-inset-bottom, 0px))`
-      }}
+      style={
+        isBuyBarVisible
+          ? { bottom: `calc(72px + env(safe-area-inset-bottom, 0px))` }
+          : {}
+      }
     >
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 lg:px-6">
         <div

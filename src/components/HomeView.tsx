@@ -319,19 +319,28 @@ export default function HomeView({
                     let val = 0;
                     const d = p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year;
                     if (d) {
-                      // Attempt to parse standard dates
-                      val = new Date(d).getTime();
+                      const dStr = String(d).trim();
+                      
+                      // 1. Try DD/MM/YYYY or DD-MM-YYYY FIRST to avoid JS parsing 12/05/2023 as Dec 5th
+                      const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                      if (dmMatch) {
+                        val = new Date(`${dmMatch[3]}-${dmMatch[2].padStart(2, '0')}-${dmMatch[1].padStart(2, '0')}`).getTime();
+                      } 
+                      // 2. Try YYYYMMDD (Nintendo eShop format)
+                      else if (/^(\d{4})(\d{2})(\d{2})$/.test(dStr)) {
+                        const m = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
+                        if (m) val = new Date(`${m[1]}-${m[2]}-${m[3]}`).getTime();
+                      }
+                      
+                      // 3. Fallback to standard Date parsing
+                      if (!val || isNaN(val)) {
+                        val = new Date(dStr).getTime();
+                      }
+                      
+                      // 4. Fallback to just extracting a year
                       if (isNaN(val)) {
-                        // Handle DD/MM/YYYY or DD-MM-YYYY
-                        const dmMatch = String(d).match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-                        if (dmMatch) {
-                          val = new Date(`${dmMatch[3]}-${dmMatch[2]}-${dmMatch[1]}`).getTime();
-                        }
-                        if (isNaN(val)) {
-                          // Fallback: extract year
-                          const match = String(d).match(/\b(20\d{2}|19\d{2})\b/);
-                          if (match) val = new Date(match[0]).getTime();
-                        }
+                        const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
+                        if (yearMatch) val = new Date(yearMatch[0]).getTime();
                       }
                     }
                     return isNaN(val) ? 0 : val;
