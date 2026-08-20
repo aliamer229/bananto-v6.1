@@ -314,16 +314,34 @@ export default function HomeView({
                   );
                 })
                 .sort((a, b) => {
+                  const getYear = (val: any) => {
+                    if (!val) return 0;
+                    const dateStr = String(val);
+                    // Match 4 digits for year
+                    const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
+                    if (match) return parseInt(match[0], 10);
+                    const timestamp = new Date(val).getTime();
+                    return isNaN(timestamp) ? 0 : new Date(timestamp).getFullYear();
+                  };
+
+                  const yearA = getYear(a.releaseDate || a.release_date);
+                  const yearB = getYear(b.releaseDate || b.release_date);
+
+                  if (yearA !== yearB) {
+                    return yearB - yearA;
+                  }
+
+                  // If years are same, fall back to full date or creation date
                   const dateA = new Date(a.releaseDate || a.release_date || 0).getTime();
                   const dateB = new Date(b.releaseDate || b.release_date || 0).getTime();
 
-                  // If release dates are same or missing, use createdAt as secondary sort
-                  if (dateA === dateB) {
-                    const createA = new Date(a.createdAt || a.created_at || 0).getTime();
-                    const createB = new Date(b.createdAt || b.created_at || 0).getTime();
-                    return createB - createA;
+                  if (dateA !== dateB && dateA !== 0 && dateB !== 0) {
+                    return dateB - dateA;
                   }
-                  return dateB - dateA;
+
+                  const createA = new Date(a.createdAt || a.created_at || 0).getTime();
+                  const createB = new Date(b.createdAt || b.created_at || 0).getTime();
+                  return createB - createA;
                 })
                 .slice(0, 12)
                 .map((p) => ({
