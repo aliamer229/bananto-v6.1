@@ -1,234 +1,130 @@
-import { useEffect, useMemo, useState } from "react";
-import { OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
-
-const CANVAS_W = 1236;
-const CANVAS_H = 951;
-const BACK_W = 588;
-const SPINE_W = 60;
-const FRONT_X = BACK_W + SPINE_W;
-const FRONT_W = 588;
-
-function makeFaceTexture(
-  source: THREE.CanvasTexture | null,
-  offset: number,
-  width: number,
-) {
-  if (!source) return null;
-  const face = source.clone();
-  face.image = source.image;
-  face.colorSpace = THREE.SRGBColorSpace;
-  face.wrapS = THREE.ClampToEdgeWrapping;
-  face.wrapT = THREE.ClampToEdgeWrapping;
-  face.repeat.set(width / CANVAS_W, 1);
-  face.offset.set(offset / CANVAS_W, 0);
-  face.needsUpdate = true;
-  return face;
-}
+import React, { useRef, useEffect, useState } from 'react';
+import { useGLTF, OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
 
 /**
- * Interactive Switch retail case. The sleeve is built once as a continuous
- * back │ spine │ front sheet, then each physical face samples its own adjacent
- * range from that same texture. This avoids three independently fitted images
- * and therefore avoids visible cuts at the folds.
+ * Interactive Switch retail case implementation restored from untitled_6.
+ * Uses the real SwitchCase.glb model and GZAfvAF3.jpg base texture.
  */
-export function SwitchBox3D({
-  coverImage,
-  platform,
+export function SwitchBox3D({ 
+  coverImage, 
+  platform, 
   gameName,
-  onReady,
-}: {
-  coverImage: string | null;
-  platform: string;
-  gameName: string;
-  onReady?: () => void;
+  onReady 
+}: { 
+  coverImage: string | null, 
+  platform: string, 
+  gameName: string,
+  onReady?: () => void
 }) {
-  const [sleeve, setSleeve] = useState<THREE.CanvasTexture | null>(null);
+  const { nodes, materials } = useGLTF('/source/SwitchCase.glb') as any;
+  const group = useRef<THREE.Group>(null);
+  
+  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
-    let active = true;
-    const canvas = document.createElement("canvas");
-    canvas.width = CANVAS_W;
-    canvas.height = CANVAS_H;
-    const ctx = canvas.getContext("2d");
+    let isMounted = true;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1236;
+    canvas.height = 951;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const loadElement = (src: string) =>
-      new Promise<HTMLImageElement | null>((resolve) => {
-        const image = new Image();
-        if (!src.startsWith("data:")) image.crossOrigin = "anonymous";
-        image.onload = () => resolve(image);
-        image.onerror = () => resolve(null);
-        image.src = src;
-      });
-
-    const load = async (src: string) => {
-      // Browsers mark <img> requests with Sec-Fetch-Dest:image; the app's route
-      // shell may answer those before the image endpoint does. Fetch the bytes
-      // first and decode a same-origin Blob so Canvas can safely read them.
-      if (src.startsWith("/api/img")) {
-        try {
-          const response = await fetch(src);
-          if (response.ok) {
-            const objectUrl = URL.createObjectURL(await response.blob());
-            const image = await loadElement(objectUrl);
-            URL.revokeObjectURL(objectUrl);
-            if (image) return image;
-          }
-        } catch {
-          // The normal image path below remains a safe visual fallback.
-        }
-      }
-      return loadElement(src);
-    };
-
-    const drawCover = (
-      image: HTMLImageElement,
-      x: number,
-      width: number,
-      fit: "cover" | "contain",
-    ) => {
-      const scale =
-        fit === "cover"
-          ? Math.max(width / image.width, CANVAS_H / image.height)
-          : Math.min(width / image.width, CANVAS_H / image.height);
-      const dw = image.width * scale;
-      const dh = image.height * scale;
-      ctx.drawImage(image, x + (width - dw) / 2, (CANVAS_H - dh) / 2, dw, dh);
-    };
-
-    const buildSleeve = async () => {
-      const image = coverImage ? await load(coverImage) : null;
-      if (!active) return;
-
-      ctx.fillStyle = platform === "ns2" ? "#b3000f" : "#e60012";
-      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-      if (image) {
-        const isFullWrap = image.width / image.height > 1.16;
-        if (isFullWrap) {
-          // One source image across the complete UV sheet: no panel-by-panel crop.
-          ctx.drawImage(image, 0, 0, CANVAS_W, CANVAS_H);
-        } else {
-          // Create one continuous ambient sleeve from the front cover. The
-          // blurred cover crosses both folds, then the readable front is laid
-          // on top without cropping any title or key art.
-          ctx.save();
-          ctx.filter = "blur(34px) saturate(1.35) brightness(0.7)";
-          drawCover(image, -45, CANVAS_W + 90, "cover");
-          ctx.restore();
-
-          ctx.fillStyle = "rgba(0,0,0,0.38)";
-          ctx.fillRect(0, 0, BACK_W, CANVAS_H);
-          drawCover(image, FRONT_X, FRONT_W, "contain");
-
-          // A translucent spine tint preserves the artwork underneath at both
-          // folds rather than replacing it with an unrelated hard red strip.
-          ctx.fillStyle = platform === "ns2" ? "rgba(179,0,15,0.76)" : "rgba(230,0,18,0.76)";
-          ctx.fillRect(BACK_W, 0, SPINE_W, CANVAS_H);
-          ctx.save();
-          ctx.translate(BACK_W + SPINE_W / 2, 150);
-          ctx.rotate(Math.PI / 2);
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "700 28px sans-serif";
-          ctx.textAlign = "left";
-          ctx.shadowColor = "rgba(0,0,0,0.45)";
-          ctx.shadowBlur = 4;
-          ctx.fillText(gameName || "Game Title", 0, 9, CANVAS_H - 180);
-          ctx.restore();
-        }
-      }
-
-      const next = new THREE.CanvasTexture(canvas);
-      next.colorSpace = THREE.SRGBColorSpace;
-      next.anisotropy = 8;
-      next.needsUpdate = true;
-      if (active) {
-        setSleeve((previous) => {
-          previous?.dispose();
-          return next;
+    const drawTexture = async () => {
+      try {
+        // 1. Draw base texture (the original image from the zip)
+        const baseImg = new Image();
+        baseImg.src = '/textures/GZAfvAF3.jpg';
+        await new Promise((resolve, reject) => {
+          baseImg.onload = resolve;
+          baseImg.onerror = reject;
         });
-        onReady?.();
+        
+        if (!isMounted) return;
+        ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+
+        // 2. Draw uploaded cover image
+        if (coverImage) {
+          const img = new Image();
+          if (!coverImage.startsWith('data:')) {
+            img.crossOrigin = 'anonymous';
+          }
+          img.src = coverImage;
+          
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = (e) => {
+              console.warn("Image load failed", e);
+              resolve(null);
+            };
+          });
+          
+          if (!isMounted) return;
+          
+          // The uploaded cover is a full retail box insert (FRONT + SPINE + BACK)
+          // Draw it over the entire canvas (1236x951)
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.flipY = false;
+        tex.needsUpdate = true;
+        
+        if (isMounted) {
+          setTexture((prev) => {
+            if (prev) prev.dispose();
+            return tex;
+          });
+          onReady?.();
+        }
+      } catch (err) {
+        console.error('Error drawing texture:', err);
       }
     };
 
-    void buildSleeve();
+    drawTexture();
+
     return () => {
-      active = false;
+      isMounted = false;
     };
   }, [coverImage, platform, gameName, onReady]);
 
-  const faceMaps = useMemo(() => {
-    const maps = {
-      back: makeFaceTexture(sleeve, 0, BACK_W),
-      spine: makeFaceTexture(sleeve, BACK_W, SPINE_W),
-      front: makeFaceTexture(sleeve, FRONT_X, FRONT_W),
-    };
-    return maps;
-  }, [sleeve]);
-
-  useEffect(
-    () => () => {
-      faceMaps.front?.dispose();
-      faceMaps.spine?.dispose();
-      faceMaps.back?.dispose();
-    },
-    [faceMaps],
-  );
-
-  const shell = platform === "ns2" ? "#e60012" : "#e8edf2";
+  // Make sure foil has alpha
+  if (materials.foil) {
+    materials.foil.transparent = true;
+    materials.foil.opacity = 0.5;
+  }
+  
+  if (materials.plastic) {
+    materials.plastic.transparent = true;
+    materials.plastic.opacity = 0.8;
+    materials.plastic.color.set(platform === 'ns2' ? '#e60012' : '#ffffff');
+  }
 
   return (
     <>
       <OrbitControls
-        makeDefault
-        enableRotate
         enableZoom={false}
         enablePan={false}
-        enableDamping
-        dampingFactor={0.08}
-        rotateSpeed={0.85}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 1.5}
+        enableRotate={true}
+        makeDefault
       />
-
-      <group scale={0.78} position={[0, -0.2, 0]} rotation={[0, -Math.PI / 7, 0]}>
-        {/* Translucent plastic body and the four exposed shell edges. */}
-        <mesh>
-          <boxGeometry args={[6.18, 9.88, 0.72]} />
-          <meshPhysicalMaterial
-            color={shell}
-            transparent
-            opacity={0.8}
-            roughness={0.3}
-            transmission={0.06}
-            clearcoat={0.75}
-            clearcoatRoughness={0.24}
-          />
-        </mesh>
-
-        {/* Adjacent regions of one continuous sleeve texture. */}
-        {faceMaps.front && (
-          <mesh position={[0, 0, 0.371]}>
-            <planeGeometry args={[6, 9.7]} />
-            <meshStandardMaterial map={faceMaps.front} roughness={0.56} metalness={0.02} />
+      
+      <group ref={group} dispose={null} scale={0.65} position={[0, -0.5, 0]} rotation={[0, -Math.PI / 6, 0]}>
+        <mesh geometry={nodes.box.geometry} material={materials.plastic} />
+        
+        {texture && (
+          <mesh geometry={nodes.placeholder.geometry}>
+            <meshStandardMaterial map={texture} roughness={0.6} metalness={0.1} side={THREE.DoubleSide} />
           </mesh>
         )}
-        {faceMaps.back && (
-          <mesh position={[0, 0, -0.371]} rotation={[0, Math.PI, 0]}>
-            <planeGeometry args={[6, 9.7]} />
-            <meshStandardMaterial map={faceMaps.back} roughness={0.56} metalness={0.02} />
-          </mesh>
-        )}
-        {faceMaps.spine && (
-          <mesh position={[-3.091, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-            <planeGeometry args={[0.72, 9.7]} />
-            <meshStandardMaterial map={faceMaps.spine} roughness={0.56} metalness={0.02} />
-          </mesh>
-        )}
+        
+        <mesh geometry={nodes.foil.geometry} material={materials.foil} />
       </group>
     </>
   );
 }
 
+useGLTF.preload('/source/SwitchCase.glb');
 export default SwitchBox3D;
