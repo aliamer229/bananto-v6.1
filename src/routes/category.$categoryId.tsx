@@ -125,16 +125,35 @@ function CategoryPage() {
   const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "nintendo_games" || categoryId === "cat_1";
 
   const productBanners = useMemo(() => {
-    if (!products || products.length === 0) return [];
+    // If we have products, try to get banners from ALL products in this category
+    // not just the filtered ones, to ensure the slideshow has content
+    if (!store?.products) return [];
+    
+    const targetCat = categoryId.toLowerCase();
+    const categoryProducts = store.products.filter((p: any) => {
+      const pCat = String(p.category || p.categoryId || "").toLowerCase();
+      return pCat === targetCat || p.kind === targetCat || categoryId === "all" || 
+             (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+    });
+
     const bannerSet = new Set<string>();
-    products.forEach((p: any) => {
+    categoryProducts.forEach((p: any) => {
+      // Prioritize explicit banner fields
       const b = p.banner || p.bannerImage || p.heroImage;
       if (b && typeof b === 'string' && b.trim()) {
         bannerSet.add(b.trim());
       }
+      // Fallback: If no banner but has gallery, use first gallery image
+      else if (p.gallery && Array.isArray(p.gallery) && p.gallery.length > 0) {
+        bannerSet.add(p.gallery[0]);
+      }
+      else if (p.gallery && typeof p.gallery === 'string') {
+        const parts = p.gallery.split(',').map((s: string) => s.trim()).filter(Boolean);
+        if (parts.length > 0) bannerSet.add(parts[0]);
+      }
     });
     return Array.from(bannerSet);
-  }, [products]);
+  }, [store?.products, categoryId]);
 
   useEffect(() => {
     if (productBanners.length <= 1) return;
