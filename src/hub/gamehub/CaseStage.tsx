@@ -50,7 +50,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
   }
 
   return (
-    <div className={cn("relative z-10", className, "min-h-[440px] w-full flex items-center justify-center")}>
+    <div className={cn("relative z-10", className, "min-h-[440px] w-full flex items-center justify-center p-8")}>
       <div
         className={cn(
           "absolute inset-0 touch-none transition-opacity duration-1000",
