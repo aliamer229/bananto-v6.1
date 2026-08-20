@@ -92,6 +92,7 @@ export const en: Translations<Dictionary> = {
   },
 
   home: {
+    latestNintendoGames: "Latest Nintendo releases",
     featuredProducts: "Featured products",
     newProducts: "New arrivals",
     offers: "Deals",
