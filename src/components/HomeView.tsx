@@ -312,7 +312,7 @@ export default function HomeView({
                 <section className="relative mt-2 pb-6 -mx-4">
                   <div className="mb-3 px-8 flex items-center justify-between">
                     <h3 className="truncate text-xl font-bold text-foreground">
-                      {t("home.nintendoSwitchGames")}
+                      {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames" ? "nintendo games" : t("home.nintendoSwitchGames")}
                     </h3>
                   </div>
 
