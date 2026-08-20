@@ -295,15 +295,17 @@ export default function HomeView({
 
           // First section is the cartridge shelf: it shows every game on the
           // platform, not only the ones tagged with this category id.
+          const isCartridgeSection = index === 0;
           const categoryProducts = (
-            index === 0 ? adminProducts : adminProducts.filter((p) => p.category === category.id)
+            isCartridgeSection ? adminProducts : adminProducts.filter((p) => p.category === category.id)
           ).map(mapGame);
 
-          if (
-            categoryProducts.length === 0 ||
-            (index > 0 && category.id === "nintendo-switch-games")
-          )
-            return null;
+          if (categoryProducts.length === 0) return null;
+
+          // If the user called it "Nintendo Switch games" (the specific name mentioned), 
+          // we might want to hide its duplicate if it matches the first section.
+          if (index > 0 && category.id === "nintendo-switch-games") return null;
+
 
           if (index === 0) {
             return (
