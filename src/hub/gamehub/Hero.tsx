@@ -170,7 +170,7 @@ export function Hero() {
               }
               size="lg"
               onClick={() => images[0] && openLightbox(images[0].id)}
-              className="scale-90 sm:scale-100 will-change-transform"
+              className="scale-[0.8] sm:scale-100 will-change-transform"
             />
 
             {/* SKU selector — only when both cases genuinely exist. */}
