@@ -386,7 +386,7 @@ export default function HomeView({
             <div className="flex items-center justify-between gap-2 mb-4 px-8">
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold text-foreground">
-                  {t("latest nintendo games released")}
+                  {t("home.latestNintendoGames")}
                 </h3>
                 <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
                   New
