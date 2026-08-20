@@ -120,9 +120,9 @@ export function SwitchBox3D({
     materials.plastic.depthWrite = true;
     materials.plastic.depthTest = true;
     materials.plastic.color.set(platform === 'ns2' ? '#e60012' : '#ffffff');
-    materials.plastic.roughness = 0.02;
-    materials.plastic.metalness = 0.5;
-    materials.plastic.envMapIntensity = 2.0;
+    materials.plastic.roughness = 0.05;
+    materials.plastic.metalness = 0.15;
+    materials.plastic.envMapIntensity = 1.0;
   }
 
   return (
