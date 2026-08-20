@@ -22,7 +22,6 @@ import OtpBoxes from "@/components/auth/OtpBoxes";
 import TelegramLinkPrompt from "@/components/auth/TelegramLinkPrompt";
 import { ASSET_BASE_URL } from "@/config/publicAssets";
 
-
 import { authPageAction } from "@/lib/authRedirect";
 import { useAuth } from "@/hooks/useAuth";
 import type { OtpChannel } from "@/lib/otp.server";
@@ -34,8 +33,6 @@ import { playSound } from "@/utils/audio";
 
 const patternAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Auth%20background%20.webp` };
 const mascotAsset = { url: `${ASSET_BASE_URL}/Images/Ui/Logo.webp` };
-
-
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { error?: string } => {

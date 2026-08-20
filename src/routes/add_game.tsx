@@ -595,7 +595,9 @@ function AddGamePage() {
                           />
                         )}
                         <div>
-                          <p className="font-bold text-sm text-foreground">{picked.titleEn || picked.english_name || picked.title}</p>
+                          <p className="font-bold text-sm text-foreground">
+                            {picked.titleEn || picked.english_name || picked.title}
+                          </p>
                           <p className="text-xs text-muted-foreground">{picked.platform}</p>
                         </div>
                       </div>

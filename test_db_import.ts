@@ -14,11 +14,11 @@ async function main() {
   const parsed = parseGameData(input);
   const validated = validateGameData(parsed.data);
   try {
-      console.log(validated.data.GAME);
-      await importGameDataToDb(validated.data, "create");
-      console.log("Success");
+    console.log(validated.data.GAME);
+    await importGameDataToDb(validated.data, "create");
+    console.log("Success");
   } catch (e) {
-      console.error(e);
+    console.error(e);
   }
 }
 main();

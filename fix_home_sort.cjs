@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/components/HomeView.tsx', 'utf-8');
+const fs = require("fs");
+let code = fs.readFileSync("src/components/HomeView.tsx", "utf-8");
 
 const oldSortCode = `                  const yearA = getYear(a.releaseDate || a.release_date || a.releaseYear || a.release_year);
                   const yearB = getYear(b.releaseDate || b.release_date || b.releaseYear || b.release_year);
@@ -41,4 +41,4 @@ const oldMapYear = `const year = getYear(p.releaseDate || p.release_date || p.re
 const newMapYear = `const year = getYear(p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year);`;
 code = code.replace(oldMapYear, newMapYear);
 
-fs.writeFileSync('src/components/HomeView.tsx', code);
+fs.writeFileSync("src/components/HomeView.tsx", code);

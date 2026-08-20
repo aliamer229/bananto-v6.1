@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/routes/category.$categoryId.tsx', 'utf-8');
+const fs = require("fs");
+let code = fs.readFileSync("src/routes/category.$categoryId.tsx", "utf-8");
 
 const oldCode = `          {/* Background Game Slideshow - Fast Instant Switching without Fade in/out & No bottom blur */}
           <div className="absolute inset-0 z-0 select-none overflow-hidden">
@@ -42,4 +42,4 @@ const newCode = `          {/* Background Game Slideshow */}
             ) : (`;
 
 code = code.replace(oldCode, newCode);
-fs.writeFileSync('src/routes/category.$categoryId.tsx', code);
+fs.writeFileSync("src/routes/category.$categoryId.tsx", code);

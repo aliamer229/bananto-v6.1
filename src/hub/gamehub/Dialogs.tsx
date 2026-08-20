@@ -156,14 +156,16 @@ export function BuySheet({
                     type="button"
                     onClick={() => handleSelectOption(opt.id)}
                     className={cn(
-                       "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
+                      "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
                       selected
-                         ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
+                        ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
                         : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
                     <span className="min-w-0 block">
-                      <span className="block break-words text-sm font-bold leading-snug">{opt.name}</span>
+                      <span className="block break-words text-sm font-bold leading-snug">
+                        {opt.name}
+                      </span>
                       {opt.description && (
                         <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
                           {opt.description}
@@ -201,14 +203,16 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                       "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
+                      "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
                       selected
-                         ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
+                        ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
                         : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
                     <span className="min-w-0 block">
-                      <span className="block break-words text-sm font-bold leading-snug">{typ.name}</span>
+                      <span className="block break-words text-sm font-bold leading-snug">
+                        {typ.name}
+                      </span>
                       {typ.description && (
                         <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
                           {typ.description}
@@ -246,14 +250,16 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                       "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
+                      "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
                       selected
-                         ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
+                        ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
                         : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
                     <span className="min-w-0 block">
-                      <span className="block break-words text-sm font-bold leading-snug">{edition.name}</span>
+                      <span className="block break-words text-sm font-bold leading-snug">
+                        {edition.name}
+                      </span>
                       {edition.description && (
                         <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
                           {edition.description}
@@ -340,6 +346,7 @@ export function BuySheet({
             const offerLabel = offerLabelParts.length
               ? offerLabelParts.join(" / ")
               : (OFFER_LABELS[offerKind] ?? offerKind);
+
 
             addToCart(
               {

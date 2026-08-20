@@ -298,93 +298,121 @@ export default function HomeView({
               <ProductStrip
                 products={adminProducts
                   .filter((p) => {
-                  const catId = (p.category || p.categoryId || "").toLowerCase();
-                  const kind = (p.kind || "").toLowerCase();
-                  // Include Nintendo switch games
-                  return (
-                    !catId ||
-                    catId === "cat_1" ||
-                    catId === "cat_nintendo" ||
-                    catId === "nintendo_games" ||
-                    catId === "nintendo-switch-games" ||
-                    kind === "account" ||
-                    kind === "offline_account" ||
-                    kind === "online_account" ||
-                    kind === "physical" ||
-                    Boolean(p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year)
-                  );
-                })
-                .sort((a, b) => {
-                  const getVal = (p: any) => {
-                    const d = p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year;
-                    if (!d) return 0;
-                    
-                    const dStr = String(d).trim();
-                    
-                    // 1. Try YYYY-MM-DD or YYYY-M-D (like 2026-7-23)
-                    const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
-                    if (ymdMatch) {
-                      return new Date(`${ymdMatch[1]}-${ymdMatch[2].padStart(2, '0')}-${ymdMatch[3].padStart(2, '0')}`).getTime();
-                    }
-                    
-                    // 2. Try DD/MM/YYYY or DD-MM-YYYY
-                    const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-                    if (dmMatch) {
-                      return new Date(`${dmMatch[3]}-${dmMatch[2].padStart(2, '0')}-${dmMatch[1].padStart(2, '0')}`).getTime();
-                    }
-                    
-                    // 3. Try YYYYMMDD (Nintendo eShop format)
-                    const ymdCompact = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
-                    if (ymdCompact) {
-                      return new Date(`${ymdCompact[1]}-${ymdCompact[2]}-${ymdCompact[3]}`).getTime();
-                    }
-                    
-                    // 4. Fallback to standard Date parsing
-                    const parsed = new Date(dStr).getTime();
-                    if (!isNaN(parsed) && parsed > 0) return parsed;
-                    
-                    // 5. Fallback to just extracting a year
-                    const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
-                    if (yearMatch) return new Date(`${yearMatch[0]}-01-01`).getTime();
-                    
-                    return 0;
-                  };
-                  
-                  const valA = getVal(a);
-                  const valB = getVal(b);
-                  
-                  // Sort descending purely by release date
-                  return valB - valA;
-                })
-                .slice(0, 12)
-                .map((p) => {
-                  const getYear = (val: any) => {
-                    const dateStr = String(val || "");
-                    const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
-                    return match ? match[0] : null;
-                  };
-                  const year = getYear(p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year);
-                  
-                  return {
-                    id: p.id,
-                    title: p.titleEn || p.english_name || p.title,
-                    price: p.price,
-                    image:
-                      getNintendoCardImage(p) ||
-                      "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
-                    banner: p.banner,
-                    gallery: p.gallery,
-                    subtitle: year ? `${year} · ${p.developer || p.publisher || ""}` : (p.releaseDate || p.release_date || p.developer || p.publisher),
-                    rating: p.metacriticRating ?? null,
-                    platform: p.platform,
-                  };
-                })}
-              onSelect={(product: any) => onGameClick(product)}
-              formatPrice={formatGenericPrice}
-              onPress={() => playSound("bumper_end", 0.6)}
-              ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-              loading={isPending}
-            />
+                    const catId = (p.category || p.categoryId || "").toLowerCase();
+                    const kind = (p.kind || "").toLowerCase();
+                    // Include Nintendo switch games
+                    return (
+                      !catId ||
+                      catId === "cat_1" ||
+                      catId === "cat_nintendo" ||
+                      catId === "nintendo_games" ||
+                      catId === "nintendo-switch-games" ||
+                      kind === "account" ||
+                      kind === "offline_account" ||
+                      kind === "online_account" ||
+                      kind === "physical" ||
+                      Boolean(
+                        p.releaseDate ||
+                        p.release_date ||
+                        p.metadata?.releaseDate ||
+                        p.metadata?.release_date ||
+                        p.releaseYear ||
+                        p.release_year,
+                      )
+                    );
+                  })
+                  .sort((a, b) => {
+                    const getVal = (p: any) => {
+                      const d =
+                        p.releaseDate ||
+                        p.release_date ||
+                        p.metadata?.releaseDate ||
+                        p.metadata?.release_date ||
+                        p.releaseYear ||
+                        p.release_year;
+                      if (!d) return 0;
+
+                      const dStr = String(d).trim();
+
+                      // 1. Try YYYY-MM-DD or YYYY-M-D (like 2026-7-23)
+                      const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+                      if (ymdMatch) {
+                        return new Date(
+                          `${ymdMatch[1]}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[3].padStart(2, "0")}`,
+                        ).getTime();
+                      }
+
+                      // 2. Try DD/MM/YYYY or DD-MM-YYYY
+                      const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                      if (dmMatch) {
+                        return new Date(
+                          `${dmMatch[3]}-${dmMatch[2].padStart(2, "0")}-${dmMatch[1].padStart(2, "0")}`,
+                        ).getTime();
+                      }
+
+                      // 3. Try YYYYMMDD (Nintendo eShop format)
+                      const ymdCompact = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
+                      if (ymdCompact) {
+                        return new Date(
+                          `${ymdCompact[1]}-${ymdCompact[2]}-${ymdCompact[3]}`,
+                        ).getTime();
+                      }
+
+                      // 4. Fallback to standard Date parsing
+                      const parsed = new Date(dStr).getTime();
+                      if (!isNaN(parsed) && parsed > 0) return parsed;
+
+                      // 5. Fallback to just extracting a year
+                      const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
+                      if (yearMatch) return new Date(`${yearMatch[0]}-01-01`).getTime();
+
+                      return 0;
+                    };
+
+                    const valA = getVal(a);
+                    const valB = getVal(b);
+
+                    // Sort descending purely by release date
+                    if (valA !== valB) return valB - valA; return String(b.id || "").localeCompare(String(a.id || ""));
+                  })
+                  .slice(0, 12)
+                  .map((p) => {
+                    const getYear = (val: any) => {
+                      const dateStr = String(val || "");
+                      const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
+                      return match ? match[0] : null;
+                    };
+                    const year = getYear(
+                      p.releaseDate ||
+                        p.release_date ||
+                        p.metadata?.releaseDate ||
+                        p.metadata?.release_date ||
+                        p.releaseYear ||
+                        p.release_year,
+                    );
+
+                    return {
+                      id: p.id,
+                      title: p.titleEn || p.english_name || p.title,
+                      price: p.price,
+                      image:
+                        getNintendoCardImage(p) ||
+                        "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
+                      banner: p.banner,
+                      gallery: p.gallery,
+                      subtitle: year
+                        ? `${year} · ${p.developer || p.publisher || ""}`
+                        : p.releaseDate || p.release_date || p.developer || p.publisher,
+                      rating: p.metacriticRating ?? null,
+                      platform: p.platform,
+                    };
+                  })}
+                onSelect={(product: any) => onGameClick(product)}
+                formatPrice={formatGenericPrice}
+                onPress={() => playSound("bumper_end", 0.6)}
+                ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                loading={isPending}
+              />
             </div>
           </section>
         </LazySection>
@@ -409,7 +437,9 @@ export default function HomeView({
           // platform, not only the ones tagged with this category id.
           const isCartridgeSection = index === 0;
           const categoryProducts = (
-            isCartridgeSection ? adminProducts : adminProducts.filter((p) => p.category === category.id)
+            isCartridgeSection
+              ? adminProducts
+              : adminProducts.filter((p) => p.category === category.id)
           ).map(mapGame);
 
           if (categoryProducts.length === 0) return null;
@@ -466,7 +496,6 @@ export default function HomeView({
             );
           }
 
-
           return (
             <LazySection key={category.id}>
               <section className="-mx-4 mt-4">
@@ -475,7 +504,9 @@ export default function HomeView({
                   {isNintendoGames && (
                     <Link
                       to="/category/$categoryId"
-                      params={{ categoryId: category.id === "cat_nintendo" ? "nintendo_games" : category.id }}
+                      params={{
+                        categoryId: category.id === "cat_nintendo" ? "nintendo_games" : category.id,
+                      }}
                       className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
                     >
                       {t("common.viewAll")}
@@ -494,7 +525,6 @@ export default function HomeView({
             </LazySection>
           );
         })}
-
 
         {/* Section 5: Hardware */}
         <LazySection>

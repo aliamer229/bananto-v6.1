@@ -34,9 +34,7 @@ export async function downloadTemplateFile(
     if (!res.ok) throw new Error(String(res.status));
 
     const blob = await res.blob();
-    const objectUrl = URL.createObjectURL(
-      new Blob([blob], { type: "text/plain;charset=utf-8" }),
-    );
+    const objectUrl = URL.createObjectURL(new Blob([blob], { type: "text/plain;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = objectUrl;
     link.download = templateFile;

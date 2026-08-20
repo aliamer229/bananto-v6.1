@@ -82,7 +82,6 @@ function ProductPage() {
     [product, section, isGame],
   );
 
-
   const game = useMemo(
     () => (product && isGame ? gameFromProduct(product, locale) : null),
     [product, isGame, locale],
@@ -131,8 +130,6 @@ function ProductPage() {
   }
 
   if (!game) return null;
-
-
 
   return (
     <AppShell currentView="details" hideNav onBack={() => void navigate({ to: "/" })}>

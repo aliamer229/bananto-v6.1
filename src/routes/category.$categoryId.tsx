@@ -236,7 +236,13 @@ function CategoryPage() {
         default: {
           const getVal = (p: any) => {
             let val = 0;
-            const d = p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year;
+            const d =
+              p.releaseDate ||
+              p.release_date ||
+              p.metadata?.releaseDate ||
+              p.metadata?.release_date ||
+              p.releaseYear ||
+              p.release_year;
             if (d) {
               // Attempt to parse standard dates
               val = new Date(d).getTime();
@@ -255,21 +261,21 @@ function CategoryPage() {
             }
             return isNaN(val) ? 0 : val;
           };
-          
+
           const valA = getVal(a);
           const valB = getVal(b);
-          
+
           if (valA !== valB) {
             return valB - valA; // Descending by release date
           }
-          
+
           // Secondary sort by created_at if release dates are exactly the same or missing
           const createA = new Date(a.createdAt || a.created_at || a.created_time || 0).getTime();
           const createB = new Date(b.createdAt || b.created_at || b.created_time || 0).getTime();
           if (createA !== createB && !isNaN(createA) && !isNaN(createB)) {
             return createB - createA;
           }
-          
+
           return String(b.id || "").localeCompare(String(a.id || ""));
         }
       }
@@ -373,7 +379,9 @@ function CategoryPage() {
     }
 
     // High quality fallback game wallpapers if none found
-    if (list.length === 0) { return []; }
+    if (list.length === 0) {
+      return [];
+    }
 
     return list;
   }, [store?.products, store?.banners, categoryId]);
@@ -623,7 +631,10 @@ function CategoryPage() {
               </div>
             ) : products.length > 0 ? (
               <div className="flex flex-col gap-6">
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6" dir="ltr">
+                <div
+                  className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+                  dir="ltr"
+                >
                   {products.map((p: any) => (
                     <motion.div
                       key={p.id}

@@ -106,7 +106,8 @@ export function SupportEditor({
       channels: [
         ...((support.channels || []) as any[]),
         ...((d.channels || []) as any[]).filter(
-          (c) => !(support.channels || []).some((ex: any) => ex.id === c.id || ex.value === c.value),
+          (c) =>
+            !(support.channels || []).some((ex: any) => ex.id === c.id || ex.value === c.value),
         ),
       ] as any,
       services: [

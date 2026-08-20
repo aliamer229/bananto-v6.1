@@ -33,7 +33,9 @@ import { cdnImage } from "@/lib/img";
  * grid of floating chips.
  */
 /** First declared frame-rate across the performance profiles (e.g. "60 FPS"). */
-function frameRateSummary(game: { performance?: Array<{ modes?: Array<{ frameRate?: { value?: string } }> }> }) {
+function frameRateSummary(game: {
+  performance?: Array<{ modes?: Array<{ frameRate?: { value?: string } }> }>;
+}) {
   for (const profile of game.performance ?? []) {
     for (const mode of profile.modes ?? []) {
       const value = mode.frameRate?.value;

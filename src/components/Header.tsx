@@ -193,7 +193,7 @@ export default function Header({
       {/* The header floats over page content, so the bar itself must not eat
           pointer events — only its actual controls do. */}
       <header
-        dir="rtl"
+        dir="ltr"
         className={`z-50 fixed top-0 w-full transition-all duration-300 transform-gpu ${
           isMenuOpen ? "bottom-0 pointer-events-auto" : "pointer-events-none"
         }`}

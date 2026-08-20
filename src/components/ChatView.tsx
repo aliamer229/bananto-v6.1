@@ -165,7 +165,11 @@ function ProductSelectionView({
   const getProducts = () => {
     if (tab === "search")
       return products
-        .filter((product) => String((product.titleEn || product.english_name || product.title) ?? "").includes(searchQuery))
+        .filter((product) =>
+          String((product.titleEn || product.english_name || product.title) ?? "").includes(
+            searchQuery,
+          ),
+        )
         .slice(0, 30);
     if (tab === "fav")
       return products.filter((product) =>
@@ -226,7 +230,10 @@ function ProductSelectionView({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                String((product.titleEn || product.english_name || product.title) ?? "?").slice(0, 1)
+                String((product.titleEn || product.english_name || product.title) ?? "?").slice(
+                  0,
+                  1,
+                )
               )}
             </div>
             <div className="flex-1 text-right">
@@ -1958,7 +1965,9 @@ export default function ChatView({
                             text,
                             type: "product",
                             payload: {
-                              name: String((product.titleEn || product.english_name || product.title) ?? ""),
+                              name: String(
+                                (product.titleEn || product.english_name || product.title) ?? "",
+                              ),
                               id: product.id,
                               image: product.image,
                             },

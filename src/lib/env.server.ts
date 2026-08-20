@@ -80,7 +80,6 @@ export function env(name: string): string | undefined {
   return undefined;
 }
 
-
 /**
  * Returns a Cloudflare Binding (D1, R2, Queue).
  */

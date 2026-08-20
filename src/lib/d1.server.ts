@@ -143,7 +143,6 @@ export function getD1(): D1Like | undefined {
   return undefined;
 }
 
-
 function stmt(db: D1Like, sql: string, binds: unknown[]) {
   const prepared = db.prepare(sql);
   return binds.length ? prepared.bind(...binds) : prepared;

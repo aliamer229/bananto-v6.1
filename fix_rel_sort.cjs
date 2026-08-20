@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/routes/category.$categoryId.tsx', 'utf-8');
+const fs = require("fs");
+let code = fs.readFileSync("src/routes/category.$categoryId.tsx", "utf-8");
 
 const oldCode = `        case "release_date": {
           const dateA = new Date(a.releaseDate || a.release_date || 0).getTime();
@@ -24,4 +24,4 @@ const newCode = `        case "release_date": {
         }`;
 
 code = code.replace(oldCode, newCode);
-fs.writeFileSync('src/routes/category.$categoryId.tsx', code);
+fs.writeFileSync("src/routes/category.$categoryId.tsx", code);

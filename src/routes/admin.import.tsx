@@ -79,7 +79,7 @@ function AdminImportPage() {
             nsuid: flat.nsuid,
             title_id: flat.title_id,
             product_code: flat.product_code,
-          }
+          },
         };
         parsed = { data: legacyData, errors: parsedImport.errors.map((e) => e.message) };
       }

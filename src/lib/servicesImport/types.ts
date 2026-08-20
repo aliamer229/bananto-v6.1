@@ -7,12 +7,7 @@
  */
 
 export type ServiceSectionType =
-  | "troubleshooting"
-  | "registration_guides"
-  | "faq"
-  | "purchase_policy"
-  | "contact"
-  | "trade_rules";
+  "troubleshooting" | "registration_guides" | "faq" | "purchase_policy" | "contact" | "trade_rules";
 
 export interface ServiceTemplateField {
   key: string;

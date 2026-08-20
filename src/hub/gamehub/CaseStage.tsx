@@ -32,7 +32,7 @@ function hasWebGL(): boolean {
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
   const [modelReady, setModelReady] = useState(false);
-  
+
   const handleModelReady = useCallback(() => {
     console.log("[CaseStage] Model reported ready");
     setModelReady(true);
@@ -50,7 +50,21 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
   }
 
   return (
-    <div className={cn("relative z-10", className, "min-h-[440px] w-full flex items-center justify-center")}>
+    <div
+      className={cn(
+        "relative z-10",
+        className,
+        "min-h-[440px] w-full flex items-center justify-center",
+      )}
+    >
+      <div
+        className={cn(
+          "absolute inset-0 transition-opacity duration-700",
+          modelReady ? "opacity-0" : "opacity-100",
+        )}
+      >
+        <GameCase3D {...caseProps} />
+      </div>
       <div
         className={cn(
           "absolute inset-0 touch-none transition-opacity duration-1000",
@@ -68,7 +82,9 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
               <directionalLight position={[-5, -5, -5]} intensity={0.5} />
               <SwitchBox3D
                 coverImage={cdnImage(caseProps.sleeve?.url || caseProps.coverUrl || "") || null}
-                platform={(caseProps as any).platform === 'ns2' || caseProps.isSwitch2 ? "ns2" : "ns1"}
+                platform={
+                  (caseProps as any).platform === "ns2" || caseProps.isSwitch2 ? "ns2" : "ns1"
+                }
                 gameName={caseProps.title}
                 onReady={handleModelReady}
               />

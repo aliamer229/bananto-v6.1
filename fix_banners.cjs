@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/routes/category.$categoryId.tsx', 'utf-8');
+const fs = require("fs");
+let code = fs.readFileSync("src/routes/category.$categoryId.tsx", "utf-8");
 
 const oldLoop = `      candidates.forEach((img) => {
         if (typeof img === "string" && img.length > 5) {
@@ -29,4 +29,4 @@ const newList = `    let list = Array.from(bannerSet);
     // High quality fallback game wallpapers if none found`;
 
 code = code.replace(oldList, newList);
-fs.writeFileSync('src/routes/category.$categoryId.tsx', code);
+fs.writeFileSync("src/routes/category.$categoryId.tsx", code);

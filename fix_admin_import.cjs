@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/routes/admin.import.tsx', 'utf-8');
+const fs = require("fs");
+let code = fs.readFileSync("src/routes/admin.import.tsx", "utf-8");
 
 const oldCode = `      // Still allow the legacy structured parser if it's in the old [SECTION] format
       // but prefer the field=value standard
@@ -50,4 +50,4 @@ const newCode = `      // Still allow the legacy structured parser if it's in th
       }`;
 
 code = code.replace(oldCode, newCode);
-fs.writeFileSync('src/routes/admin.import.tsx', code);
+fs.writeFileSync("src/routes/admin.import.tsx", code);

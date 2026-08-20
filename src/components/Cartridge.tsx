@@ -37,7 +37,6 @@ export default function Cartridge({
     game.rating != null && String(game.rating).trim() !== "" ? String(game.rating) : null;
   const sound = isSwitch2 ? "hover" : "hover_s";
 
-
   // Track the pointer so scrolling the strip never fires the sound or navigation.
   const start = useRef<{ x: number; y: number; moved: boolean; touch: boolean } | null>(null);
 
@@ -181,8 +180,9 @@ export default function Cartridge({
             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              if (!target.src.includes('unsplash')) {
-                target.src = "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop";
+              if (!target.src.includes("unsplash")) {
+                target.src =
+                  "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop";
               }
             }}
           />

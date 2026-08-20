@@ -57,19 +57,15 @@ export function HubNav({ items }: { items: NavItem[] }) {
   const isBuyBarVisible = buyBarVisible && bestOffer;
 
   return (
-    <div 
+    <div
       className={cn(
         "z-40 border-white/[0.06] bg-ink-900/90 backdrop-blur-xl transition-all duration-300",
         "lg:sticky lg:top-[env(safe-area-inset-top,0px)] lg:border-b",
         isBuyBarVisible
           ? "max-lg:fixed max-lg:inset-x-0 max-lg:border-t"
-          : "max-lg:sticky max-lg:top-[env(safe-area-inset-top,0px)] max-lg:border-b"
+          : "max-lg:sticky max-lg:top-[env(safe-area-inset-top,0px)] max-lg:border-b",
       )}
-      style={
-        isBuyBarVisible
-          ? { bottom: `calc(72px + env(safe-area-inset-bottom, 0px))` }
-          : {}
-      }
+      style={isBuyBarVisible ? { bottom: `calc(72px + env(safe-area-inset-bottom, 0px))` } : {}}
     >
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 lg:px-6">
         <div
@@ -170,8 +166,13 @@ export function StickyBuyBar() {
 
   useEffect(() => {
     const onScroll = () => {
-      const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 380;
-      setVisible(window.scrollY > 560 && !nearBottom);
+      const heroBuyButton = document.getElementById("hero-buy-button");
+      let pastHero = window.scrollY > 560;
+      if (heroBuyButton) {
+        pastHero = heroBuyButton.getBoundingClientRect().bottom < 0;
+      }
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - window.innerHeight; // don't hide too early unless footer is huge
+      setVisible(pastHero && !nearBottom);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });

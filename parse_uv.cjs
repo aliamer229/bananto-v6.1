@@ -1,8 +1,8 @@
-const fs = require('fs');
-const glb = fs.readFileSync('public/source/SwitchCase.glb');
+const fs = require("fs");
+const glb = fs.readFileSync("public/source/SwitchCase.glb");
 
 const chunk0Len = glb.readUInt32LE(12);
-const jsonStr = glb.toString('utf8', 20, 20 + chunk0Len);
+const jsonStr = glb.toString("utf8", 20, 20 + chunk0Len);
 const json = JSON.parse(jsonStr);
 
 const chunk1Start = 20 + chunk0Len;

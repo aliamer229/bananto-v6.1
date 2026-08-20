@@ -122,9 +122,14 @@ const delivery: FieldDef[] = [
     description: "خطوات التفعيل والشحن — خطوة واحدة في كل سطر (عدد غير محدود)",
     group: DELIVERY,
   },
-  f.text("redemption_guide", "redemptionGuide", "خطوات استخدام الكود كنص واحد (بديل عن redeem_step)", {
-    group: DELIVERY,
-  }),
+  f.text(
+    "redemption_guide",
+    "redemptionGuide",
+    "خطوات استخدام الكود كنص واحد (بديل عن redeem_step)",
+    {
+      group: DELIVERY,
+    },
+  ),
   f.url("redemption_url", "redemptionUrl", "رابط صفحة استبدال الكود الرسمية", { group: DELIVERY }),
   f.text("usage_terms", "usageTerms", "شروط الاستخدام والقيود", { group: DELIVERY }),
   f.text("refund_policy", "refundPolicy", "سياسة الاسترجاع", { group: DELIVERY }),

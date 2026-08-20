@@ -358,7 +358,6 @@ service.3.link=/policy
 service.3.button_label_ar=اطلع على الضمان
 `;
 
-
 export const TRADE_RULES_TEMPLATE = `# سياسة المقايضة والاستبدال — قالب استيراد الأقسام والبنود
 # كل استيراد جديد يُضاف فوق البنود الموجودة (لا يحذف القديم).
 # الأقسام المتاحة (category):

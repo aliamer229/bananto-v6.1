@@ -161,8 +161,6 @@ export const emptyStore: StoreDoc = {
   problemSolutions: [],
 };
 
-
-
 const defaultSettings: UserSettings = {
   language: "ar",
   theme: "light",
@@ -310,7 +308,6 @@ export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Prom
   } else {
     await mutateJson<StoreDoc>(STORE_KEY, emptyStore, mutate);
   }
-
 
   storeCache = { doc: next, at: Date.now() };
 
@@ -1151,8 +1148,8 @@ export async function getPaginatedMessages(
       const oldest = slice[0];
       const hasMore = Boolean(
         totalCount > slice.length &&
-          oldest &&
-          (oldest.id !== aroundMsg.id || slice.length === limit),
+        oldest &&
+        (oldest.id !== aroundMsg.id || slice.length === limit),
       );
 
       return {
@@ -1491,7 +1488,6 @@ export async function approveRechargeRequest(
     "deposit",
     `Recharge approved: ${req.method} (${requestId})${finalAmount > req.amount ? " + Bonus" : ""}`,
   );
-
 
   return true;
 }

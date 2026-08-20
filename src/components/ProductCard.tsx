@@ -4,11 +4,17 @@ import { Star } from "lucide-react";
 
 import { cdnImage } from "@/lib/img";
 
-export function ProductCard({ product, forceStandardImage }: { product: any; forceStandardImage?: boolean }) {
+export function ProductCard({
+  product,
+  forceStandardImage,
+}: {
+  product: any;
+  forceStandardImage?: boolean;
+}) {
   // If forceStandardImage is true, we ignore cartridgeImage and use the standard product image
-  const displayImage = forceStandardImage 
-    ? (product.image || product.coverImage || product.coverUrl)
-    : (product.cartridgeImage || product.image || product.coverImage || product.coverUrl);
+  const displayImage = forceStandardImage
+    ? product.image || product.coverImage || product.coverUrl
+    : product.cartridgeImage || product.image || product.coverImage || product.coverUrl;
 
   return (
     <Link
@@ -25,10 +31,10 @@ export function ProductCard({ product, forceStandardImage }: { product: any; for
           loading="lazy"
           decoding="async"
           className="w-[200%] max-w-none h-full object-cover object-right group-hover:scale-105 transition-transform duration-300"
-          style={{ 
-            marginLeft: '-100%',
-            maskImage: 'linear-gradient(to right, transparent 50%, black 50%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 50%, black 50%)'
+          style={{
+            marginLeft: "-100%",
+            maskImage: "linear-gradient(to right, transparent 50%, black 50%)",
+            WebkitMaskImage: "linear-gradient(to right, transparent 50%, black 50%)",
           }}
           alt={product.title}
         />

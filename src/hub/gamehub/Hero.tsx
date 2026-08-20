@@ -382,7 +382,7 @@ export function Hero() {
                     playSound("confirm");
                     openBuy();
                   }}
-                  className="btn btn-primary h-12 flex-1 px-7 text-sm sm:flex-none"
+                  id="hero-buy-button" className="btn btn-primary h-12 flex-1 px-7 text-sm sm:flex-none"
                 >
                   <ShoppingBag className="h-4 w-4" />
                   {t("hero.buyNow")}
@@ -418,7 +418,10 @@ export function Hero() {
         {stats.length > 0 && (
           <div className="mt-9 grid grid-cols-2 gap-2 overflow-hidden rounded-xl border border-white/15 bg-white/[0.07] p-2 backdrop-blur-md sm:grid-cols-3 lg:grid-cols-6">
             {stats.map((stat) => (
-              <div key={stat.label} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.08] px-3.5 py-3">
+              <div
+                key={stat.label}
+                className="min-w-0 rounded-lg border border-white/10 bg-white/[0.08] px-3.5 py-3"
+              >
                 <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/80">
                   <stat.icon className="h-4 w-4 shrink-0 text-white" strokeWidth={2.25} />
                   <span className="truncate">{stat.label}</span>

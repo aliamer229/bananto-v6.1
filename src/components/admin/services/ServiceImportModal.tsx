@@ -107,7 +107,6 @@ const SECTION_CONFIG: Record<
   },
 };
 
-
 export default function ServiceImportModal({ type, onClose, onImport }: ServiceImportModalProps) {
   const t = useI18n((s) => s.t);
   const lang = useI18n((s) => s.lang);
@@ -173,7 +172,7 @@ export default function ServiceImportModal({ type, onClose, onImport }: ServiceI
       toast.error(t("يرجى إدخال أو لصق محتوى القالب أولاً"));
       return;
     }
-    
+
     setIsValidating(true);
     // Use a small delay for UI feedback
     const processValidation = () => {
@@ -181,11 +180,11 @@ export default function ServiceImportModal({ type, onClose, onImport }: ServiceI
         console.log(`[ServiceImport] Starting validation for type: ${type}`);
         const parsed = parseServiceTemplate(type, inputText);
         console.log(`[ServiceImport] Parsed result:`, parsed);
-        
+
         setResult(parsed);
-        
-        const hasErrors = parsed.issues.some(i => i.severity === "error");
-        
+
+        const hasErrors = parsed.issues.some((i) => i.severity === "error");
+
         if (parsed.success && !hasErrors) {
           toast.success(t("تم فحص وتجهيز البيانات بنجاح!"));
           setActiveTab("preview");
@@ -617,7 +616,9 @@ export default function ServiceImportModal({ type, onClose, onImport }: ServiceI
                       {result.data.hero_title_ar}
                     </h3>
                     {result.data.hero_subtitle_ar && (
-                      <p className="text-xs text-muted-foreground">{result.data.hero_subtitle_ar}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {result.data.hero_subtitle_ar}
+                      </p>
                     )}
                     <div className="flex flex-wrap gap-2 pt-2">
                       {result.data.working_hours_ar && (
@@ -677,7 +678,6 @@ export default function ServiceImportModal({ type, onClose, onImport }: ServiceI
               )}
             </div>
           )}
-
         </div>
 
         {/* Footer Actions */}

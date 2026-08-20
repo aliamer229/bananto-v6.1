@@ -166,7 +166,7 @@ export default function AppShell({
       </main>
 
       {!hideNav && !isTelegramMiniApp && (
-        <div id="app-bottom-nav" className="fixed bottom-0 left-0 right-0 z-50">
+        <div id="app-bottom-nav" className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none [&>*]:pointer-events-auto">
           <BottomNav currentView={currentView} onNavigate={handleNavigate} />
         </div>
       )}

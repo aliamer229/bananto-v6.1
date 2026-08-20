@@ -67,7 +67,6 @@ export function TopUpModal({
     return (usdAmount * nintendoBonusPercent) / 100;
   };
 
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -197,7 +196,6 @@ export function TopUpModal({
                 </div>
               )}
             </div>
-
 
             {method === "eshop_card" && (
               <div className="space-y-2">

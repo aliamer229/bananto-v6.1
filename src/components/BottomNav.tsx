@@ -1,4 +1,5 @@
 import { CandlestickChart, MessageCircle, ShoppingCart, User } from "lucide-react";
+import { useCartStore, cartCount } from "../store/useCartStore";
 import { BananaIcon } from "./Icons";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
@@ -34,6 +35,7 @@ export default function BottomNav({
 }) {
   const settledAt = useRef(0);
   const { t } = useI18n();
+  const count = useCartStore((s) => cartCount(s.lines));
 
   useEffect(() => {
     settledAt.current = Date.now() + SETTLE_MS;
@@ -42,7 +44,7 @@ export default function BottomNav({
   return (
     <div
       dir="rtl"
-      className="w-full bg-[var(--page)]/90 backdrop-blur-xl border-t border-border px-6 py-3 z-50 flex justify-around sm:justify-center sm:gap-16 lg:gap-24 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-6 sm:pb-3 shrink-0 transform-gpu"
+      className="w-full bg-[var(--page)]/90 backdrop-blur-xl border-t border-border px-6 py-3 z-50 flex justify-around sm:justify-center sm:gap-16 lg:gap-24 items-center shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom,1.5rem)] sm:pb-3 shrink-0 transform-gpu pointer-events-auto"
     >
       {navItems.map((item) => {
         const isActive =
@@ -68,6 +70,11 @@ export default function BottomNav({
                 className="absolute inset-0 bg-blue-100/50 rounded-xl"
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
+            )}
+            {item.id === "cart" && count > 0 && (
+              <div className="absolute top-0 right-0 -mr-2 -mt-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white z-20">
+                {count}
+              </div>
             )}
             <Icon
               className={`w-6 h-6 relative z-10 transition-colors duration-300 ${isActive ? "text-blue-600" : "text-muted-foreground"}`}

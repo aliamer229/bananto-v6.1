@@ -259,7 +259,11 @@ export function AddGamePageEditor() {
                 onClick={() => {
                   const newItems: ServiceFeature[] = [
                     ...(config.trust_items || []),
-                    { id: "t-" + Date.now(), label_ar: "نقطة ثقة جديدة", sort_order: (config.trust_items || []).length + 1 },
+                    {
+                      id: "t-" + Date.now(),
+                      label_ar: "نقطة ثقة جديدة",
+                      sort_order: (config.trust_items || []).length + 1,
+                    },
                   ];
                   update("trust_items", newItems);
                 }}
@@ -630,7 +634,11 @@ export function AddGamePageEditor() {
                           const existing = next[idx]!;
                           next[idx] = { ...existing, title_ar: e.target.value };
                         } else {
-                          next.push({ status, title_ar: e.target.value, description_ar: currentDescriptionAr });
+                          next.push({
+                            status,
+                            title_ar: e.target.value,
+                            description_ar: currentDescriptionAr,
+                          });
                         }
                         update("status_content", next);
                       }}
@@ -652,7 +660,11 @@ export function AddGamePageEditor() {
                           const existing = next[idx]!;
                           next[idx] = { ...existing, description_ar: e.target.value };
                         } else {
-                          next.push({ status, title_ar: currentTitleAr, description_ar: e.target.value });
+                          next.push({
+                            status,
+                            title_ar: currentTitleAr,
+                            description_ar: e.target.value,
+                          });
                         }
                         update("status_content", next);
                       }}

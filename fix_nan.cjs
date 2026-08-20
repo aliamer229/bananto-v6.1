@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/routes/category.$categoryId.tsx', 'utf-8');
+const fs = require("fs");
+let code = fs.readFileSync("src/routes/category.$categoryId.tsx", "utf-8");
 
 const oldSort = `        case "newest":
         default: {
@@ -26,4 +26,4 @@ const newSort = `        case "newest":
         }`;
 
 code = code.replace(oldSort, newSort);
-fs.writeFileSync('src/routes/category.$categoryId.tsx', code);
+fs.writeFileSync("src/routes/category.$categoryId.tsx", code);

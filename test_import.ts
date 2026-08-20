@@ -14,7 +14,7 @@ async function main() {
     const valid = validateGameData(parsed.data);
     await importGameDataToDb(valid.data, "create");
     console.log("Success");
-  } catch(e) {
+  } catch (e) {
     console.error("Failed:", e);
   }
 }

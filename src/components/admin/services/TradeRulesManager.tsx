@@ -465,7 +465,8 @@ export default function TradeRulesManager({ embedded = false }: TradeRulesManage
                     const dp = draftPercentages[rule.id];
                     const da = draftActive[rule.id];
                     const currentPercent = dp !== undefined ? dp : Number(rule.percent);
-                    const currentActive = da !== undefined ? da : rule.active === 1 || rule.active === true;
+                    const currentActive =
+                      da !== undefined ? da : rule.active === 1 || rule.active === true;
                     const isDrafted = dp !== undefined || da !== undefined;
 
                     return (

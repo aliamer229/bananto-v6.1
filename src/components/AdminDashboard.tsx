@@ -1290,8 +1290,10 @@ function ListingsView({
       const result = await res.json().catch(() => null);
 
       if (!res.ok || !result?.success) {
-        const errorMsg = result?.error || `HTTP ${res.status}: Failed to save product`;
+        const errorMsg = result?.error || `HTTP ${res.status}: Failed to save product - ${JSON.stringify(result)}`;
+        toast.error(`Debug: HTTP ${res.status} ${JSON.stringify(result)}`);
         console.error(`[SaveProductError] code=${result?.code} ref=${result?.ref}`, result);
+alert(`[SaveProductError] ${JSON.stringify(result)}`);
         throw new Error(errorMsg);
       }
 

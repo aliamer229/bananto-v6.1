@@ -157,11 +157,15 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
         {/* Content */}
         <div className="space-y-2 flex-1 flex flex-col justify-between">
           <div>
-            <h4 className="font-bold text-sm sm:text-base text-foreground line-clamp-1 group-hover:text-red-500 transition-colors" dir="ltr">
+            <h4
+              className="font-bold text-sm sm:text-base text-foreground line-clamp-1 group-hover:text-red-500 transition-colors"
+              dir="ltr"
+            >
               {bundle.titleEn || bundle.title}
             </h4>
             <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-              {games.map((g) => g.titleEn || g.english_name || g.title).join(" • ") || bundle.description}
+              {games.map((g) => g.titleEn || g.english_name || g.title).join(" • ") ||
+                bundle.description}
             </p>
           </div>
 
@@ -283,7 +287,10 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
       {/* Title and Included Games List */}
       <div className="space-y-3 flex-1 flex flex-col justify-between z-10">
         <div>
-          <h3 className="font-extrabold text-base sm:text-lg text-foreground group-hover:text-red-500 transition-colors" dir="ltr">
+          <h3
+            className="font-extrabold text-base sm:text-lg text-foreground group-hover:text-red-500 transition-colors"
+            dir="ltr"
+          >
             {bundle.titleEn || bundle.title}
           </h3>
           {bundle.description && (

@@ -357,7 +357,8 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
                       <div className="text-[11px] text-blue-600 flex items-center gap-1 mt-1">
                         <MapPin className="w-3.5 h-3.5 shrink-0" />
                         <span>
-                          شحن وتوصيل: {order.address.city} - {order.address.street || order.address.area || ""}
+                          شحن وتوصيل: {order.address.city} -{" "}
+                          {order.address.street || order.address.area || ""}
                         </span>
                       </div>
                     )}

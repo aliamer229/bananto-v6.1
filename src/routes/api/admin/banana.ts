@@ -1,9 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  createBananCode,
-  d1All,
-  d1Ready,
-} from "@/lib/db.server";
+import { createBananCode, d1All, d1Ready } from "@/lib/db.server";
 import { body, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 
@@ -27,7 +23,9 @@ export const Route = createFileRoute("/api/admin/banana")({
 
           if (data.action === "list_codes") {
             if (await d1Ready()) {
-              const codes = await d1All(`SELECT * FROM banan_codes ORDER BY created_at DESC LIMIT 100`);
+              const codes = await d1All(
+                `SELECT * FROM banan_codes ORDER BY created_at DESC LIMIT 100`,
+              );
               return json({ codes });
             }
             return json({ codes: [] });
@@ -38,4 +36,3 @@ export const Route = createFileRoute("/api/admin/banana")({
     },
   },
 });
-
