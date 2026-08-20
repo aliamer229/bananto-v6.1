@@ -44,9 +44,11 @@ function CategoryPage() {
       
       // Category check
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
+      const pKind = String(p.kind || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      const isCatMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" ||
-                        (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      
+      const isCatMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" ||
+                        (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
       
       if (!isCatMatch) return false;
 
@@ -102,9 +104,10 @@ function CategoryPage() {
     // Get all products that belong to this category to extract relevant genres
     const categoryProducts = store.products.filter((p: any) => {
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
+      const pKind = String(p.kind || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      const isMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" || 
-                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      const isMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" || 
+                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
       return isMatch;
     });
 
@@ -125,33 +128,29 @@ function CategoryPage() {
   const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "nintendo_games" || categoryId === "cat_1";
 
   const productBanners = useMemo(() => {
-    // If we have products, try to get banners from ALL products in this category
-    // not just the filtered ones, to ensure the slideshow has content
     if (!store?.products) return [];
     
     const targetCat = categoryId.toLowerCase();
     const categoryProducts = store.products.filter((p: any) => {
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
-      return pCat === targetCat || p.kind === targetCat || categoryId === "all" || 
-             (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      const pKind = String(p.kind || "").toLowerCase();
+      
+      const isMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" || 
+                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
+      return isMatch;
     });
 
     const bannerSet = new Set<string>();
     categoryProducts.forEach((p: any) => {
-      // Prioritize explicit banner fields
-      const b = p.banner || p.bannerImage || p.heroImage;
-      if (b && typeof b === 'string' && b.trim()) {
-        bannerSet.add(b.trim());
-      }
-      // Fallback: If no banner but has gallery, use first gallery image
-      else if (p.gallery && Array.isArray(p.gallery) && p.gallery.length > 0) {
-        bannerSet.add(p.gallery[0]);
-      }
-      else if (p.gallery && typeof p.gallery === 'string') {
-        const parts = p.gallery.split(',').map((s: string) => s.trim()).filter(Boolean);
-        if (parts.length > 0) bannerSet.add(parts[0]);
-      }
+      const images = [
+        p.banner, p.bannerImage, p.heroImage,
+        ...(Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? p.gallery.split(',').map((s: string) => s.trim()) : [])),
+        p.image, p.thumbnail
+      ].filter(img => typeof img === 'string' && img.length > 5);
+
+      images.forEach(img => bannerSet.add(img));
     });
+
     return Array.from(bannerSet);
   }, [store?.products, categoryId]);
 
