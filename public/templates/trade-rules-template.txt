@@ -1,0 +1,53 @@
+# سياسة المقايضة والاستبدال — قالب استيراد الأقسام والبنود
+# كل استيراد جديد يُضاف فوق البنود الموجودة (لا يحذف القديم).
+# الأقسام المتاحة (category):
+#   box_presence = العلبة | box_condition = حالة العلبة | cartridge_condition = حالة الشريحة
+#   extras = الملحقات | cleanliness = النظافة العامة | edition = نسخة اللعبة
+#   region = المنطقة | demand = الطلب في السوق | payout_method = طريقة التسليم
+# percent = نسبة التعديل على السعر (سالبة للخصم، موجبة للزيادة)
+
+policy_title_ar=سياسة المقايضة والاستبدال
+policy_body_ar<<EOF
+تُحتسب قيمة المقايضة على أساس سعر السوق الحالي للعبة مع تطبيق نسب البنود أدناه.
+يحق للمتجر رفض أي قطعة تالفة أو غير أصلية.
+EOF
+
+rule.1.category=box_presence
+rule.1.key=with_box
+rule.1.label_ar=مع العلبة الأصلية
+rule.1.label_en=With original box
+rule.1.percent=0
+rule.1.sort_order=10
+rule.1.active=true
+
+rule.2.category=box_presence
+rule.2.key=no_box
+rule.2.label_ar=بدون علبة
+rule.2.label_en=No box
+rule.2.percent=-10
+rule.2.sort_order=20
+rule.2.active=true
+
+rule.3.category=cartridge_condition
+rule.3.key=like_new
+rule.3.label_ar=الشريحة بحالة ممتازة
+rule.3.label_en=Cartridge like new
+rule.3.percent=0
+rule.3.sort_order=10
+rule.3.active=true
+
+rule.4.category=cartridge_condition
+rule.4.key=scratched
+rule.4.label_ar=خدوش واضحة على الشريحة
+rule.4.label_en=Visible scratches
+rule.4.percent=-15
+rule.4.sort_order=20
+rule.4.active=true
+
+rule.5.category=payout_method
+rule.5.key=store_credit
+rule.5.label_ar=رصيد داخل المتجر
+rule.5.label_en=Store credit
+rule.5.percent=10
+rule.5.sort_order=10
+rule.5.active=true
