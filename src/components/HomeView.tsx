@@ -278,14 +278,85 @@ export default function HomeView({
           <StoreServices />
         </Suspense>
 
-        {/* Dynamic Categories */}
+        {/* Section 4: Latest Nintendo Games Added by Release Date - MOVED UP AS REQUESTED */}
+        <LazySection>
+          <section className="-mx-4 mt-2">
+            <div className="flex items-center justify-between gap-2 mb-4 px-8">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold text-foreground">
+                  {t("home.latestNintendoGames") === "home.latestNintendoGames"
+                    ? "Latest Nintendo games by release date"
+                    : t("home.latestNintendoGames")}
+                </h3>
+                <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  New
+                </span>
+              </div>
+            </div>
 
+            <ProductStrip
+              products={adminProducts
+                .filter((p) => {
+                  const catId = (p.category || p.categoryId || "").toLowerCase();
+                  const kind = (p.kind || "").toLowerCase();
+                  // Include Nintendo switch games
+                  return (
+                    !catId ||
+                    catId === "cat_1" ||
+                    catId === "cat_nintendo" ||
+                    catId === "nintendo_games" ||
+                    catId === "nintendo-switch-games" ||
+                    kind === "account" ||
+                    kind === "offline_account" ||
+                    kind === "online_account" ||
+                    kind === "physical" ||
+                    Boolean(p.releaseDate || p.release_date)
+                  );
+                })
+                .sort((a, b) => {
+                  const dateA = new Date(a.releaseDate || a.release_date || 0).getTime();
+                  const dateB = new Date(b.releaseDate || b.release_date || 0).getTime();
+
+                  // If release dates are same or missing, use createdAt as secondary sort
+                  if (dateA === dateB) {
+                    const createA = new Date(a.createdAt || a.created_at || 0).getTime();
+                    const createB = new Date(b.createdAt || b.created_at || 0).getTime();
+                    return createB - createA;
+                  }
+                  return dateB - dateA;
+                })
+                .slice(0, 12)
+                .map((p) => ({
+                  id: p.id,
+                  title: p.title,
+                  price: p.price,
+                  image:
+                    getNintendoCardImage(p) ||
+                    "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
+                  banner: p.banner,
+                  gallery: p.gallery,
+                  subtitle: p.releaseDate || p.release_date || p.developer || p.publisher,
+                  rating: p.metacriticRating ?? null,
+                  platform: p.platform,
+                }))}
+              onSelect={(product: any) => onGameClick(product)}
+              formatPrice={formatGenericPrice}
+              onPress={() => playSound("bumper_end", 0.6)}
+              ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+              loading={isPending}
+            />
+          </section>
+        </LazySection>
+
+        {/* Dynamic Categories */}
         {adminCategories.map((category, index) => {
           const mapGame = (p: any) => ({
             id: p.id,
             title: p.title,
             price: p.price,
-            image: getNintendoCardImage(p) || "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
+            image:
+              getNintendoCardImage(p) ||
+              "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
             banner: p.banner,
             gallery: p.gallery,
             subtitle: p.developer || p.publisher || category.title,
@@ -303,7 +374,10 @@ export default function HomeView({
           if (categoryProducts.length === 0) return null;
 
           // Handle Nintendo Switch Games section visibility
-          const isNintendoGames = category.id === "nintendo-switch-games" || category.id === "nintendo_games" || category.title?.toLowerCase().includes("nintendo switch");
+          const isNintendoGames =
+            category.id === "nintendo-switch-games" ||
+            category.id === "nintendo_games" ||
+            category.title?.toLowerCase().includes("nintendo switch");
 
           if (index === 0) {
             return (
@@ -311,7 +385,9 @@ export default function HomeView({
                 <section className="relative mt-2 pb-6 -mx-4">
                   <div className="mb-3 px-8 flex items-center justify-between">
                     <h3 className="truncate text-xl font-bold text-foreground">
-                      {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames" ? "nintendo games" : t("home.nintendoSwitchGames")}
+                      {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
+                        ? "nintendo games"
+                        : t("home.nintendoSwitchGames")}
                     </h3>
                   </div>
 
@@ -337,10 +413,8 @@ export default function HomeView({
                       <div className="h-[6px] w-full bg-gradient-to-b from-[var(--gray-1)] to-[var(--gray-2)]"></div>
                       <div className="h-[12px] w-full bg-gradient-to-b from-[var(--gray-3)] to-[var(--gray-4)] shadow-[0_15px_25px_rgba(0,0,0,0.15)]"></div>
                     </div>
-                    
                   </div>
                 </section>
-
 
                 {/* Section 2: Account Bundles (Horizontal Strip) */}
                 <BundleStrip
@@ -350,6 +424,7 @@ export default function HomeView({
               </React.Fragment>
             );
           }
+
 
           return (
             <LazySection key={category.id}>
