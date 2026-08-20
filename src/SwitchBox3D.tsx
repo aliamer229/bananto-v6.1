@@ -25,12 +25,12 @@ export function SwitchBox3D({
 
   useEffect(() => {
     if (nodes && materials) {
-      // Small delay to ensure texture calculation has started
       const timer = setTimeout(() => {
         onReady?.();
       }, 100);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [nodes, materials, onReady]);
 
   useEffect(() => {
