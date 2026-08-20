@@ -113,10 +113,7 @@ function CategoryPage() {
         });
       }
       
-      // Also check for category/sub-category types that might be useful as genres
-      if (p.kind && p.kind !== categoryId) {
-        genreSet.add(p.kind);
-      }
+      // We no longer use p.kind as a genre filter because it often includes non-genre values like "account"
     });
     
     return Array.from(genreSet).sort();
