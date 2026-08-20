@@ -135,7 +135,7 @@ export function GlanceSection() {
 
           {description && (
             <div className="border-t border-white/[0.055] p-5 sm:p-6">
-              <h3 className="mb-2 text-sm font-extrabold">{t("glance.about")}</h3>
+              <h3 className="mb-2 text-sm font-extrabold" translate="no">About</h3>
               <p
                 className={cn(
                   "max-w-3xl text-sm leading-[1.75] muted",

@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-
 import * as THREE from 'three';
 import { readPrefs } from "@/lib/prefs";
 import glbAsset from "@/assets/3d/SwitchCase.glb.asset.json";
@@ -30,74 +29,58 @@ export function SwitchBox3D({
     if (nodes && materials) {
       console.log("[SwitchBox3D] Geometry loaded, nodes:", Object.keys(nodes));
       // Notify parent that we are ready to be displayed even if textures are pending
-      onReady?.();
+      if (onReady) onReady();
     }
   }, [nodes, materials, onReady]);
 
   useEffect(() => {
     let isMounted = true;
-    const canvas = document.createElement('canvas');
-    canvas.width = 1236;
-    canvas.height = 951;
-    const ctx = canvas.getContext('2d', { alpha: false });
-    if (!ctx) return;
-
+    
     const drawTexture = async () => {
-      try {
-        // 1. Draw authentic base texture
-        const baseImg = new Image();
-        baseImg.crossOrigin = 'anonymous';
-        baseImg.src = textureAsset.url;
-        
-        await new Promise((resolve) => {
-          baseImg.onload = resolve;
-          baseImg.onerror = () => {
-            console.error("Base texture failed to load");
-            resolve(null);
-          };
-        });
-        
-        if (!isMounted) return;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+      // 1. Create a canvas for the wrap-around texture (front + spine + back)
+      // The SwitchCase.glb expects a single texture that wraps.
+      // Based on the reference project, the dimensions are roughly 1236x951.
+      const canvas = document.createElement('canvas');
+      canvas.width = 1236;
+      canvas.height = 951;
+      const ctx = canvas.getContext('2d', { alpha: false });
+      if (!ctx) return;
 
-        // 2. Overlay game-specific cover image
-        if (coverImage) {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          
-          await new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = (e) => {
-              console.warn("[SwitchBox3D] Cover image load failed", coverImage, e);
-              resolve(null);
-            };
-            img.src = coverImage;
-          });
-          
-          if (isMounted && img.complete && img.naturalWidth > 0) {
-            // Re-draw authentic template to ensure it wraps correctly even with custom image
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          }
-        }
+      // Fill with base color (Switch red or Switch 2 color)
+      ctx.fillStyle = platform === 'ns2' ? '#e60012' : '#e60012'; // Default to red
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.minFilter = THREE.LinearFilter;
-        tex.magFilter = THREE.LinearFilter;
-        tex.generateMipmaps = false;
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.flipY = false;
-        tex.needsUpdate = true;
+      // 2. Load the base texture (the template from the reference project)
+      const baseImg = new Image();
+      baseImg.crossOrigin = "anonymous";
+      
+      const loadImg = (img: HTMLImageElement, url: string) => new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = url;
+      });
+
+      await loadImg(baseImg, textureAsset.url);
+      ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+
+      // 3. Load and draw the game cover if provided
+      if (coverImage) {
+        const coverImg = new Image();
+        coverImg.crossOrigin = "anonymous";
+        await loadImg(coverImg, coverImage);
         
-        if (isMounted) {
-          setTexture((prev) => {
-            if (prev) prev.dispose();
-            return tex;
-          });
-        }
-      } catch (err) {
-        console.error('Error drawing texture:', err);
+        // Front cover position (right side of the template)
+        // Based on the 1236x951 template:
+        // Front is approximately from x=650 to x=1236
+        // These values are calibrated to match the SwitchCase.glb UVs
+        ctx.drawImage(coverImg, 638, 55, 545, 840);
+      }
+
+      if (isMounted) {
+        const newTexture = new THREE.CanvasTexture(canvas);
+        newTexture.colorSpace = THREE.SRGBColorSpace;
+        newTexture.anisotropy = 8;
+        setTexture(newTexture);
       }
     };
 
@@ -127,14 +110,13 @@ export function SwitchBox3D({
     materials.plastic.envMapIntensity = 1.0;
   }
 
-  // Ensure the nodes exist before rendering to avoid "empty" space
-  if (!nodes.placeholder || !nodes.box || !nodes.foil) {
-    console.warn("[SwitchBox3D] Missing required geometry nodes", Object.keys(nodes));
-  }
-
   useFrame((state) => {
     if (group.current) {
+      // Rotation: 0.1 rad is ~5.7 deg, so roughly -3 deg to +3 deg
       group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+      group.current.rotation.x = Math.cos(state.clock.elapsedTime * 0.5) * 0.05;
+      
+      // Gentle floating: +/- 0.05 units
       group.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05 - 0.1;
     }
   });
@@ -172,7 +154,6 @@ export function SwitchBox3D({
     </>
   );
 }
-
 
 // Preload both assets to ensure they are cached
 useGLTF.preload(glbAsset.url);

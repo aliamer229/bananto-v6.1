@@ -257,7 +257,9 @@ export function Hero() {
                   kind="developer"
                   name={game.developer.name}
                   slug={game.developer.slug}
+                  translate="no"
                 />
+
               )}
               {game.developer && game.publisher && game.developer.id !== game.publisher.id && (
                 <span aria-hidden>·</span>
