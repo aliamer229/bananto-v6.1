@@ -8,8 +8,8 @@
 
 export const ar = {
   home: {
-    nintendoSwitchGames: "Nintendo Switch games",
-    latestNintendoGames: "latest nintendo games",
+    nintendoSwitchGames: "nintendo games",
+    latestNintendoGames: "آخر إصدارات ألعاب نينتندو حسب تاريخ الإصدار",
   },
   common: {
     brand: "بنانتو",
@@ -549,8 +549,8 @@ type Mirror<T> = {
 
 export const en: Mirror<Dictionary> = {
   home: {
-    nintendoSwitchGames: "Nintendo Switch games",
-    latestNintendoGames: "latest nintendo games",
+    nintendoSwitchGames: "nintendo games",
+    latestNintendoGames: "Latest Nintendo games by release date",
   },
   common: {
     brand: "Bananto",
