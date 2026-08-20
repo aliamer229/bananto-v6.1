@@ -10,6 +10,7 @@ import {
   Download,
   Eye,
   Table,
+  Layers,
 } from "lucide-react";
 import { parseGameImport } from "../../lib/gameImportParser";
 import { downloadTemplateFile } from "@/lib/downloadTemplate";
@@ -17,6 +18,7 @@ import { GAME_IMPORT_SCHEMA } from "../../lib/gameImportSchema";
 import { getTextValue } from "../../lib/utils";
 import { toast } from "sonner";
 import { useTranslation } from "../../i18n";
+import { cn } from "@/lib/utils";
 
 interface AdminImportModalProps {
   onClose: () => void;
