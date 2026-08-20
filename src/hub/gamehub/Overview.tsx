@@ -74,11 +74,16 @@ export function GlanceSection() {
       icon: Languages,
       label: t("glance.languages"),
       value: game.languages?.length
-        ? game.languages
-            .slice(0, 3)
-            .map((l) => l.name)
-            .join(" · ") + (game.languages.length > 3 ? ` +${game.languages.length - 3}` : "")
+        ? (
+            <span translate="no">
+              {game.languages
+                .slice(0, 3)
+                .map((l) => l.name)
+                .join(" · ") + (game.languages.length > 3 ? ` +${game.languages.length - 3}` : "")}
+            </span>
+          )
         : null,
+
     },
     { icon: Calendar, label: t("glance.releaseDate"), value: formatDate(game.releaseDate) },
     {
