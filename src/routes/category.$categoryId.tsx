@@ -5,8 +5,9 @@ import { api } from "@/lib/api";
 import { ProductCard } from "@/components/ProductCard";
 import { useState, useMemo } from "react";
 import { useI18n } from "@/i18n";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Filter, SortAsc, Calendar, Star, Tag, ChevronDown } from "lucide-react";
+
 
 export const Route = createFileRoute("/category/$categoryId")({
   component: CategoryPage,
