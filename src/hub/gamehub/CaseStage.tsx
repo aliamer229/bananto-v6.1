@@ -31,7 +31,7 @@ function hasWebGL(): boolean {
 }
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
-  const [modelReady, setModelReady] = useState(false);
+  const [modelReady, setModelReady] = useState(true);
   const handleModelReady = useCallback(() => setModelReady(true), []);
 
   // Check preferences for reduced motion
@@ -55,7 +55,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
 
       <div
         className={cn(
-          "absolute inset-0 touch-none transition-opacity duration-300",
+          "absolute inset-0 touch-none",
           modelReady ? "opacity-100" : "opacity-0",
         )}
       >
