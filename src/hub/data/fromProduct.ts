@@ -552,8 +552,9 @@ function buildPatchNotes(p: Record<string, unknown>, locale: "ar" | "en"): Patch
     version: str(row["version"]),
     date: str(row["date"]),
     ...(str(row["body"])
-      ? { added: locale === "en" && row["bodyEn"] ? lines(row["bodyEn"]) : lines(row["body"]) }
+      ? { added: lines(row["bodyEn"] || row["body"]) }
       : {}),
+
   }));
 }
 
