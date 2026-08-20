@@ -253,23 +253,27 @@ export function Hero() {
             {/* Developer / publisher — both navigable. */}
             <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs muted">
               {game.developer && (
-                <StudioLink
-                  kind="developer"
-                  name={game.developer.name}
-                  slug={game.developer.slug}
-                  translate="no"
-                />
-
+                <div translate="no">
+                  <StudioLink
+                    kind="developer"
+                    name={game.developer.name}
+                    slug={game.developer.slug}
+                  />
+                </div>
               )}
+
               {game.developer && game.publisher && game.developer.id !== game.publisher.id && (
                 <span aria-hidden>·</span>
               )}
               {game.publisher && game.publisher.id !== game.developer?.id && (
-                <StudioLink
-                  kind="publisher"
-                  name={game.publisher.name}
-                  slug={game.publisher.slug}
-                />
+                <div translate="no">
+                  <StudioLink
+                    kind="publisher"
+                    name={game.publisher.name}
+                    slug={game.publisher.slug}
+                  />
+                </div>
+
               )}
             </p>
 
