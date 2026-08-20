@@ -94,6 +94,39 @@ export function SwitchBox3D({
       ctx.restore();
     };
 
+    /**
+     * Front panel: the artwork must read as one whole cover, not a slice.
+     * A blown-up blurred copy fills the panel edge to edge, then the artwork
+     * itself is drawn fully contained on top — nothing important gets cut.
+     */
+    const drawContain = (
+      img: HTMLImageElement,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+    ) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+
+      // Backdrop from the art itself so the panel never shows bare white bars.
+      ctx.filter = "blur(28px) saturate(1.4) brightness(0.75)";
+      const bScale = Math.max(w / img.width, h / img.height) * 1.25;
+      const bw = img.width * bScale;
+      const bh = img.height * bScale;
+      ctx.drawImage(img, x + (w - bw) / 2, y + (h - bh) / 2, bw, bh);
+      ctx.filter = "none";
+
+      const scale = Math.min(w / img.width, h / img.height);
+      const dw = img.width * scale;
+      const dh = img.height * scale;
+      ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+      ctx.restore();
+    };
+
+
     const drawTexture = async () => {
       try {
         const baseImg = await loadImage("/textures/GZAfvAF3.jpg");
@@ -125,7 +158,8 @@ export function SwitchBox3D({
             ctx.fillRect(0, 0, BACK_W, CANVAS_H);
 
             drawSpine();
-            drawCover(img, frontX, 0, FRONT_W, CANVAS_H);
+            drawContain(img, frontX, 0, FRONT_W, CANVAS_H);
+
           }
         } else {
           drawSpine();
@@ -169,13 +203,17 @@ export function SwitchBox3D({
   return (
     <>
       <OrbitControls
+        makeDefault
         enablePan={false}
         enableZoom={false}
+        enableRotate
+        rotateSpeed={0.9}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 1.5}
         enableDamping
         dampingFactor={0.08}
       />
+
     <group ref={group} dispose={null} scale={0.65} position={[0, -0.5, 0]} rotation={[0, -Math.PI / 6, 0]}>
       <mesh geometry={nodes.box.geometry} material={materials.plastic} />
 

@@ -45,6 +45,45 @@ const acceptLanguages = createIsomorphicFn()
     typeof navigator === "undefined" ? [] : [...(navigator.languages ?? [navigator.language])],
   );
 
+/** Visitor country from the edge (Cloudflare sets `cf-ipcountry`). */
+const requestCountry = createIsomorphicFn()
+  .server(() => (getRequestHeader("cf-ipcountry") ?? "").toUpperCase())
+  .client(() => "");
+
+/** Arabic-speaking markets: these default to Arabic, everyone else to English. */
+export const ARABIC_COUNTRIES = new Set([
+  "IQ", "SA", "AE", "KW", "QA", "BH", "OM", "YE", "JO", "SY", "LB", "PS",
+  "EG", "LY", "TN", "DZ", "MA", "MR", "SD", "SO", "DJ", "KM",
+]);
+
+/** Country dial codes for those same markets, longest-first when matching. */
+const ARABIC_DIAL_CODES = [
+  "964", "966", "971", "965", "974", "973", "968", "967", "962", "963", "961",
+  "970", "20", "218", "216", "213", "212", "222", "249", "252", "253", "269",
+];
+
+/** Turkey gets Turkish, since the storefront ships a Turkish dictionary. */
+export function langFromCountry(code: string): Lang | undefined {
+  const cc = String(code ?? "").toUpperCase();
+  if (!cc) return undefined;
+  if (ARABIC_COUNTRIES.has(cc)) return "ar";
+  if (cc === "TR") return "tr";
+  return "en";
+}
+
+/**
+ * Language implied by a registered phone number: an Arab dial code means the
+ * member reads Arabic, any other country code means English.
+ */
+export function langFromPhone(phone: string | null | undefined): Lang | undefined {
+  const digits = String(phone ?? "").replace(/[^\d]/g, "");
+  if (!digits) return undefined;
+  const normalised = digits.replace(/^0+/, "");
+  if (normalised.startsWith("90")) return "tr";
+  if (ARABIC_DIAL_CODES.some((code) => normalised.startsWith(code))) return "ar";
+  return "en";
+}
+
 /** First-visit guess: ar → Arabic, tr → Turkish, en → English, anything else → Arabic. */
 export function guessLang(languages: readonly string[]): Lang {
   for (const raw of languages) {
@@ -58,6 +97,7 @@ export function guessLang(languages: readonly string[]): Lang {
   }
   return "en";
 }
+
 
 export function readCookie(name: string, header = cookieHeader()): string | undefined {
   for (const part of header.split(";")) {
@@ -98,7 +138,11 @@ export function readPrefs() {
   // Priority: an explicit saved choice, then the browser's preference on a
   // first visit, then Arabic. A stored choice is never overridden by the
   // browser afterwards.
-  const lang: Lang = isLang(rawLang) ? rawLang : guessLang(acceptLanguages());
+  // Priority when nothing was chosen yet: the visitor's country (IP), then the
+  // browser's language list. An Arab country gets Arabic, everyone else English.
+  const lang: Lang = isLang(rawLang)
+    ? rawLang
+    : (langFromCountry(requestCountry()) ?? guessLang(acceptLanguages()));
   const pack = findTheme(readCookie(THEME_COOKIE, header) ?? DEFAULT_THEME);
   const motion: Motion = readCookie(MOTION_COOKIE, header) === "lite" ? "lite" : "full";
   return { lang, dir: dirOf(lang), theme: pack.id, dark: pack.dark, motion };

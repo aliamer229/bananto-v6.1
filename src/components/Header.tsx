@@ -14,7 +14,6 @@ import {
   Music,
   Volume2,
   VolumeX,
-  History,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useI18n } from "../i18n";
@@ -23,7 +22,7 @@ import LanguageCurrencyModal from "./LanguageCurrencyModal";
 import FlowerMenu from "./FlowerMenu";
 import { cdnImage } from "@/lib/img";
 import { useSettingsStore } from "../store/useSettingsStore";
-import { THEME_COOKIE, writeCookie } from "../lib/prefs";
+import { LANG_COOKIE, THEME_COOKIE, langFromPhone, readCookie, writeCookie } from "../lib/prefs";
 
 export default function Header({
   currentView,
@@ -48,6 +47,20 @@ export default function Header({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { soundEnabled, musicEnabled, setSoundEnabled, setMusicEnabled } = useSettingsStore();
+
+  /*
+    First visit for a signed-in member: their registered phone number is a
+    better signal than the browser locale. An Arab dial code means Arabic,
+    anything else English. An explicit choice (cookie) always wins.
+  */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (readCookie(LANG_COOKIE)) return;
+    const guess = langFromPhone((user as any)?.phone);
+    if (!guess || guess === lang) return;
+    writeCookie(LANG_COOKIE, guess);
+    useI18n.setState({ lang: guess as never });
+  }, [user, lang]);
 
   const handleSelectTheme = (themeId: string, isDark: boolean) => {
     playSound("bumper_end", 0.6);
@@ -84,7 +97,7 @@ export default function Header({
   const menuItems = [
     {
       label: t("اللغة والعملة"),
-      icon: <Globe className="w-6 h-6" />,
+      icon: <Globe className="w-5 h-5" />,
       onClick: () => {
         playSound("bumper_end", 0.6);
         setIsLangCurrencyOpen(true);
@@ -92,23 +105,15 @@ export default function Header({
     },
     {
       label: t("المحفظة"),
-      icon: <Wallet className="w-6 h-6" />,
+      icon: <Wallet className="w-5 h-5" />,
       onClick: () => {
         playSound("bumper_end", 0.6);
         onNavigate("wallet");
       },
     },
     {
-      label: t("طلباتي"),
-      icon: <History className="w-6 h-6" />,
-      onClick: () => {
-        playSound("bumper_end", 0.6);
-        onNavigate("orders");
-      },
-    },
-    {
       label: t("الملف الشخصي"),
-      icon: <User className="w-6 h-6" />,
+      icon: <User className="w-5 h-5" />,
       onClick: () => {
         playSound("user", 0.6);
         onNavigate("profile");
@@ -116,7 +121,7 @@ export default function Header({
     },
     {
       label: t("لون الخلفية والتخصيص"),
-      icon: <Palette className="w-6 h-6" />,
+      icon: <Palette className="w-5 h-5" />,
       onClick: () => {
         playSound("bumper_end", 0.6);
       },
@@ -155,7 +160,7 @@ export default function Header({
     },
     {
       label: t("العنوان"),
-      icon: <MapPin className="w-6 h-6" />,
+      icon: <MapPin className="w-5 h-5" />,
       onClick: () => {
         playSound("bumper_end", 0.6);
         onNavigate("profile");
@@ -215,8 +220,8 @@ export default function Header({
               startAngle={90}
               endAngle={180}
               togglerSize={52}
-              itemSize={52}
-              petalGap={34}
+              itemSize={44}
+              petalGap={30}
               backgroundColor="rgba(0, 0, 0, 0.55)"
               iconColor="white"
               onOpenChange={(isOpen) => {

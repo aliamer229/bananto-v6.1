@@ -139,7 +139,7 @@ export function Hero() {
         )}
       </motion.div>
       {/* Thin wash only — enough contrast for white type, no black plate. */}
-      <div aria-hidden className="absolute inset-0 -z-20 bg-ink-900/35" />
+      <div aria-hidden className="absolute inset-0 -z-20 bg-ink-900/55" />
       <div
         aria-hidden
         className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(8,9,13,0.42)_0%,rgba(11,13,19,0.16)_40%,rgba(11,13,19,0.78)_84%,rgb(11,13,19)_100%)]"
@@ -415,11 +415,11 @@ export function Hero() {
 
         {/* ---- Quick stats strip: compact, seamed, full width ---- */}
         {stats.length > 0 && (
-          <div className="mt-9 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-white/[0.07] sm:grid-cols-3 lg:grid-cols-6">
+          <div className="mt-9 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-white/[0.14] sm:grid-cols-3 lg:grid-cols-6">
             {stats.map((stat) => (
-              <div key={stat.label} className="min-w-0 bg-ink-900/85 px-3.5 py-3 backdrop-blur">
+              <div key={stat.label} className="min-w-0 bg-ink-900/95 px-3.5 py-3 backdrop-blur">
                 <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider muted">
-                  <stat.icon className="h-3 w-3" />
+                  <stat.icon className="h-3.5 w-3.5 shrink-0 opacity-90" />
                   <span className="truncate">{stat.label}</span>
                 </span>
                 <span
@@ -522,7 +522,7 @@ function buildQuickStats(game: Game, t: Translate) {
     items.push({ icon: Clock, label: t("glance.playTime"), value: hours });
   }
 
-  return items.slice(0, 6);
+  return items.filter((item) => item.value && item.value.trim().length > 0).slice(0, 6);
 }
 
 const nintendoRank = (platform: string) =>
