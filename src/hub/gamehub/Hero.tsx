@@ -152,7 +152,7 @@ export function Hero() {
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:pb-12 sm:pt-12 lg:px-6">
         <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)] lg:gap-12">
           {/* ================= Product ================= */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center min-h-[440px]">
             <CaseStage
               key={game.slug}
               coverUrl={game.coverUrl}
@@ -176,7 +176,7 @@ export function Hero() {
 
             {/* SKU selector — only when both cases genuinely exist. */}
             {skus.length > 1 && (
-              <div className="mt-1 flex gap-1 rounded-full bg-black/30 p-1">
+              <div className="mt-4 flex gap-1 rounded-full bg-black/30 p-1">
                 {skus.map((option) => (
                   <button
                     key={option}
@@ -200,7 +200,7 @@ export function Hero() {
 
             {/* Media rail — trailer + stills, secondary to the product. */}
             {(trailer || images.length > 0) && (
-              <div className="mt-1 flex items-center gap-2">
+              <div className="mt-4 flex items-center gap-2">
                 {trailer && (
                   <button
                     onClick={() => {

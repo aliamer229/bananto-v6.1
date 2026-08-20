@@ -179,6 +179,12 @@ export default function Cartridge({
             width={115}
             height={90}
             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.src.includes('unsplash')) {
+                target.src = "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop";
+              }
+            }}
           />
         </div>
         <div className="px-2 py-1.5 shrink-0 h-[64px] flex flex-col justify-between bg-[var(--cart-shell)]">
