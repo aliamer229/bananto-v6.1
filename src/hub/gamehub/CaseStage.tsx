@@ -16,9 +16,7 @@ import { readPrefs } from "@/lib/prefs";
  * ready. If WebGL is unavailable or the device is small, the CSS case simply stays.
  */
 
-const SwitchBox3D = lazyWithRetry(() =>
-  import("@/SwitchBox3D").then((m) => ({ default: m.SwitchBox3D || m.default })),
-);
+import { SwitchBox3D } from "@/SwitchBox3D";
 
 function hasWebGL(): boolean {
   if (typeof window === "undefined") return false;
