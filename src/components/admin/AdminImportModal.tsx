@@ -173,11 +173,19 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                 </label>
                 <button
                   type="button"
+                  onClick={() => void downloadTemplateFile("bulk-import-template.txt")}
+                  className="text-[10px] bg-indigo-600 text-white hover:bg-indigo-700 px-2 py-1 rounded font-bold cursor-pointer transition-colors flex items-center gap-1"
+                >
+                  <Download className="w-2.5 h-2.5" />
+                  تحميل قالب الدفعة (Batch)
+                </button>
+                <button
+                  type="button"
                   onClick={() => void downloadTemplateFile("nintendo-switch-game-template.txt")}
                   className="text-[10px] bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1 rounded font-bold cursor-pointer transition-colors flex items-center gap-1"
                 >
                   <Download className="w-2.5 h-2.5" />
-                  {t("admin.import.downloadTemplate")}
+                  قالب منتج واحد
                 </button>
               </div>
             </div>
@@ -217,6 +225,14 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                   >
                     <Table className="w-3.5 h-3.5" /> {t("admin.import.dataStatus")}
                   </button>
+                  {parseResult.batch && parseResult.batch.length > 1 && (
+                    <button
+                      onClick={() => setViewMode("batch")}
+                      className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors ${viewMode === "batch" ? "bg-primary text-white" : "hover:bg-muted"}`}
+                    >
+                      <Layers className="w-3.5 h-3.5" /> معاينة الدفعة ({parseResult.batch.length})
+                    </button>
+                  )}
                   <button
                     onClick={() => setViewMode("preview")}
                     className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors ${viewMode === "preview" ? "bg-primary text-white" : "hover:bg-muted"}`}
@@ -320,6 +336,48 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                             </p>
                           </div>
                         )}
+                    </div>
+                  ) : viewMode === "batch" && parseResult.batch ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-2">
+                        {parseResult.batch.map((item: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className={cn(
+                              "p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between",
+                              selectedBatchIndex === idx
+                                ? "bg-primary/5 border-primary shadow-sm"
+                                : "bg-background border-border hover:bg-muted/50"
+                            )}
+                            onClick={() => {
+                              setSelectedBatchIndex(idx);
+                              setParseResult({ ...parseResult, data: item });
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center font-bold text-xs">
+                                {idx + 1}
+                              </div>
+                              <div>
+                                <div className="text-[11px] font-bold text-primary truncate max-w-[200px]">
+                                  {item.title || "بدون اسم"}
+                                </div>
+                                <div className="text-[9px] text-muted-foreground font-mono">
+                                  {item.price ? `${item.price} IQD` : "بدون سعر"} • {item.game_id ? "مرتبط بالمقايضة" : "غير مرتبط"}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <div className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[8px] font-bold">
+                                {item.kind || "account"}
+                              </div>
+                              {selectedBatchIndex === idx && (
+                                <CheckCircle className="w-4 h-4 text-primary" />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">
