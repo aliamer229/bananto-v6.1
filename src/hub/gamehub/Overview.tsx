@@ -182,7 +182,7 @@ export function FitSection() {
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
                   <Chip key={tag.id} tone={tag.positive ? "good" : "default"}>
-                    {tag.label}
+                    <span translate="no">{tag.label}</span>
                   </Chip>
                 ))}
               </div>
