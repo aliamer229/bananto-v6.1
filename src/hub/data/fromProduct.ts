@@ -586,7 +586,7 @@ function buildSeries(p: Record<string, unknown>, locale: "ar" | "en"): GameSerie
   if (!mappedEntries.length && !name) return undefined;
   return {
     id: slugify(name || "series"),
-    name: name || (locale === "en" ? "Series" : "السلسلة"),
+    name: name || "Series",
     entries: mappedEntries,
   };
 }
