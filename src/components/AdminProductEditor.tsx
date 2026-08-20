@@ -455,6 +455,35 @@ export default function AdminProductEditor({
     };
   }, []);
 
+  const handleImport = async (data: any, batch?: any[]) => {
+    if (batch && batch.length > 1) {
+      toast.promise(
+        (async () => {
+          // Process all products in the batch
+          // In a real scenario, we might want to save them all to the DB directly.
+          // For now, we'll import the first one into the form and provide feedback.
+          setFormData((prev: any) => ({ ...prev, ...batch[0] }));
+          setShowImportModal(false);
+          
+          // Note: Full batch import logic would typically happen in a dedicated service
+          // or by calling onSave for each item. Since we are in the editor for ONE product,
+          // we treat the first one as the primary target.
+          return batch.length;
+        })(),
+        {
+          loading: "جاري معالجة الدفعة...",
+          success: (count) => `تم استيراد بيانات المنتج الأول من أصل ${count} منتجات.`,
+          error: "فشل استيراد الدفعة.",
+        }
+      );
+      return;
+    }
+
+    setFormData((prev: any) => ({ ...prev, ...data }));
+    setShowImportModal(false);
+    toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
+  };
+
   const handleTitleInputChange = (val: string) => {
     handleChange("titleEn", val);
     handleChange("title", val);
