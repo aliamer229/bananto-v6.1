@@ -333,7 +333,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
       text: { key: "text", type: "multiline", target: "body" },
       image: { key: "image", type: "url", target: "imageUrl" },
     },
-    description: "فصول القصة",
+    description: "فصول القصة (العالم والقصة)",
   },
 
   // GALLERY
@@ -608,7 +608,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     target: "seriesEntries",
     repeatable: true,
     itemFields: { value: { key: "value", type: "string", target: "value" } },
-    description: "أجزاء السلسلة",
+    description: "أجزاء السلسلة (ألعاب مشابهة)",
   },
 
   // STUDIO

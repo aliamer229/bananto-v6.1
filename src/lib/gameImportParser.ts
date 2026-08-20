@@ -1,5 +1,6 @@
 import { GAME_IMPORT_SCHEMA, FieldDef } from "./gameImportSchema";
-import { getTextValue, str } from "./utils";
+import { getTextValue } from "./utils";
+import { str } from "./hub";
 
 export interface ParseResult {
   data: Record<string, any>;
@@ -254,7 +255,9 @@ function convertType(value: string, type: string): any {
       if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
       return undefined;
     case "url":
-      if (/^https?:\/\/.+/.test(value)) return value;
+      if (/^https?:\/\/.+/.test(value) || value.startsWith("/")) return value;
+      // Soften URL validation as requested to accept more formats
+      if (value.includes(".") && !value.includes(" ")) return value;
       return undefined;
     case "array":
       return value; // Handled by setValueByPath
