@@ -58,6 +58,16 @@ export function TopUpModal({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const nintendoBonusEnabled = settings?.["nintendoBonusEnabled"] !== false;
+  const nintendoBonusPercent = Number(settings?.["nintendoBonusPercent"] || 15);
+  const usdIqdRate = Number(settings?.["usdExchangeRate"] || 1500);
+
+  const calculateBonus = (usdAmount: number) => {
+    if (method !== "eshop_card" || !nintendoBonusEnabled) return 0;
+    return (usdAmount * nintendoBonusPercent) / 100;
+  };
+
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -156,6 +166,38 @@ export function TopUpModal({
                 placeholder="0.00"
                 className="w-full rounded-xl border border-border px-4 py-3 outline-none focus:ring-2 ring-zinc-900/10 font-black text-xl"
               />
+              {method === "eshop_card" && amount && nintendoBonusEnabled && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase text-emerald-600">
+                    <span>{tr("عرض خاص: بونص نينتندو")}</span>
+                    <span>+{nintendoBonusPercent}%</span>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-muted-foreground font-bold">
+                        {tr("الرصيد الكلي")}
+                      </span>
+                      <span className="text-sm font-black text-zinc-900">
+                        ${(Number(amount) + calculateBonus(Number(amount))).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col items-end">
+                      <span className="text-[9px] text-muted-foreground font-bold">
+                        {tr("بالدينار العراقي")}
+                      </span>
+                      <span className="text-xs font-bold text-emerald-600">
+                        {(
+                          (Number(amount) + calculateBonus(Number(amount))) *
+                          usdIqdRate
+                        ).toLocaleString("en-US")}{" "}
+                        {tr("IQD")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             </div>
 
             {method === "eshop_card" && (

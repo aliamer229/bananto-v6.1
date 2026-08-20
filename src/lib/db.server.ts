@@ -1471,12 +1471,25 @@ export async function approveRechargeRequest(
   );
   if (claimed !== 1) return false;
 
+  const store = await getStore();
+  let finalAmount = req.amount;
+
+  // Apply Nintendo Bonus if applicable
+  if (req.method === "eshop_card") {
+    const bonusEnabled = store.settings?.["nintendoBonusEnabled"] !== false;
+    const bonusPercent = Number(store.settings?.["nintendoBonusPercent"] || 15);
+    if (bonusEnabled) {
+      finalAmount = req.amount * (1 + bonusPercent / 100);
+    }
+  }
+
   await adjustUserWalletBalance(
     req.userId,
-    req.amount,
+    finalAmount,
     "deposit",
-    `Recharge approved: ${req.method} (${requestId})`,
+    `Recharge approved: ${req.method} (${requestId})${finalAmount > req.amount ? " + Bonus" : ""}`,
   );
+
 
   return true;
 }

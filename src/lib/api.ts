@@ -498,6 +498,17 @@ export const adminApi = {
       body: JSON.stringify(patch),
     }),
   getUsers: () => request<{ users: any[]; rechargeRequests: any[] }>("/api/admin/users"),
+  createBananCode: (value: number) =>
+    request<{ success: boolean; code: any }>("/api/admin/banana", {
+      method: "POST",
+      body: JSON.stringify({ action: "create_code", value }),
+    }),
+  listBananCodes: () =>
+    request<{ codes: any[] }>("/api/admin/banana", {
+      method: "POST",
+      body: JSON.stringify({ action: "list_codes" }),
+    }),
+
   getBinanceTopups: () =>
     request<{ topups: any[]; intents: any[]; logs: any[] }>("/api/admin/binance-topups"),
   getUserLogs: (userId: string) =>
