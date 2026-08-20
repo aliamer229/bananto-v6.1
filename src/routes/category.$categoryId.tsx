@@ -3,10 +3,11 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import AppShell from "@/components/AppShell";
 import { api } from "@/lib/api";
 import { ProductCard } from "@/components/ProductCard";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useI18n } from "@/i18n";
 import { motion, AnimatePresence } from "motion/react";
 import { Filter, SortAsc, Calendar, Star, Tag, ChevronDown } from "lucide-react";
+import { cdnImage } from "@/lib/img";
 
 
 export const Route = createFileRoute("/category/$categoryId")({
@@ -25,6 +26,7 @@ function CategoryPage() {
   const [platform, setPlatform] = useState<PlatformOption>("all");
   const [selectedGenre, setSelectedGenre] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   const { data: store, isLoading } = useQuery({
     queryKey: ["store"],
@@ -106,28 +108,71 @@ function CategoryPage() {
 
   const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "cat_1";
 
+  const productBanners = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    const bannerSet = new Set<string>();
+    products.forEach((p: any) => {
+      const b = p.banner || p.bannerImage || p.heroImage;
+      if (b && typeof b === 'string' && b.trim()) {
+        bannerSet.add(b.trim());
+      }
+    });
+    return Array.from(bannerSet);
+  }, [products]);
+
+  useEffect(() => {
+    if (productBanners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prev) => (prev + 1) % productBanners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [productBanners.length]);
+
   return (
     <AppShell currentView="store" onBack={() => navigate({ to: "/" })}>
       <div className="pb-24 bg-[var(--page)] min-h-screen" dir="rtl">
         {/* Header Section */}
-        <div className={`relative pt-24 pb-12 px-6 overflow-hidden ${categoryInfo.bgColor}`}>
-           <div className="absolute inset-0 opacity-10 pointer-events-none">
-             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent" />
+        <div className={`relative pt-24 pb-12 px-6 overflow-hidden min-h-[320px] flex items-center justify-center ${categoryInfo.bgColor}`}>
+           {/* Background Slideshow */}
+           <div className="absolute inset-0 z-0">
+             {productBanners.length > 0 ? (
+               <AnimatePresence mode="wait">
+                 <motion.div
+                   key={productBanners[currentBannerIndex]}
+                   initial={{ opacity: 0, scale: 1.1 }}
+                   animate={{ opacity: 1, scale: 1 }}
+                   exit={{ opacity: 0, scale: 0.95 }}
+                   transition={{ duration: 1.2, ease: "easeInOut" }}
+                   className="absolute inset-0"
+                 >
+                   <img 
+                     src={cdnImage(productBanners[currentBannerIndex])} 
+                     alt="Category Banner"
+                     className="w-full h-full object-cover"
+                   />
+                   <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+                 </motion.div>
+               </AnimatePresence>
+             ) : (
+               <div className="absolute inset-0 opacity-10 pointer-events-none">
+                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent" />
+               </div>
+             )}
            </div>
            
            <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center text-center">
              <motion.div 
                initial={{ scale: 0.8, opacity: 0 }}
                animate={{ scale: 1, opacity: 1 }}
-               className="mb-4 text-6xl drop-shadow-lg"
+               className="mb-4 text-6xl drop-shadow-2xl"
              >
                {categoryInfo.icon}
              </motion.div>
              <motion.h1 
                initial={{ y: 20, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
-               className="text-4xl font-black text-white mb-3 tracking-tight"
-               style={{ textShadow: "0 4px 12px rgba(0,0,0,0.3)" }}
+               className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight drop-shadow-lg"
+               style={{ textShadow: "0 4px 12px rgba(0,0,0,0.5)" }}
              >
                {categoryInfo.title}
              </motion.h1>
@@ -135,7 +180,8 @@ function CategoryPage() {
                initial={{ y: 20, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
                transition={{ delay: 0.1 }}
-               className="text-white/90 text-lg font-medium max-w-2xl"
+               className="text-white font-bold text-lg md:text-xl max-w-2xl drop-shadow-md"
+               style={{ textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
              >
                {categoryInfo.description}
              </motion.p>
