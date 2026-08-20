@@ -599,7 +599,8 @@ function buildVerdict(p: Record<string, unknown>, locale: "ar" | "en"): EditorVe
   const summary = str(p["verdictSummaryEn"]) || str(p["verdictSummary"]);
   const pros = rows(p["verdictPros"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      const v = r["valueEn"] ?? r["value"] ?? r;
+
       return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
     })
     .filter(Boolean);
