@@ -448,8 +448,9 @@ function buildStory(p: Record<string, unknown>, locale: "ar" | "en"): StorySecti
     ...chapters.map((row, i) => ({
       id: `story-${i}`,
       title:
-        localizedValue(row, "title", "titleEn", locale) ||
-        (locale === "en" ? `Chapter ${i + 1}` : `فصل ${i + 1}`),
+        str(row["titleEn"]) || str(row["title"]) ||
+        `Chapter ${i + 1}`,
+
       body: localizedValue(row, "body", "bodyEn", locale),
       ...(str(row["imageUrl"]) ? { imageId: str(row["imageUrl"]) } : {}),
     })),
