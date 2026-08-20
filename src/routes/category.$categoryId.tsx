@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import AppShell from "@/components/AppShell";
 import { api } from "@/lib/api";
 import { ProductCard } from "@/components/ProductCard";
 import { useState, useMemo, useEffect } from "react";
 import { useI18n } from "@/i18n";
 import { motion, AnimatePresence } from "motion/react";
-import { Filter, SortAsc, Calendar, Star, Tag, ChevronDown } from "lucide-react";
+import { Filter, SortAsc, Calendar, Star, Tag, ChevronDown, Gamepad2 } from "lucide-react";
 import { cdnImage } from "@/lib/img";
-
+import { GAME_GENRES, genreLabel } from "@/lib/genres";
 
 export const Route = createFileRoute("/category/$categoryId")({
   component: CategoryPage,
@@ -16,6 +16,62 @@ export const Route = createFileRoute("/category/$categoryId")({
 
 type SortOption = "newest" | "price_asc" | "price_desc" | "rating" | "release_date";
 type PlatformOption = "all" | "switch1" | "switch2";
+
+interface GenreItem {
+  id: string;
+  label: string;
+}
+
+function getProductGenres(p: any): string[] {
+  const result = new Set<string>();
+
+  // 1. Array or string of genres
+  if (Array.isArray(p.genres)) {
+    p.genres.forEach((g: any) => {
+      if (typeof g === "string" && g.trim()) result.add(g.trim().toLowerCase());
+    });
+  } else if (typeof p.genres === "string" && p.genres.trim()) {
+    try {
+      const parsed = JSON.parse(p.genres);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((g: any) => {
+          if (typeof g === "string" && g.trim()) result.add(g.trim().toLowerCase());
+        });
+      }
+    } catch {
+      p.genres.split(",").forEach((g: string) => {
+        if (g.trim()) result.add(g.trim().toLowerCase());
+      });
+    }
+  }
+
+  // 2. Single genre or CSV
+  if (Array.isArray(p.genre)) {
+    p.genre.forEach((g: any) => {
+      if (typeof g === "string" && g.trim()) result.add(g.trim().toLowerCase());
+    });
+  } else if (typeof p.genre === "string" && p.genre.trim()) {
+    p.genre.split(",").forEach((g: string) => {
+      if (g.trim()) result.add(g.trim().toLowerCase());
+    });
+  }
+
+  // 3. Metadata genres
+  if (Array.isArray(p.metadata?.genres)) {
+    p.metadata.genres.forEach((g: any) => {
+      if (typeof g === "string" && g.trim()) result.add(g.trim().toLowerCase());
+    });
+  }
+
+  // 4. Tags
+  if (Array.isArray(p.tags)) {
+    p.tags.forEach((t: any) => {
+      if (typeof t === "string" && t.trim()) result.add(t.trim().toLowerCase());
+    });
+  }
+
+  return Array.from(result);
+}
 
 function CategoryPage() {
   const { categoryId } = Route.useParams();
@@ -35,28 +91,108 @@ function CategoryPage() {
 
   const categoryInfo = useMemo(() => getCategoryInfo(categoryId, t), [categoryId, t]);
 
+  const isNintendoGames =
+    categoryId === "nintendo-switch-games" ||
+    categoryId === "cat_nintendo" ||
+    categoryId === "nintendo_games" ||
+    categoryId === "cat_1";
+
+  // Extract all available genres for this category
+  const availableGenres = useMemo<GenreItem[]>(() => {
+    if (!store?.products) return [];
+
+    const targetCat = categoryId.toLowerCase();
+    const categoryProducts = store.products.filter((p: any) => {
+      if (p.status === "غير نشط" || p.isActive === false) return false;
+      const pCat = String(p.category || p.categoryId || "").toLowerCase();
+      const pKind = String(p.kind || "").toLowerCase();
+      const isMatch =
+        pCat === targetCat ||
+        pKind === targetCat ||
+        categoryId === "all" ||
+        (targetCat === "nintendo_games" &&
+          (pCat === "cat_nintendo" ||
+            pCat === "nintendo-switch-games" ||
+            pKind === "nintendo-switch-games"));
+      return isMatch;
+    });
+
+    const genreKeys = new Set<string>();
+    categoryProducts.forEach((p: any) => {
+      const gList = getProductGenres(p);
+      gList.forEach((g) => {
+        if (g && g !== "account" && g !== "undefined" && g !== "null") {
+          genreKeys.add(g);
+        }
+      });
+    });
+
+    // Map known GAME_GENRES
+    const matchedKnown: GenreItem[] = [];
+    const matchedKnownIds = new Set<string>();
+
+    GAME_GENRES.forEach((gg) => {
+      const isPresent = Array.from(genreKeys).some(
+        (k) =>
+          k === gg.id ||
+          k === gg.label ||
+          k.includes(gg.id) ||
+          k.includes(gg.label) ||
+          gg.label.includes(k),
+      );
+      if (isPresent) {
+        matchedKnown.push(gg);
+        matchedKnownIds.add(gg.id);
+        matchedKnownIds.add(gg.label.toLowerCase());
+      }
+    });
+
+    // Add any remaining custom genres
+    const customGenres: GenreItem[] = [];
+    genreKeys.forEach((k) => {
+      if (!matchedKnownIds.has(k)) {
+        const customLabel = genreLabel(k);
+        customGenres.push({ id: k, label: customLabel });
+      }
+    });
+
+    // If no specific genres were extracted, supply all standard game genres for Nintendo
+    if (matchedKnown.length === 0 && customGenres.length === 0 && isNintendoGames) {
+      return GAME_GENRES;
+    }
+
+    return [...matchedKnown, ...customGenres];
+  }, [store?.products, categoryId, isNintendoGames]);
+
   const products = useMemo(() => {
     if (!store?.products) return [];
-    
-    let filtered = store.products.filter((p: any) => {
+
+    const filtered = store.products.filter((p: any) => {
       // Basic active check
       if (p.status === "غير نشط" || p.isActive === false) return false;
-      
+
       // Category check
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
       const pKind = String(p.kind || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      
-      const isCatMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" ||
-                        (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
-      
+
+      const isCatMatch =
+        pCat === targetCat ||
+        pKind === targetCat ||
+        categoryId === "all" ||
+        (targetCat === "nintendo_games" &&
+          (pCat === "cat_nintendo" ||
+            pCat === "nintendo-switch-games" ||
+            pKind === "nintendo-switch-games"));
+
       if (!isCatMatch) return false;
 
       // Platform filter
       if (platform !== "all") {
         const pPlat = String(p.platform || "").toLowerCase();
         if (platform === "switch1") {
-          if (pPlat !== "switch1" && pPlat !== "switch" && pPlat !== "both" && pPlat !== "") return false;
+          if (pPlat !== "switch1" && pPlat !== "switch" && pPlat !== "both" && pPlat !== "")
+            return false;
         } else if (platform === "switch2") {
           if (pPlat !== "switch2" && pPlat !== "both") return false;
         }
@@ -64,8 +200,23 @@ function CategoryPage() {
 
       // Genre filter
       if (selectedGenre !== "all") {
-        const pGenre = String(p.genre || "").toLowerCase();
-        if (!pGenre.includes(selectedGenre.toLowerCase())) return false;
+        const pGenres = getProductGenres(p);
+        const selLower = selectedGenre.toLowerCase();
+        const selLabel = genreLabel(selectedGenre).toLowerCase();
+
+        const matchGenre = pGenres.some((g) => {
+          const gLower = g.toLowerCase();
+          return (
+            gLower === selLower ||
+            gLower === selLabel ||
+            gLower.includes(selLower) ||
+            selLower.includes(gLower) ||
+            gLower.includes(selLabel) ||
+            selLabel.includes(gLower)
+          );
+        });
+
+        if (!matchGenre) return false;
       }
 
       return true;
@@ -87,9 +238,19 @@ function CategoryPage() {
         }
         case "newest":
         default: {
-          const timeA = new Date(a.createdAt || 0).getTime();
-          const timeB = new Date(b.createdAt || 0).getTime();
-          return timeB - timeA;
+          const getVal = (p: any) => {
+            let val = 0;
+            if (p.releaseDate) val = new Date(p.releaseDate).getTime();
+            else if (p.release_date) val = new Date(p.release_date).getTime();
+            else if (p.metadata?.releaseDate) val = new Date(p.metadata.releaseDate).getTime();
+            else if (p.metadata?.release_date) val = new Date(p.metadata.release_date).getTime();
+            
+            if (!val || isNaN(val)) {
+              val = new Date(p.createdAt || 0).getTime();
+            }
+            return isNaN(val) ? 0 : val;
+          };
+          return getVal(b) - getVal(a);
         }
       }
     });
@@ -97,247 +258,330 @@ function CategoryPage() {
     return filtered;
   }, [store?.products, categoryId, sortBy, platform, selectedGenre]);
 
-  const genres = useMemo(() => {
-    if (!store?.products) return [];
-    const genreSet = new Set<string>();
-    
-    // Get all products that belong to this category to extract relevant genres
-    const categoryProducts = store.products.filter((p: any) => {
-      const pCat = String(p.category || p.categoryId || "").toLowerCase();
-      const pKind = String(p.kind || "").toLowerCase();
-      const targetCat = categoryId.toLowerCase();
-      const isMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" || 
-                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
-      return isMatch;
-    });
-
-    categoryProducts.forEach((p: any) => {
-      // Check for genre field
-      if (p.genre) {
-        const parts = typeof p.genre === 'string' ? p.genre.split(',') : (Array.isArray(p.genre) ? p.genre : []);
-        parts.forEach((g: string) => {
-          const trimmed = g.trim();
-          if (trimmed) genreSet.add(trimmed);
-        });
-      }
-    });
-    
-    return Array.from(genreSet).filter(g => g.toLowerCase() !== 'account').sort();
-  }, [store?.products, categoryId]);
-
-  const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "nintendo_games" || categoryId === "cat_1";
-
+  // Extract game images (screenshots, hero banners, wallpapers) and EXCLUDE cartridge images
   const productBanners = useMemo(() => {
     if (!store?.products) return [];
-    
+
     const targetCat = categoryId.toLowerCase();
     const categoryProducts = store.products.filter((p: any) => {
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
       const pKind = String(p.kind || "").toLowerCase();
-      
-      const isMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" || 
-                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
+
+      const isMatch =
+        pCat === targetCat ||
+        pKind === targetCat ||
+        categoryId === "all" ||
+        (targetCat === "nintendo_games" &&
+          (pCat === "cat_nintendo" ||
+            pCat === "nintendo-switch-games" ||
+            pKind === "nintendo-switch-games"));
       return isMatch;
     });
 
-    const bannerSet = new Set<string>();
-    categoryProducts.forEach((p: any) => {
-      // Prioritize "banner", "bannerImage", "heroImage" or "gallery"
-      // Explicitly avoid "image" or "thumbnail" if possible because they are often cartridge covers
-      const heroImages = [
-        p.banner, p.bannerImage, p.heroImage,
-        ...(Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? p.gallery.split(',').map((s: string) => s.trim()) : []))
-      ].filter(img => typeof img === 'string' && img.length > 5);
+    const isCartridgeLike = (url?: string | null) => {
+      if (!url || typeof url !== "string") return true;
+      const lower = url.toLowerCase();
+      return (
+        lower.includes("cartridge") ||
+        lower.includes("/cartridges/") ||
+        lower.includes("cart_") ||
+        lower.includes("cover_thumb")
+      );
+    };
 
-      if (heroImages.length > 0) {
-        heroImages.forEach(img => bannerSet.add(img));
-      } else {
-        // Only fallback to image/thumbnail if NO banner or gallery exists
-        const fallbackImages = [p.image, p.thumbnail].filter(img => typeof img === 'string' && img.length > 5);
-        fallbackImages.forEach(img => bannerSet.add(img));
+    const bannerSet = new Set<string>();
+
+    // 1. Gather all screenshots, gallery images, and hero banners from products
+    categoryProducts.forEach((p: any) => {
+      const candidates: (string | undefined | null)[] = [
+        p.banner,
+        p.bannerImage,
+        p.heroImage,
+        p.keyArt,
+        p.wallpaper,
+        p.background,
+      ];
+
+      if (Array.isArray(p.gallery)) {
+        p.gallery.forEach((g: any) => {
+          candidates.push(typeof g === "string" ? g : g?.url);
+        });
+      } else if (typeof p.gallery === "string") {
+        p.gallery.split(",").forEach((s: string) => {
+          candidates.push(s.trim());
+        });
       }
+
+      if (Array.isArray(p.galleryImages)) {
+        p.galleryImages.forEach((img: any) => {
+          candidates.push(typeof img === "string" ? img : img?.url);
+        });
+      }
+
+      if (Array.isArray(p.screenshots)) {
+        p.screenshots.forEach((s: any) => {
+          candidates.push(typeof s === "string" ? s : s?.imageUrl || s?.url);
+        });
+      }
+
+      if (Array.isArray(p.metadata?.images?.screenshots)) {
+        p.metadata.images.screenshots.forEach((s: any) => {
+          candidates.push(s?.imageUrl || s?.url);
+        });
+      }
+
+      if (Array.isArray(p.metadata?.screenshots)) {
+        p.metadata.screenshots.forEach((s: any) => {
+          candidates.push(typeof s === "string" ? s : s?.imageUrl || s?.url);
+        });
+      }
+
+      candidates.forEach((img) => {
+        if (typeof img === "string" && img.length > 5 && !isCartridgeLike(img)) {
+          bannerSet.add(img);
+        }
+      });
     });
 
-    return Array.from(bannerSet);
-  }, [store?.products, categoryId]);
+    let list = Array.from(bannerSet);
+    // Shuffle the list
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = list[i];
+      list[i] = list[j] as string;
+      list[j] = temp as string;
+    }
 
+    // High quality fallback game wallpapers if none found
+    if (list.length === 0) { return []; }
+
+    return list;
+  }, [store?.products, store?.banners, categoryId]);
+
+  // Preload next images and ensure smooth transition only when next image is loaded
+  const [loadedBannerIndices, setLoadedBannerIndices] = useState<Record<number, boolean>>({});
+
+  // Preload all banners when the list is populated
+  useEffect(() => {
+    if (productBanners.length === 0) return;
+    productBanners.forEach((url, idx) => {
+      if (!url) return;
+      const img = new Image();
+      img.src = cdnImage(url);
+      img.onload = () => {
+        setLoadedBannerIndices((prev) => ({ ...prev, [idx]: true }));
+      };
+    });
+  }, [productBanners]);
+
+  // Fast switching timer: switches to the next preloaded image
   useEffect(() => {
     if (productBanners.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentBannerIndex((prev) => (prev + 1) % productBanners.length);
-    }, 5000);
+      setCurrentBannerIndex((prev) => {
+        const nextIndex = (prev + 1) % productBanners.length;
+        // Preload next image actively
+        const nextUrl = productBanners[nextIndex];
+        if (nextUrl) {
+          const nextImg = new Image();
+          nextImg.src = cdnImage(nextUrl);
+          nextImg.onload = () => {
+            setLoadedBannerIndices((loaded) => ({ ...loaded, [nextIndex]: true }));
+          };
+        }
+        return nextIndex;
+      });
+    }, 2500);
     return () => clearInterval(interval);
-  }, [productBanners.length]);
+  }, [productBanners]);
 
   return (
     <AppShell currentView="store" onBack={() => navigate({ to: "/" })}>
       <div className="pb-24 bg-[var(--page)] min-h-screen" dir="rtl">
-        {/* Header Section */}
-        <div className={`relative pt-24 pb-12 px-6 overflow-hidden min-h-[320px] flex items-center justify-center ${categoryInfo.bgColor}`}>
-           {/* Background Slideshow */}
-           <div className="absolute inset-0 z-0">
-             {productBanners.length > 0 ? (
-               <AnimatePresence mode="wait">
-                 <motion.div
-                   key={productBanners[currentBannerIndex]}
-                   initial={{ opacity: 0, scale: 1.1 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   exit={{ opacity: 0, scale: 0.95 }}
-                   transition={{ duration: 1.2, ease: "easeInOut" }}
-                   className="absolute inset-0"
-                 >
-                   <img 
-                     src={cdnImage(productBanners[currentBannerIndex])} 
-                     alt="Category Banner"
-                     className="w-full h-full object-cover"
-                   />
-                   <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-                 </motion.div>
-               </AnimatePresence>
-             ) : (
-               <div className="absolute inset-0 opacity-10 pointer-events-none">
-                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent" />
-               </div>
-             )}
-           </div>
-           
-           <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center text-center">
-             {/* Text elements removed as per user request */}
-           </div>
-        </div>
-
-        {/* Toolbar Section */}
-        <div className="sticky top-16 z-30 bg-[var(--page)]/80 backdrop-blur-xl border-b border-border px-4 py-3">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              <button 
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all border ${showFilters ? 'bg-foreground text-background border-foreground' : 'bg-card text-foreground border-border'}`}
-              >
-                <Filter className="w-4 h-4" />
-                {t("تصفية")}
-                <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-              </button>
-              
-              <div className="h-6 w-px bg-border mx-1 shrink-0" />
-              
-              <select 
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-card text-foreground border border-border rounded-full px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 appearance-none cursor-pointer"
-              >
-                <option value="newest">{t("الأحدث")}</option>
-                <option value="release_date">{t("تاريخ الإصدار")}</option>
-                <option value="price_asc">{t("السعر: من الأقل")}</option>
-                <option value="price_desc">{t("السعر: من الأعلى")}</option>
-                <option value="rating">{t("التقييم")}</option>
-              </select>
-            </div>
-            
-            <div className="hidden md:block text-xs font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
-              {products.length} {t("منتج")}
-            </div>
-          </div>
-          
-          {/* Expanded Filters */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="max-w-7xl mx-auto pt-4 pb-2 border-t border-border mt-3 flex flex-col gap-4">
-                  {/* Genre filter for mobile/expanded */}
-                  <div className="flex flex-col gap-2 md:hidden">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase px-2">{t("التصنيفات")}</span>
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                      <button
-                        onClick={() => setSelectedGenre("all")}
-                        className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${selectedGenre === "all" ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
-                      >
-                        {t("الكل")}
-                      </button>
-                      {genres.map((genre) => (
-                        <button
-                          key={genre}
-                          onClick={() => setSelectedGenre(genre)}
-                          className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${selectedGenre === genre ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
-                        >
-                          {genre}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <div className="flex flex-col gap-2">
-                      <span className="text-[10px] font-black text-muted-foreground uppercase px-2">{t("الجهاز")}</span>
-                      <div className="flex gap-2">
-                        {[
-                          { id: "all", label: t("الكل") },
-                          { id: "switch1", label: "Switch 1" },
-                          { id: "switch2", label: "Switch 2" },
-                        ].map((p) => (
-                          <button
-                            key={p.id}
-                            onClick={() => setPlatform(p.id as PlatformOption)}
-                            className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${platform === p.id ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
-                          >
-                            {p.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+        {/* Header Section / Banner Slideshow */}
+        <div
+          className={`relative pt-20 pb-10 px-6 overflow-hidden min-h-[260px] sm:min-h-[300px] flex items-center justify-center ${categoryInfo.bgColor}`}
+        >
+          {/* Background Game Slideshow */}
+          <div className="absolute inset-0 z-0 select-none overflow-hidden">
+            {productBanners.length > 0 ? (
+              <div className="relative w-full h-full">
+                <AnimatePresence initial={false}>
+                  <motion.img
+                    key={currentBannerIndex}
+                    src={cdnImage(productBanners[currentBannerIndex])}
+                    alt="Game Gameplay Banner"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: 0 }}
+                    exit={{ x: "100%" }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                    loading="eager"
+                    decoding="sync"
+                  />
+                </AnimatePresence>
+                {/* Clean dark tint for text contrast only, without bottom blur gradient */}
+                <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
+              </div>
+            ) : (
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent" />
+              </div>
             )}
-          </AnimatePresence>
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center text-center">
+            {/* Header Content */}
+          </div>
         </div>
 
-        {/* Product Grid and Sidebar Filter */}
-        <div className="px-4 py-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
-          {/* Desktop Sidebar Filter */}
-          <div className="hidden md:block w-64 shrink-0 space-y-6">
-            <div>
-              <h3 className="text-sm font-black text-muted-foreground uppercase mb-4 px-2 tracking-wider">
-                {t("التصنيفات")}
-              </h3>
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={() => setSelectedGenre("all")}
-                  className={`w-full text-right px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${selectedGenre === "all" ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'text-foreground hover:bg-card hover:translate-x-[-4px]'}`}
-                >
-                  {t("الكل")}
-                </button>
-                {genres.map((genre) => (
-                  <button
-                    key={genre}
-                    onClick={() => setSelectedGenre(genre)}
-                    className={`w-full text-right px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${selectedGenre === genre ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'text-foreground hover:bg-card hover:translate-x-[-4px]'}`}
+        {/* Sticky Toolbar Section on Mobile Only */}
+        <div className="md:hidden sticky top-0 z-40 bg-[var(--page)]/95 backdrop-blur-xl border-b border-border shadow-sm transition-all">
+          <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col gap-2">
+            {/* Top Toolbar Row: Sort, Period, Platform, and Filter Count */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                {/* Sort / Period Selector */}
+                <div className="relative flex items-center">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    aria-label={t("الفترة والترتيب")}
+                    className="bg-card text-foreground border border-border rounded-full ps-3 pe-8 py-1.5 text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 appearance-none cursor-pointer shadow-sm hover:border-foreground/30 transition-colors"
                   >
-                    {genre}
-                  </button>
-                ))}
+                    <option value="newest">{t("الأحدث")}</option>
+                    <option value="release_date">{t("تاريخ الإصدار")}</option>
+                    <option value="price_asc">{t("السعر: من الأقل")}</option>
+                    <option value="price_desc">{t("السعر: من الأعلى")}</option>
+                    <option value="rating">{t("التقييم")}</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 pointer-events-none" />
+                </div>
+
+                {/* Platform selector pills */}
+                <div className="flex items-center gap-1 bg-card/80 p-0.5 rounded-full border border-border">
+                  {[
+                    { id: "all", label: t("الكل") },
+                    { id: "switch1", label: "Switch 1" },
+                    { id: "switch2", label: "Switch 2" },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setPlatform(p.id as PlatformOption)}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                        platform === p.id
+                          ? "bg-foreground text-background shadow-xs"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Product Counter Badge */}
+              <div className="text-xs font-bold text-muted-foreground bg-muted/60 px-3 py-1 rounded-full shrink-0">
+                {products.length} {t("لعبة")}
               </div>
             </div>
 
-            <div className="pt-6 border-t border-border">
-              <h3 className="text-sm font-black text-muted-foreground uppercase mb-4 px-2 tracking-wider">
+            {/* Bottom Toolbar Row: Game Genres (التصنيف حسب genres اللعبة) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              <span className="text-[11px] font-black text-muted-foreground uppercase ps-1 pe-2 shrink-0 flex items-center gap-1">
+                <Tag className="w-3 h-3 text-red-500" />
+                {t("التصنيف")}:
+              </span>
+
+              <button
+                onClick={() => setSelectedGenre("all")}
+                className={`shrink-0 px-3.5 py-1 rounded-full text-xs font-bold border transition-all ${
+                  selectedGenre === "all"
+                    ? "bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/25"
+                    : "bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
+                }`}
+              >
+                {t("الكل")}
+              </button>
+
+              {availableGenres.map((g) => {
+                const isSelected = selectedGenre === g.id || selectedGenre === g.label;
+                return (
+                  <button
+                    key={g.id}
+                    onClick={() => setSelectedGenre(isSelected ? "all" : g.id)}
+                    className={`shrink-0 px-3.5 py-1 rounded-full text-xs font-bold border transition-all ${
+                      isSelected
+                        ? "bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/25"
+                        : "bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Product Grid and Sidebar Filter */}
+        <div className="px-4 py-6 max-w-7xl mx-auto flex flex-col md:flex-row md:items-start gap-8">
+          {/* Desktop Sidebar Filter */}
+          <div className="hidden md:block w-64 shrink-0 space-y-6 sticky top-24 z-10 self-start max-h-[calc(100vh-7rem)] overflow-y-auto no-scrollbar pb-2">
+            <div className="bg-card/40 p-4 rounded-2xl border border-border/80">
+              <h3 className="text-sm font-black text-muted-foreground uppercase mb-3 px-1 tracking-wider flex items-center gap-2">
+                <Tag className="w-4 h-4 text-red-500" />
+                {t("تصنيفات الألعاب")}
+              </h3>
+              <div className="flex flex-col gap-1 max-h-[480px] overflow-y-auto no-scrollbar pe-1">
+                <button
+                  onClick={() => setSelectedGenre("all")}
+                  className={`w-full text-right px-3.5 py-2 rounded-xl text-sm font-bold transition-all ${
+                    selectedGenre === "all"
+                      ? "bg-red-500 text-white shadow-md shadow-red-500/20"
+                      : "text-foreground hover:bg-card hover:translate-x-[-2px]"
+                  }`}
+                >
+                  {t("كل التصنيفات")}
+                </button>
+                {availableGenres.map((g) => {
+                  const isSelected = selectedGenre === g.id || selectedGenre === g.label;
+                  return (
+                    <button
+                      key={g.id}
+                      onClick={() => setSelectedGenre(isSelected ? "all" : g.id)}
+                      className={`w-full text-right px-3.5 py-2 rounded-xl text-sm font-bold transition-all ${
+                        isSelected
+                          ? "bg-red-500 text-white shadow-md shadow-red-500/20"
+                          : "text-foreground hover:bg-card hover:translate-x-[-2px]"
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="bg-card/40 p-4 rounded-2xl border border-border/80">
+              <h3 className="text-sm font-black text-muted-foreground uppercase mb-3 px-1 tracking-wider flex items-center gap-2">
+                <Gamepad2 className="w-4 h-4 text-red-500" />
                 {t("الجهاز")}
               </h3>
               <div className="flex flex-col gap-1">
                 {[
-                  { id: "all", label: t("الكل") },
-                  { id: "switch1", label: "Switch 1" },
-                  { id: "switch2", label: "Switch 2" },
+                  { id: "all", label: t("كل الأجهزة") },
+                  { id: "switch1", label: "Nintendo Switch 1" },
+                  { id: "switch2", label: "Nintendo Switch 2" },
                 ].map((p) => (
                   <button
                     key={p.id}
                     onClick={() => setPlatform(p.id as PlatformOption)}
-                    className={`w-full text-right px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${platform === p.id ? 'bg-foreground text-background shadow-md' : 'text-foreground hover:bg-card hover:translate-x-[-4px]'}`}
+                    className={`w-full text-right px-3.5 py-2 rounded-xl text-sm font-bold transition-all ${
+                      platform === p.id
+                        ? "bg-foreground text-background shadow-md"
+                        : "text-foreground hover:bg-card hover:translate-x-[-2px]"
+                    }`}
                   >
                     {p.label}
                   </button>
@@ -346,37 +590,22 @@ function CategoryPage() {
             </div>
           </div>
 
-          {/* Mobile Genre Filter (Horizontal Scroll) - Keep for direct access if needed, but primary is in expanded toolbar */}
-          <div className="md:hidden flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
-             <button
-              onClick={() => setSelectedGenre("all")}
-              className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedGenre === "all" ? 'bg-red-500 text-white border-red-600' : 'bg-card text-muted-foreground border-border'}`}
-            >
-              {t("الكل")}
-            </button>
-            {genres.map((genre) => (
-              <button
-                key={genre}
-                onClick={() => setSelectedGenre(genre)}
-                className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedGenre === genre ? 'bg-red-500 text-white border-red-600' : 'bg-card text-muted-foreground border-border'}`}
-              >
-                {genre}
-              </button>
-            ))}
-          </div>
-
+          {/* Product Cards Grid */}
           <div className="flex-1">
             {isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                  <div key={i} className="aspect-[3/4] bg-muted/20 rounded-2xl animate-pulse animate-skeleton-shimmer" />
+                  <div
+                    key={i}
+                    className="aspect-[3/4] bg-muted/20 rounded-2xl animate-pulse animate-skeleton-shimmer"
+                  />
                 ))}
               </div>
             ) : products.length > 0 ? (
               <div className="flex flex-col gap-6">
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {products.map((p: any) => (
-                    <motion.div 
+                    <motion.div
                       key={p.id}
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -388,10 +617,24 @@ function CategoryPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-24 bg-card rounded-3xl border border-dashed border-border">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-bold text-foreground mb-1">{t("لا توجد منتجات")}</h3>
-                <p className="text-muted-foreground">{t("جرب تغيير خيارات التصفية")}</p>
+              <div className="text-center py-24 bg-card rounded-3xl border border-dashed border-border px-6">
+                <div className="text-5xl mb-4">🎮</div>
+                <h3 className="text-xl font-bold text-foreground mb-1">
+                  {t("لا توجد ألعاب متطابقة")}
+                </h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  {t("جرب تغيير خيارات التصفية أو اختيار تصنيف آخر")}
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedGenre("all");
+                    setPlatform("all");
+                    setSortBy("newest");
+                  }}
+                  className="px-4 py-2 bg-red-500 text-white rounded-full text-xs font-bold hover:bg-red-600 transition-colors"
+                >
+                  {t("إعادة تعيين الفلاتر")}
+                </button>
               </div>
             )}
           </div>

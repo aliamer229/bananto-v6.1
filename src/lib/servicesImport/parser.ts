@@ -109,7 +109,7 @@ export function extractKeyValues(text: string): Record<string, string> {
     // Standard key=value (fallback to "key: value")
     const eqIdx = rawLine.indexOf("=");
     const colonIdx = rawLine.indexOf(":");
-    
+
     // Improved separator detection: find the first one, but ignore if it's inside a URL-like string or seems like a bullet point
     let sepIdx = -1;
     if (eqIdx !== -1 && (colonIdx === -1 || eqIdx < colonIdx)) {
@@ -145,7 +145,6 @@ export function toList(value: string | undefined): string[] {
     .map((s) => s.replace(/^\s*(?:[-*•]|\d+[.)-])\s*/, "").trim())
     .filter(Boolean);
 }
-
 
 /**
  * Parse JSON fallback if admin pasted a JSON payload
@@ -406,11 +405,9 @@ export function parseRegistrationGuides(text: string): ServiceParseResult<Regist
       .sort((a, b) => a - b)
       .map((sIdx, i) => ({
         id: `step_${order}_${sIdx}_${Date.now().toString(36)}`,
-        title_ar:
-          get(`step.${sIdx}.title_ar`) || get(`step.${sIdx}.title`) || `الخطوة ${i + 1}`,
+        title_ar: get(`step.${sIdx}.title_ar`) || get(`step.${sIdx}.title`) || `الخطوة ${i + 1}`,
         title_en: get(`step.${sIdx}.title_en`) || "",
-        description_ar:
-          get(`step.${sIdx}.description_ar`) || get(`step.${sIdx}.description`) || "",
+        description_ar: get(`step.${sIdx}.description_ar`) || get(`step.${sIdx}.description`) || "",
         description_en: get(`step.${sIdx}.description_en`) || "",
         image: get(`step.${sIdx}.image`) || get(`step.${sIdx}.image_url`) || "",
         video: get(`step.${sIdx}.video`) || get(`step.${sIdx}.video_url`) || "",
@@ -506,7 +503,6 @@ export function parseRegistrationGuides(text: string): ServiceParseResult<Regist
     },
   };
 }
-
 
 /**
  * 3. Parser for FAQ (Categories and Questions)
@@ -651,9 +647,7 @@ export function parseFaq(text: string): ServiceParseResult<FaqParseResultData> {
     }
 
     const catId = resolveCategory(
-      kv[`faq.${fIdx}.category_id`] ||
-        kv[`faq.${fIdx}.category`] ||
-        kv[`faq.${fIdx}.category_ar`],
+      kv[`faq.${fIdx}.category_id`] || kv[`faq.${fIdx}.category`] || kv[`faq.${fIdx}.category_ar`],
     );
 
     faqs.push({
@@ -669,7 +663,6 @@ export function parseFaq(text: string): ServiceParseResult<FaqParseResultData> {
       sort_order: fIdx,
     });
   }
-
 
   if (faqs.length === 0) {
     issues.push({
@@ -1034,18 +1027,17 @@ export function parseContact(text: string): ServiceParseResult<ContactParseResul
   };
 }
 
-
 /**
  * 6. Parser for Trade & Exchange Rules (الأقسام والبنود وسياسة المقايضة)
  */
 export function parseTradeRules(text: string): ServiceParseResult<TradeRulesParseResultData> {
   const issues: ParsedIssue[] = [];
-  
+
   // Clean text from common copy-paste artifacts
   const cleanText = text
     .replace(/^\uFEFF/, "")
     .split("\n")
-    .map(line => line.trim())
+    .map((line) => line.trim())
     .join("\n");
 
   const json = tryParseJson(cleanText);
@@ -1062,7 +1054,7 @@ export function parseTradeRules(text: string): ServiceParseResult<TradeRulesPars
         .replace(/[^\p{L}\p{N}_]/gu, "")
         .toLowerCase() ||
       `rule_${idx + 1}`;
-    const percent = Number(String(raw.percent ?? 0).replace(/[^\d.\-]/g, ""));
+    const percent = Number(String(raw.percent ?? 0).replace(/[^\d.-]/g, ""));
     return {
       id: String(raw.id ?? "").trim() || `trule_${stamp}_${idx + 1}`,
       category,

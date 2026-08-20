@@ -119,6 +119,7 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             aria-label={t("common.close")}
             className="rounded-full p-2 transition-colors hover:bg-muted"
@@ -157,7 +158,6 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
                   <Download className="h-2.5 w-2.5" />
                   {t("admin.import.downloadTemplate")}
                 </button>
-
               </div>
             </div>
 
@@ -328,12 +328,14 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
           </div>
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={onClose}
               className="rounded-xl px-6 py-2 text-sm font-bold transition-colors hover:bg-muted"
             >
               {t("common.cancel")}
             </button>
             <button
+              type="button"
               disabled={!result || errors.length > 0}
               onClick={() => result && onImport(result)}
               className="rounded-xl bg-primary px-8 py-2 text-sm font-bold text-white shadow-lg transition-all hover:bg-primary/90 disabled:opacity-50"
@@ -360,6 +362,7 @@ function TabButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-[11px] font-bold transition-colors ${
         active ? "bg-primary text-white" : "hover:bg-muted"

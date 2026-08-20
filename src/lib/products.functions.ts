@@ -19,10 +19,10 @@ export const getSortedProducts = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { products, categoryId, sortBy = "newest", platform = "all" } = data;
 
-    let filtered = products.filter((p) => {
+    const filtered = products.filter((p) => {
       // 1. Basic active/purchasable check
       if (p.status === "غير نشط" || p.isActive === false) return false;
-      
+
       // 2. Category filter
       if (categoryId && categoryId !== "all") {
         const pCat = String(p.category || p.categoryId || "").toLowerCase();
@@ -35,7 +35,8 @@ export const getSortedProducts = createServerFn({ method: "POST" })
         const pPlat = String(p.platform || "").toLowerCase();
         if (platform === "switch1") {
           // Both/Switch/Switch1 count as Switch 1
-          if (pPlat !== "switch1" && pPlat !== "switch" && pPlat !== "both" && pPlat !== "") return false;
+          if (pPlat !== "switch1" && pPlat !== "switch" && pPlat !== "both" && pPlat !== "")
+            return false;
         } else if (platform === "switch2") {
           if (pPlat !== "switch2" && pPlat !== "both") return false;
         }

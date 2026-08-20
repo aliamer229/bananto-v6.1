@@ -124,7 +124,7 @@ export default function AppShell({
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-[var(--page)] overflow-x-hidden"
+      className="flex min-h-screen flex-col bg-[var(--page)]"
       dir={lang === "en" ? "ltr" : "rtl"}
     >
       {!isTelegramMiniApp && (

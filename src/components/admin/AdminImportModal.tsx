@@ -142,7 +142,7 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
             </div>
             <h2 className="text-lg font-bold">{t("admin.import.title")}</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
+          <button type="button" onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -187,6 +187,7 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
               onChange={(e) => setInputText(e.target.value)}
             />
             <button
+              type="button"
               disabled={isValidating}
               onClick={handleValidate}
               className="w-full bg-primary text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-50"
@@ -206,12 +207,14 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
               <>
                 <div className="flex gap-2 border-b border-border pb-2">
                   <button
+                    type="button"
                     onClick={() => setViewMode("status")}
                     className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors ${viewMode === "status" ? "bg-primary text-white" : "hover:bg-muted"}`}
                   >
                     <Table className="w-3.5 h-3.5" /> {t("admin.import.dataStatus")}
                   </button>
                   <button
+                    type="button"
                     onClick={() => setViewMode("preview")}
                     className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors ${viewMode === "preview" ? "bg-primary text-white" : "hover:bg-muted"}`}
                   >
@@ -362,12 +365,14 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
           </div>
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={onClose}
               className="px-6 py-2 rounded-xl text-sm font-bold hover:bg-muted transition-colors"
             >
               {t("common.cancel")}
             </button>
             <button
+              type="button"
               disabled={!parseResult || errors.length > 0}
               onClick={() => onImport(parseResult.data)}
               className="px-8 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-900/10"

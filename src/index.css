@@ -163,8 +163,6 @@
     background-color: var(--color-cream-100);
     color: var(--color-ink-900);
     font-family: var(--font-sans);
-    /* Never allow a decorative layer to create sideways scroll. */
-    overflow-x: clip;
   }
 
   h1,
