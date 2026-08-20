@@ -451,7 +451,7 @@ function buildStory(p: Record<string, unknown>, locale: "ar" | "en"): StorySecti
         str(row["titleEn"]) || str(row["title"]) ||
         `Chapter ${i + 1}`,
 
-      body: localizedValue(row, "body", "bodyEn", locale),
+      body: str(row["bodyEn"]) || str(row["body"]),
       ...(str(row["imageUrl"]) ? { imageId: str(row["imageUrl"]) } : {}),
     })),
   ];
