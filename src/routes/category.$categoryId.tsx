@@ -142,13 +142,20 @@ function CategoryPage() {
 
     const bannerSet = new Set<string>();
     categoryProducts.forEach((p: any) => {
-      const images = [
+      // Prioritize "banner", "bannerImage", "heroImage" or "gallery"
+      // Explicitly avoid "image" or "thumbnail" if possible because they are often cartridge covers
+      const heroImages = [
         p.banner, p.bannerImage, p.heroImage,
-        ...(Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? p.gallery.split(',').map((s: string) => s.trim()) : [])),
-        p.image, p.thumbnail
+        ...(Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? p.gallery.split(',').map((s: string) => s.trim()) : []))
       ].filter(img => typeof img === 'string' && img.length > 5);
 
-      images.forEach(img => bannerSet.add(img));
+      if (heroImages.length > 0) {
+        heroImages.forEach(img => bannerSet.add(img));
+      } else {
+        // Only fallback to image/thumbnail if NO banner or gallery exists
+        const fallbackImages = [p.image, p.thumbnail].filter(img => typeof img === 'string' && img.length > 5);
+        fallbackImages.forEach(img => bannerSet.add(img));
+      }
     });
 
     return Array.from(bannerSet);
