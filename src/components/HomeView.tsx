@@ -310,7 +310,7 @@ export default function HomeView({
                     kind === "offline_account" ||
                     kind === "online_account" ||
                     kind === "physical" ||
-                    Boolean(p.releaseDate || p.release_date)
+                    Boolean(p.releaseDate || p.release_date || p.releaseYear || p.release_year)
                   );
                 })
                 .sort((a, b) => {
@@ -324,39 +324,51 @@ export default function HomeView({
                     return isNaN(timestamp) ? 0 : new Date(timestamp).getFullYear();
                   };
 
-                  const yearA = getYear(a.releaseDate || a.release_date);
-                  const yearB = getYear(b.releaseDate || b.release_date);
+                  const yearA = getYear(a.releaseDate || a.release_date || a.releaseYear || a.release_year);
+                  const yearB = getYear(b.releaseDate || b.release_date || b.releaseYear || b.release_year);
 
                   if (yearA !== yearB) {
                     return yearB - yearA;
                   }
 
-                  // If years are same, fall back to full date or creation date
+                  // If years are same, fall back to full date
                   const dateA = new Date(a.releaseDate || a.release_date || 0).getTime();
                   const dateB = new Date(b.releaseDate || b.release_date || 0).getTime();
 
-                  if (dateA !== dateB && dateA !== 0 && dateB !== 0) {
+                  if (dateA !== dateB && !isNaN(dateA) && !isNaN(dateB)) {
                     return dateB - dateA;
                   }
 
+                  // Final fallback to ID or creation to ensure deterministic order
                   const createA = new Date(a.createdAt || a.created_at || 0).getTime();
                   const createB = new Date(b.createdAt || b.created_at || 0).getTime();
-                  return createB - createA;
+                  if (createA !== createB) return createB - createA;
+                  
+                  return String(b.id).localeCompare(String(a.id));
                 })
                 .slice(0, 12)
-                .map((p) => ({
-                  id: p.id,
-                  title: p.title,
-                  price: p.price,
-                  image:
-                    getNintendoCardImage(p) ||
-                    "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
-                  banner: p.banner,
-                  gallery: p.gallery,
-                  subtitle: p.releaseDate || p.release_date || p.developer || p.publisher,
-                  rating: p.metacriticRating ?? null,
-                  platform: p.platform,
-                }))}
+                .map((p) => {
+                  const getYear = (val: any) => {
+                    const dateStr = String(val || "");
+                    const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
+                    return match ? match[0] : null;
+                  };
+                  const year = getYear(p.releaseDate || p.release_date || p.releaseYear || p.release_year);
+                  
+                  return {
+                    id: p.id,
+                    title: p.title,
+                    price: p.price,
+                    image:
+                      getNintendoCardImage(p) ||
+                      "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop",
+                    banner: p.banner,
+                    gallery: p.gallery,
+                    subtitle: year ? `${year} · ${p.developer || p.publisher || ""}` : (p.releaseDate || p.release_date || p.developer || p.publisher),
+                    rating: p.metacriticRating ?? null,
+                    platform: p.platform,
+                  };
+                })}
               onSelect={(product: any) => onGameClick(product)}
               formatPrice={formatGenericPrice}
               onPress={() => playSound("bumper_end", 0.6)}
