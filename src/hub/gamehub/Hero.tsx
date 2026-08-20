@@ -150,7 +150,7 @@ export function Hero() {
       />
 
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:pb-12 sm:pt-12 lg:px-6">
-        <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)] lg:gap-12">
+        <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:gap-12">
           {/* ================= Product ================= */}
           <div className="flex flex-col items-center">
             <CaseStage
