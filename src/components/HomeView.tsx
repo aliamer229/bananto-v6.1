@@ -285,7 +285,7 @@ export default function HomeView({
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold text-foreground">
                   {t("home.latestNintendoGames") === "home.latestNintendoGames"
-                    ? "Latest Nintendo games by release date"
+                    ? "Latest Nintendo releases"
                     : t("home.latestNintendoGames")}
                 </h3>
                 <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
@@ -340,11 +340,11 @@ export default function HomeView({
                   }
 
                   // Final fallback to ID or creation to ensure deterministic order
-                  const createA = new Date(a.createdAt || a.created_at || 0).getTime();
-                  const createB = new Date(b.createdAt || b.created_at || 0).getTime();
-                  if (createA !== createB) return createB - createA;
+                  const createA = new Date(a.createdAt || a.created_at || a.created_time || 0).getTime();
+                  const createB = new Date(b.createdAt || b.created_at || b.created_time || 0).getTime();
+                  if (createA !== createB && !isNaN(createA) && !isNaN(createB)) return createB - createA;
                   
-                  return String(b.id).localeCompare(String(a.id));
+                  return String(b.id || "").localeCompare(String(a.id || ""));
                 })
                 .slice(0, 12)
                 .map((p) => {

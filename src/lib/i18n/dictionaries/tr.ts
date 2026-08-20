@@ -98,6 +98,7 @@ export const tr: Translations<Dictionary> = {
   },
 
   home: {
+    latestNintendoGames: "En yeni Nintendo oyunları",
     featuredProducts: "Öne çıkan ürünler",
     newProducts: "Yeni gelenler",
     offers: "Fırsatlar",

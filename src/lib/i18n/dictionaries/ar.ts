@@ -96,6 +96,7 @@ export const ar = {
   },
 
   home: {
+    latestNintendoGames: "أحدث إصدارات نينتندو",
     featuredProducts: "منتجات مميّزة",
     newProducts: "وصل حديثاً",
     offers: "العروض",
