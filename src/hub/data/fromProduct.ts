@@ -113,7 +113,7 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
     ...legacyGallery.map((url, i) => ({
       id: `legacy-img-${i}`,
       url,
-      alt: (locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"])) || "",
+      alt: str(p["titleEn"]) || str(p["title"]) || "",
     })),
   ].filter((img) => img.url);
 
