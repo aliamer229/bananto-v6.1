@@ -101,8 +101,22 @@ export function SupportEditor({
       emergency_notice_ar: pick(d.emergency_notice_ar, support.emergency_notice_ar),
       working_hours_ar: pick(d.working_hours_ar, support.working_hours_ar),
       working_hours_en: pick(d.working_hours_en, support.working_hours_en),
-      channels: d.channels?.length ? (d.channels as any) : support.channels,
-      services: d.services?.length ? (d.services as any) : support.services,
+      // القنوات والخدمات الجديدة تُضاف فوق الموجودة
+      channels: [
+        ...((support.channels || []) as any[]),
+        ...((d.channels || []) as any[]).filter(
+          (c) => !(support.channels || []).some((ex: any) => ex.id === c.id || ex.value === c.value),
+        ),
+      ] as any,
+      services: [
+        ...((support.services || []) as any[]),
+        ...((d.services || []) as any[]).filter(
+          (sv) =>
+            !(support.services || []).some(
+              (ex: any) => ex.id === sv.id || ex.title_ar === sv.title_ar,
+            ),
+        ),
+      ] as any,
     });
   };
 

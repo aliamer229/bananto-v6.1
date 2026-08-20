@@ -51,10 +51,13 @@ export function PolicyEditor({ policy, onChange, label }: PolicyEditorProps) {
         effective_date: result.data.effective_date || policy.effective_date,
         important_notices: result.data.important_notices || policy.important_notices,
         contact_note: result.data.contact_note || policy.contact_note,
-        sections:
-          result.data.sections && result.data.sections.length > 0
-            ? (result.data.sections as PolicySection[])
-            : policy.sections,
+        // البنود الجديدة تُضاف فوق الموجودة بدل استبدالها
+        sections: [
+          ...(policy.sections || []),
+          ...((result.data.sections || []) as PolicySection[]).filter(
+            (s) => !(policy.sections || []).some((existing) => existing.id === s.id),
+          ),
+        ].map((s, idx) => ({ ...s, sort_order: idx + 1 })),
       });
     }
   };
