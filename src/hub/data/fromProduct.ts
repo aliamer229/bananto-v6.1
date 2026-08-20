@@ -125,7 +125,7 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
           {
             id: "trailer",
             kind: "trailer" as const,
-            title: locale === "en" ? "Official Trailer" : "الإعلان الرسمي",
+            title: "Official Trailer",
             embedUrl: youtubeEmbed(trailerUrl) ?? trailerUrl,
           },
         ]
