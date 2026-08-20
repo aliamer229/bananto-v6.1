@@ -360,7 +360,7 @@ export default function HomeView({
                     <Link
                       to="/category/$categoryId"
                       params={{ categoryId: category.id === "cat_nintendo" ? "nintendo_games" : category.id }}
-                      className="text-[#f97316] hover:text-[#fb923c] px-2 py-1 text-sm font-bold transition-colors"
+                      className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
                     >
                       {t("common.viewAll")}
                     </Link>
