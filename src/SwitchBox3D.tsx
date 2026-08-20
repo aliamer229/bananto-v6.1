@@ -130,7 +130,7 @@ export function SwitchBox3D({
       
       <group ref={group} dispose={null} scale={0.55} position={[0, 0, 0]} rotation={[0, -Math.PI / 6, 0]}>
         {/* The plastic outer case */}
-        <mesh geometry={nodes.box.geometry} material={materials.plastic} />
+        <mesh geometry={nodes.box.geometry} material={materials.plastic} renderOrder={0} />
         
         {/* The printed sleeve (the artwork) */}
         {texture ? (
