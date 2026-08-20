@@ -55,8 +55,8 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
 
       <div
         className={cn(
-          "absolute inset-0 touch-none transition-opacity duration-700",
-          modelReady ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+          "absolute inset-0 touch-none transition-opacity duration-300",
+          modelReady ? "opacity-100" : "opacity-0",
         )}
       >
         <SafeBoundary onError={() => setModelReady(false)}>
