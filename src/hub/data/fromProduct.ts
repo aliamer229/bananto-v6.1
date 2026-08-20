@@ -631,7 +631,7 @@ function buildCatalogOptions(p: Record<string, unknown>, locale: "ar" | "en") {
           name,
           price: num(opt["price"]) || undefined,
           cost: num(opt["cost"]) || undefined,
-          description: localizedValue(opt, "description", "descriptionEn", locale) || undefined,
+          description: str(opt["descriptionEn"]) || str(opt["description"]) || undefined,
           available: opt["available"] !== false && opt["active"] !== false,
         };
       })
