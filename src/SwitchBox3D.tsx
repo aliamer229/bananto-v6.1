@@ -23,10 +23,8 @@ export function SwitchBox3D({
   const group = useRef<THREE.Group>(null);
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
-  // Notify ready as soon as geometry is here
   useEffect(() => {
     if (nodes && materials) {
-      console.log("Geometry ready, notifying parent");
       onReady?.();
     }
   }, [nodes, materials, onReady]);
