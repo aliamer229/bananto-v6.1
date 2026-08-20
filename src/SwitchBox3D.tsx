@@ -19,11 +19,17 @@ export function SwitchBox3D({
   gameName: string,
   onReady?: () => void
 }) {
-  console.log("SwitchBox3D rendering with asset:", glbAsset.url);
   const { nodes, materials } = useGLTF(glbAsset.url) as any;
-
   const group = useRef<THREE.Group>(null);
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
+
+  // Notify ready as soon as geometry is here
+  useEffect(() => {
+    if (nodes && materials) {
+      console.log("Geometry ready, notifying parent");
+      onReady?.();
+    }
+  }, [nodes, materials, onReady]);
 
   useEffect(() => {
     let isMounted = true;
@@ -39,9 +45,13 @@ export function SwitchBox3D({
         const baseImg = new Image();
         baseImg.crossOrigin = 'anonymous';
         baseImg.src = textureAsset.url;
-        await new Promise((resolve, reject) => {
+        
+        await new Promise((resolve) => {
           baseImg.onload = resolve;
-          baseImg.onerror = reject;
+          baseImg.onerror = () => {
+            console.error("Base texture failed to load");
+            resolve(null);
+          };
         });
         
         if (!isMounted) return;
@@ -55,7 +65,7 @@ export function SwitchBox3D({
           }
           img.src = coverImage;
           
-          await new Promise((resolve, reject) => {
+          await new Promise((resolve) => {
             img.onload = resolve;
             img.onerror = (e) => {
               console.warn("Cover image load failed", e);
@@ -64,7 +74,6 @@ export function SwitchBox3D({
           });
           
           if (!isMounted) return;
-          // The cover is a full wrap (back, spine, front) mapping to 1236x951
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
@@ -78,7 +87,6 @@ export function SwitchBox3D({
             if (prev) prev.dispose();
             return tex;
           });
-          onReady?.();
         }
       } catch (err) {
         console.error('Error drawing texture:', err);
