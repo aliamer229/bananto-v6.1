@@ -20,8 +20,9 @@ export const Route = createFileRoute("/api/admin/banana")({
             if (!value || value <= 0) {
               return json({ error: "Invalid value" }, { status: 400 });
             }
-            const code = await createBananCode(value);
-            return json({ success: true, code });
+            // In src/lib/db.server.ts, createBananCode returns a full object
+            const bananCodeObj = await createBananCode(value);
+            return json({ success: true, code: bananCodeObj });
           }
 
           if (data.action === "list_codes") {
@@ -37,3 +38,4 @@ export const Route = createFileRoute("/api/admin/banana")({
     },
   },
 });
+
