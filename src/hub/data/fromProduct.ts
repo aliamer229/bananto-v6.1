@@ -560,7 +560,7 @@ function buildSoundtrack(p: Record<string, unknown>, locale: "ar" | "en"): Sound
   if (!list.length) return undefined;
   return {
     links: list.map((row) => ({
-      label: localizedValue(row, "title", "titleEn", locale),
+      label: str(row["titleEn"]) || str(row["title"]),
       url: str(row["url"]),
     })),
   };
