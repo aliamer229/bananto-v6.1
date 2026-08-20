@@ -64,6 +64,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // The hub follows the site language chosen in the flower menu; Kurdish has no
   // hub dictionary yet, so it reads the Arabic copy rather than raw keys.
   const appLang = useAppLanguage((state) => state.lang);
+  // The hub follows the site language.
   const locale: Locale = appLang === "ar" ? "ar" : "en";
 
   const value = useMemo<I18nValue>(() => {
