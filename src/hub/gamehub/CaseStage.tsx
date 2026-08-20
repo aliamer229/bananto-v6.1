@@ -53,12 +53,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
 
   return (
     <div className={cn("relative", className)}>
-      {/* Background loading state (static case) only while model is not ready */}
-      {!modelReady && (
-        <div className="opacity-50 transition-opacity duration-300">
-          <GameCase3D {...caseProps} />
-        </div>
-      )}
+      {/* Static background is removed entirely to fulfill user requirement */}
 
       <div
         className={cn(
