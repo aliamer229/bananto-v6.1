@@ -79,6 +79,9 @@ export function SwitchBox3D({
         }
 
         const tex = new THREE.CanvasTexture(canvas);
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.generateMipmaps = false;
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.flipY = false;
         tex.needsUpdate = true;
