@@ -50,7 +50,7 @@ export function HubNav({ items }: { items: NavItem[] }) {
   }, [active]);
 
   return (
-    <div className="sticky top-[env(safe-area-inset-top,0px)] z-40 border-b border-white/[0.06] bg-ink-900/90 backdrop-blur-xl">
+    <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-900/90 backdrop-blur-xl transition-all duration-300">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 lg:px-6">
         <div
           ref={railRef}
