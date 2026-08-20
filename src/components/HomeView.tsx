@@ -285,7 +285,7 @@ export default function HomeView({
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold text-foreground">
                   {t("home.latestNintendoGames") === "home.latestNintendoGames"
-                    ? "Latest Nintendo games by release date"
+                    ? "Latest Nintendo releases"
                     : t("home.latestNintendoGames")}
                 </h3>
                 <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
