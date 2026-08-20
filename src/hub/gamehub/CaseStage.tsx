@@ -31,13 +31,10 @@ function hasWebGL(): boolean {
 }
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
-  const [modelReady, setModelReady] = useState(false);
+  const [modelReady, setModelReady] = useState(true);
   
-  // Reset ready state when cover changes to allow for re-fading if needed
-  // but usually we want it to stay ready once the GLB is in memory.
   const handleModelReady = useCallback(() => {
     console.log("[CaseStage] Model reported ready");
-    setModelReady(true);
   }, []);
 
   const { motion } = readPrefs();
