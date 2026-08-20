@@ -478,7 +478,8 @@ function buildDlc(p: Record<string, unknown>, locale: "ar" | "en"): Dlc[] | unde
         `DLC ${i + 1}`;
 
       const cover = str(row["coverUrl"] || row["image"] || row["cartridgeImage"]);
-      const desc = localizedValue(row, "description", "descriptionEn", locale);
+      const desc = str(row["descriptionEn"]) || str(row["description"]);
+
       return {
         id: str(row["id"]) || `dlc-${i}`,
         name,
