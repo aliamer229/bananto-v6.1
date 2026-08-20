@@ -229,7 +229,7 @@ export default function Header({
                 if (isOpen) playSound("bumper_end", 0.6);
               }}
             >
-              <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-white/25 shrink-0 bg-foreground shadow-md relative group flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-white/25 shrink-0 bg-white/10 shadow-md relative group flex items-center justify-center">
                 {user?.avatar ? (
                   <img
                     src={user.avatar}

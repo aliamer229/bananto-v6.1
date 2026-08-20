@@ -5,6 +5,7 @@ import { useI18n } from "@/i18n";
 import { DEFAULT_THEME, findTheme } from "@/lib/themes";
 import {
   LANG_COOKIE,
+  LANG_MANUAL_COOKIE,
   MOTION_COOKIE,
   THEME_COOKIE,
   readCookie,
@@ -45,7 +46,10 @@ export default function ThemeApplier() {
   useEffect(() => {
     // A cookie is the most recent browser choice. Do not let a stale profile
     // response undo a language the member just selected in this session.
-    const language = readCookie(LANG_COOKIE) || settings?.language;
+    const cookieLanguage = readCookie(LANG_COOKIE);
+    const language = readCookie(LANG_MANUAL_COOKIE)
+      ? cookieLanguage
+      : settings?.language || cookieLanguage;
     if (!isLang(language)) return;
     if (language !== currentLanguage) setLang(language);
     document.documentElement.lang = language;

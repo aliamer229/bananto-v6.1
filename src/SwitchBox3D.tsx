@@ -36,10 +36,12 @@ export function SwitchBox3D({
   coverImage,
   platform,
   gameName,
+  onReady,
 }: {
   coverImage: string | null;
   platform: string;
   gameName: string;
+  onReady?: () => void;
 }) {
   const [sleeve, setSleeve] = useState<THREE.CanvasTexture | null>(null);
 
@@ -121,17 +123,20 @@ export function SwitchBox3D({
       next.colorSpace = THREE.SRGBColorSpace;
       next.anisotropy = 8;
       next.needsUpdate = true;
-      if (active) setSleeve((previous) => {
-        previous?.dispose();
-        return next;
-      });
+      if (active) {
+        setSleeve((previous) => {
+          previous?.dispose();
+          return next;
+        });
+        onReady?.();
+      }
     };
 
     void buildSleeve();
     return () => {
       active = false;
     };
-  }, [coverImage, platform, gameName]);
+  }, [coverImage, platform, gameName, onReady]);
 
   const faceMaps = useMemo(() => {
     const maps = {

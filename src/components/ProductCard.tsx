@@ -19,7 +19,7 @@ export function ProductCard({ product }: { product: any }) {
           )}
           loading="lazy"
           decoding="async"
-          className="w-full aspect-[3/4] object-cover p-1.5 group-hover:scale-[1.03] transition-transform duration-300 bg-muted"
+          className="w-full aspect-[3/4] object-contain object-center p-2 bg-muted"
           alt={product.title}
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
