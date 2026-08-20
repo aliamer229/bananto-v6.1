@@ -83,7 +83,8 @@ function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
 
 
   return {
-    title: title || (locale === "en" ? "Product" : "منتج"),
+    title: title || "Product",
+
     description: desc || undefined,
     tagline: tag || undefined,
   };
