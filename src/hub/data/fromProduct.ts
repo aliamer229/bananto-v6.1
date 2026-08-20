@@ -686,7 +686,7 @@ function buildCatalogTypes(p: Record<string, unknown>, locale: "ar" | "en") {
         price: num(t["price"]) || undefined,
         cost: num(t["cost"]) || undefined,
         stock: num(t["stock"]) || undefined,
-        description: localizedValue(t, "description", "descriptionEn", locale) || undefined,
+        description: str(t["descriptionEn"]) || str(t["description"]) || undefined,
       };
     })
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
