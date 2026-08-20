@@ -484,30 +484,6 @@ export default function AdminProductEditor({
     toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
   };
 
-  const handleImport = async (data: any, batch?: any[]) => {
-    if (batch && batch.length > 1) {
-      toast.promise(
-        (async () => {
-          // Process all products in the batch
-          // We treat the first one as the primary target for the form.
-          setFormData((prev: any) => ({ ...prev, ...batch[0] }));
-          setShowImportModal(false);
-          return batch.length;
-        })(),
-        {
-          loading: "جاري معالجة الدفعة...",
-          success: (count) => `تم استيراد بيانات المنتج الأول من أصل ${count} منتجات في الملف.`,
-          error: "فشل استيراد الدفعة.",
-        }
-      );
-      return;
-    }
-
-    setFormData((prev: any) => ({ ...prev, ...data }));
-    setShowImportModal(false);
-    toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
-  };
-
   const handleTitleInputChange = (val: string) => {
     handleChange("titleEn", val);
     handleChange("title", val);
