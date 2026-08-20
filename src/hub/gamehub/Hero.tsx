@@ -149,10 +149,10 @@ export function Hero() {
         className="grain absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_22%,transparent_30%,rgba(8,9,13,0.9)_100%)]"
       />
 
-      <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:pb-12 sm:pt-12 lg:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-8 sm:pb-12 sm:pt-12 lg:px-6">
         <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)] lg:gap-12">
           {/* ================= Product ================= */}
-          <div className="flex flex-col items-center min-h-[440px]">
+          <div className="flex flex-col items-center justify-center min-h-[360px] sm:min-h-[440px] w-full max-w-full overflow-hidden">
             <CaseStage
               key={game.slug}
               coverUrl={game.coverUrl}
@@ -171,7 +171,7 @@ export function Hero() {
               }
               size="lg"
               onClick={() => images[0] && openLightbox(images[0].id)}
-              className="scale-90 sm:scale-100 will-change-transform"
+              className="scale-90 sm:scale-100 will-change-transform max-w-full"
             />
 
             {/* SKU selector — only when both cases genuinely exist. */}

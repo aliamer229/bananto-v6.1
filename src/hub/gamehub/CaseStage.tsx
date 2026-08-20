@@ -54,7 +54,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
       className={cn(
         "relative z-10",
         className,
-        "min-h-[440px] w-full flex items-center justify-center overflow-visible",
+        "min-h-[360px] sm:min-h-[440px] w-full max-w-full flex items-center justify-center overflow-hidden sm:overflow-visible",
       )}
     >
       <div

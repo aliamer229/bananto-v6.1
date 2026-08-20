@@ -142,7 +142,7 @@ export function BuySheet({
 
   return (
     <Modal open={open} onClose={onClose} title={t("hero.buyNow")} size="md">
-      <div className="max-h-[min(68vh,620px)] max-w-full space-y-5 overflow-y-auto overflow-x-hidden px-0.5 pe-1 [overflow-wrap:anywhere] [word-break:break-word]">
+      <div className="max-h-[min(65vh,560px)] max-w-full space-y-4 overflow-y-auto overflow-x-hidden px-0.5 pe-1 [overflow-wrap:anywhere] [word-break:break-word]">
         {/* 1. Options Selection (الخيار - مثل: حساب أوفلاين / حساب أونلاين) */}
         {options.length > 0 && (
           <div>
@@ -156,30 +156,30 @@ export function BuySheet({
                     type="button"
                     onClick={() => handleSelectOption(opt.id)}
                     className={cn(
-                      "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
+                      "flex w-full items-center justify-between gap-3 rounded-2xl border p-3 text-start transition-all",
                       selected
-                        ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
-                        : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
+                        ? "border-primary/80 bg-primary/10 ring-1 ring-primary/25"
+                        : "border-border/70 bg-card/50 hover:bg-card hover:border-border",
                     )}
                   >
-                    <span className="min-w-0 block">
-                      <span className="block break-words text-sm font-bold leading-snug">
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-xs sm:text-sm font-bold text-foreground">
                         {opt.name}
                       </span>
                       {opt.description && (
-                        <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
+                        <span className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
                           {opt.description}
                         </span>
                       )}
-                    </span>
-                    <span className="flex shrink-0 items-center gap-2">
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
                       {opt.price != null && (
-                        <span className="num whitespace-nowrap text-sm font-extrabold">
+                        <span className="whitespace-nowrap text-xs sm:text-sm font-black text-foreground">
                           {formatConverted({ amount: Number(opt.price), currency: "IQD" })}
                         </span>
                       )}
-                      {selected && <Check className="h-4 w-4 text-good" />}
-                    </span>
+                      {selected && <Check className="h-4 w-4 text-emerald-600 shrink-0" />}
+                    </div>
                   </button>
                 );
               })}
@@ -203,30 +203,30 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                      "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
+                      "flex w-full items-center justify-between gap-3 rounded-2xl border p-3 text-start transition-all",
                       selected
-                        ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
-                        : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
+                        ? "border-primary/80 bg-primary/10 ring-1 ring-primary/25"
+                        : "border-border/70 bg-card/50 hover:bg-card hover:border-border",
                     )}
                   >
-                    <span className="min-w-0 block">
-                      <span className="block break-words text-sm font-bold leading-snug">
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-xs sm:text-sm font-bold text-foreground">
                         {typ.name}
                       </span>
                       {typ.description && (
-                        <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
+                        <span className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
                           {typ.description}
                         </span>
                       )}
-                    </span>
-                    <span className="flex shrink-0 items-center gap-2">
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
                       {typ.price != null && (
-                        <span className="num whitespace-nowrap text-sm font-extrabold">
+                        <span className="whitespace-nowrap text-xs sm:text-sm font-black text-foreground">
                           {formatConverted({ amount: Number(typ.price), currency: "IQD" })}
                         </span>
                       )}
-                      {selected && <Check className="h-4 w-4 text-good" />}
-                    </span>
+                      {selected && <Check className="h-4 w-4 text-emerald-600 shrink-0" />}
+                    </div>
                   </button>
                 );
               })}
@@ -250,30 +250,30 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                      "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
+                      "flex w-full items-center justify-between gap-3 rounded-2xl border p-3 text-start transition-all",
                       selected
-                        ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
-                        : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
+                        ? "border-primary/80 bg-primary/10 ring-1 ring-primary/25"
+                        : "border-border/70 bg-card/50 hover:bg-card hover:border-border",
                     )}
                   >
-                    <span className="min-w-0 block">
-                      <span className="block break-words text-sm font-bold leading-snug">
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-xs sm:text-sm font-bold text-foreground">
                         {edition.name}
                       </span>
                       {edition.description && (
-                        <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
+                        <span className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
                           {edition.description}
                         </span>
                       )}
-                    </span>
-                    <span className="flex shrink-0 items-center gap-2">
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
                       {edition.msrp && (
-                        <span className="num whitespace-nowrap text-sm font-extrabold">
+                        <span className="whitespace-nowrap text-xs sm:text-sm font-black text-foreground">
                           {formatConverted(edition.msrp)}
                         </span>
                       )}
-                      {selected && <Check className="h-4 w-4 text-good" />}
-                    </span>
+                      {selected && <Check className="h-4 w-4 text-emerald-600 shrink-0" />}
+                    </div>
                   </button>
                 );
               })}

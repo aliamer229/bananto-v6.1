@@ -97,18 +97,18 @@ const SwipeableCartItem = ({
 
   return (
     <motion.div
-      className="relative overflow-hidden border-b border-slate-100 last:border-0"
+      className="relative overflow-hidden border-b border-border/40 last:border-0"
       layout
       initial={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0, transition: { duration: 0.3 } }}
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6"
+          className="absolute inset-0 bg-destructive flex items-center justify-end pr-6"
           style={{ opacity: deleteBgOpacity }}
         >
           <motion.div style={{ scale: deleteIconScale }}>
-            <Trash2 className="w-6 h-6 text-white" />
+            <Trash2 className="w-6 h-6 text-destructive-foreground" />
           </motion.div>
         </motion.div>
       </div>
@@ -121,34 +121,34 @@ const SwipeableCartItem = ({
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ x, touchAction: "pan-y" }}
-        className="relative bg-white py-4 sm:py-5 flex flex-col z-10 w-full cursor-grab active:cursor-grabbing"
+        className="relative bg-[var(--card)] py-4 flex flex-col z-10 w-full cursor-grab active:cursor-grabbing"
       >
-        <div className="flex items-start justify-between gap-3 px-4">
-          <div className="flex-1 pr-1">
+        <div className="flex items-start justify-between gap-3.5 px-4">
+          <div className="flex-1 min-w-0 pr-1">
             <h2
-              className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug mb-1"
+              className="text-base sm:text-lg font-bold text-foreground leading-snug line-clamp-2"
               dir="ltr"
             >
               {line.title}
             </h2>
 
             {line.offerLabel && (
-              <div className="text-xs sm:text-sm text-slate-700 leading-relaxed mb-2">
-                <span className="font-semibold text-slate-900">{tr("العرض")}: </span>
-                <span className="text-slate-600">{tr(line.offerLabel)}</span>
+              <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                <span className="font-semibold text-foreground/80">{tr("العرض")}: </span>
+                <span>{tr(line.offerLabel)}</span>
               </div>
             )}
 
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-base sm:text-lg font-bold text-slate-800">
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-base font-black text-foreground">
                 {formatIQDPrice(line.price)}
               </span>
               {line.requiresAddress || line.kind === "hardware" ? (
-                <span className="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide flex items-center gap-1">
+                <span className="bg-muted text-muted-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Truck className="h-3 w-3" /> {tr("توصيل")}
                 </span>
               ) : (
-                <span className="bg-emerald-50 text-emerald-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide flex items-center gap-1">
+                <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Zap className="h-3 w-3" /> {tr("فوري")}
                 </span>
               )}
@@ -160,35 +160,36 @@ const SwipeableCartItem = ({
               <img
                 src={cdnImage(line.image)}
                 alt={line.title}
-                className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-2xl shadow-sm border border-slate-100 bg-slate-100 pointer-events-none"
+                className="w-18 h-18 sm:w-20 sm:h-20 object-cover rounded-2xl border border-border/50 bg-muted pointer-events-none"
               />
             ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-100 border border-slate-100" />
+              <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-muted border border-border/50" />
             )}
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-3 px-4">
+        <div className="flex items-center justify-between mt-3 px-4 pt-1">
           <button
             onClick={() => onRemove(String(line.productId))}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-300 hover:border-slate-400 text-slate-900 text-xs sm:text-sm font-bold bg-white hover:bg-slate-50 active:scale-95 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/70 text-muted-foreground hover:text-destructive hover:border-destructive/30 text-xs font-semibold bg-background hover:bg-destructive/5 active:scale-95 transition-all"
           >
-            <Trash2 className="w-3.5 h-3.5 text-slate-800" />
+            <Trash2 className="w-3.5 h-3.5" />
             <span>{tr("حذف")}</span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => {
                 playSound("hover", 0.4);
                 onUpdateQuantity(String(line.productId), line.quantity - 1);
               }}
-              className="w-8 h-8 rounded-full border border-slate-300 hover:border-slate-400 active:scale-90 text-slate-600 flex items-center justify-center transition-all"
+              className="w-8 h-8 rounded-full border border-border bg-background hover:bg-muted active:scale-90 text-foreground flex items-center justify-center transition-all"
+              aria-label="إنقاص الكمية"
             >
-              <Minus className="w-4 h-4 text-slate-700 stroke-[2.5]" />
+              <Minus className="w-3.5 h-3.5" />
             </button>
 
-            <span className="font-extrabold text-slate-900 text-base min-w-[20px] text-center">
+            <span className="font-black text-foreground text-sm min-w-[20px] text-center">
               {line.quantity}
             </span>
 
@@ -197,9 +198,10 @@ const SwipeableCartItem = ({
                 playSound("hover", 0.4);
                 onUpdateQuantity(String(line.productId), line.quantity + 1);
               }}
-              className="w-8 h-8 rounded-full border-2 border-[#168038] hover:bg-green-50 active:scale-90 text-[#168038] flex items-center justify-center transition-all"
+              className="w-8 h-8 rounded-full border border-border bg-background hover:bg-muted active:scale-90 text-foreground flex items-center justify-center transition-all"
+              aria-label="زيادة الكمية"
             >
-              <Plus className="w-4 h-4 text-[#168038] stroke-[3]" />
+              <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -452,22 +454,28 @@ function CartPage() {
 
   return (
     <AppShell currentView="cart">
-      <header className="shrink-0 bg-white/80 backdrop-blur-md sticky top-0 px-4 py-4 flex items-center justify-between z-20 border-b border-slate-100">
+      <header className="shrink-0 bg-[var(--card)]/90 backdrop-blur-md sticky top-0 px-4 py-3.5 flex items-center justify-between z-20 border-b border-border">
         <div className="flex items-center gap-3">
           <button
             onClick={() => void navigate({ to: "/" })}
-            className="w-10 h-10 bg-slate-100 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors"
+            className="w-9 h-9 bg-muted flex items-center justify-center rounded-xl hover:bg-muted/80 text-foreground transition-colors"
+            aria-label="العودة"
           >
-            <ChevronDown className="w-6 h-6 stroke-[2.5]" />
+            <ChevronDown className="w-5 h-5 stroke-[2.5]" />
           </button>
-          <h1 className="text-[17px] font-bold text-slate-900 tracking-tight">
+          <h1 className="text-base font-bold text-foreground tracking-tight">
             {tr("سلة المشتريات")}
           </h1>
         </div>
+        {lines.length > 0 && (
+          <span className="text-xs font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
+            {lines.length} {tr("منتجات")}
+          </span>
+        )}
       </header>
 
-      <main className="flex-1 px-0 pb-[240px]">
-        <div className="divide-y divide-border/50">
+      <main className="flex-1 px-0 pb-[220px]">
+        <div className="divide-y divide-border/40">
           <AnimatePresence mode="popLayout">
             {lines.map((line) => (
               <SwipeableCartItem
@@ -491,28 +499,27 @@ function CartPage() {
           </AnimatePresence>
         </div>
 
-        <div className="px-4 py-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-extrabold text-slate-900">{tr("هل تحتاج شيئاً آخر؟")}</h3>
+        <div className="px-4 py-5 space-y-4">
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-sm font-bold text-foreground">{tr("هل تحتاج شيئاً آخر؟")}</span>
             <button
               onClick={() => void navigate({ to: "/" })}
-              className="border-2 border-[var(--brand-red)] text-[var(--brand-red)] font-black px-4 py-2 rounded-full text-xs active:scale-95 transition-all"
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
-              {tr("إضافة المزيد")}
+              <span>{tr("تصفح المزيد من الألعاب")}</span>
+              <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
             </button>
           </div>
 
           {needsAddress ? (
-            <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-                  <MapPin className="w-5 h-5 text-slate-400" />
+            <div className="p-4 bg-muted/40 rounded-2xl border border-border space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-card rounded-xl flex items-center justify-center shadow-sm">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
                 </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">
-                    {tr("عنوان التوصيل (للأجهزة)")}
-                  </h4>
-                </div>
+                <h4 className="font-bold text-foreground text-xs sm:text-sm">
+                  {tr("عنوان التوصيل (للأجهزة)")}
+                </h4>
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 {(
@@ -532,66 +539,68 @@ function CartPage() {
                       setAddress((prev) => ({ ...prev, [field]: event.target.value }))
                     }
                     placeholder={label}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[var(--brand-red)] transition-colors placeholder:text-slate-400"
+                    className="rounded-xl border border-border bg-[var(--card)] px-3 py-2 text-xs sm:text-sm outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
                   />
                 ))}
               </div>
             </div>
           ) : (
-            <div className="p-5 bg-emerald-50 rounded-3xl border border-emerald-100 flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-emerald-500 shadow-sm">
-                <Zap className="w-5 h-5" />
+            <div className="p-3.5 bg-card rounded-2xl border border-border/70 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <Zap className="w-4 h-4" />
               </div>
-              <p className="text-xs font-bold text-emerald-700">
-                {tr("تسليم فوري لجميع المنتجات في سلتك عبر محادثة الطلب.")}
+              <p className="text-xs font-medium text-foreground/80 leading-relaxed">
+                {tr("تسليم فوري لجميع المنتجات الرقمية عبر محادثة الطلب فور تأكيد الدفع.")}
               </p>
             </div>
           )}
 
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Ticket className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder={tr("أضف كود الخصم")}
-                className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm focus:outline-none focus:border-[var(--brand-red)] transition-colors placeholder:text-slate-400"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-border bg-[var(--card)] text-xs sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
               />
             </div>
-            <button className="px-6 py-3 bg-slate-900 text-white font-black rounded-2xl text-sm active:scale-95 transition-all">
+            <button className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-xl text-xs active:scale-95 transition-all border border-border/60">
               {tr("تطبيق")}
             </button>
           </div>
 
           {error && (
-            <div className="p-4 bg-rose-500/5 rounded-2xl border border-rose-500/20 text-rose-600 text-xs font-bold">
+            <div className="p-3.5 bg-destructive/10 rounded-2xl border border-destructive/20 text-destructive text-xs font-semibold">
               {error}
             </div>
           )}
         </div>
       </main>
 
-      <footer className="fixed bottom-[68px] sm:bottom-[64px] left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 px-4 py-3 sm:py-4 space-y-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] z-40">
+      <footer className="fixed bottom-[58px] sm:bottom-[60px] left-0 right-0 bg-[var(--card)]/95 backdrop-blur-md border-t border-border px-4 py-3 sm:py-3.5 space-y-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] z-40">
         <div className="flex items-center justify-between max-w-3xl mx-auto w-full">
           <div className="flex flex-col">
-            <div className="text-slate-500 text-[10px] font-black uppercase tracking-wider mb-0.5">
+            <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider mb-0.5">
               {tr("إجمالي السلة")}
             </div>
-            <div className="text-slate-900 font-black text-xl sm:text-2xl tracking-tight">
+            <div className="text-foreground font-black text-lg sm:text-xl tracking-tight">
               {formatIQDPrice(total)}
             </div>
           </div>
 
           <div className="flex flex-col items-end">
             <div className="flex items-center gap-1.5">
-              <div className="bg-blue-600 p-0.5 rounded shadow-sm">
-                <Wallet className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-slate-500 text-[10px] font-black uppercase tracking-wider">
+              <Wallet className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
                 {tr("رصيد المحفظة")}
               </span>
             </div>
             <div
-              className={`font-black text-base sm:text-lg tracking-tight ${user?.walletBalance && user.walletBalance >= total ? "text-emerald-600" : "text-rose-600"}`}
+              className={`font-black text-sm sm:text-base tracking-tight ${
+                user?.walletBalance && user.walletBalance >= total
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-rose-600 dark:text-rose-400"
+              }`}
             >
               {formatIQDPrice(user?.walletBalance || 0)}
             </div>
@@ -602,10 +611,10 @@ function CartPage() {
           <button
             onClick={handleInitiatePayment}
             disabled={checkout.isPending}
-            className="w-full bg-slate-900 hover:bg-black text-white font-black py-3.5 sm:py-4 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full bg-primary hover:opacity-90 text-primary-foreground font-black py-3 sm:py-3.5 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all disabled:opacity-50"
           >
-            <Wallet className="w-5 h-5 text-amber-400" />
-            <span className="text-base sm:text-lg">
+            <Wallet className="w-4 h-4" />
+            <span className="text-sm sm:text-base">
               {checkout.isPending ? tr("جاري الطلب...") : tr("إتمام الدفع عبر المحفظة")}
             </span>
           </button>
@@ -627,53 +636,53 @@ function CartPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl z-10 text-center"
+              className="relative w-full max-w-md bg-[var(--card)] rounded-3xl p-6 shadow-2xl z-10 text-center border border-border"
               dir="rtl"
             >
-              <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mx-auto mb-4 border border-rose-100 shadow-sm">
-                <AlertCircle className="w-8 h-8 stroke-[2.5]" />
+              <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-400 mx-auto mb-3.5 border border-rose-500/20 shadow-sm">
+                <AlertCircle className="w-6 h-6 stroke-[2.5]" />
               </div>
 
-              <h3 className="text-xl font-black text-slate-900 mb-2">
+              <h3 className="text-lg font-black text-foreground mb-1.5">
                 {tr("رصيد المحفظة غير كافٍ")}
               </h3>
-              <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+              <p className="text-muted-foreground text-xs sm:text-sm mb-5 leading-relaxed">
                 {tr("رصيدك الحالي لا يغطي قيمة هذا الطلب. يمكنك شحن محفظتك لإتمام الشراء.")}
               </p>
 
-              <div className="bg-slate-50 rounded-2xl p-4 mb-6 text-sm space-y-2.5 border border-slate-100 text-right">
+              <div className="bg-muted/50 rounded-2xl p-3.5 mb-5 text-xs sm:text-sm space-y-2 border border-border/60 text-right">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">{tr("إجمالي السلة")}:</span>
-                  <span className="text-slate-900 font-black">{formatIQDPrice(total)}</span>
+                  <span className="text-muted-foreground font-medium">{tr("إجمالي السلة")}:</span>
+                  <span className="text-foreground font-black">{formatIQDPrice(total)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">{tr("رصيدك الحالي")}:</span>
-                  <span className="text-rose-600 font-bold">
+                  <span className="text-muted-foreground font-medium">{tr("رصيدك الحالي")}:</span>
+                  <span className="text-rose-600 dark:text-rose-400 font-bold">
                     {formatIQDPrice(user?.walletBalance || 0)}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                  <span className="text-slate-700 font-bold">{tr("المبلغ المطلوب شحنه")}:</span>
-                  <span className="text-blue-600 font-black">
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <span className="text-foreground font-bold">{tr("المبلغ المطلوب شحنه")}:</span>
+                  <span className="text-primary font-black">
                     {formatIQDPrice(Math.max(0, total - (user?.walletBalance || 0)))}
                   </span>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => {
                     setShowInsufficientModal(false);
                     void navigate({ to: "/wallet" });
                   }}
-                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-primary hover:opacity-90 text-primary-foreground font-black rounded-2xl shadow-sm active:scale-[0.98] transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
                 >
                   <Wallet className="w-4 h-4" />
                   <span>{tr("شحن المحفظة الآن")}</span>
                 </button>
                 <button
                   onClick={() => setShowInsufficientModal(false)}
-                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-colors text-sm"
+                  className="w-full py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm"
                 >
                   {tr("إلغاء والعودة للسلة")}
                 </button>
@@ -698,54 +707,54 @@ function CartPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl z-10 text-center"
+              className="relative w-full max-w-md bg-[var(--card)] rounded-3xl p-6 shadow-2xl z-10 text-center border border-border"
               dir="rtl"
             >
-              <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mx-auto mb-4 border border-emerald-100 shadow-sm">
-                <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-3.5 border border-emerald-500/20 shadow-sm">
+                <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
               </div>
 
-              <h3 className="text-xl font-black text-slate-900 mb-1">
+              <h3 className="text-lg font-black text-foreground mb-1">
                 {tr("تأكيد الدفع عبر المحفظة")}
               </h3>
-              <p className="text-slate-600 text-sm mb-6">
+              <p className="text-muted-foreground text-xs sm:text-sm mb-5">
                 {tr("هل ترغب بتأكيد الطلب واستقطاع المبلغ من رصيدك؟")}
               </p>
 
-              <div className="bg-slate-50 rounded-2xl p-4 mb-6 text-sm space-y-2.5 border border-slate-100 text-right">
+              <div className="bg-muted/50 rounded-2xl p-3.5 mb-5 text-xs sm:text-sm space-y-2 border border-border/60 text-right">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">{tr("عدد المنتجات")}:</span>
-                  <span className="text-slate-900 font-bold">
+                  <span className="text-muted-foreground font-medium">{tr("عدد المنتجات")}:</span>
+                  <span className="text-foreground font-bold">
                     {lines.length} {tr("منتج")}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">{tr("إجمالي المبلغ")}:</span>
-                  <span className="text-slate-900 font-black text-base">
+                  <span className="text-muted-foreground font-medium">{tr("إجمالي المبلغ")}:</span>
+                  <span className="text-foreground font-black">
                     {formatIQDPrice(total)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">{tr("رصيدك الحالي")}:</span>
-                  <span className="text-slate-700 font-bold">
+                  <span className="text-muted-foreground font-medium">{tr("رصيدك الحالي")}:</span>
+                  <span className="text-muted-foreground font-bold">
                     {formatIQDPrice(user?.walletBalance || 0)}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                  <span className="text-emerald-700 font-bold">
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                     {tr("الرصيد المتبقي بعد الدفع")}:
                   </span>
-                  <span className="text-emerald-600 font-black">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-black">
                     {formatIQDPrice(Math.max(0, (user?.walletBalance || 0) - total))}
                   </span>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={confirmAndPay}
                   disabled={checkout.isPending}
-                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 bg-primary hover:opacity-90 text-primary-foreground font-black rounded-2xl shadow-sm active:scale-[0.98] transition-all text-xs sm:text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {checkout.isPending ? (
                     <span>{tr("جاري تأكيد واستقطاع المبلغ...")}</span>
@@ -756,7 +765,7 @@ function CartPage() {
                 <button
                   onClick={() => setShowConfirmModal(false)}
                   disabled={checkout.isPending}
-                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-colors text-sm disabled:opacity-50"
+                  className="w-full py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm disabled:opacity-50"
                 >
                   {tr("تراجع")}
                 </button>

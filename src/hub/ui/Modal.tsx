@@ -87,7 +87,7 @@ export function Modal({ open, onClose, title, children, size = "md", bare }: Mod
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-x-hidden sm:items-center sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -111,7 +111,7 @@ export function Modal({ open, onClose, title, children, size = "md", bare }: Mod
               SIZES[size],
               bare
                 ? "outline-none"
-                : "max-h-[92dvh] max-w-[100vw] overflow-hidden rounded-t-2xl border border-white/10 bg-ink-850 p-5 shadow-lift outline-none sm:rounded-2xl sm:p-6",
+                : "max-h-[90dvh] max-w-full overflow-hidden rounded-t-3xl border border-white/10 bg-ink-850 p-4 sm:p-6 shadow-lift outline-none sm:rounded-2xl",
             )}
           >
             {!bare && (
