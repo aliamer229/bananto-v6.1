@@ -71,13 +71,13 @@ const confirmed = <T>(value: T, source = "لوحة الإدارة"): Fact<T> => 
 });
 
 function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
-  const title =
-    locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"]) || str(p["titleEn"]);
+  const title = str(p["titleEn"]) || str(p["title"]);
 
   const desc =
     locale === "en"
       ? str(p["descriptionEn"]) || str(p["description"])
       : str(p["descriptionAr"]) || str(p["description"]) || str(p["descriptionEn"]);
+
 
   const tag =
     locale === "en"
