@@ -16,7 +16,7 @@ export function ProductCard({ product, forceStandardImage }: { product: any; for
       params={{ productId: product.id }}
       className="bg-card rounded-2xl p-2 shadow-sm border border-border cursor-pointer hover:shadow-md transition-all group block"
     >
-      <div className="overflow-hidden rounded-xl mb-3 relative">
+      <div className="overflow-hidden rounded-xl mb-3 relative aspect-[3/4] bg-muted/20">
         <img
           src={cdnImage(
             displayImage ||
@@ -24,7 +24,12 @@ export function ProductCard({ product, forceStandardImage }: { product: any; for
           )}
           loading="lazy"
           decoding="async"
-          className="w-full aspect-[3/4] object-cover object-center group-hover:scale-105 transition-transform duration-300"
+          className="w-[200%] max-w-none h-full object-cover object-right group-hover:scale-105 transition-transform duration-300"
+          style={{ 
+            marginLeft: '-100%',
+            maskImage: 'linear-gradient(to right, transparent 50%, black 50%)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 50%, black 50%)'
+          }}
           alt={product.title}
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
