@@ -675,8 +675,9 @@ function buildCatalogTypes(p: Record<string, unknown>, locale: "ar" | "en") {
   const list = rawTypes
     .map((t, i) => {
       const name = getTextValue(
-        locale === "en" && t["nameEn"] ? t["nameEn"] : (t["name"] ?? t["title"] ?? t["value"] ?? t),
+        t["nameEn"] ?? t["name"] ?? t["title"] ?? t["value"] ?? t,
       );
+
       if (!name) return null;
       return {
         id: str(t["id"]) || `type-${i}`,
