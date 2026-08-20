@@ -306,14 +306,13 @@ export default function HomeView({
           // we might want to hide its duplicate if it matches the first section.
           if (index > 0 && category.id === "nintendo-switch-games") return null;
 
-
           if (index === 0) {
             return (
               <React.Fragment key={category.id}>
                 <section className="relative mt-2 pb-6 -mx-4">
                   <div className="mb-3 px-8 flex items-center justify-between">
                     <h3 className="truncate text-xl font-bold text-foreground">
-                      {index === 0 ? "nintendo games" : t(category.title)}
+                      {t("Nintendo Switch games")}
                     </h3>
                   </div>
 
