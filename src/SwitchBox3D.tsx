@@ -2,6 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
+const ASSET_GLB = '/__l5e/assets-v1/863bd171-ee8b-413b-beee-1d41744e74cd/SwitchCase.glb';
+const ASSET_TEXTURE = '/__l5e/assets-v1/096a6d55-e8ed-44c4-8844-5418a3cdb209/GZAfvAF3.jpg';
+
 /**
  * Interactive Switch retail case implementation restored from untitled_6.
  * Uses the real SwitchCase.glb model and GZAfvAF3.jpg base texture.
@@ -17,7 +20,7 @@ export function SwitchBox3D({
   gameName: string,
   onReady?: () => void
 }) {
-  const { nodes, materials } = useGLTF('/source/SwitchCase.glb') as any;
+  const { nodes, materials } = useGLTF(ASSET_GLB) as any;
   const group = useRef<THREE.Group>(null);
   
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
@@ -34,7 +37,8 @@ export function SwitchBox3D({
       try {
         // 1. Draw base texture (the original image from the zip)
         const baseImg = new Image();
-        baseImg.src = '/textures/GZAfvAF3.jpg';
+        baseImg.crossOrigin = 'anonymous';
+        baseImg.src = ASSET_TEXTURE;
         await new Promise((resolve, reject) => {
           baseImg.onload = resolve;
           baseImg.onerror = reject;
@@ -128,5 +132,5 @@ export function SwitchBox3D({
   );
 }
 
-useGLTF.preload('/source/SwitchCase.glb');
+useGLTF.preload(ASSET_GLB);
 export default SwitchBox3D;
