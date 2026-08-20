@@ -14,7 +14,6 @@ import {
   Music,
   Volume2,
   VolumeX,
-  History,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useI18n } from "../i18n";
