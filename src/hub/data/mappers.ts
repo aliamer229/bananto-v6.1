@@ -11,9 +11,8 @@ export function buildFitFor(p: Record<string, unknown>, locale: "ar" | "en") {
     .filter(Boolean);
   const notFit = rows(p["notFitFor"])
     .map((r) =>
-      getTextValue(
-        locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r,
-      ),
+      getTextValue(r["valueEn"] ?? r["value"] ?? r),
+
     )
     .filter(Boolean);
 
