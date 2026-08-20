@@ -303,7 +303,7 @@ export default function HomeView({
           if (categoryProducts.length === 0) return null;
 
           // Handle Nintendo Switch Games section visibility
-          const isNintendoGames = category.id === "nintendo-switch-games" || category.title?.toLowerCase().includes("nintendo switch");
+          const isNintendoGames = category.id === "nintendo-switch-games" || category.id === "nintendo_games" || category.title?.toLowerCase().includes("nintendo switch");
 
           if (index === 0) {
             return (
@@ -359,7 +359,7 @@ export default function HomeView({
                   {isNintendoGames && (
                     <Link
                       to="/category/$categoryId"
-                      params={{ categoryId: category.id }}
+                      params={{ categoryId: category.id === "cat_nintendo" ? "nintendo_games" : category.id }}
                       className="bg-[var(--shell-2)] border border-border px-4 py-1.5 rounded-full text-xs font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
                     >
                       {t("common.viewAll")}
