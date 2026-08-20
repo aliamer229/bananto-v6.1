@@ -203,13 +203,17 @@ export function SwitchBox3D({
   return (
     <>
       <OrbitControls
+        makeDefault
         enablePan={false}
         enableZoom={false}
+        enableRotate
+        rotateSpeed={0.9}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 1.5}
         enableDamping
         dampingFactor={0.08}
       />
+
     <group ref={group} dispose={null} scale={0.65} position={[0, -0.5, 0]} rotation={[0, -Math.PI / 6, 0]}>
       <mesh geometry={nodes.box.geometry} material={materials.plastic} />
 
