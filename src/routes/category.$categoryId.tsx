@@ -227,7 +227,30 @@ function CategoryPage() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="max-w-7xl mx-auto pt-4 pb-2 border-t border-border mt-3 flex flex-wrap gap-3">
+                <div className="max-w-7xl mx-auto pt-4 pb-2 border-t border-border mt-3 flex flex-col gap-4">
+                  {/* Genre filter for mobile/expanded */}
+                  <div className="flex flex-col gap-2 md:hidden">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase px-2">{t("التصنيفات")}</span>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                      <button
+                        onClick={() => setSelectedGenre("all")}
+                        className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${selectedGenre === "all" ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
+                      >
+                        {t("الكل")}
+                      </button>
+                      {genres.map((genre) => (
+                        <button
+                          key={genre}
+                          onClick={() => setSelectedGenre(genre)}
+                          className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${selectedGenre === genre ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
+                        >
+                          {genre}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
                   <div className="flex flex-col gap-2">
                     <span className="text-[10px] font-black text-muted-foreground uppercase px-2">{t("الجهاز")}</span>
                     <div className="flex gap-2">
