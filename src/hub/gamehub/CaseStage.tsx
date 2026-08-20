@@ -16,9 +16,7 @@ import { readPrefs } from "@/lib/prefs";
  * ready. If WebGL is unavailable or the device is small, the CSS case simply stays.
  */
 
-const SwitchBox3D = lazyWithRetry(() =>
-  import("@/SwitchBox3D").then((m) => ({ default: m.SwitchBox3D || m.default })),
-);
+import { SwitchBox3D } from "@/SwitchBox3D";
 
 function hasWebGL(): boolean {
   if (typeof window === "undefined") return false;
@@ -57,8 +55,8 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
 
       <div
         className={cn(
-          "absolute inset-0 touch-none transition-opacity duration-700",
-          modelReady ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+          "absolute inset-0 touch-none transition-opacity duration-300",
+          modelReady ? "opacity-100" : "opacity-0",
         )}
       >
         <SafeBoundary onError={() => setModelReady(false)}>
