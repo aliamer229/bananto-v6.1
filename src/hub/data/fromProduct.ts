@@ -606,7 +606,7 @@ function buildVerdict(p: Record<string, unknown>, locale: "ar" | "en"): EditorVe
     .filter(Boolean);
   const cons = rows(p["verdictCons"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      const v = r["valueEn"] ?? r["value"] ?? r;
       return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
     })
     .filter(Boolean);
