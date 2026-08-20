@@ -567,7 +567,7 @@ function buildSoundtrack(p: Record<string, unknown>, locale: "ar" | "en"): Sound
 }
 
 function buildSeries(p: Record<string, unknown>, locale: "ar" | "en"): GameSeries | undefined {
-  const name = localizedValue(p, "seriesName", "seriesNameEn", locale);
+  const name = str(p["seriesNameEn"]) || str(p["seriesName"]);
   const entries = rows(p["seriesEntries"]);
   if (!name && !entries.length) return undefined;
   const mappedEntries = entries
