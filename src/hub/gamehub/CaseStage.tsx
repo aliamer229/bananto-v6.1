@@ -31,6 +31,8 @@ function hasWebGL(): boolean {
 }
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
+  console.log("CaseStage Rendering:", caseProps.title);
+
   const [modelReady, setModelReady] = useState(false);
   const handleModelReady = useCallback(() => setModelReady(true), []);
 
