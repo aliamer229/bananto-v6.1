@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { readPrefs } from "@/lib/prefs";
 import glbAsset from "@/assets/3d/SwitchCase.glb.asset.json";
 import textureAsset from "@/assets/3d/GZAfvAF3.jpg.asset.json";
 
