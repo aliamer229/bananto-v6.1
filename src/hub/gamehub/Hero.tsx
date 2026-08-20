@@ -161,6 +161,7 @@ export function Hero() {
               title={game.title}
               subtitle={game.subtitle}
               isSwitch2={isSwitch2}
+              platform={isSwitch2 ? "ns2" : "ns1"}
               ageRating={game.ageRating}
               // Retail Switch 2 packaging prints the edition on the spine.
               editionLabel={
