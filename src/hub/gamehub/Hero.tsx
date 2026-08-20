@@ -176,7 +176,7 @@ export function Hero() {
 
             {/* SKU selector — only when both cases genuinely exist. */}
             {skus.length > 1 && (
-              <div className="mt-1 flex gap-1 rounded-full bg-black/30 p-1">
+              <div className="mt-4 flex gap-1 rounded-full bg-black/30 p-1">
                 {skus.map((option) => (
                   <button
                     key={option}
@@ -200,7 +200,7 @@ export function Hero() {
 
             {/* Media rail — trailer + stills, secondary to the product. */}
             {(trailer || images.length > 0) && (
-              <div className="mt-1 flex items-center gap-2">
+              <div className="mt-4 flex items-center gap-2">
                 {trailer && (
                   <button
                     onClick={() => {
