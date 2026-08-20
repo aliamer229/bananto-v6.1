@@ -262,18 +262,20 @@ async function handleLinkToken(chatId: number, from: any, token: string) {
   try {
     const stamp = new Date().toISOString();
     await d1Run(
-      `INSERT INTO telegram_links (user_id, telegram_chat_id, telegram_user_id, telegram_username, verified, linked_at, updated_at)
-       VALUES (?, ?, ?, ?, 1, ?, ?)
+      `INSERT INTO telegram_links (user_id, telegram_chat_id, telegram_user_id, telegram_username, telegram_phone, verified, linked_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 1, ?, ?)
        ON CONFLICT(user_id) DO UPDATE SET
          telegram_chat_id = excluded.telegram_chat_id,
          telegram_user_id = excluded.telegram_user_id,
          telegram_username = excluded.telegram_username,
+         telegram_phone = COALESCE(excluded.telegram_phone, telegram_links.telegram_phone),
          verified = 1,
          updated_at = excluded.updated_at`,
       banantoUserId,
       chatId,
       from?.id ? String(from.id) : null,
       from?.username || null,
+      null, // phone is not known yet in this flow
       stamp,
       stamp,
     );
