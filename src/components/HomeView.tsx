@@ -306,14 +306,13 @@ export default function HomeView({
           // we might want to hide its duplicate if it matches the first section.
           if (index > 0 && category.id === "nintendo-switch-games") return null;
 
-
           if (index === 0) {
             return (
               <React.Fragment key={category.id}>
                 <section className="relative mt-2 pb-6 -mx-4">
                   <div className="mb-3 px-8 flex items-center justify-between">
                     <h3 className="truncate text-xl font-bold text-foreground">
-                      {index === 0 ? "nintendo games" : t(category.title)}
+                      {t("home.nintendoSwitchGames")}
                     </h3>
                   </div>
 
@@ -387,20 +386,14 @@ export default function HomeView({
             <div className="flex items-center justify-between gap-2 mb-4 px-8">
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold text-foreground">
-                  Nintendo Switch games
+                  {t("home.latestNintendoGames")}
                 </h3>
                 <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
                   New
                 </span>
               </div>
-              <Link
-                to="/category/$categoryId"
-                params={{ categoryId: "nintendo-switch-games" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline"
-              >
-                {t("عرض الكل")}
-              </Link>
             </div>
+
 
             <ProductStrip
               products={adminProducts
