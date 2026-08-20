@@ -37,6 +37,7 @@ export default function Cartridge({
     game.rating != null && String(game.rating).trim() !== "" ? String(game.rating) : null;
   const sound = isSwitch2 ? "hover" : "hover_s";
 
+
   // Track the pointer so scrolling the strip never fires the sound or navigation.
   const start = useRef<{ x: number; y: number; moved: boolean; touch: boolean } | null>(null);
 
