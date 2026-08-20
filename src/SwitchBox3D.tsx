@@ -107,6 +107,7 @@ export function SwitchBox3D({
   if (materials.plastic) {
     materials.plastic.transparent = true;
     materials.plastic.opacity = 0.8;
+    // Fix: Ensure Switch 2 platform is correctly colored (Red) and Switch 1 is default (Clear/White)
     materials.plastic.color.set(platform === 'ns2' ? '#e60012' : '#ffffff');
     materials.plastic.roughness = 0.05;
     materials.plastic.metalness = 0.4;
