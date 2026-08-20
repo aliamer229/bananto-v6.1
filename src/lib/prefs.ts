@@ -138,7 +138,11 @@ export function readPrefs() {
   // Priority: an explicit saved choice, then the browser's preference on a
   // first visit, then Arabic. A stored choice is never overridden by the
   // browser afterwards.
-  const lang: Lang = isLang(rawLang) ? rawLang : guessLang(acceptLanguages());
+  // Priority when nothing was chosen yet: the visitor's country (IP), then the
+  // browser's language list. An Arab country gets Arabic, everyone else English.
+  const lang: Lang = isLang(rawLang)
+    ? rawLang
+    : (langFromCountry(requestCountry()) ?? guessLang(acceptLanguages()));
   const pack = findTheme(readCookie(THEME_COOKIE, header) ?? DEFAULT_THEME);
   const motion: Motion = readCookie(MOTION_COOKIE, header) === "lite" ? "lite" : "full";
   return { lang, dir: dirOf(lang), theme: pack.id, dark: pack.dark, motion };
