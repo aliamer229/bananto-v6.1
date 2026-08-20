@@ -73,7 +73,7 @@ const SwipeableCartItem = ({
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemove: (id: string) => void;
 }) => {
-  const { formatUSDPrice } = useCurrency();
+  const { formatIQDPrice } = useCurrency();
   const controls = useAnimation();
   const x = useMotionValue(0);
 
@@ -141,7 +141,7 @@ const SwipeableCartItem = ({
 
             <div className="flex items-center gap-2 mt-1.5">
               <span className="text-base sm:text-lg font-bold text-slate-800">
-                {formatUSDPrice(line.price)}
+                {formatIQDPrice(line.price)}
               </span>
               {line.requiresAddress || line.kind === "hardware" ? (
                 <span className="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide flex items-center gap-1">
@@ -212,13 +212,16 @@ function CartPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { currency, formatUSDPrice } = useCurrency();
+  const { currency, formatIQDPrice } = useCurrency();
   const {
     lines: localLines,
     setQuantity: setLocalQuantity,
     remove: removeLocal,
     clear,
   } = useCartStore();
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showInsufficientModal, setShowInsufficientModal] = useState(false);
 
   const fetchCartFn = useServerFn(getCart);
   const updateItemFn = useServerFn(updateCartItem);
@@ -344,29 +347,40 @@ function CartPage() {
         needsAddress ? { id: "cart", ...address } : undefined,
       ),
     onSuccess: ({ order }) => {
+      setShowConfirmModal(false);
       clear();
       playSound("bumper_end", 0.6);
       void navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
     },
-    onError: (err: Error) => setError(err.message),
+    onError: (err: Error) => {
+      setShowConfirmModal(false);
+      setError(err.message);
+      toast.error(err.message);
+    },
   });
 
-  const submit = () => {
+  const handleInitiatePayment = () => {
     setError(undefined);
-    if (!user) return void navigate({ to: "/auth" });
-
-    if ((user.walletBalance || 0) < total) {
-      setError(
-        `رصيدك الحالي (${formatUSDPrice(user.walletBalance || 0)}) لا يكفي لإتمام الطلب. يرجى شحن المحفظة أولاً.`,
-      );
-      setTimeout(() => void navigate({ to: "/wallet" as any }), 2000);
-      return;
+    if (!user) {
+      return void navigate({ to: "/auth" });
     }
 
     if (needsAddress && (!address.fullName || !address.phone || !address.city)) {
       setError("الأجهزة تحتاج عنوان توصيل: الاسم، الهاتف، والمدينة مطلوبة.");
+      toast.error("يرجى إكمال بيانات عنوان التوصيل للأجهزة");
       return;
     }
+
+    const currentBalance = user.walletBalance || 0;
+    if (currentBalance < total) {
+      setShowInsufficientModal(true);
+      return;
+    }
+
+    setShowConfirmModal(true);
+  };
+
+  const confirmAndPay = () => {
     playSound("loading", 0.6);
     checkout.mutate();
   };
@@ -556,14 +570,14 @@ function CartPage() {
         </div>
       </main>
 
-      <footer className="fixed bottom-[96px] left-0 right-0 bg-white border-t border-slate-100 px-4 pt-4 pb-4 space-y-4 shadow-[0_-8px_30px_rgba(0,0,0,0.05)] z-20">
+      <footer className="fixed bottom-[68px] sm:bottom-[64px] left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 px-4 py-3 sm:py-4 space-y-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] z-40">
         <div className="flex items-center justify-between max-w-3xl mx-auto w-full">
           <div className="flex flex-col">
             <div className="text-slate-500 text-[10px] font-black uppercase tracking-wider mb-0.5">
               {tr("إجمالي السلة")}
             </div>
-            <div className="text-slate-900 font-black text-2xl tracking-tight">
-              {formatUSDPrice(total)}
+            <div className="text-slate-900 font-black text-xl sm:text-2xl tracking-tight">
+              {formatIQDPrice(total)}
             </div>
           </div>
 
@@ -577,32 +591,180 @@ function CartPage() {
               </span>
             </div>
             <div
-              className={`font-black text-lg tracking-tight ${user?.walletBalance && user.walletBalance >= total ? "text-emerald-600" : "text-rose-600"}`}
+              className={`font-black text-base sm:text-lg tracking-tight ${user?.walletBalance && user.walletBalance >= total ? "text-emerald-600" : "text-rose-600"}`}
             >
-              {formatUSDPrice(user?.walletBalance || 0)}
+              {formatIQDPrice(user?.walletBalance || 0)}
             </div>
           </div>
         </div>
 
         <div className="max-w-3xl mx-auto w-full">
           <button
-            onClick={() => {
-              if (user && user.walletBalance < total) {
-                toast.error(tr("رصيدك غير كافٍ، يرجى شحن المحفظة أولاً"));
-                void navigate({ to: "/wallet" });
-                return;
-              }
-              submit();
-            }}
+            onClick={handleInitiatePayment}
             disabled={checkout.isPending}
-            className={`w-full text-white font-black py-4 px-6 rounded-2xl flex flex-col items-center justify-center shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 ${user && user.walletBalance >= total ? "bg-zinc-900 shadow-zinc-500/20" : "bg-rose-500 shadow-rose-500/20"}`}
+            className="w-full bg-slate-900 hover:bg-black text-white font-black py-3.5 sm:py-4 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10 active:scale-[0.98] transition-all disabled:opacity-50"
           >
-            <span className="text-lg">
+            <Wallet className="w-5 h-5 text-amber-400" />
+            <span className="text-base sm:text-lg">
               {checkout.isPending ? tr("جاري الطلب...") : tr("إتمام الدفع عبر المحفظة")}
             </span>
           </button>
         </div>
       </footer>
+
+      {/* Modal: Insufficient Balance */}
+      <AnimatePresence>
+        {showInsufficientModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowInsufficientModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl z-10 text-center"
+              dir="rtl"
+            >
+              <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mx-auto mb-4 border border-rose-100 shadow-sm">
+                <AlertCircle className="w-8 h-8 stroke-[2.5]" />
+              </div>
+
+              <h3 className="text-xl font-black text-slate-900 mb-2">
+                {tr("رصيد المحفظة غير كافٍ")}
+              </h3>
+              <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+                {tr("رصيدك الحالي لا يغطي قيمة هذا الطلب. يمكنك شحن محفظتك لإتمام الشراء.")}
+              </p>
+
+              <div className="bg-slate-50 rounded-2xl p-4 mb-6 text-sm space-y-2.5 border border-slate-100 text-right">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">{tr("إجمالي السلة")}:</span>
+                  <span className="text-slate-900 font-black">{formatIQDPrice(total)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">{tr("رصيدك الحالي")}:</span>
+                  <span className="text-rose-600 font-bold">
+                    {formatIQDPrice(user?.walletBalance || 0)}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
+                  <span className="text-slate-700 font-bold">{tr("المبلغ المطلوب شحنه")}:</span>
+                  <span className="text-blue-600 font-black">
+                    {formatIQDPrice(Math.max(0, total - (user?.walletBalance || 0)))}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                <button
+                  onClick={() => {
+                    setShowInsufficientModal(false);
+                    void navigate({ to: "/wallet" });
+                  }}
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2"
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>{tr("شحن المحفظة الآن")}</span>
+                </button>
+                <button
+                  onClick={() => setShowInsufficientModal(false)}
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-colors text-sm"
+                >
+                  {tr("إلغاء والعودة للسلة")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal: Confirm Payment */}
+      <AnimatePresence>
+        {showConfirmModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !checkout.isPending && setShowConfirmModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl z-10 text-center"
+              dir="rtl"
+            >
+              <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mx-auto mb-4 border border-emerald-100 shadow-sm">
+                <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
+              </div>
+
+              <h3 className="text-xl font-black text-slate-900 mb-1">
+                {tr("تأكيد الدفع عبر المحفظة")}
+              </h3>
+              <p className="text-slate-600 text-sm mb-6">
+                {tr("هل ترغب بتأكيد الطلب واستقطاع المبلغ من رصيدك؟")}
+              </p>
+
+              <div className="bg-slate-50 rounded-2xl p-4 mb-6 text-sm space-y-2.5 border border-slate-100 text-right">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">{tr("عدد المنتجات")}:</span>
+                  <span className="text-slate-900 font-bold">
+                    {lines.length} {tr("منتج")}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">{tr("إجمالي المبلغ")}:</span>
+                  <span className="text-slate-900 font-black text-base">
+                    {formatIQDPrice(total)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">{tr("رصيدك الحالي")}:</span>
+                  <span className="text-slate-700 font-bold">
+                    {formatIQDPrice(user?.walletBalance || 0)}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
+                  <span className="text-emerald-700 font-bold">
+                    {tr("الرصيد المتبقي بعد الدفع")}:
+                  </span>
+                  <span className="text-emerald-600 font-black">
+                    {formatIQDPrice(Math.max(0, (user?.walletBalance || 0) - total))}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2.5">
+                <button
+                  onClick={confirmAndPay}
+                  disabled={checkout.isPending}
+                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {checkout.isPending ? (
+                    <span>{tr("جاري تأكيد واستقطاع المبلغ...")}</span>
+                  ) : (
+                    <span>{tr("تأكيد واستقطاع المبلغ")}</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowConfirmModal(false)}
+                  disabled={checkout.isPending}
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-colors text-sm disabled:opacity-50"
+                >
+                  {tr("تراجع")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AppShell>
   );
 }

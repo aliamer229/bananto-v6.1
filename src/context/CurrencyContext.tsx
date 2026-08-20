@@ -282,7 +282,12 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const formatUSDPrice = (usdAmount: number, targetCurrency: string = currency): string => {
-    const converted = convertFromUSD(usdAmount, targetCurrency);
+    const numeric = Number(usdAmount) || 0;
+    // Safety check: If amount is >= 500, it is an Iraqi Dinar price mistakenly passed to formatUSDPrice
+    if (numeric >= 500) {
+      return formatIQDPrice(numeric, targetCurrency);
+    }
+    const converted = convertFromUSD(numeric, targetCurrency);
     const info = getCurrencyInfo(targetCurrency);
 
     if (info.code === "IQD") {

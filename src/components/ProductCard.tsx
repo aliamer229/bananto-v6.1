@@ -51,7 +51,7 @@ export function ProductCard({
           {product.rating || "4.9"} <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-current" />
         </div>
         <div className="text-foreground text-xs sm:text-sm font-bold" dir="ltr">
-          ${product.price}
+          {(Number(product.price) || 0).toLocaleString()} د.ع
         </div>
       </div>
     </Link>

@@ -12,7 +12,7 @@ preloadSound("hover");
 
 export default function CartView() {
   const { t } = useI18n();
-  const { formatUSDPrice } = useCurrency();
+  const { formatIQDPrice } = useCurrency();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { lines, remove, clear } = useCartStore();
@@ -91,7 +91,7 @@ export default function CartView() {
                 <div className="flex-1" dir="ltr">
                   <h3 className="font-bold text-foreground line-clamp-1">{item.title}</h3>
                   <div className="text-blue-600 font-bold mt-1">
-                    {formatUSDPrice(item.price)} × {item.quantity}
+                    {formatIQDPrice(item.price)} × {item.quantity}
                   </div>
                   {item.offerLabel && (
                     <div className="text-xs text-muted-foreground">{item.offerLabel}</div>
@@ -120,7 +120,7 @@ export default function CartView() {
             <div className="flex justify-between items-center mb-6">
               <span className="text-muted-foreground">{t("المجموع")}</span>
               <span className="text-2xl font-bold text-foreground">
-                {formatUSDPrice(totalAmount)}
+                {formatIQDPrice(totalAmount)}
               </span>
             </div>
 

@@ -1397,8 +1397,8 @@ function ListingsView({
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 font-medium" dir="ltr">
-                    ${p.price}
+                  <td className="px-4 py-3 font-medium text-foreground" dir="ltr">
+                    {(Number(p.price) || 0).toLocaleString()} د.ع
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {categories.find((c: any) => c.id === (p.category || p.categoryId))?.title ||

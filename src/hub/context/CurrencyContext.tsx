@@ -37,6 +37,7 @@ export const CURRENCY_BY_REGION: Record<RegionCode, CurrencyCode> = {
 };
 
 export const SUPPORTED_CURRENCIES: CurrencyCode[] = [
+  "IQD",
   "USD",
   "SAR",
   "AED",

@@ -5,6 +5,9 @@ const ZERO_DECIMAL: CurrencyCode[] = ["JPY", "IQD"];
 
 export function formatMoney(money: Money | undefined, locale = "en-US"): string | null {
   if (!money || !Number.isFinite(money.amount)) return null;
+  if (money.currency === "IQD") {
+    return `${Math.round(money.amount).toLocaleString("en-US")} د.ع`;
+  }
   const fractionDigits = ZERO_DECIMAL.includes(money.currency) ? 0 : 2;
   try {
     return new Intl.NumberFormat(locale, {
