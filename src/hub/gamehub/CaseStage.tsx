@@ -39,10 +39,11 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
   // Check preferences for reduced motion
   const { motion } = readPrefs();
   const isReduced = motion === "lite";
-  const webGLAvailable = hasWebGL();
 
-  // If motion is reduced, or WebGL is missing, stay with the static 2D version.
-  if (isReduced || !webGLAvailable) {
+  // The user explicitly wants the 3D model to be the primary view.
+  // We only fall back to the static 2D version if the user has manually
+  // enabled "Reduced Motion" in their settings.
+  if (isReduced) {
     return (
       <div className={cn("relative", className)}>
         <GameCase3D {...caseProps} />
