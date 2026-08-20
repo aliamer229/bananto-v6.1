@@ -112,7 +112,7 @@ export function Hero() {
   const stats = buildQuickStats(game, t);
 
   return (
-    <header className="hero-dark relative isolate overflow-hidden">
+    <header className="hero-dark relative isolate overflow-hidden bg-ink-950">
       {/* ---- Backdrop stack: the art itself, blurred, then only as much wash
            as the type needs. A flat black plate is what made this look cheap. ---- */}
       <motion.div
@@ -127,26 +127,26 @@ export function Hero() {
             <img
               src={cdnImage(backdropUrl)}
               alt=""
-              className="absolute inset-0 h-full w-full scale-[1.35] object-cover opacity-70 blur-[70px] saturate-150 transition-opacity duration-700"
+              className="absolute inset-0 h-full w-full scale-[1.35] object-cover opacity-60 blur-[70px] saturate-150 transition-opacity duration-700"
             />
             {/* Readable layer: same art, gentler blur, slightly brighter. */}
             <img
               src={cdnImage(backdropUrl)}
               alt=""
-              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-[26px] brightness-110 transition-opacity duration-700"
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-[30px] brightness-75 transition-opacity duration-700"
             />
           </>
         )}
       </motion.div>
-      {/* Thin wash only — enough contrast for white type, no black plate. */}
-      <div aria-hidden className="absolute inset-0 -z-20 bg-ink-900/40" />
+      {/* Increased wash and layered gradients to ensure white text is always legible */}
+      <div aria-hidden className="absolute inset-0 -z-20 bg-ink-950/60" />
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(8,9,13,0.36)_0%,rgba(11,13,19,0.12)_38%,rgba(11,13,19,0.66)_82%,rgb(11,13,19)_100%)]"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(8,9,13,0.6)_0%,rgba(11,13,19,0.4)_38%,rgba(11,13,19,0.8)_82%,rgb(11,13,19)_100%)]"
       />
       <div
         aria-hidden
-        className="grain absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_22%,transparent_45%,rgba(8,9,13,0.72)_100%)]"
+        className="grain absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_22%,transparent_30%,rgba(8,9,13,0.9)_100%)]"
       />
 
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:pb-12 sm:pt-12 lg:px-6">
