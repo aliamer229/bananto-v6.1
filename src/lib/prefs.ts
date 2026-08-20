@@ -130,7 +130,7 @@ export function writeManualLanguage(lang: Lang) {
 }
 
 export function isLang(value: unknown): value is Lang {
-  return value === "ar" || value === "en" || value === "ku" || value === "tr";
+  return value === "ar" || value === "en" || value === "tr";
 }
 
 /** Arabic and Kurdish are written right-to-left; English and Turkish are not. */

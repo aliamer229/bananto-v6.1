@@ -424,7 +424,7 @@ export function CommunitySection() {
       kind: "question",
       title: body.length > 80 ? `${body.slice(0, 77)}…` : body,
       body,
-      author: { id: "me", name: "You" },
+      author: { id: "me", name: t("common.yes") === "نعم" ? "أنت" : "You" },
       createdAt: new Date().toISOString(),
       upvotes: 0,
       downvotes: 0,
