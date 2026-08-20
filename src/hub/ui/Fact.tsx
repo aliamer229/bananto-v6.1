@@ -38,7 +38,7 @@ export function FactValue<T>({
   if (fact.status === "unconfirmed") {
     return (
       <span className={cn("inline-flex items-center gap-1.5", className)}>
-        <span className="text-sm font-semibold muted">{formatted}</span>
+        <span className="text-sm font-semibold muted" translate="no">{formatted}</span>
         <ConfidenceBadge status="unconfirmed" label={t("common.notConfirmed")} />
       </span>
     );
@@ -46,7 +46,7 @@ export function FactValue<T>({
 
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>
-      <span className="font-bold">{formatted}</span>
+      <span className="font-bold" translate="no">{formatted}</span>
       {showBadge && fact.status === "measured" && (
         <ConfidenceBadge status="measured" label={t("common.measured")} />
       )}
