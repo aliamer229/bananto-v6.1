@@ -20,7 +20,7 @@ import { useTranslation } from "../../i18n";
 
 interface AdminImportModalProps {
   onClose: () => void;
-  onImport: (data: any) => void;
+  onImport: (data: any, batch?: any[]) => void;
 }
 
 export default function AdminImportModal({ onClose, onImport }: AdminImportModalProps) {
@@ -180,12 +180,17 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                 </button>
               </div>
             </div>
-            <textarea
-              className="flex-1 w-full border border-border rounded-xl p-3 text-[11px] font-mono bg-muted/20 focus:bg-background outline-none focus:ring-2 ring-primary/20 transition-all resize-none min-h-[300px]"
-              placeholder="name=Splatoon Raiders&#10;platform=switch2&#10;description_full<<EOF&#10;...&#10;EOF"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-            />
+            <div className="flex-1 flex flex-col gap-2 overflow-hidden">
+              <textarea
+                className="flex-1 w-full border border-border rounded-xl p-3 text-[11px] font-mono bg-muted/20 focus:bg-background outline-none focus:ring-2 ring-primary/20 transition-all resize-none"
+                placeholder="[SHARED]&#10;price=25000&#10;platform=switch&#10;&#10;[[PRODUCT]]&#10;name=Game Title&#10;..."
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+              />
+              <p className="text-[9px] text-muted-foreground leading-tight italic">
+                يمكنك استخدام [SHARED] للقيم المشتركة و [[PRODUCT]] للفصل بين الألعاب المتعددة.
+              </p>
+            </div>
             <button
               disabled={isValidating}
               onClick={handleValidate}
@@ -226,9 +231,15 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-background border border-border p-3 rounded-xl shadow-sm">
                           <div className="text-[10px] text-muted-foreground font-bold mb-1 uppercase">
-                            {t("admin.import.detectedFields")}
+                            {parseResult.batch && parseResult.batch.length > 1
+                              ? "عدد الألعاب المكتشفة"
+                              : t("admin.import.detectedFields")}
                           </div>
-                          <div className="text-xl font-bold">{detectedFields}</div>
+                          <div className="text-xl font-bold">
+                            {parseResult.batch && parseResult.batch.length > 1
+                              ? parseResult.batch.length
+                              : detectedFields}
+                          </div>
                         </div>
                         <div className="bg-background border border-border p-3 rounded-xl shadow-sm">
                           <div className="text-[10px] text-muted-foreground font-bold mb-1 uppercase">
@@ -358,7 +369,9 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
         <div className="p-4 border-t bg-muted/30 flex justify-between items-center px-6">
           <div className="text-[10px] text-muted-foreground font-bold">
             {parseResult &&
-              `${t("admin.import.detectedFields")}: ${Object.keys(parseResult.data).length}`}
+              (parseResult.batch && parseResult.batch.length > 1
+                ? `تم اكتشاف ${parseResult.batch.length} منتج في الدفعة`
+                : `${t("admin.import.detectedFields")}: ${Object.keys(parseResult.data).length}`)}
           </div>
           <div className="flex gap-3">
             <button
@@ -369,10 +382,12 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
             </button>
             <button
               disabled={!parseResult || errors.length > 0}
-              onClick={() => onImport(parseResult.data)}
+              onClick={() => onImport(parseResult.data, parseResult.batch)}
               className="px-8 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-900/10"
             >
-              {t("admin.import.importToForm")}
+              {parseResult?.batch && parseResult.batch.length > 1
+                ? "استيراد كافة المنتجات"
+                : t("admin.import.importToForm")}
             </button>
           </div>
         </div>
