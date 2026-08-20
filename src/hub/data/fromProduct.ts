@@ -746,9 +746,10 @@ export function gameFromProduct(
   const media = buildMedia(p, locale);
 
   const developerName =
-    localizedValue(p, "developer", "developerEn", locale) ||
-    localizedValue(p, "studioName", "studioNameEn", locale);
-  const publisherName = localizedValue(p, "publisher", "publisherEn", locale);
+    str(p["developerEn"]) || str(p["developer"]) ||
+    str(p["studioNameEn"]) || str(p["studioName"]);
+  const publisherName = str(p["publisherEn"]) || str(p["publisher"]);
+
 
   const metacritic = num(p["metacriticRating"]);
   const opencritic = num(p["opencriticRating"]);
