@@ -106,7 +106,7 @@ function CategoryPage() {
     return Array.from(genreSet).sort();
   }, [store?.products]);
 
-  const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "cat_1";
+  const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "nintendo_games" || categoryId === "cat_1";
 
   const productBanners = useMemo(() => {
     if (!products || products.length === 0) return [];
@@ -161,30 +161,7 @@ function CategoryPage() {
            </div>
            
            <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center text-center">
-             <motion.div 
-               initial={{ scale: 0.8, opacity: 0 }}
-               animate={{ scale: 1, opacity: 1 }}
-               className="mb-4 text-6xl drop-shadow-2xl"
-             >
-               {categoryInfo.icon}
-             </motion.div>
-             <motion.h1 
-               initial={{ y: 20, opacity: 0 }}
-               animate={{ y: 0, opacity: 1 }}
-               className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight drop-shadow-lg"
-               style={{ textShadow: "0 4px 12px rgba(0,0,0,0.5)" }}
-             >
-               {categoryInfo.title}
-             </motion.h1>
-             <motion.p 
-               initial={{ y: 20, opacity: 0 }}
-               animate={{ y: 0, opacity: 1 }}
-               transition={{ delay: 0.1 }}
-               className="text-white font-bold text-lg md:text-xl max-w-2xl drop-shadow-md"
-               style={{ textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
-             >
-               {categoryInfo.description}
-             </motion.p>
+             {/* Text elements removed as per user request */}
            </div>
         </div>
 
@@ -369,6 +346,8 @@ function getCategoryInfo(id: string, t: (k: string) => string) {
 
   switch (id) {
     case "nintendo-switch-games":
+    case "cat_nintendo":
+    case "nintendo_games":
       return {
         ...base,
         title: t("ألعاب نينتندو سويتش"),
