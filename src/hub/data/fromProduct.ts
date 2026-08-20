@@ -462,16 +462,21 @@ function buildDlc(p: Record<string, unknown>, locale: "ar" | "en"): Dlc[] | unde
   if (!list.length) return undefined;
   const filtered = list
     .filter((row) => {
-        str(row["nameEn"]) || str(row["name"]) ||
-        str(row["titleEn"]) || str(row["title"]);
-
+      const name =
+        str(row["nameEn"]) ||
+        str(row["name"]) ||
+        str(row["titleEn"]) ||
+        str(row["title"]);
       return Boolean(name && name.trim());
     })
     .map((row, i) => {
       const name =
-        localizedValue(row, "name", "nameEn", locale) ||
-        localizedValue(row, "title", "titleEn", locale) ||
-        (locale === "en" ? `DLC ${i + 1}` : `إضافة ${i + 1}`);
+        str(row["nameEn"]) ||
+        str(row["name"]) ||
+        str(row["titleEn"]) ||
+        str(row["title"]) ||
+        `DLC ${i + 1}`;
+
       const cover = str(row["coverUrl"] || row["image"] || row["cartridgeImage"]);
       const desc = localizedValue(row, "description", "descriptionEn", locale);
       return {
