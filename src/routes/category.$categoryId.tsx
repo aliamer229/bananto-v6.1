@@ -23,6 +23,7 @@ function CategoryPage() {
 
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [platform, setPlatform] = useState<PlatformOption>("all");
+  const [selectedGenre, setSelectedGenre] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: store, isLoading } = useQuery({
@@ -54,6 +55,12 @@ function CategoryPage() {
         }
       }
 
+      // Genre filter
+      if (selectedGenre !== "all") {
+        const pGenre = String(p.genre || "").toLowerCase();
+        if (!pGenre.includes(selectedGenre.toLowerCase())) return false;
+      }
+
       return true;
     });
 
@@ -81,7 +88,23 @@ function CategoryPage() {
     });
 
     return filtered;
-  }, [store?.products, categoryId, sortBy, platform]);
+  }, [store?.products, categoryId, sortBy, platform, selectedGenre]);
+
+  const genres = useMemo(() => {
+    if (!store?.products) return [];
+    const genreSet = new Set<string>();
+    store.products.forEach((p: any) => {
+      if (p.genre) {
+        p.genre.split(',').forEach((g: string) => {
+          const trimmed = g.trim();
+          if (trimmed) genreSet.add(trimmed);
+        });
+      }
+    });
+    return Array.from(genreSet).sort();
+  }, [store?.products]);
+
+  const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "cat_1";
 
   return (
     <AppShell currentView="store" onBack={() => navigate({ to: "/" })}>
@@ -186,34 +209,104 @@ function CategoryPage() {
           </AnimatePresence>
         </div>
 
-        {/* Product Grid */}
-        <div className="px-4 py-8 max-w-7xl mx-auto">
-          {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
-                <div key={i} className="aspect-[3/4] bg-muted/20 rounded-2xl animate-pulse animate-skeleton-shimmer" />
-              ))}
-            </div>
-          ) : products.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {products.map((p: any) => (
-                <motion.div 
-                  key={p.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+        {/* Product Grid and Sidebar Filter */}
+        <div className="px-4 py-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
+          {/* Desktop Sidebar Filter */}
+          <div className="hidden md:block w-64 shrink-0 space-y-6">
+            <div>
+              <h3 className="text-sm font-black text-muted-foreground uppercase mb-4 px-2 tracking-wider">
+                {t("التصنيفات")}
+              </h3>
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={() => setSelectedGenre("all")}
+                  className={`w-full text-right px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${selectedGenre === "all" ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'text-foreground hover:bg-card hover:translate-x-[-4px]'}`}
                 >
-                  <ProductCard product={p} />
-                </motion.div>
-              ))}
+                  {t("الكل")}
+                </button>
+                {genres.map((genre) => (
+                  <button
+                    key={genre}
+                    onClick={() => setSelectedGenre(genre)}
+                    className={`w-full text-right px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${selectedGenre === genre ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'text-foreground hover:bg-card hover:translate-x-[-4px]'}`}
+                  >
+                    {genre}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-24 bg-card rounded-3xl border border-dashed border-border">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-foreground mb-1">{t("لا توجد منتجات")}</h3>
-              <p className="text-muted-foreground">{t("جرب تغيير خيارات التصفية")}</p>
+
+            <div className="pt-6 border-t border-border">
+              <h3 className="text-sm font-black text-muted-foreground uppercase mb-4 px-2 tracking-wider">
+                {t("الجهاز")}
+              </h3>
+              <div className="flex flex-col gap-1">
+                {[
+                  { id: "all", label: t("الكل") },
+                  { id: "switch1", label: "Switch 1" },
+                  { id: "switch2", label: "Switch 2" },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setPlatform(p.id as PlatformOption)}
+                    className={`w-full text-right px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${platform === p.id ? 'bg-foreground text-background shadow-md' : 'text-foreground hover:bg-card hover:translate-x-[-4px]'}`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Mobile Genre Filter (Horizontal Scroll) */}
+          <div className="md:hidden flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
+             <button
+              onClick={() => setSelectedGenre("all")}
+              className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedGenre === "all" ? 'bg-red-500 text-white border-red-600' : 'bg-card text-muted-foreground border-border'}`}
+            >
+              {t("الكل")}
+            </button>
+            {genres.map((genre) => (
+              <button
+                key={genre}
+                onClick={() => setSelectedGenre(genre)}
+                className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedGenre === genre ? 'bg-red-500 text-white border-red-600' : 'bg-card text-muted-foreground border-border'}`}
+              >
+                {genre}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1">
+            {isLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <div key={i} className="aspect-[3/4] bg-muted/20 rounded-2xl animate-pulse animate-skeleton-shimmer" />
+                ))}
+              </div>
+            ) : products.length > 0 ? (
+              <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {products.map((p: any) => (
+                    <motion.div 
+                      key={p.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                    >
+                      <ProductCard product={p} forceStandardImage={isNintendoGames} />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-24 bg-card rounded-3xl border border-dashed border-border">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-foreground mb-1">{t("لا توجد منتجات")}</h3>
+                <p className="text-muted-foreground">{t("جرب تغيير خيارات التصفية")}</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </AppShell>
