@@ -316,51 +316,45 @@ export default function HomeView({
                 })
                 .sort((a, b) => {
                   const getVal = (p: any) => {
-                    let val = 0;
                     const d = p.releaseDate || p.release_date || p.metadata?.releaseDate || p.metadata?.release_date || p.releaseYear || p.release_year;
-                    if (d) {
-                      const dStr = String(d).trim();
-                      
-                      // 1. Try DD/MM/YYYY or DD-MM-YYYY FIRST to avoid JS parsing 12/05/2023 as Dec 5th
-                      const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-                      if (dmMatch) {
-                        val = new Date(`${dmMatch[3]}-${dmMatch[2].padStart(2, '0')}-${dmMatch[1].padStart(2, '0')}`).getTime();
-                      } 
-                      // 2. Try YYYYMMDD (Nintendo eShop format)
-                      else if (/^(\d{4})(\d{2})(\d{2})$/.test(dStr)) {
-                        const m = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
-                        if (m) val = new Date(`${m[1]}-${m[2]}-${m[3]}`).getTime();
-                      }
-                      
-                      // 3. Fallback to standard Date parsing
-                      if (!val || isNaN(val)) {
-                        val = new Date(dStr).getTime();
-                      }
-                      
-                      // 4. Fallback to just extracting a year
-                      if (isNaN(val)) {
-                        const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
-                        if (yearMatch) val = new Date(yearMatch[0]).getTime();
-                      }
+                    if (!d) return 0;
+                    
+                    const dStr = String(d).trim();
+                    
+                    // 1. Try YYYY-MM-DD or YYYY-M-D (like 2026-7-23)
+                    const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+                    if (ymdMatch) {
+                      return new Date(`${ymdMatch[1]}-${ymdMatch[2].padStart(2, '0')}-${ymdMatch[3].padStart(2, '0')}`).getTime();
                     }
-                    return isNaN(val) ? 0 : val;
+                    
+                    // 2. Try DD/MM/YYYY or DD-MM-YYYY
+                    const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                    if (dmMatch) {
+                      return new Date(`${dmMatch[3]}-${dmMatch[2].padStart(2, '0')}-${dmMatch[1].padStart(2, '0')}`).getTime();
+                    }
+                    
+                    // 3. Try YYYYMMDD (Nintendo eShop format)
+                    const ymdCompact = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
+                    if (ymdCompact) {
+                      return new Date(`${ymdCompact[1]}-${ymdCompact[2]}-${ymdCompact[3]}`).getTime();
+                    }
+                    
+                    // 4. Fallback to standard Date parsing
+                    const parsed = new Date(dStr).getTime();
+                    if (!isNaN(parsed) && parsed > 0) return parsed;
+                    
+                    // 5. Fallback to just extracting a year
+                    const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
+                    if (yearMatch) return new Date(`${yearMatch[0]}-01-01`).getTime();
+                    
+                    return 0;
                   };
                   
                   const valA = getVal(a);
                   const valB = getVal(b);
                   
-                  if (valA !== valB) {
-                    return valB - valA; // Descending by release date
-                  }
-                  
-                  // Secondary sort by created_at if release dates are exactly the same or both missing
-                  const createA = new Date(a.createdAt || a.created_at || a.created_time || 0).getTime();
-                  const createB = new Date(b.createdAt || b.created_at || b.created_time || 0).getTime();
-                  if (createA !== createB && !isNaN(createA) && !isNaN(createB)) {
-                    return createB - createA;
-                  }
-                  
-                  return String(b.id || "").localeCompare(String(a.id || ""));
+                  // Sort descending purely by release date
+                  return valB - valA;
                 })
                 .slice(0, 12)
                 .map((p) => {

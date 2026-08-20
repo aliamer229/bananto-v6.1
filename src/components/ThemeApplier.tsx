@@ -53,7 +53,7 @@ export default function ThemeApplier() {
     if (!isLang(language)) return;
     if (language !== currentLanguage) setLang(language);
     document.documentElement.lang = language;
-    document.documentElement.dir = dirOf(language);
+    document.documentElement.dir = "rtl";
   }, [settings?.language, currentLanguage, setLang]);
 
   // Motion mode for low-end devices.

@@ -516,7 +516,8 @@ export const useI18n = create<I18nStore>((set, get) => ({
     if (get().lang !== lang) set({ lang });
     if (typeof document !== "undefined") {
       document.documentElement.lang = lang;
-      document.documentElement.dir = dirOf(lang);
+      // Always use RTL layout, even for English, to prevent UI switching sides
+      document.documentElement.dir = "rtl";
     }
   },
   t: (key) => {

@@ -18,6 +18,9 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
 
   // GAME Basic Info
   { key: "name", type: "string", target: "title", required: true, description: "اسم اللعبة" },
+  { key: "title", type: "string", target: "title", description: "اسم اللعبة (بديل لـ name)" },
+  { key: "title_ar", type: "string", target: "titleAr", description: "اسم اللعبة بالعربية" },
+  { key: "name_ar", type: "string", target: "titleAr", description: "اسم اللعبة بالعربية" },
   {
     key: "slug",
     type: "string",
@@ -55,12 +58,22 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     target: "status",
     description: "حالة الإصدار (نشط، قادم)",
   },
+  { key: "status", type: "string", target: "status", description: "الحالة (نشط، قادم، غير متوفر)" },
   { key: "developer", type: "string", target: "developer", description: "المطور" },
   { key: "publisher", type: "string", target: "publisher", description: "الناشر" },
   { key: "players_count", type: "string", target: "numberOfPlayers", description: "عدد اللاعبين" },
+  { key: "players", type: "string", target: "numberOfPlayers", description: "عدد اللاعبين" },
+  { key: "player_count", type: "string", target: "numberOfPlayers", description: "عدد اللاعبين" },
   { key: "age_rating", type: "string", target: "ageRating", description: "التصنيف العمري" },
   {
     key: "metacritic_score",
+    type: "number",
+    target: "metacriticRating",
+    validation: { min: 0, max: 100 },
+    description: "تقييم Metacritic (0-100)",
+  },
+  {
+    key: "metacritic",
     type: "number",
     target: "metacriticRating",
     validation: { min: 0, max: 100 },
@@ -75,13 +88,66 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "تقييم Opencritic (0-100)",
   },
   {
+    key: "opencritic",
+    type: "number",
+    target: "opencriticRating",
+    validation: { min: 0, max: 100 },
+    description: "تقييم Opencritic (0-100)",
+  },
+  {
     key: "user_score",
     type: "number",
     target: "userScore",
     validation: { min: 0, max: 10 },
     description: "تقييم اللاعبين (0-10)",
   },
+  {
+    key: "userscore",
+    type: "number",
+    target: "userScore",
+    validation: { min: 0, max: 10 },
+    description: "تقييم اللاعبين (0-10)",
+  },
+  {
+    key: "user_rating",
+    type: "number",
+    target: "userScore",
+    validation: { min: 0, max: 10 },
+    description: "تقييم اللاعبين (0-10)",
+  },
   { key: "game_size_gb", type: "number", target: "size", description: "حجم اللعبة بالجيجابايت" },
+  { key: "size", type: "string", target: "size", description: "حجم اللعبة" },
+  { key: "size_gb", type: "number", target: "size", description: "حجم اللعبة بالجيجابايت" },
+  { key: "price", type: "number", target: "price", description: "السعر الأساسي بالدينار" },
+  { key: "price_iqd", type: "number", target: "price", description: "السعر بالدينار العراقي" },
+  { key: "price_usd", type: "number", target: "price_usd", description: "السعر بالدولار الأمريكي" },
+  { key: "cost", type: "number", target: "cost", description: "تكلفة المنتج" },
+  { key: "cost_iqd", type: "number", target: "cost", description: "التكلفة بالدينار" },
+  { key: "stock", type: "number", target: "stock", description: "الكمية المتوفرة" },
+  {
+    key: "trade_value",
+    type: "number",
+    target: "trade_value_iqd",
+    description: "قيمة الاستبدال بالدينار",
+  },
+  {
+    key: "trade_value_iqd",
+    type: "number",
+    target: "trade_value_iqd",
+    description: "قيمة الاستبدال بالدينار",
+  },
+  {
+    key: "store_offer_bonus",
+    type: "number",
+    target: "store_offer_bonus_iqd",
+    description: "بونص العرض",
+  },
+  {
+    key: "store_offer_bonus_iqd",
+    type: "number",
+    target: "store_offer_bonus_iqd",
+    description: "بونص العرض بالدينار",
+  },
   { key: "official_url", type: "url", target: "officialUrl", description: "رابط الموقع الرسمي" },
   { key: "eshop_url", type: "url", target: "eshopUrl", description: "رابط eShop" },
   { key: "display_order", type: "number", target: "displayOrder", description: "ترتيب العرض" },
@@ -127,6 +193,18 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "الوصف الكامل",
   },
   {
+    key: "description",
+    type: "multiline",
+    target: "description",
+    description: "الوصف الكامل",
+  },
+  {
+    key: "description_en",
+    type: "multiline",
+    target: "description",
+    description: "الوصف بالإنجليزية",
+  },
+  {
     key: "description_ar",
     type: "multiline",
     target: "description_ar",
@@ -141,10 +219,52 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "صورة الكارتلج (تظهر في الرئيسية)",
   },
   {
+    key: "cartridge",
+    type: "url",
+    target: "cartridgeImage",
+    description: "صورة الكارتلج",
+  },
+  {
+    key: "cartridge_url",
+    type: "url",
+    target: "cartridgeImage",
+    description: "رابط صورة الكارتلج",
+  },
+  {
     key: "cover_image",
     type: "url",
     target: "coverImage",
     description: "صورة الغلاف (تظهر في تفاصيل المنتج)",
+  },
+  {
+    key: "cover",
+    type: "url",
+    target: "coverImage",
+    description: "صورة الغلاف",
+  },
+  {
+    key: "cover_url",
+    type: "url",
+    target: "coverImage",
+    description: "رابط صورة الغلاف",
+  },
+  {
+    key: "main_image",
+    type: "url",
+    target: "coverImage",
+    description: "الصورة الرئيسية",
+  },
+  {
+    key: "image",
+    type: "url",
+    target: "coverImage",
+    description: "صورة المنتج",
+  },
+  {
+    key: "image_url",
+    type: "url",
+    target: "coverImage",
+    description: "رابط الصورة",
   },
   {
     key: "box_front_url",
@@ -191,6 +311,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
 
   // GENRES
   { key: "genre", type: "array", target: "genres", repeatable: true, description: "الأنواع" },
+  { key: "genres", type: "array", target: "genres", repeatable: true, description: "الأنواع" },
 
   // NINTENDO DETAILS
   {
@@ -200,10 +321,22 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "رابط eShop الرسمي",
   },
   {
+    key: "official_store_url",
+    type: "url",
+    target: "nintendoEshopUrl",
+    description: "رابط المتجر الرسمي",
+  },
+  {
     key: "nintendo_requires_switch_online",
     type: "boolean",
     target: "nintendoOnlineRequired",
     description: "تتطلب Switch Online",
+  },
+  {
+    key: "requires_nintendo_switch_online",
+    type: "boolean",
+    target: "nintendoOnlineRequired",
+    description: "تتطلب اشتراك Switch Online",
   },
   {
     key: "nintendo_cloud_save",
@@ -212,7 +345,19 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "يدعم الحفظ السحابي",
   },
   {
+    key: "save_data_cloud",
+    type: "boolean",
+    target: "nintendoCloudSaves",
+    description: "حفظ البيانات سحابياً",
+  },
+  {
     key: "nintendo_game_key_card",
+    type: "boolean",
+    target: "nintendoGameKeyCard",
+    description: "بطاقة مفتاح اللعبة",
+  },
+  {
+    key: "game_key_card",
     type: "boolean",
     target: "nintendoGameKeyCard",
     description: "بطاقة مفتاح اللعبة",
@@ -222,6 +367,30 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     type: "boolean",
     target: "nintendoPhysicalNeedsDownload",
     description: "النسخة الفعلية تتطلب تنزيلاً",
+  },
+  {
+    key: "physical_download_required",
+    type: "boolean",
+    target: "nintendoPhysicalNeedsDownload",
+    description: "النسخة الفيزيائية تتطلب تنزيلاً",
+  },
+  {
+    key: "tv_mode",
+    type: "boolean",
+    target: "tvMode",
+    description: "يدعم وضع التلفزيون",
+  },
+  {
+    key: "tabletop_mode",
+    type: "boolean",
+    target: "tabletopMode",
+    description: "يدعم وضع سطح الطاولة",
+  },
+  {
+    key: "handheld_mode",
+    type: "boolean",
+    target: "handheldMode",
+    description: "يدعم الوضع المحمول",
   },
   {
     key: "nintendo_play_modes",
@@ -244,7 +413,32 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "نسخة محسنة لـ Switch 2",
   },
   {
+    key: "switch_2_enhanced",
+    type: "boolean",
+    target: "switch2Enhanced",
+    description: "نسخة محسنة لـ Switch 2",
+  },
+  {
+    key: "switch_2_exclusive",
+    type: "boolean",
+    target: "switch2Exclusive",
+    description: "حصري لـ Switch 2",
+  },
+  {
+    key: "upgrade_price",
+    type: "number",
+    target: "switch2UpgradePrice",
+    description: "سعر الترقية لـ Switch 2",
+  },
+  {
     key: "switch2_feature",
+    type: "array",
+    target: "switch2Features",
+    repeatable: true,
+    description: "مزايا Switch 2",
+  },
+  {
+    key: "switch2_features",
     type: "array",
     target: "switch2Features",
     repeatable: true,

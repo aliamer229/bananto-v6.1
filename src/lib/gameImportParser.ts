@@ -22,6 +22,12 @@ export function parseGameImport(rawText: string): ParseResult {
       continue;
     }
 
+    // Section headings such as `[GAME]`, `[IMPORT]`, `[DESCRIPTION]` are decorative, not data.
+    if (/^\[.*\]$/.test(line)) {
+      i++;
+      continue;
+    }
+
     // Check for multiline syntax: key<<EOF
     const multilineMatch = line.match(/^([^=]+)<<EOF$/);
     if (multilineMatch) {
@@ -122,7 +128,6 @@ function flattenValueOnlyGroups(data: Record<string, any>) {
   }
 }
 
-
 function findFieldDef(key: string): FieldDef | null {
   const { baseKey } = parseKeyPath(key);
   const searchKey = baseKey.toLowerCase();
@@ -187,13 +192,20 @@ function setValueByPath(
 
   if (def.type === "array" || (def.repeatable && def.type !== "object")) {
     if (!obj[def.target]) obj[def.target] = [];
-    // For simple arrays or repeatable strings, indices[0] is the index
-    const indexStr = indices[0];
-    const idx = indexStr ? parseInt(indexStr) - 1 : obj[def.target].length;
-    if (!isNaN(idx) && idx >= 0) {
-      obj[def.target][idx] = typedValue;
+    if (indices.length === 0 && typeof value === "string" && value.includes(",")) {
+      const items = value
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      obj[def.target].push(...items);
     } else {
-      obj[def.target].push(typedValue);
+      const indexStr = indices[0];
+      const idx = indexStr ? parseInt(indexStr) - 1 : obj[def.target].length;
+      if (!isNaN(idx) && idx >= 0) {
+        obj[def.target][idx] = typedValue;
+      } else {
+        obj[def.target].push(typedValue);
+      }
     }
   } else if (def.type === "object" && def.repeatable) {
     if (!obj[def.target]) obj[def.target] = [];
@@ -243,25 +255,29 @@ function convertType(value: string, type: string): any {
     case "multiline":
       return value;
     case "number": {
-      const n = parseFloat(value);
+      const clean = value.replace(/[$€£,\s]|IQD|USD|GB|MB/gi, "");
+      const n = parseFloat(clean);
       return isNaN(n) ? undefined : n;
     }
     case "integer": {
-      const i = parseInt(value);
+      const clean = value.replace(/[$€£,\s]|IQD|USD/gi, "");
+      const i = parseInt(clean, 10);
       return isNaN(i) ? undefined : i;
     }
     case "boolean":
-      if (value.toLowerCase() === "true" || value === "1") return true;
-      if (value.toLowerCase() === "false" || value === "0") return false;
+      if (value.toLowerCase() === "true" || value === "1" || value === "yes" || value === "نعم")
+        return true;
+      if (value.toLowerCase() === "false" || value === "0" || value === "no" || value === "لا")
+        return false;
       return undefined;
     case "date":
       if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-      return undefined;
+      return value;
     case "url":
-      if (/^https?:\/\/.+/.test(value) || value.startsWith("/")) return value;
+      if (/^https?:\/\/.+/i.test(value) || value.startsWith("/")) return value;
       // Soften URL validation as requested to accept more formats
-      if (value.includes(".") && !value.includes(" ")) return value;
-      return undefined;
+      if (value.startsWith("data:") || (value.includes(".") && !value.includes(" "))) return value;
+      return value;
     case "array":
       return value; // Handled by setValueByPath
     default:

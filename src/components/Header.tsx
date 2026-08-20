@@ -193,12 +193,12 @@ export default function Header({
       {/* The header floats over page content, so the bar itself must not eat
           pointer events — only its actual controls do. */}
       <header
-        dir={lang === "en" ? "ltr" : "rtl"}
+        dir="rtl"
         className={`z-50 fixed top-0 w-full transition-all duration-300 transform-gpu ${
           isMenuOpen ? "bottom-0 pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="px-4 pt-6 pb-4 flex items-center gap-2 w-full [&>*]:pointer-events-auto relative">
+        <div className="px-4 pt-6 pb-4 flex flex-row-reverse items-center gap-2 w-full [&>*]:pointer-events-auto relative">
           {!isHome && (
             <button
               onClick={(e) => {
@@ -273,9 +273,9 @@ export default function Header({
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                   placeholder={t("بحث ذكي عن الألعاب...")}
-                  className="w-full h-10 rounded-full outline-none px-4 pe-10 text-sm transition-all bg-black/20 border border-white/20 text-white backdrop-blur-md placeholder-white/70 focus:border-white focus:bg-black/40 shadow-sm"
+                  className="w-full h-10 rounded-full outline-none px-4 ps-10 text-sm transition-all bg-black/20 border border-white/20 text-white backdrop-blur-md placeholder-white/70 focus:border-white focus:bg-black/40 shadow-sm"
                 />
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
 
                 {isSearchFocused && searchResults.length > 0 && (
                   <div className="absolute top-full mt-2 left-0 right-0 bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
@@ -295,7 +295,9 @@ export default function Header({
                           alt=""
                         />
                         <div className="flex-1 min-w-0" dir="ltr">
-                          <div className="text-white font-bold text-sm truncate">{p.titleEn || p.english_name || p.title}</div>
+                          <div className="text-white font-bold text-sm truncate">
+                            {p.titleEn || p.english_name || p.title}
+                          </div>
                         </div>
                       </button>
                     ))}

@@ -72,6 +72,26 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
     }, 50);
   };
 
+  const handleDirectImport = () => {
+    if (!inputText.trim()) {
+      toast.error(t("admin.import.emptyInput"));
+      return;
+    }
+    try {
+      const parsed = result || parseProductImport(inputText, schema);
+      setResult(parsed);
+      const blocking = parsed.errors.filter((e) => e.severity === "error");
+      if (blocking.length > 0) {
+        toast.error(t("admin.import.failed"));
+        setView("status");
+        return;
+      }
+      onImport(parsed);
+    } catch (error) {
+      toast.error(`${t("admin.import.parseError")}: ${(error as Error).message}`);
+    }
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -336,8 +356,8 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
             </button>
             <button
               type="button"
-              disabled={!result || errors.length > 0}
-              onClick={() => result && onImport(result)}
+              disabled={!inputText.trim() || (errors.length > 0 && result !== null)}
+              onClick={handleDirectImport}
               className="rounded-xl bg-primary px-8 py-2 text-sm font-bold text-white shadow-lg transition-all hover:bg-primary/90 disabled:opacity-50"
             >
               {t("admin.import.importToForm")}

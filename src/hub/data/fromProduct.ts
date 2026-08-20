@@ -71,8 +71,7 @@ const confirmed = <T>(value: T, source = "لوحة الإدارة"): Fact<T> => 
 });
 
 function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
-  const title =
-    locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"]) || str(p["titleEn"]);
+  const title = str(p["titleEn"]) || str(p["english_name"]) || str(p["title"]);
 
   const desc =
     locale === "en"
@@ -85,7 +84,7 @@ function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
       : str(p["tagline"]) || str(p["taglineEn"]);
 
   return {
-    title: title || (locale === "en" ? "Product" : "منتج"),
+    title: title || "Product",
     description: desc || undefined,
     tagline: tag || undefined,
   };
@@ -95,6 +94,8 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
   const coverUrl = str(p["coverImage"]) || str(p["image"]) || str(p["cartridgeImage"]) || undefined;
   const keyArtUrl = str(p["banner"]) || str(p["bannerImage"]) || undefined;
 
+  const productTitleEng = str(p["titleEn"]) || str(p["english_name"]) || str(p["title"]);
+
   const galleryRows = rows(p["galleryImages"]);
   const legacyGallery = Array.isArray(p["gallery"])
     ? (p["gallery"] as unknown[]).map(str).filter(Boolean)
@@ -103,15 +104,12 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
     ...rows(p["galleryImages"]).map((row, i) => ({
       id: `img-${i}`,
       url: str(row["url"]),
-      alt:
-        localizedValue(row, "alt", "altEn", locale) ||
-        (locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"])) ||
-        "",
+      alt: localizedValue(row, "alt", "altEn", locale) || productTitleEng || "",
     })),
     ...legacyGallery.map((url, i) => ({
       id: `legacy-img-${i}`,
       url,
-      alt: (locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"])) || "",
+      alt: productTitleEng || "",
     })),
   ].filter((img) => img.url);
 
@@ -565,7 +563,9 @@ function buildSeries(p: Record<string, unknown>, locale: "ar" | "en"): GameSerie
           : row["value"] !== undefined
             ? row["value"]
             : row["title"] || row["name"] || row;
-      const title = getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
+      const title = getTextValue(
+        typeof v === "object" && v !== null && "value" in v ? (v as any).value : v,
+      );
       if (!title) return null;
       return { slug: slugify(title), title };
     })
@@ -583,14 +583,20 @@ function buildVerdict(p: Record<string, unknown>, locale: "ar" | "en"): EditorVe
   const summary = localizedValue(p, "verdictSummary", "verdictSummaryEn", locale);
   const pros = rows(p["verdictPros"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
-      return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
+      const v =
+        locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      return getTextValue(
+        typeof v === "object" && v !== null && "value" in v ? (v as any).value : v,
+      );
     })
     .filter(Boolean);
   const cons = rows(p["verdictCons"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
-      return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
+      const v =
+        locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      return getTextValue(
+        typeof v === "object" && v !== null && "value" in v ? (v as any).value : v,
+      );
     })
     .filter(Boolean);
   if (!score && !summary && !pros.length && !cons.length) return undefined;

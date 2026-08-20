@@ -234,7 +234,8 @@ export default function AdminProductEditor({
         region: product.region || "US",
         cardType: product.cardType || "eshop",
         deliveryMethod: product.deliveryMethod || "instant_code",
-        redemptionGuide: stepsToText(product.redemptionSteps) || stepsToText(product.redemptionGuide),
+        redemptionGuide:
+          stepsToText(product.redemptionSteps) || stepsToText(product.redemptionGuide),
         redemptionSteps: toStepList(product.redemptionSteps ?? product.redemptionGuide),
         validity: product.validity || "no_expiry",
         // Used Specific
@@ -281,7 +282,8 @@ export default function AdminProductEditor({
           product.boxImage ||
           product.image ||
           "",
-        coverImage: product.coverImage || product.cardArtwork || product.mainImage || product.image || "",
+        coverImage:
+          product.coverImage || product.cardArtwork || product.mainImage || product.image || "",
         bannerImages:
           Array.isArray(product.bannerImages) && product.bannerImages.length > 0
             ? product.bannerImages
@@ -668,8 +670,7 @@ export default function AdminProductEditor({
 
     const stableId = formData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
 
-    const selectedCategoryId =
-      formData.categoryId || formData.category || "cat_nintendo";
+    const selectedCategoryId = formData.categoryId || formData.category || "cat_nintendo";
 
     const cleanedData = {
       ...formData,
@@ -731,21 +732,29 @@ export default function AdminProductEditor({
           {/* Quick Import Buttons */}
           <button
             type="button"
-            onClick={() => setShowSchemaImport(true)}
+            onClick={() => {
+              if (isGameCategory) {
+                setShowImportModal(true);
+              } else {
+                setShowSchemaImport(true);
+              }
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold rounded-lg border border-border transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             <span>استيراد بيانات القسم ({activeCategoryDef.labelAr})</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-600 dark:text-red-400 text-xs font-semibold rounded-lg border border-red-500/20 transition-colors"
-          >
-            <FileUp className="w-3.5 h-3.5" />
-            <span>استيراد Nintendo eShop</span>
-          </button>
+          {isGameCategory && (
+            <button
+              type="button"
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-600 dark:text-red-400 text-xs font-semibold rounded-lg border border-red-500/20 transition-colors"
+            >
+              <FileUp className="w-3.5 h-3.5" />
+              <span>استيراد Nintendo eShop / قالب اللعبة</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -2008,7 +2017,9 @@ export default function AdminProductEditor({
                 />
                 <ImageUploadField
                   label="بانر الريجون التوضيحي (Region Banner)"
-                  value={formData.cartridgeImage || formData.regionBanner || formData.bannerImage || ""}
+                  value={
+                    formData.cartridgeImage || formData.regionBanner || formData.bannerImage || ""
+                  }
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="banner"
                   folder="giftcards"
@@ -2483,7 +2494,8 @@ export default function AdminProductEditor({
               }
 
               if (newData.boxContents !== undefined) {
-                if (Array.isArray(newData.boxContents)) newData.boxContentsList = newData.boxContents;
+                if (Array.isArray(newData.boxContents))
+                  newData.boxContentsList = newData.boxContents;
                 newData.boxContents = boxContentsToText(newData.boxContents);
               }
               const importedSteps = toStepList(newData.redemptionSteps ?? newData.redemptionGuide);
@@ -2493,7 +2505,8 @@ export default function AdminProductEditor({
               }
 
               if (!newData.coverImage) {
-                newData.coverImage = newData.cardArtwork || newData.mainImage || prev.coverImage || "";
+                newData.coverImage =
+                  newData.cardArtwork || newData.mainImage || prev.coverImage || "";
               }
               if (!newData.cartridgeImage) {
                 newData.cartridgeImage =
@@ -2503,7 +2516,6 @@ export default function AdminProductEditor({
                   newData.boxImage ||
                   prev.cartridgeImage ||
                   "";
-
               }
 
               return newData;
@@ -2580,7 +2592,6 @@ export default function AdminProductEditor({
                 boxContentsToText(normalized.boxContentsText) ||
                 boxContentsToText(prev.boxContents) ||
                 "";
-
 
               if (!normalized.warrantyCondition) {
                 normalized.warrantyCondition =

@@ -56,6 +56,26 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
     }, 100);
   };
 
+  const handleDirectImport = () => {
+    if (!inputText.trim()) {
+      toast.error(t("admin.import.emptyInput"));
+      return;
+    }
+    try {
+      const result = parseResult || parseGameImport(inputText);
+      setParseResult(result);
+      const blockingErrors = result.errors.filter((e: any) => e.severity === "error");
+      if (blockingErrors.length > 0) {
+        toast.error(t("admin.import.failed"));
+        setViewMode("status");
+        return;
+      }
+      onImport(result.data);
+    } catch (e: any) {
+      toast.error(`${t("admin.import.parseError")}: ${e.message}`);
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -142,7 +162,11 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
             </div>
             <h2 className="text-lg font-bold">{t("admin.import.title")}</h2>
           </div>
-          <button type="button" onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 hover:bg-muted rounded-full transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -373,8 +397,8 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
             </button>
             <button
               type="button"
-              disabled={!parseResult || errors.length > 0}
-              onClick={() => onImport(parseResult.data)}
+              disabled={!inputText.trim() || (errors.length > 0 && parseResult !== null)}
+              onClick={handleDirectImport}
               className="px-8 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-900/10"
             >
               {t("admin.import.importToForm")}

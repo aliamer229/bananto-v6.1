@@ -53,14 +53,54 @@ const requestCountry = createIsomorphicFn()
 
 /** Arabic-speaking markets: these default to Arabic, everyone else to English. */
 export const ARABIC_COUNTRIES = new Set([
-  "IQ", "SA", "AE", "KW", "QA", "BH", "OM", "YE", "JO", "SY", "LB", "PS",
-  "EG", "LY", "TN", "DZ", "MA", "MR", "SD", "SO", "DJ", "KM",
+  "IQ",
+  "SA",
+  "AE",
+  "KW",
+  "QA",
+  "BH",
+  "OM",
+  "YE",
+  "JO",
+  "SY",
+  "LB",
+  "PS",
+  "EG",
+  "LY",
+  "TN",
+  "DZ",
+  "MA",
+  "MR",
+  "SD",
+  "SO",
+  "DJ",
+  "KM",
 ]);
 
 /** Country dial codes for those same markets, longest-first when matching. */
 const ARABIC_DIAL_CODES = [
-  "964", "966", "971", "965", "974", "973", "968", "967", "962", "963", "961",
-  "970", "20", "218", "216", "213", "212", "222", "249", "252", "253", "269",
+  "964",
+  "966",
+  "971",
+  "965",
+  "974",
+  "973",
+  "968",
+  "967",
+  "962",
+  "963",
+  "961",
+  "970",
+  "20",
+  "218",
+  "216",
+  "213",
+  "212",
+  "222",
+  "249",
+  "252",
+  "253",
+  "269",
 ];
 
 /** Turkey gets Turkish, since the storefront ships a Turkish dictionary. */
@@ -99,7 +139,6 @@ export function guessLang(languages: readonly string[]): Lang {
   return "en";
 }
 
-
 export function readCookie(name: string, header = cookieHeader()): string | undefined {
   for (const part of header.split(";")) {
     const [key, ...rest] = part.trim().split("=");
@@ -135,7 +174,8 @@ export function isLang(value: unknown): value is Lang {
 
 /** Arabic and Kurdish are written right-to-left; English and Turkish are not. */
 export function dirOf(lang: Lang) {
-  return lang === "en" || lang === "tr" ? "ltr" : "rtl";
+  // Always return "rtl" to prevent text direction change when changing language
+  return "rtl";
 }
 
 /** Everything <html> needs, resolved identically on server and client. */
