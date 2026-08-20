@@ -198,7 +198,6 @@ export function TopUpModal({
               )}
             </div>
 
-            </div>
 
             {method === "eshop_card" && (
               <div className="space-y-2">
