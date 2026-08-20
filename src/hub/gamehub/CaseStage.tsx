@@ -69,9 +69,8 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
         <SafeBoundary onError={() => setModelReady(false)}>
           <Suspense fallback={null}>
             <Canvas
-              camera={{ position: [0, 0, 10], fov: 40 }}
+              camera={{ position: [0, 0, 8.5], fov: 42 }}
               style={{ touchAction: "none", cursor: "grab", userSelect: "none", width: "100%", height: "100%" }}
-              gl={{ antialias: true, alpha: true }}
             >
               <ambientLight intensity={1.8} />
               <pointLight position={[10, 10, 10]} intensity={1.5} />

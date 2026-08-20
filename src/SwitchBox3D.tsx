@@ -113,7 +113,7 @@ export function SwitchBox3D({
         makeDefault
       />
       
-      <group ref={group} dispose={null} scale={0.8} position={[0, -1.8, 0]} rotation={[0, -Math.PI / 6, 0]}>
+      <group ref={group} dispose={null} scale={0.85} position={[0, -2.4, 0]} rotation={[0, -Math.PI / 6, 0]}>
         <mesh geometry={nodes.box.geometry} material={materials.plastic} />
         
         {texture && (
