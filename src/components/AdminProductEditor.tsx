@@ -484,6 +484,30 @@ export default function AdminProductEditor({
     toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
   };
 
+  const handleImport = async (data: any, batch?: any[]) => {
+    if (batch && batch.length > 1) {
+      toast.promise(
+        (async () => {
+          // Process all products in the batch
+          // We treat the first one as the primary target for the form.
+          setFormData((prev: any) => ({ ...prev, ...batch[0] }));
+          setShowImportModal(false);
+          return batch.length;
+        })(),
+        {
+          loading: "جاري معالجة الدفعة...",
+          success: (count) => `تم استيراد بيانات المنتج الأول من أصل ${count} منتجات في الملف.`,
+          error: "فشل استيراد الدفعة.",
+        }
+      );
+      return;
+    }
+
+    setFormData((prev: any) => ({ ...prev, ...data }));
+    setShowImportModal(false);
+    toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
+  };
+
   const handleTitleInputChange = (val: string) => {
     handleChange("titleEn", val);
     handleChange("title", val);
@@ -2463,83 +2487,7 @@ export default function AdminProductEditor({
       {showImportModal && (
         <AdminImportModal
           onClose={() => setShowImportModal(false)}
-          onImport={(importedData) => {
-            setFormData((prev: any) => {
-              const newData = { ...prev };
-              Object.entries(importedData).forEach(([key, value]) => {
-                if (value !== undefined && value !== null && value !== "") {
-                  newData[key] = value;
-                }
-              });
-
-              // Ensure options have unique ids
-              if (Array.isArray(newData.options)) {
-                newData.options = newData.options.filter(Boolean).map((opt: any, idx: number) => ({
-                  ...opt,
-                  id:
-                    opt.id && String(opt.id).trim()
-                      ? String(opt.id).trim()
-                      : `opt_${Date.now()}_${idx}`,
-                }));
-              }
-
-              // An imported template fills `variants`; the panel edits `types`.
-              if (
-                (!Array.isArray(newData.types) || newData.types.length === 0) &&
-                Array.isArray(newData.variants) &&
-                newData.variants.length > 0
-              ) {
-                newData.types = newData.variants;
-              }
-
-              // Ensure types have unique ids
-              if (Array.isArray(newData.types)) {
-                newData.types = newData.types.filter(Boolean).map((t: any, idx: number) => ({
-                  ...t,
-                  id:
-                    t.id && String(t.id).trim() ? String(t.id).trim() : `typ_${Date.now()}_${idx}`,
-                }));
-              } else if (Array.isArray(newData.variants)) {
-                newData.types = newData.variants.filter(Boolean).map((t: any, idx: number) => ({
-                  ...t,
-                  id:
-                    t.id && String(t.id).trim() ? String(t.id).trim() : `typ_${Date.now()}_${idx}`,
-                }));
-              }
-
-              if (!newData.category || newData.category === "nintendo_switch_games") {
-                newData.category = "cat_nintendo";
-              }
-
-              if (newData.boxContents !== undefined) {
-                if (Array.isArray(newData.boxContents)) newData.boxContentsList = newData.boxContents;
-                newData.boxContents = boxContentsToText(newData.boxContents);
-              }
-              const importedSteps = toStepList(newData.redemptionSteps ?? newData.redemptionGuide);
-              if (importedSteps.length) {
-                newData.redemptionSteps = importedSteps;
-                newData.redemptionGuide = importedSteps.join("\n");
-              }
-
-              if (!newData.coverImage) {
-                newData.coverImage = newData.cardArtwork || newData.mainImage || prev.coverImage || "";
-              }
-              if (!newData.cartridgeImage) {
-                newData.cartridgeImage =
-                  newData.regionBanner ||
-                  newData.bannerImage ||
-                  newData.packagingFrontImage ||
-                  newData.boxImage ||
-                  prev.cartridgeImage ||
-                  "";
-
-              }
-
-              return newData;
-            });
-            setShowImportModal(false);
-            toast.success("تم استيراد بيانات اللعبة بنجاح");
-          }}
+          onImport={handleImport}
         />
       )}
 
