@@ -23,6 +23,7 @@ import {
   MessageCircle,
   Play,
   ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
   Wrench,
   X,
@@ -94,6 +95,15 @@ const SECTION_CONFIG: Record<
     icon: MessageCircle,
     accentColor: "text-sky-500 bg-sky-500/10 border-sky-500/20",
     sampleDescription: "قالب يحتوي 5 قنوات تواصل، أوقات العمل، رسائل الحالة، و3 خدمات دعم.",
+  },
+  trade_rules: {
+    titleAr: "استيراد قالب الأقسام والبنود وسياسة المقايضة",
+    descriptionAr:
+      "استيراد بنود المقايضة والاستبدال (العلبة، حالة الشريحة، الملحقات، طريقة التسليم) ونسبها المئوية.",
+    fileName: "trade-rules-template.txt",
+    icon: SlidersHorizontal,
+    accentColor: "text-orange-500 bg-orange-500/10 border-orange-500/20",
+    sampleDescription: "قالب يحتوي بنود العلبة، حالة الشريحة، وطريقة التسليم مع نسبها.",
   },
 };
 

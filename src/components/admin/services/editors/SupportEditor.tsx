@@ -17,6 +17,7 @@ import {
 import { useI18n } from "@/i18n";
 import type { SupportData, SupportService, SupportChannel } from "@/lib/content";
 import ServiceImportModal from "../ServiceImportModal";
+import { ImageUploadField } from "../../ImageUploadField";
 import type {
   ContactParseResultData,
   ServiceParseResult,
@@ -101,8 +102,22 @@ export function SupportEditor({
       emergency_notice_ar: pick(d.emergency_notice_ar, support.emergency_notice_ar),
       working_hours_ar: pick(d.working_hours_ar, support.working_hours_ar),
       working_hours_en: pick(d.working_hours_en, support.working_hours_en),
-      channels: d.channels?.length ? (d.channels as any) : support.channels,
-      services: d.services?.length ? (d.services as any) : support.services,
+      // القنوات والخدمات الجديدة تُضاف فوق الموجودة
+      channels: [
+        ...((support.channels || []) as any[]),
+        ...((d.channels || []) as any[]).filter(
+          (c) => !(support.channels || []).some((ex: any) => ex.id === c.id || ex.value === c.value),
+        ),
+      ] as any,
+      services: [
+        ...((support.services || []) as any[]),
+        ...((d.services || []) as any[]).filter(
+          (sv) =>
+            !(support.services || []).some(
+              (ex: any) => ex.id === sv.id || ex.title_ar === sv.title_ar,
+            ),
+        ),
+      ] as any,
     });
   };
 
@@ -313,6 +328,16 @@ export function SupportEditor({
                             rows={4}
                             placeholder={`1. أعد تشغيل الجهاز بالكامل.\n2. تأكد من ضبط الوقت تلقائياً عبر الإنترنت.\n3. أعد محاولة تسجيل الدخول.`}
                             className="w-full bg-background border border-border rounded-xl p-3 text-xs leading-relaxed focus:border-primary outline-none"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <ImageUploadField
+                            label={t("صورة توضيحية للمشكلة أو الحل")}
+                            value={art.imageUrl || ""}
+                            onChange={(url) => updateProblem(art.id, { imageUrl: url })}
+                            folder="support"
+                            aspect="video"
+                            helperText={t("تظهر مع الحل للعميل داخل صفحة الدعم والمساعد الآلي.")}
                           />
                         </div>
                       </div>

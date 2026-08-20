@@ -11,7 +11,8 @@ export type ServiceSectionType =
   | "registration_guides"
   | "faq"
   | "purchase_policy"
-  | "contact";
+  | "contact"
+  | "trade_rules";
 
 export interface ServiceTemplateField {
   key: string;
@@ -174,6 +175,23 @@ export interface ContactParseResultData {
   working_hours_en?: string;
   channels: ContactChannelItem[];
   services: ContactServiceItem[];
+}
+
+export interface TradeRuleParsedItem {
+  id: string;
+  category: string;
+  key: string;
+  label_ar: string;
+  label_en?: string;
+  percent: number;
+  sort_order: number;
+  active: boolean;
+}
+
+export interface TradeRulesParseResultData {
+  rules: TradeRuleParsedItem[];
+  policy_title_ar?: string;
+  policy_body_ar?: string;
 }
 
 export interface ServiceParseResult<T = any> {

@@ -20,6 +20,8 @@ import type {
   RegistrationGuideItem,
   ServiceParseResult,
   ServiceSectionType,
+  TradeRuleParsedItem,
+  TradeRulesParseResultData,
   TroubleshootingItem,
 } from "./types";
 
@@ -1025,6 +1027,118 @@ export function parseContact(text: string): ServiceParseResult<ContactParseResul
   };
 }
 
+
+/**
+ * 6. Parser for Trade & Exchange Rules (الأقسام والبنود وسياسة المقايضة)
+ */
+export function parseTradeRules(text: string): ServiceParseResult<TradeRulesParseResultData> {
+  const issues: ParsedIssue[] = [];
+  const json = tryParseJson(text);
+  const stamp = Date.now().toString(36);
+
+  const normalizeRule = (raw: any, idx: number): TradeRuleParsedItem | null => {
+    const category = String(raw.category ?? "").trim();
+    const label = String(raw.label_ar ?? raw.label ?? "").trim();
+    if (!category || !label) return null;
+    const key =
+      String(raw.key ?? "").trim() ||
+      label
+        .replace(/\s+/g, "_")
+        .replace(/[^\p{L}\p{N}_]/gu, "")
+        .toLowerCase() ||
+      `rule_${idx + 1}`;
+    const percent = Number(String(raw.percent ?? 0).replace(/[^\d.\-]/g, ""));
+    return {
+      id: String(raw.id ?? "").trim() || `trule_${stamp}_${idx + 1}`,
+      category,
+      key,
+      label_ar: label,
+      label_en: raw.label_en ? String(raw.label_en) : "",
+      percent: Number.isFinite(percent) ? percent : 0,
+      sort_order: Number(raw.sort_order ?? (idx + 1) * 10) || (idx + 1) * 10,
+      active: raw.active === undefined ? true : parseBool(String(raw.active), true),
+    };
+  };
+
+  const rules: TradeRuleParsedItem[] = [];
+  let policyTitle = "";
+  let policyBody = "";
+
+  if (json) {
+    const list = Array.isArray(json) ? json : Array.isArray(json.rules) ? json.rules : [];
+    policyTitle = json.policy_title_ar || json.title_ar || "";
+    policyBody = json.policy_body_ar || json.body_ar || "";
+    list.forEach((raw: any, idx: number) => {
+      const rule = normalizeRule(raw, idx);
+      if (rule) rules.push(rule);
+    });
+  } else {
+    const kv = extractKeyValues(text);
+    policyTitle = kv["policy_title_ar"] || kv["policy_title"] || "";
+    policyBody = kv["policy_body_ar"] || kv["policy_body"] || "";
+
+    const indices = new Set<number>();
+    for (const k of Object.keys(kv)) {
+      const m = k.match(/^(?:rule|item|bond|band)\.(\d+)\./);
+      if (m?.[1]) indices.add(Number(m[1]));
+    }
+
+    Array.from(indices)
+      .sort((a, b) => a - b)
+      .forEach((idx, i) => {
+        const get = (name: string) =>
+          kv[`rule.${idx}.${name}`] ??
+          kv[`item.${idx}.${name}`] ??
+          kv[`bond.${idx}.${name}`] ??
+          kv[`band.${idx}.${name}`];
+        const rule = normalizeRule(
+          {
+            id: get("id"),
+            category: get("category"),
+            key: get("key"),
+            label_ar: get("label_ar") ?? get("label"),
+            label_en: get("label_en"),
+            percent: get("percent"),
+            sort_order: get("sort_order"),
+            active: get("active"),
+          },
+          i,
+        );
+        if (rule) rules.push(rule);
+        else
+          issues.push({
+            severity: "warning",
+            field: `rule.${idx}.label_ar`,
+            messageAr: `البند رقم ${idx} ينقصه القسم (category) أو الاسم، تم تخطيه`,
+            messageEn: `Rule #${idx} is missing category or label and was skipped`,
+          });
+      });
+  }
+
+  if (rules.length === 0) {
+    issues.push({
+      severity: "error",
+      field: "rule.1.label_ar",
+      messageAr: "لم يتم العثور على أي بند مقايضة صالح (rule.1.category= و rule.1.label_ar=)",
+      messageEn: "No valid trade rule found in the template",
+    });
+  }
+
+  return {
+    schemaType: "trade_rules",
+    success: issues.filter((i) => i.severity === "error").length === 0,
+    rawText: text,
+    data: { rules, policy_title_ar: policyTitle, policy_body_ar: policyBody },
+    issues,
+    stats: {
+      totalItems: rules.length,
+      totalFieldsDetected: rules.length * 7,
+      totalSectionsOrSteps: new Set(rules.map((r) => r.category)).size,
+      hasErrors: issues.some((i) => i.severity === "error"),
+    },
+  };
+}
+
 /**
  * Universal dispatcher
  */
@@ -1040,6 +1154,8 @@ export function parseServiceTemplate(type: ServiceSectionType, text: string): Se
       return parsePurchasePolicy(text);
     case "contact":
       return parseContact(text);
+    case "trade_rules":
+      return parseTradeRules(text);
     default:
       return parseTroubleshooting(text);
   }

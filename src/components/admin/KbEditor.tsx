@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Save, Trash2, Sparkles, Wrench } from "lucide-react";
 import ServiceImportModal from "./services/ServiceImportModal";
+import { ImageUploadField } from "./ImageUploadField";
 import type { ServiceParseResult, TroubleshootingItem } from "@/lib/servicesImport";
 
 type KbRow = {
@@ -156,11 +157,12 @@ export default function KbEditor() {
                 value={row.errorCodes}
                 onChange={(event) => update(index, { errorCodes: event.target.value })}
               />
-              <input
-                className={field}
-                placeholder="رابط صورة توضيحية (اختياري)"
+              <ImageUploadField
+                label="صورة توضيحية (اختياري)"
                 value={row.imageUrl}
-                onChange={(event) => update(index, { imageUrl: event.target.value })}
+                onChange={(url) => update(index, { imageUrl: url })}
+                folder="support"
+                aspect="video"
               />
             </div>
           </div>
