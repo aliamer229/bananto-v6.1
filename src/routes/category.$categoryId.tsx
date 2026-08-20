@@ -285,26 +285,28 @@ function CategoryPage() {
                 ))}
               </div>
             ) : products.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {products.map((p: any) => (
-                  <motion.div 
-                    key={p.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                  >
-                    <ProductCard product={p} forceStandardImage={isNintendoGames} />
-                  </motion.div>
-                ))}
+              <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {products.map((p: any) => (
+                    <motion.div 
+                      key={p.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                    >
+                      <ProductCard product={p} forceStandardImage={isNintendoGames} />
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-          ) : (
-            <div className="text-center py-24 bg-card rounded-3xl border border-dashed border-border">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-foreground mb-1">{t("لا توجد منتجات")}</h3>
-              <p className="text-muted-foreground">{t("جرب تغيير خيارات التصفية")}</p>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="text-center py-24 bg-card rounded-3xl border border-dashed border-border">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-foreground mb-1">{t("لا توجد منتجات")}</h3>
+                <p className="text-muted-foreground">{t("جرب تغيير خيارات التصفية")}</p>
+              </div>
+            )}
+          </div>
       </div>
     </AppShell>
   );
