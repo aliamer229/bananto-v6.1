@@ -130,14 +130,20 @@ export function SwitchBox3D({
     console.warn("[SwitchBox3D] Missing required geometry nodes", Object.keys(nodes));
   }
 
+  useFrame((state) => {
+    if (group.current) {
+      group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+      group.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05 - 0.1;
+    }
+  });
+
   return (
     <>
       <OrbitControls
         enableZoom={false}
         enablePan={false}
         enableRotate={true}
-        autoRotate={!readPrefs().motion || readPrefs().motion === "full"}
-        autoRotateSpeed={1.5}
+        autoRotate={false}
         makeDefault
       />
       
@@ -164,6 +170,7 @@ export function SwitchBox3D({
     </>
   );
 }
+
 
 // Preload both assets to ensure they are cached
 useGLTF.preload(glbAsset.url);
