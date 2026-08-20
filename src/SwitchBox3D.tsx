@@ -158,7 +158,8 @@ export function SwitchBox3D({
             ctx.fillRect(0, 0, BACK_W, CANVAS_H);
 
             drawSpine();
-            drawCover(img, frontX, 0, FRONT_W, CANVAS_H);
+            drawContain(img, frontX, 0, FRONT_W, CANVAS_H);
+
           }
         } else {
           drawSpine();
