@@ -366,17 +366,18 @@ function buildEditions(p: Record<string, unknown>, locale: "ar" | "en"): GameEdi
   if (!rawList.length) return undefined;
   return rawList.map((row, i) => {
     const rawContents = rows(row["contents"]);
-    const desc = localizedValue(row, "description", "descriptionEn", locale);
+    const desc = str(row["descriptionEn"]) || str(row["description"]);
     const contentsList =
       rawContents.length > 0
         ? rawContents.map((item, j) => ({
             id: `content-${i}-${j}`,
-            label: localizedValue(item, "label", "labelEn", locale) || str(item),
+            label: str(item["labelEn"]) || str(item["label"]) || str(item),
             included: true,
           }))
         : desc
           ? [{ id: `content-${i}-0`, label: desc, included: true }]
           : [];
+
 
     const name =
       localizedValue(row, "name", "nameEn", "en") ||
