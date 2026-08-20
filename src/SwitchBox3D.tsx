@@ -136,17 +136,14 @@ export function SwitchBox3D({
         makeDefault
       />
       
-      <group ref={group} dispose={null} scale={0.52} position={[0, -0.2, 0]} rotation={[0, -Math.PI / 6, 0]}>
-        {/* The plastic outer case */}
-        <mesh geometry={nodes.box.geometry} material={materials.plastic} renderOrder={0} />
-        
-        {/* The printed sleeve (the artwork) */}
+      <group ref={group} dispose={null} scale={0.5} position={[0, -0.1, 0]} rotation={[0, -Math.PI / 6, 0]}>
+        {/* 1. Printed sleeve (artwork) - Bottom layer of the sandwich */}
         {texture ? (
           <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
             <meshStandardMaterial 
               map={texture} 
-              roughness={0.15} 
-              metalness={0.1} 
+              roughness={0.8} 
+              metalness={0.0} 
               side={THREE.DoubleSide} 
               transparent={false} 
               opacity={1}
@@ -158,8 +155,11 @@ export function SwitchBox3D({
           </mesh>
         )}
         
-        {/* The foil overlay */}
-        <mesh geometry={nodes.foil.geometry} material={materials.foil} renderOrder={2} />
+        {/* 2. Plastic outer case - Middle layer */}
+        <mesh geometry={nodes.box.geometry} material={materials.plastic} renderOrder={2} />
+        
+        {/* 3. Foil overlay - Top layer */}
+        <mesh geometry={nodes.foil.geometry} material={materials.foil} renderOrder={3} />
       </group>
     </>
   );
