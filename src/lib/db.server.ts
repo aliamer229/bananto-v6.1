@@ -161,24 +161,6 @@ export const emptyStore: StoreDoc = {
   problemSolutions: [],
 };
 
-export async function createBananCode(value: number) {
-  const codeValue = randomId(12).toUpperCase();
-  if (await d1Ready()) {
-    const id = randomId();
-    const now = new Date().toISOString();
-    await d1Run(
-      `INSERT INTO banan_codes (id, code, value_iqd, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
-      id,
-      codeValue,
-      value,
-      "active",
-      now,
-      now,
-    );
-    return { code: codeValue, value };
-  }
-  return null;
-}
 
 
 const defaultSettings: UserSettings = {
