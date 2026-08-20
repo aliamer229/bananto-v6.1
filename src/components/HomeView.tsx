@@ -346,7 +346,7 @@ export default function HomeView({
                           params={{ categoryId: category.id }}
                           className="bg-[var(--shell-2)] border border-border px-6 py-2 rounded-full text-sm font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
                         >
-                          {t("عرض الكل")}
+                          {t("common.viewAll")}
                         </Link>
                       </div>
                     )}
