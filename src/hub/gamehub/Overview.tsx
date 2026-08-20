@@ -211,8 +211,9 @@ export function FitSection() {
                         className="h-full w-full object-cover"
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold transition-colors group-hover:text-nin-soft">
+                        <span className="block truncate text-sm font-bold transition-colors group-hover:text-nin-soft" translate="no">
                           {pick.title}
+
                         </span>
                         <span className="line-clamp-2 block text-[11px] leading-snug muted">
                           {pick.reasons[0]?.text}
