@@ -456,22 +456,13 @@ export default function AdminProductEditor({
   }, []);
 
   const handleImport = async (data: any, batch?: any[]) => {
+    setFormData((prev: any) => ({ ...prev, ...data }));
+    setShowImportModal(false);
     if (batch && batch.length > 1) {
-      // Import the active/previewed item from the batch
-      setFormData((prev: any) => ({ ...prev, ...data }));
-      setShowImportModal(false);
       toast.success(`تم استيراد بيانات اللعبة المحددة من الدفعة (${batch.length} ألعاب متوفرة).`);
-      return;
+    } else {
+      toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
     }
-
-    setFormData((prev: any) => ({ ...prev, ...data }));
-    setShowImportModal(false);
-    toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
-  };
-
-    setFormData((prev: any) => ({ ...prev, ...data }));
-    setShowImportModal(false);
-    toast.success("تم استيراد البيانات إلى النموذج بنجاح.");
   };
 
   const handleTitleInputChange = (val: string) => {
