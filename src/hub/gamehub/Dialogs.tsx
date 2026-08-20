@@ -142,7 +142,7 @@ export function BuySheet({
 
   return (
     <Modal open={open} onClose={onClose} title={t("hero.buyNow")} size="md">
-      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto overflow-x-hidden px-0.5">
         {/* 1. Options Selection (الخيار - مثل: حساب أوفلاين / حساب أونلاين) */}
         {options.length > 0 && (
           <div>
@@ -156,27 +156,27 @@ export function BuySheet({
                     type="button"
                     onClick={() => handleSelectOption(opt.id)}
                     className={cn(
-                      "flex items-center justify-between gap-3 rounded-xl border p-3 text-start transition-colors",
+                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border p-3.5 text-start transition-colors",
                       selected
-                        ? "border-nin/50 bg-nin/[0.1]"
-                        : "border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06]",
+                        ? "border-white/35 bg-white/[0.09] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                        : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
-                    <span className="min-w-0">
-                      <span className="block text-sm font-bold">{opt.name}</span>
+                    <span className="min-w-0 block">
+                      <span className="block break-words text-sm font-bold leading-snug">{opt.name}</span>
                       {opt.description && (
-                        <span className="mt-0.5 block truncate text-[11px] muted">
+                        <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
                           {opt.description}
                         </span>
                       )}
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
                       {opt.price != null && (
-                        <span className="num text-sm font-extrabold">
+                        <span className="num whitespace-nowrap text-sm font-extrabold">
                           {formatConverted({ amount: Number(opt.price), currency: "IQD" })}
                         </span>
                       )}
-                      {selected && <Check className="h-4 w-4 text-nin-soft" />}
+                      {selected && <Check className="h-4 w-4 text-good" />}
                     </span>
                   </button>
                 );
@@ -201,27 +201,27 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                      "flex items-center justify-between gap-3 rounded-xl border p-3 text-start transition-colors",
+                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border p-3.5 text-start transition-colors",
                       selected
-                        ? "border-nin/50 bg-nin/[0.1]"
-                        : "border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06]",
+                        ? "border-white/35 bg-white/[0.09] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                        : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
-                    <span className="min-w-0">
-                      <span className="block text-sm font-bold">{typ.name}</span>
+                    <span className="min-w-0 block">
+                      <span className="block break-words text-sm font-bold leading-snug">{typ.name}</span>
                       {typ.description && (
-                        <span className="mt-0.5 block truncate text-[11px] muted">
+                        <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
                           {typ.description}
                         </span>
                       )}
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
                       {typ.price != null && (
-                        <span className="num text-sm font-extrabold">
+                        <span className="num whitespace-nowrap text-sm font-extrabold">
                           {formatConverted({ amount: Number(typ.price), currency: "IQD" })}
                         </span>
                       )}
-                      {selected && <Check className="h-4 w-4 text-nin-soft" />}
+                      {selected && <Check className="h-4 w-4 text-good" />}
                     </span>
                   </button>
                 );
@@ -246,27 +246,27 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                      "flex items-center justify-between gap-3 rounded-xl border p-3.5 text-start transition-colors",
+                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border p-3.5 text-start transition-colors",
                       selected
-                        ? "border-nin/50 bg-nin/[0.1]"
-                        : "border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06]",
+                        ? "border-white/35 bg-white/[0.09] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                        : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
-                    <span className="min-w-0">
-                      <span className="block text-sm font-bold">{edition.name}</span>
+                    <span className="min-w-0 block">
+                      <span className="block break-words text-sm font-bold leading-snug">{edition.name}</span>
                       {edition.description && (
-                        <span className="mt-0.5 block truncate text-[11px] muted">
+                        <span className="mt-1 block break-words text-[11px] leading-relaxed muted">
                           {edition.description}
                         </span>
                       )}
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
                       {edition.msrp && (
-                        <span className="num text-sm font-extrabold">
+                        <span className="num whitespace-nowrap text-sm font-extrabold">
                           {formatConverted(edition.msrp)}
                         </span>
                       )}
-                      {selected && <Check className="h-4 w-4 text-nin-soft" />}
+                      {selected && <Check className="h-4 w-4 text-good" />}
                     </span>
                   </button>
                 );
