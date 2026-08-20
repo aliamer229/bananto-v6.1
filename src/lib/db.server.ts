@@ -169,7 +169,7 @@ const defaultSettings: UserSettings = {
 };
 
 /** True when running on Cloudflare with the D1 binding available. */
-async function d1Ready() {
+export async function d1Ready() {
   if (!getD1()) return false;
   // When D1 is configured, schema/query failures must fail closed. Silently
   // falling back to JSON storage here creates a split-brain production store.
