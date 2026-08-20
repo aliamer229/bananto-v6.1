@@ -212,7 +212,7 @@ export function Hero() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-nin text-white transition-transform group-hover:scale-110">
                       <Play className="ms-px h-3 w-3 fill-current" />
                     </span>
-                    Watch Trailer
+                    {t("hero.watchTrailer")}
                   </button>
                 )}
                 {images.slice(0, 4).map((image: any, index: number) => (
@@ -243,37 +243,31 @@ export function Hero() {
 
           {/* ================= Information ================= */}
           <div className="min-w-0">
-            <h1 className="text-[2rem] font-extrabold leading-[1.05] tracking-tight text-balance sm:text-5xl" translate="no">
+            <h1 className="text-[2rem] font-extrabold leading-[1.05] tracking-tight text-balance sm:text-5xl">
               {game.title}
             </h1>
             {game.subtitle && (
-              <p className="mt-1.5 text-lg font-bold text-nin-soft sm:text-xl" translate="no">{game.subtitle}</p>
+              <p className="mt-1.5 text-lg font-bold text-nin-soft sm:text-xl">{game.subtitle}</p>
             )}
 
             {/* Developer / publisher — both navigable. */}
             <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs muted">
               {game.developer && (
-                <div translate="no">
-                  <StudioLink
-                    kind="developer"
-                    name={game.developer.name}
-                    slug={game.developer.slug}
-                  />
-                </div>
+                <StudioLink
+                  kind="developer"
+                  name={game.developer.name}
+                  slug={game.developer.slug}
+                />
               )}
-
               {game.developer && game.publisher && game.developer.id !== game.publisher.id && (
                 <span aria-hidden>·</span>
               )}
               {game.publisher && game.publisher.id !== game.developer?.id && (
-                <div translate="no">
-                  <StudioLink
-                    kind="publisher"
-                    name={game.publisher.name}
-                    slug={game.publisher.slug}
-                  />
-                </div>
-
+                <StudioLink
+                  kind="publisher"
+                  name={game.publisher.name}
+                  slug={game.publisher.slug}
+                />
               )}
             </p>
 
