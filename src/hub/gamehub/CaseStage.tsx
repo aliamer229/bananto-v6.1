@@ -31,7 +31,7 @@ function hasWebGL(): boolean {
 }
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
-  const [modelReady, setModelReady] = useState(true);
+  const [modelReady, setModelReady] = useState(false);
   const handleModelReady = useCallback(() => setModelReady(true), []);
 
   // Check preferences for reduced motion
