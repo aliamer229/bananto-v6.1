@@ -43,7 +43,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
   const { motion } = readPrefs();
   const isReduced = motion === "lite";
 
-  if (isReduced) {
+  if (isReduced || hasError) {
     return (
       <div className={cn("relative", className)}>
         <GameCase3D {...caseProps} />
