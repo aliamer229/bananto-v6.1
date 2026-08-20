@@ -107,7 +107,8 @@ export function SwitchBox3D({
   // Configure materials for realistic transparency and reflections
   if (materials.foil) {
     materials.foil.transparent = true;
-    materials.foil.opacity = 0.5;
+    materials.foil.opacity = 0.4;
+    materials.foil.depthWrite = false;
   }
   
   if (materials.plastic) {
