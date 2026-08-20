@@ -212,7 +212,7 @@ export function Hero() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-nin text-white transition-transform group-hover:scale-110">
                       <Play className="ms-px h-3 w-3 fill-current" />
                     </span>
-                    {t("hero.watchTrailer")}
+                    Watch Trailer
                   </button>
                 )}
                 {images.slice(0, 4).map((image: any, index: number) => (
