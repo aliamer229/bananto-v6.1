@@ -95,16 +95,32 @@ function CategoryPage() {
   const genres = useMemo(() => {
     if (!store?.products) return [];
     const genreSet = new Set<string>();
-    store.products.forEach((p: any) => {
+    
+    // Get all products that belong to this category to extract relevant genres
+    const categoryProducts = store.products.filter((p: any) => {
+      const pCat = String(p.category || p.categoryId || "").toLowerCase();
+      const targetCat = categoryId.toLowerCase();
+      return pCat === targetCat || p.kind === targetCat || categoryId === "all";
+    });
+
+    categoryProducts.forEach((p: any) => {
+      // Check for genre field
       if (p.genre) {
-        p.genre.split(',').forEach((g: string) => {
+        const parts = typeof p.genre === 'string' ? p.genre.split(',') : (Array.isArray(p.genre) ? p.genre : []);
+        parts.forEach((g: string) => {
           const trimmed = g.trim();
           if (trimmed) genreSet.add(trimmed);
         });
       }
+      
+      // Also check for category/sub-category types that might be useful as genres
+      if (p.kind && p.kind !== categoryId) {
+        genreSet.add(p.kind);
+      }
     });
+    
     return Array.from(genreSet).sort();
-  }, [store?.products]);
+  }, [store?.products, categoryId]);
 
   const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "nintendo_games" || categoryId === "cat_1";
 
