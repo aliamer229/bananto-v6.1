@@ -314,6 +314,13 @@ export default function HomeView({
                     <h3 className="truncate text-xl font-bold text-foreground">
                       {t("home.nintendoSwitchGames")}
                     </h3>
+                    <Link
+                      to="/category/$categoryId"
+                      params={{ categoryId: category.id }}
+                      className="bg-[var(--shell-2)] border border-border px-4 py-1.5 rounded-full text-xs font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
+                    >
+                      {t("common.viewAll")}
+                    </Link>
                   </div>
 
                   <div className="relative mb-8 mt-2 min-h-[200px]">
@@ -339,17 +346,6 @@ export default function HomeView({
                       <div className="h-[12px] w-full bg-gradient-to-b from-[var(--gray-3)] to-[var(--gray-4)] shadow-[0_15px_25px_rgba(0,0,0,0.15)]"></div>
                     </div>
                     
-                    {isCartridgeSection && (
-                      <div className="mt-8 flex justify-center pb-2">
-                        <Link
-                          to="/category/$categoryId"
-                          params={{ categoryId: category.id }}
-                          className="bg-[var(--shell-2)] border border-border px-6 py-2 rounded-full text-sm font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
-                        >
-                          {t("common.viewAll")}
-                        </Link>
-                      </div>
-                    )}
                   </div>
                 </section>
 
