@@ -19,6 +19,7 @@ export function SwitchBox3D({
   gameName: string,
   onReady?: () => void
 }) {
+  console.log("SwitchBox3D rendering with asset:", glbAsset.url);
   const { nodes, materials } = useGLTF(glbAsset.url) as any;
 
   const group = useRef<THREE.Group>(null);
