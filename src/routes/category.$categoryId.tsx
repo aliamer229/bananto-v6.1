@@ -45,7 +45,10 @@ function CategoryPage() {
       // Category check
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      if (pCat !== targetCat && p.kind !== targetCat && categoryId !== "all") return false;
+      const isCatMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" ||
+                        (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      
+      if (!isCatMatch) return false;
 
       // Platform filter
       if (platform !== "all") {
@@ -100,7 +103,9 @@ function CategoryPage() {
     const categoryProducts = store.products.filter((p: any) => {
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
-      return pCat === targetCat || p.kind === targetCat || categoryId === "all";
+      const isMatch = pCat === targetCat || p.kind === targetCat || categoryId === "all" || 
+                     (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games"));
+      return isMatch;
     });
 
     categoryProducts.forEach((p: any) => {
@@ -112,8 +117,6 @@ function CategoryPage() {
           if (trimmed) genreSet.add(trimmed);
         });
       }
-      
-      // We no longer use p.kind as a genre filter because it often includes non-genre values like "account"
     });
     
     return Array.from(genreSet).filter(g => g.toLowerCase() !== 'account').sort();
@@ -179,7 +182,7 @@ function CategoryPage() {
         </div>
 
         {/* Toolbar Section */}
-        <div className="sticky top-0 z-30 bg-[var(--page)]/80 backdrop-blur-xl border-b border-border px-4 py-3">
+        <div className="sticky top-16 z-30 bg-[var(--page)]/80 backdrop-blur-xl border-b border-border px-4 py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
               <button 
@@ -220,23 +223,47 @@ function CategoryPage() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="max-w-7xl mx-auto pt-4 pb-2 border-t border-border mt-3 flex flex-wrap gap-3">
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase px-2">{t("الجهاز")}</span>
-                    <div className="flex gap-2">
-                      {[
-                        { id: "all", label: t("الكل") },
-                        { id: "switch1", label: "Switch 1" },
-                        { id: "switch2", label: "Switch 2" },
-                      ].map((p) => (
+                <div className="max-w-7xl mx-auto pt-4 pb-2 border-t border-border mt-3 flex flex-col gap-4">
+                  {/* Genre filter for mobile/expanded */}
+                  <div className="flex flex-col gap-2 md:hidden">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase px-2">{t("التصنيفات")}</span>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                      <button
+                        onClick={() => setSelectedGenre("all")}
+                        className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${selectedGenre === "all" ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
+                      >
+                        {t("الكل")}
+                      </button>
+                      {genres.map((genre) => (
                         <button
-                          key={p.id}
-                          onClick={() => setPlatform(p.id as PlatformOption)}
-                          className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${platform === p.id ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
+                          key={genre}
+                          onClick={() => setSelectedGenre(genre)}
+                          className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${selectedGenre === genre ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
                         >
-                          {p.label}
+                          {genre}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-col gap-2">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase px-2">{t("الجهاز")}</span>
+                      <div className="flex gap-2">
+                        {[
+                          { id: "all", label: t("الكل") },
+                          { id: "switch1", label: "Switch 1" },
+                          { id: "switch2", label: "Switch 2" },
+                        ].map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => setPlatform(p.id as PlatformOption)}
+                            className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${platform === p.id ? 'bg-red-500 text-white border-red-600 shadow-sm shadow-red-500/20' : 'bg-card text-muted-foreground border-border hover:border-foreground/30'}`}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -294,7 +321,7 @@ function CategoryPage() {
             </div>
           </div>
 
-          {/* Mobile Genre Filter (Horizontal Scroll) */}
+          {/* Mobile Genre Filter (Horizontal Scroll) - Keep for direct access if needed, but primary is in expanded toolbar */}
           <div className="md:hidden flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
              <button
               onClick={() => setSelectedGenre("all")}
@@ -412,4 +439,3 @@ function getCategoryInfo(id: string, t: (k: string) => string) {
       return base;
   }
 }
-
