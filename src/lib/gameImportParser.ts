@@ -121,10 +121,9 @@ function parseBulkGameImport(text: string): ParseResult {
   }
 
   // 2. Extract Product sections
-  const productBlocks = text.split("[[PRODUCT]]").slice(1); // skip anything before first product marker (usually shared or empty)
+  const productBlocks = text.split("[[PRODUCT]]").slice(1);
 
   if (productBlocks.length === 0 && !text.includes("[[PRODUCT]]")) {
-    // If [SHARED] was present but no [[PRODUCT]], treat the whole thing as one product
     return parseSingleGameImport(text.replace("[SHARED]", ""));
   }
 
@@ -139,10 +138,14 @@ function parseBulkGameImport(text: string): ParseResult {
     const singleResult = parseSingleGameImport(fullText);
 
     if (singleResult.data && Object.keys(singleResult.data).length > 0) {
-      batchData.push(singleResult.data);
+      // Ensure defaults for bulk import: infinite stock by default
+      const processedData = {
+        ...singleResult.data,
+        isInfiniteStock: singleResult.data.isInfiniteStock ?? true,
+      };
+      batchData.push(processedData);
     }
 
-    // Collect errors and unknown fields from each block
     singleResult.errors.forEach((err) => {
       result.errors.push({
         ...err,
@@ -157,7 +160,6 @@ function parseBulkGameImport(text: string): ParseResult {
   }
 
   result.batch = batchData;
-  // Populate result.data with the first product for preview/legacy compatibility
   result.data = batchData[0] || {};
 
   return result;
