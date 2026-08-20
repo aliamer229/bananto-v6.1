@@ -142,7 +142,7 @@ export function BuySheet({
 
   return (
     <Modal open={open} onClose={onClose} title={t("hero.buyNow")} size="md">
-      <div className="space-y-4 max-h-[70vh] overflow-y-auto overflow-x-hidden px-0.5">
+      <div className="max-h-[min(68vh,620px)] max-w-full space-y-5 overflow-y-auto overflow-x-hidden px-0.5 pe-1 [overflow-wrap:anywhere] [word-break:break-word]">
         {/* 1. Options Selection (الخيار - مثل: حساب أوفلاين / حساب أونلاين) */}
         {options.length > 0 && (
           <div>
@@ -156,9 +156,9 @@ export function BuySheet({
                     type="button"
                     onClick={() => handleSelectOption(opt.id)}
                     className={cn(
-                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border p-3.5 text-start transition-colors",
+                       "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
                       selected
-                        ? "border-white/35 bg-white/[0.09] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                         ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
                         : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
@@ -201,9 +201,9 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border p-3.5 text-start transition-colors",
+                       "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
                       selected
-                        ? "border-white/35 bg-white/[0.09] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                         ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
                         : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >
@@ -246,9 +246,9 @@ export function BuySheet({
                       playSound("select");
                     }}
                     className={cn(
-                      "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border p-3.5 text-start transition-colors",
+                       "grid w-full max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border p-3.5 text-start transition-all [overflow-wrap:anywhere] [word-break:break-word]",
                       selected
-                        ? "border-white/35 bg-white/[0.09] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                         ? "border-nin/70 bg-nin/10 ring-1 ring-nin/30"
                         : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]",
                     )}
                   >

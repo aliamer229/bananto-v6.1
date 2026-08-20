@@ -168,7 +168,7 @@ export default function Cartridge({
             </div>
           </div>
         )}
-        <div className="flex-1 w-full overflow-hidden shrink-0 bg-black">
+        <div className="flex-1 w-full overflow-hidden shrink-0 bg-[var(--surface-3)] p-1">
           <img
             src={cdnImage(game.image)}
             alt={game.title}
@@ -177,7 +177,7 @@ export default function Cartridge({
             fetchPriority="low"
             width={115}
             height={90}
-            className="w-full h-full object-cover object-center scale-[1.66] group-hover:scale-[1.75] transition-transform duration-500"
+            className="h-full w-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.02]"
           />
         </div>
         <div className="px-2 py-1.5 shrink-0 h-[64px] flex flex-col justify-between bg-[var(--cart-shell)]">

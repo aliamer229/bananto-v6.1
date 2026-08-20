@@ -1,9 +1,10 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { GameCase3D, type GameCase3DProps } from "./GameCase3D";
 import SafeBoundary from "@/components/SafeBoundary";
 import { cn } from "@/hub/utils/cn";
 import { lazyWithRetry } from "@/lib/lazyRetry";
+import { cdnImage } from "@/lib/img";
 
 /**
  * Renders the case, preferring real 3D geometry but never waiting on it.
@@ -33,6 +34,7 @@ function hasWebGL(): boolean {
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
   const [enable3D, setEnable3D] = useState(false);
   const [modelReady, setModelReady] = useState(false);
+  const handleModelReady = useCallback(() => setModelReady(true), []);
 
   useEffect(() => {
     if (!hasWebGL()) return;
@@ -44,13 +46,11 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
       ? window.requestIdleCallback(
           () => {
             setEnable3D(true);
-            setModelReady(true);
           },
           { timeout: 2500 },
         )
       : window.setTimeout(() => {
           setEnable3D(true);
-          setModelReady(true);
         }, 1200);
 
     return () => {
@@ -86,15 +86,16 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
               <Canvas
                 camera={{ position: [0, 0, 15], fov: 35 }}
                 // Touch drags must rotate the case, not scroll the page.
-                style={{ touchAction: "none", cursor: "grab" }}
+                style={{ touchAction: "none", cursor: "grab", userSelect: "none" }}
               >
                 <ambientLight intensity={1.5} />
                 <directionalLight position={[5, 10, 5]} intensity={1.5} />
                 <directionalLight position={[-5, -5, -5]} intensity={0.5} />
                 <SwitchBox3D
-                  coverImage={caseProps.sleeve?.url || caseProps.coverUrl || null}
+                  coverImage={cdnImage(caseProps.sleeve?.url || caseProps.coverUrl || "") || null}
                   platform={caseProps.isSwitch2 ? "ns2" : "ns1"}
                   gameName={caseProps.title}
+                  onReady={handleModelReady}
                 />
               </Canvas>
             </Suspense>

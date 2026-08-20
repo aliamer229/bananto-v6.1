@@ -111,7 +111,7 @@ export function ProductStrip({
                 src={cdnImage(product.image)}
                 loading="lazy"
                 decoding="async"
-                className="w-full aspect-square object-contain p-1.5 bg-muted group-hover:scale-[1.03] transition-transform duration-300"
+                className="w-full aspect-[3/4] object-contain object-center p-2 bg-muted"
                 alt={product.title}
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>

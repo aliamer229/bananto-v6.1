@@ -867,7 +867,7 @@ html {
 }
 .hero-dark .muted,
 .hero-dark .eyebrow {
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.9);
 }
 /* Type sits directly on artwork, so it carries its own shadow for contrast. */
 .hero-dark h1,
@@ -875,7 +875,7 @@ html {
 .hero-dark p,
 .hero-dark span,
 .hero-dark b {
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.62);
 }
 .hero-dark h1 {
   text-shadow:

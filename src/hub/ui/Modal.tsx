@@ -111,7 +111,7 @@ export function Modal({ open, onClose, title, children, size = "md", bare }: Mod
               SIZES[size],
               bare
                 ? "outline-none"
-                : "max-h-[92vh] overflow-y-auto rounded-t-3xl border border-white/10 bg-ink-850 p-5 shadow-lift outline-none sm:rounded-3xl sm:p-6",
+                : "max-h-[92dvh] max-w-[100vw] overflow-hidden rounded-t-2xl border border-white/10 bg-ink-850 p-5 shadow-lift outline-none sm:rounded-2xl sm:p-6",
             )}
           >
             {!bare && (

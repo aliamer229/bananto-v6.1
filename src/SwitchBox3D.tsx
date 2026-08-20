@@ -1,234 +1,234 @@
-import { useRef, useEffect, useState } from "react";
-import * as THREE from "three";
+import { useEffect, useMemo, useState } from "react";
 import { OrbitControls } from "@react-three/drei";
-
-import { useGLTF } from "@/hub/gamehub/useGltf";
+import * as THREE from "three";
 
 const CANVAS_W = 1236;
 const CANVAS_H = 951;
 const BACK_W = 588;
 const SPINE_W = 60;
+const FRONT_X = BACK_W + SPINE_W;
 const FRONT_W = 588;
 
+function makeFaceTexture(
+  source: THREE.CanvasTexture | null,
+  offset: number,
+  width: number,
+) {
+  if (!source) return null;
+  const face = source.clone();
+  face.image = source.image;
+  face.colorSpace = THREE.SRGBColorSpace;
+  face.wrapS = THREE.ClampToEdgeWrapping;
+  face.wrapT = THREE.ClampToEdgeWrapping;
+  face.repeat.set(width / CANVAS_W, 1);
+  face.offset.set(offset / CANVAS_W, 0);
+  face.needsUpdate = true;
+  return face;
+}
+
 /**
- * Nintendo Switch retail case.
- *
- * The GLB is UV-unwrapped so a single flat 1236x951 image wraps as
- * BACK (588) + SPINE (60) + FRONT (588). We build that flat image on a canvas:
- * a full wrap-around artwork is drawn as-is, while a front-only cover is
- * placed in the front panel (and mirrored/dimmed on the back) so it never
- * looks sliced.
+ * Interactive Switch retail case. The sleeve is built once as a continuous
+ * back │ spine │ front sheet, then each physical face samples its own adjacent
+ * range from that same texture. This avoids three independently fitted images
+ * and therefore avoids visible cuts at the folds.
  */
 export function SwitchBox3D({
   coverImage,
   platform,
   gameName,
+  onReady,
 }: {
   coverImage: string | null;
   platform: string;
   gameName: string;
+  onReady?: () => void;
 }) {
-  const { nodes, materials } = useGLTF("/source/SwitchCase.glb") as any;
-  const group = useRef<THREE.Group>(null);
-
-  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
+  const [sleeve, setSleeve] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    let active = true;
     const canvas = document.createElement("canvas");
     canvas.width = CANVAS_W;
     canvas.height = CANVAS_H;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const spineX = BACK_W;
-    const frontX = BACK_W + SPINE_W;
-
-    const loadImage = (src: string) =>
+    const loadElement = (src: string) =>
       new Promise<HTMLImageElement | null>((resolve) => {
-        const img = new Image();
-        if (!src.startsWith("data:")) img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = src;
+        const image = new Image();
+        if (!src.startsWith("data:")) image.crossOrigin = "anonymous";
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = src;
       });
 
-    const drawSpine = () => {
-      ctx.fillStyle = platform === "ns2" ? "#b3000f" : "#e60012";
-      ctx.fillRect(spineX, 0, SPINE_W, CANVAS_H);
-
-      ctx.save();
-      ctx.translate(spineX + SPINE_W / 2, 80);
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.font = "bold 16px sans-serif";
-      ctx.fillText("SWITCH" + (platform === "ns2" ? " 2" : ""), 0, 0);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(spineX + SPINE_W / 2, 200);
-      ctx.rotate(Math.PI / 2);
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 28px sans-serif";
-      ctx.textAlign = "left";
-      ctx.fillText(gameName || "Game Title", 0, 10);
-      ctx.restore();
-    };
-
-    /** Draw `img` into a panel using cover-fit so it is never distorted. */
-    const drawCover = (
-      img: HTMLImageElement,
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-    ) => {
-      const scale = Math.max(w / img.width, h / img.height);
-      const dw = img.width * scale;
-      const dh = img.height * scale;
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(x, y, w, h);
-      ctx.clip();
-      ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
-      ctx.restore();
-    };
-
-    /**
-     * Front panel: the artwork must read as one whole cover, not a slice.
-     * A blown-up blurred copy fills the panel edge to edge, then the artwork
-     * itself is drawn fully contained on top — nothing important gets cut.
-     */
-    const drawContain = (
-      img: HTMLImageElement,
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-    ) => {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(x, y, w, h);
-      ctx.clip();
-
-      // Backdrop from the art itself so the panel never shows bare white bars.
-      ctx.filter = "blur(28px) saturate(1.4) brightness(0.75)";
-      const bScale = Math.max(w / img.width, h / img.height) * 1.25;
-      const bw = img.width * bScale;
-      const bh = img.height * bScale;
-      ctx.drawImage(img, x + (w - bw) / 2, y + (h - bh) / 2, bw, bh);
-      ctx.filter = "none";
-
-      const scale = Math.min(w / img.width, h / img.height);
-      const dw = img.width * scale;
-      const dh = img.height * scale;
-      ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
-      ctx.restore();
-    };
-
-
-    const drawTexture = async () => {
-      try {
-        const baseImg = await loadImage("/textures/GZAfvAF3.jpg");
-        if (!isMounted) return;
-        if (baseImg) ctx.drawImage(baseImg, 0, 0, CANVAS_W, CANVAS_H);
-        else {
-          ctx.fillStyle = "#f2f2f2";
-          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-        }
-
-        const img = coverImage ? await loadImage(coverImage) : null;
-        if (!isMounted) return;
-
-        if (img) {
-          const ratio = img.width / img.height;
-          const wrapRatio = CANVAS_W / CANVAS_H; // ~1.30 → full back+spine+front art
-          const isFullWrap = ratio > wrapRatio * 0.85;
-
-          if (isFullWrap) {
-            ctx.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
-          } else {
-            // Front-only artwork: back panel gets a dimmed mirrored copy.
-            ctx.save();
-            ctx.translate(BACK_W, 0);
-            ctx.scale(-1, 1);
-            drawCover(img, 0, 0, BACK_W, CANVAS_H);
-            ctx.restore();
-            ctx.fillStyle = "rgba(0,0,0,0.55)";
-            ctx.fillRect(0, 0, BACK_W, CANVAS_H);
-
-            drawSpine();
-            drawContain(img, frontX, 0, FRONT_W, CANVAS_H);
-
+    const load = async (src: string) => {
+      // Browsers mark <img> requests with Sec-Fetch-Dest:image; the app's route
+      // shell may answer those before the image endpoint does. Fetch the bytes
+      // first and decode a same-origin Blob so Canvas can safely read them.
+      if (src.startsWith("/api/img")) {
+        try {
+          const response = await fetch(src);
+          if (response.ok) {
+            const objectUrl = URL.createObjectURL(await response.blob());
+            const image = await loadElement(objectUrl);
+            URL.revokeObjectURL(objectUrl);
+            if (image) return image;
           }
+        } catch {
+          // The normal image path below remains a safe visual fallback.
+        }
+      }
+      return loadElement(src);
+    };
+
+    const drawCover = (
+      image: HTMLImageElement,
+      x: number,
+      width: number,
+      fit: "cover" | "contain",
+    ) => {
+      const scale =
+        fit === "cover"
+          ? Math.max(width / image.width, CANVAS_H / image.height)
+          : Math.min(width / image.width, CANVAS_H / image.height);
+      const dw = image.width * scale;
+      const dh = image.height * scale;
+      ctx.drawImage(image, x + (width - dw) / 2, (CANVAS_H - dh) / 2, dw, dh);
+    };
+
+    const buildSleeve = async () => {
+      const image = coverImage ? await load(coverImage) : null;
+      if (!active) return;
+
+      ctx.fillStyle = platform === "ns2" ? "#b3000f" : "#e60012";
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      if (image) {
+        const isFullWrap = image.width / image.height > 1.16;
+        if (isFullWrap) {
+          // One source image across the complete UV sheet: no panel-by-panel crop.
+          ctx.drawImage(image, 0, 0, CANVAS_W, CANVAS_H);
         } else {
-          drawSpine();
-        }
+          // Create one continuous ambient sleeve from the front cover. The
+          // blurred cover crosses both folds, then the readable front is laid
+          // on top without cropping any title or key art.
+          ctx.save();
+          ctx.filter = "blur(34px) saturate(1.35) brightness(0.7)";
+          drawCover(image, -45, CANVAS_W + 90, "cover");
+          ctx.restore();
 
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.flipY = false;
-        tex.anisotropy = 8;
-        tex.needsUpdate = true;
+          ctx.fillStyle = "rgba(0,0,0,0.38)";
+          ctx.fillRect(0, 0, BACK_W, CANVAS_H);
+          drawCover(image, FRONT_X, FRONT_W, "contain");
 
-        if (isMounted) {
-          setTexture((prev) => {
-            if (prev) prev.dispose();
-            return tex;
-          });
+          // A translucent spine tint preserves the artwork underneath at both
+          // folds rather than replacing it with an unrelated hard red strip.
+          ctx.fillStyle = platform === "ns2" ? "rgba(179,0,15,0.76)" : "rgba(230,0,18,0.76)";
+          ctx.fillRect(BACK_W, 0, SPINE_W, CANVAS_H);
+          ctx.save();
+          ctx.translate(BACK_W + SPINE_W / 2, 150);
+          ctx.rotate(Math.PI / 2);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "700 28px sans-serif";
+          ctx.textAlign = "left";
+          ctx.shadowColor = "rgba(0,0,0,0.45)";
+          ctx.shadowBlur = 4;
+          ctx.fillText(gameName || "Game Title", 0, 9, CANVAS_H - 180);
+          ctx.restore();
         }
-      } catch (err) {
-        console.error("Error drawing texture:", err);
+      }
+
+      const next = new THREE.CanvasTexture(canvas);
+      next.colorSpace = THREE.SRGBColorSpace;
+      next.anisotropy = 8;
+      next.needsUpdate = true;
+      if (active) {
+        setSleeve((previous) => {
+          previous?.dispose();
+          return next;
+        });
+        onReady?.();
       }
     };
 
-    void drawTexture();
-
+    void buildSleeve();
     return () => {
-      isMounted = false;
+      active = false;
     };
-  }, [coverImage, platform, gameName]);
+  }, [coverImage, platform, gameName, onReady]);
 
-  if (materials.foil) {
-    materials.foil.transparent = true;
-    materials.foil.opacity = 0.5;
-  }
+  const faceMaps = useMemo(() => {
+    const maps = {
+      back: makeFaceTexture(sleeve, 0, BACK_W),
+      spine: makeFaceTexture(sleeve, BACK_W, SPINE_W),
+      front: makeFaceTexture(sleeve, FRONT_X, FRONT_W),
+    };
+    return maps;
+  }, [sleeve]);
 
-  if (materials.plastic) {
-    materials.plastic.transparent = true;
-    materials.plastic.opacity = 0.8;
-    materials.plastic.color.set(platform === "ns2" ? "#e60012" : "#ffffff");
-  }
+  useEffect(
+    () => () => {
+      faceMaps.front?.dispose();
+      faceMaps.spine?.dispose();
+      faceMaps.back?.dispose();
+    },
+    [faceMaps],
+  );
+
+  const shell = platform === "ns2" ? "#e60012" : "#e8edf2";
 
   return (
     <>
       <OrbitControls
         makeDefault
-        enablePan={false}
-        enableZoom={false}
         enableRotate
-        rotateSpeed={0.9}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 1.5}
+        enableZoom={false}
+        enablePan={false}
         enableDamping
         dampingFactor={0.08}
+        rotateSpeed={0.85}
+        minPolarAngle={Math.PI / 4}
+        maxPolarAngle={Math.PI / 1.5}
       />
 
-    <group ref={group} dispose={null} scale={0.65} position={[0, -0.5, 0]} rotation={[0, -Math.PI / 6, 0]}>
-      <mesh geometry={nodes.box.geometry} material={materials.plastic} />
-
-      {texture && (
-        <mesh geometry={nodes.placeholder.geometry}>
-          <meshStandardMaterial map={texture} roughness={0.6} metalness={0.1} side={THREE.DoubleSide} />
+      <group scale={0.78} position={[0, -0.2, 0]} rotation={[0, -Math.PI / 7, 0]}>
+        {/* Translucent plastic body and the four exposed shell edges. */}
+        <mesh>
+          <boxGeometry args={[6.18, 9.88, 0.72]} />
+          <meshPhysicalMaterial
+            color={shell}
+            transparent
+            opacity={0.8}
+            roughness={0.3}
+            transmission={0.06}
+            clearcoat={0.75}
+            clearcoatRoughness={0.24}
+          />
         </mesh>
-      )}
 
-      <mesh geometry={nodes.foil.geometry} material={materials.foil} />
-    </group>
+        {/* Adjacent regions of one continuous sleeve texture. */}
+        {faceMaps.front && (
+          <mesh position={[0, 0, 0.371]}>
+            <planeGeometry args={[6, 9.7]} />
+            <meshStandardMaterial map={faceMaps.front} roughness={0.56} metalness={0.02} />
+          </mesh>
+        )}
+        {faceMaps.back && (
+          <mesh position={[0, 0, -0.371]} rotation={[0, Math.PI, 0]}>
+            <planeGeometry args={[6, 9.7]} />
+            <meshStandardMaterial map={faceMaps.back} roughness={0.56} metalness={0.02} />
+          </mesh>
+        )}
+        {faceMaps.spine && (
+          <mesh position={[-3.091, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+            <planeGeometry args={[0.72, 9.7]} />
+            <meshStandardMaterial map={faceMaps.spine} roughness={0.56} metalness={0.02} />
+          </mesh>
+        )}
+      </group>
     </>
   );
 }
-
-useGLTF.preload("/source/SwitchCase.glb");
 
 export default SwitchBox3D;
