@@ -307,6 +307,7 @@ function CategoryPage() {
               </div>
             )}
           </div>
+        </div>
       </div>
     </AppShell>
   );
