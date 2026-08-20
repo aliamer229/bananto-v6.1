@@ -1040,7 +1040,15 @@ export function parseContact(text: string): ServiceParseResult<ContactParseResul
  */
 export function parseTradeRules(text: string): ServiceParseResult<TradeRulesParseResultData> {
   const issues: ParsedIssue[] = [];
-  const json = tryParseJson(text);
+  
+  // Clean text from common copy-paste artifacts
+  const cleanText = text
+    .replace(/^\uFEFF/, "")
+    .split("\n")
+    .map(line => line.trim())
+    .join("\n");
+
+  const json = tryParseJson(cleanText);
   const stamp = Date.now().toString(36);
 
   const normalizeRule = (raw: any, idx: number): TradeRuleParsedItem | null => {
