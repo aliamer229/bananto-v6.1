@@ -496,8 +496,9 @@ function buildGuides(p: Record<string, unknown>, locale: "ar" | "en"): Guide[] |
   return list.map((row, i) => ({
     slug: slugify(str(row["title"]) || `guide-${i}`),
     title:
-      localizedValue(row, "title", "titleEn", locale) ||
-      (locale === "en" ? `Guide ${i + 1}` : `دليل ${i + 1}`),
+      str(row["titleEn"]) || str(row["title"]) ||
+      `Guide ${i + 1}`,
+
     category: "tips" as const,
     summary: localizedValue(row, "summary", "summaryEn", locale),
     ...(str(row["url"]) ? { sections: [{ body: str(row["url"]) }] } : {}),
