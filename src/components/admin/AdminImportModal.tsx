@@ -28,7 +28,8 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
   const [inputText, setInputText] = useState("");
   const [parseResult, setParseResult] = useState<any>(null);
   const [isValidating, setIsValidating] = useState(false);
-  const [viewMode, setViewMode] = useState<"status" | "preview">("status");
+  const [viewMode, setViewMode] = useState<"status" | "preview" | "batch">("status");
+  const [selectedBatchIndex, setSelectedBatchIndex] = useState(0);
 
   const handleValidate = () => {
     if (!inputText.trim()) {
