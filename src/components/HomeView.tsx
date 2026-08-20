@@ -302,9 +302,8 @@ export default function HomeView({
 
           if (categoryProducts.length === 0) return null;
 
-          // If the user called it "Nintendo Switch games" (the specific name mentioned), 
-          // we might want to hide its duplicate if it matches the first section.
-          if (index > 0 && category.id === "nintendo-switch-games") return null;
+          // Handle Nintendo Switch Games section visibility
+          const isNintendoGames = category.id === "nintendo-switch-games" || category.title?.toLowerCase().includes("nintendo switch");
 
           if (index === 0) {
             return (
@@ -314,6 +313,13 @@ export default function HomeView({
                     <h3 className="truncate text-xl font-bold text-foreground">
                       {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames" ? "nintendo games" : t("home.nintendoSwitchGames")}
                     </h3>
+                    <Link
+                      to="/category/$categoryId"
+                      params={{ categoryId: category.id }}
+                      className="bg-[var(--shell-2)] border border-border px-4 py-1.5 rounded-full text-xs font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
+                    >
+                      {t("common.viewAll")}
+                    </Link>
                   </div>
 
                   <div className="relative mb-8 mt-2 min-h-[200px]">
@@ -357,7 +363,7 @@ export default function HomeView({
               <section className="-mx-4 mt-4">
                 <div className="flex items-center justify-between gap-2 mb-4 px-8">
                   <h3 className="text-xl font-bold text-foreground">{t(category.title)}</h3>
-                  {category.id === "nintendo-switch-games" && (
+                  {isNintendoGames && (
                     <Link
                       to="/category/$categoryId"
                       params={{ categoryId: category.id }}
