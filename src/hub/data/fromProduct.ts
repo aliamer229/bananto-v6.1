@@ -103,9 +103,12 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
       id: `img-${i}`,
       url: str(row["url"]),
       alt:
-        localizedValue(row, "alt", "altEn", locale) ||
-        (locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"])) ||
+        str(row["altEn"]) ||
+        str(row["alt"]) ||
+        str(p["titleEn"]) ||
+        str(p["title"]) ||
         "",
+
     })),
     ...legacyGallery.map((url, i) => ({
       id: `legacy-img-${i}`,
