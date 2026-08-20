@@ -121,10 +121,10 @@ export function ProductStrip({
                 </div>
               )}
             </div>
-            <h4 className="font-bold text-sm sm:text-base text-foreground truncate" dir="ltr">
+            <h4 className="font-bold text-sm sm:text-base text-foreground truncate" dir="ltr" translate="no">
               {product.title}
             </h4>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate" dir="ltr">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate" dir="ltr" translate="no">
               {product.subtitle}
             </p>
             <div className="flex justify-between items-center mt-3">

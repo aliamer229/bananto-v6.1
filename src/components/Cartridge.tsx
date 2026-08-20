@@ -191,12 +191,13 @@ export default function Cartridge({
           <h4
             className="text-white text-[9px] font-semibold leading-[1.2] line-clamp-3 break-words"
             dir="ltr"
+            translate="no"
             title={game.title}
           >
             {game.title}
           </h4>
           <div className="flex justify-between items-end gap-1">
-            <p className="text-[#a0a0a0] text-[8px] truncate min-w-0" dir="ltr">
+            <p className="text-[#a0a0a0] text-[8px] truncate min-w-0" dir="ltr" translate="no">
               {game.subtitle}
             </p>
             {rating && (

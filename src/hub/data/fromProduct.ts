@@ -71,21 +71,20 @@ const confirmed = <T>(value: T, source = "لوحة الإدارة"): Fact<T> => 
 });
 
 function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
-  const title =
-    locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"]) || str(p["titleEn"]);
+  const title = str(p["titleEn"]) || str(p["title"]);
 
   const desc =
     locale === "en"
       ? str(p["descriptionEn"]) || str(p["description"])
       : str(p["descriptionAr"]) || str(p["description"]) || str(p["descriptionEn"]);
 
-  const tag =
-    locale === "en"
-      ? str(p["taglineEn"]) || str(p["tagline"])
-      : str(p["tagline"]) || str(p["taglineEn"]);
+
+  const tag = str(p["taglineEn"]) || str(p["tagline"]);
+
 
   return {
-    title: title || (locale === "en" ? "Product" : "منتج"),
+    title: title || "Product",
+
     description: desc || undefined,
     tagline: tag || undefined,
   };
@@ -104,14 +103,17 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
       id: `img-${i}`,
       url: str(row["url"]),
       alt:
-        localizedValue(row, "alt", "altEn", locale) ||
-        (locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"])) ||
+        str(row["altEn"]) ||
+        str(row["alt"]) ||
+        str(p["titleEn"]) ||
+        str(p["title"]) ||
         "",
+
     })),
     ...legacyGallery.map((url, i) => ({
       id: `legacy-img-${i}`,
       url,
-      alt: (locale === "en" ? str(p["titleEn"]) || str(p["title"]) : str(p["title"])) || "",
+      alt: str(p["titleEn"]) || str(p["title"]) || "",
     })),
   ].filter((img) => img.url);
 
@@ -123,7 +125,7 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
           {
             id: "trailer",
             kind: "trailer" as const,
-            title: locale === "en" ? "Official Trailer" : "الإعلان الرسمي",
+            title: "Official Trailer",
             embedUrl: youtubeEmbed(trailerUrl) ?? trailerUrl,
           },
         ]
@@ -135,7 +137,8 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
         id: `video-${i}`,
         kind: "gameplay" as const,
         title:
-          localizedValue(row, "title", "titleEn", locale) || (locale === "en" ? "Video" : "فيديو"),
+          str(row["titleEn"]) || str(row["title"]) || "Video",
+
         embedUrl,
       });
       return acc;
@@ -196,8 +199,9 @@ function buildNintendo(
 
   const enhancementLines = rows(p["switch2Features"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"];
+      const v = r["valueEn"] ?? r["value"];
       return getTextValue(v !== undefined ? v : r);
+
     })
     .filter(Boolean);
   const enhancementMatchers: Array<{ id: Switch2Enhancement["id"]; re: RegExp }> = [
@@ -254,7 +258,7 @@ function buildPerformance(
   const handheld = str(p["perfResolutionHandheld"]);
   const fps = str(p["perfFps"]);
   const hasHdrField = "perfHdr" in p;
-  const notes = localizedValue(p, "perfNotes", "perfNotesEn", locale);
+  const notes = str(p["perfNotesEn"]) || str(p["perfNotes"]);
 
   if (!docked && !handheld && !fps && !hasHdrField && !notes) return undefined;
 
@@ -363,21 +367,23 @@ function buildEditions(p: Record<string, unknown>, locale: "ar" | "en"): GameEdi
   if (!rawList.length) return undefined;
   return rawList.map((row, i) => {
     const rawContents = rows(row["contents"]);
-    const desc = localizedValue(row, "description", "descriptionEn", locale);
+    const desc = str(row["descriptionEn"]) || str(row["description"]);
     const contentsList =
       rawContents.length > 0
         ? rawContents.map((item, j) => ({
             id: `content-${i}-${j}`,
-            label: localizedValue(item, "label", "labelEn", locale) || str(item),
+            label: str(item["labelEn"]) || str(item["label"]) || str(item),
             included: true,
           }))
         : desc
           ? [{ id: `content-${i}-0`, label: desc, included: true }]
           : [];
 
+
     const name =
-      localizedValue(row, "name", "nameEn", locale) ||
-      (locale === "en" ? `Edition ${i + 1}` : `نسخة ${i + 1}`);
+      localizedValue(row, "name", "nameEn", "en") ||
+      `Edition ${i + 1}`;
+
 
     return {
       id: str(row["id"]) || `edition-${i}`,
@@ -416,13 +422,14 @@ function buildGameplayPillars(
   if (!list.length) return undefined;
   return list.map((row, i) => {
     const title =
-      localizedValue(row, "title", "titleEn", locale) ||
-      (locale === "en" ? `Pillar ${i + 1}` : `ركيزة ${i + 1}`);
+      str(row["titleEn"]) || str(row["title"]) ||
+      `Pillar ${i + 1}`;
+
     const match = PILLAR_MATCHERS.find((m) => m.re.test(title));
     return {
       id: match?.id ?? "exploration",
       title,
-      description: localizedValue(row, "description", "descriptionEn", locale),
+      description: str(row["descriptionEn"]) || str(row["description"]),
     };
   });
 }
@@ -443,9 +450,10 @@ function buildStory(p: Record<string, unknown>, locale: "ar" | "en"): StorySecti
     ...chapters.map((row, i) => ({
       id: `story-${i}`,
       title:
-        localizedValue(row, "title", "titleEn", locale) ||
-        (locale === "en" ? `Chapter ${i + 1}` : `فصل ${i + 1}`),
-      body: localizedValue(row, "body", "bodyEn", locale),
+        str(row["titleEn"]) || str(row["title"]) ||
+        `Chapter ${i + 1}`,
+
+      body: str(row["bodyEn"]) || str(row["body"]),
       ...(str(row["imageUrl"]) ? { imageId: str(row["imageUrl"]) } : {}),
     })),
   ];
@@ -458,17 +466,23 @@ function buildDlc(p: Record<string, unknown>, locale: "ar" | "en"): Dlc[] | unde
   const filtered = list
     .filter((row) => {
       const name =
-        localizedValue(row, "name", "nameEn", locale) ||
-        localizedValue(row, "title", "titleEn", locale);
+        str(row["nameEn"]) ||
+        str(row["name"]) ||
+        str(row["titleEn"]) ||
+        str(row["title"]);
       return Boolean(name && name.trim());
     })
     .map((row, i) => {
       const name =
-        localizedValue(row, "name", "nameEn", locale) ||
-        localizedValue(row, "title", "titleEn", locale) ||
-        (locale === "en" ? `DLC ${i + 1}` : `إضافة ${i + 1}`);
+        str(row["nameEn"]) ||
+        str(row["name"]) ||
+        str(row["titleEn"]) ||
+        str(row["title"]) ||
+        `DLC ${i + 1}`;
+
       const cover = str(row["coverUrl"] || row["image"] || row["cartridgeImage"]);
-      const desc = localizedValue(row, "description", "descriptionEn", locale);
+      const desc = str(row["descriptionEn"]) || str(row["description"]);
+
       return {
         id: str(row["id"]) || `dlc-${i}`,
         name,
@@ -485,10 +499,11 @@ function buildGuides(p: Record<string, unknown>, locale: "ar" | "en"): Guide[] |
   return list.map((row, i) => ({
     slug: slugify(str(row["title"]) || `guide-${i}`),
     title:
-      localizedValue(row, "title", "titleEn", locale) ||
-      (locale === "en" ? `Guide ${i + 1}` : `دليل ${i + 1}`),
+      str(row["titleEn"]) || str(row["title"]) ||
+      `Guide ${i + 1}`,
+
     category: "tips" as const,
-    summary: localizedValue(row, "summary", "summaryEn", locale),
+    summary: str(row["summaryEn"]) || str(row["summary"]),
     ...(str(row["url"]) ? { sections: [{ body: str(row["url"]) }] } : {}),
   }));
 }
@@ -510,8 +525,9 @@ function buildFaq(p: Record<string, unknown>, locale: "ar" | "en"): FaqItem[] | 
   if (!list.length) return undefined;
   return list.map((row, i) => ({
     id: `faq-${i}`,
-    question: localizedValue(row, "q", "qEn", locale),
-    answer: localizedValue(row, "a", "aEn", locale),
+    question: str(row["qEn"]) || str(row["q"]),
+    answer: str(row["aEn"]) || str(row["a"]),
+
   }));
 }
 
@@ -525,8 +541,9 @@ function buildTimeline(
     id: `timeline-${i}`,
     date: str(row["date"]),
     kind: "update" as const,
-    title: localizedValue(row, "title", "titleEn", locale),
-    ...(str(row["body"]) ? { detail: localizedValue(row, "body", "bodyEn", locale) } : {}),
+    title: str(row["titleEn"]) || str(row["title"]),
+    ...(str(row["body"]) ? { detail: str(row["bodyEn"]) || str(row["body"]) } : {}),
+
   }));
 }
 
@@ -537,8 +554,9 @@ function buildPatchNotes(p: Record<string, unknown>, locale: "ar" | "en"): Patch
     version: str(row["version"]),
     date: str(row["date"]),
     ...(str(row["body"])
-      ? { added: locale === "en" && row["bodyEn"] ? lines(row["bodyEn"]) : lines(row["body"]) }
+      ? { added: lines(row["bodyEn"] || row["body"]) }
       : {}),
+
   }));
 }
 
@@ -547,14 +565,14 @@ function buildSoundtrack(p: Record<string, unknown>, locale: "ar" | "en"): Sound
   if (!list.length) return undefined;
   return {
     links: list.map((row) => ({
-      label: localizedValue(row, "title", "titleEn", locale),
+      label: str(row["titleEn"]) || str(row["title"]),
       url: str(row["url"]),
     })),
   };
 }
 
 function buildSeries(p: Record<string, unknown>, locale: "ar" | "en"): GameSeries | undefined {
-  const name = localizedValue(p, "seriesName", "seriesNameEn", locale);
+  const name = str(p["seriesNameEn"]) || str(p["seriesName"]);
   const entries = rows(p["seriesEntries"]);
   if (!name && !entries.length) return undefined;
   const mappedEntries = entries
@@ -573,23 +591,24 @@ function buildSeries(p: Record<string, unknown>, locale: "ar" | "en"): GameSerie
   if (!mappedEntries.length && !name) return undefined;
   return {
     id: slugify(name || "series"),
-    name: name || (locale === "en" ? "Series" : "السلسلة"),
+    name: name || "Series",
     entries: mappedEntries,
   };
 }
 
 function buildVerdict(p: Record<string, unknown>, locale: "ar" | "en"): EditorVerdict | undefined {
   const score = num(p["verdictScore"]);
-  const summary = localizedValue(p, "verdictSummary", "verdictSummaryEn", locale);
+  const summary = str(p["verdictSummaryEn"]) || str(p["verdictSummary"]);
   const pros = rows(p["verdictPros"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      const v = r["valueEn"] ?? r["value"] ?? r;
+
       return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
     })
     .filter(Boolean);
   const cons = rows(p["verdictCons"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
+      const v = r["valueEn"] ?? r["value"] ?? r;
       return getTextValue(typeof v === 'object' && v !== null && 'value' in v ? (v as any).value : v);
     })
     .filter(Boolean);
@@ -609,17 +628,16 @@ function buildCatalogOptions(p: Record<string, unknown>, locale: "ar" | "en") {
     const list = rawOptions
       .map((opt, i) => {
         const name = getTextValue(
-          locale === "en" && opt["nameEn"]
-            ? opt["nameEn"]
-            : (opt["name"] ?? opt["title"] ?? opt["value"] ?? opt),
+          opt["nameEn"] ?? opt["name"] ?? opt["title"] ?? opt["value"] ?? opt,
         );
+
         if (!name) return null;
         return {
           id: str(opt["id"]) || `opt-${i}`,
           name,
           price: num(opt["price"]) || undefined,
           cost: num(opt["cost"]) || undefined,
-          description: localizedValue(opt, "description", "descriptionEn", locale) || undefined,
+          description: str(opt["descriptionEn"]) || str(opt["description"]) || undefined,
           available: opt["available"] !== false && opt["active"] !== false,
         };
       })
@@ -663,8 +681,9 @@ function buildCatalogTypes(p: Record<string, unknown>, locale: "ar" | "en") {
   const list = rawTypes
     .map((t, i) => {
       const name = getTextValue(
-        locale === "en" && t["nameEn"] ? t["nameEn"] : (t["name"] ?? t["title"] ?? t["value"] ?? t),
+        t["nameEn"] ?? t["name"] ?? t["title"] ?? t["value"] ?? t,
       );
+
       if (!name) return null;
       return {
         id: str(t["id"]) || `type-${i}`,
@@ -673,7 +692,7 @@ function buildCatalogTypes(p: Record<string, unknown>, locale: "ar" | "en") {
         price: num(t["price"]) || undefined,
         cost: num(t["cost"]) || undefined,
         stock: num(t["stock"]) || undefined,
-        description: localizedValue(t, "description", "descriptionEn", locale) || undefined,
+        description: str(t["descriptionEn"]) || str(t["description"]) || undefined,
       };
     })
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
@@ -733,9 +752,10 @@ export function gameFromProduct(
   const media = buildMedia(p, locale);
 
   const developerName =
-    localizedValue(p, "developer", "developerEn", locale) ||
-    localizedValue(p, "studioName", "studioNameEn", locale);
-  const publisherName = localizedValue(p, "publisher", "publisherEn", locale);
+    str(p["developerEn"]) || str(p["developer"]) ||
+    str(p["studioNameEn"]) || str(p["studioName"]);
+  const publisherName = str(p["publisherEn"]) || str(p["publisher"]);
+
 
   const metacritic = num(p["metacriticRating"]);
   const opencritic = num(p["opencriticRating"]);
@@ -752,10 +772,9 @@ export function gameFromProduct(
     ? dataSourceRows
         .map((row) => {
           const label = getTextValue(
-            locale === "en" && row["nameEn"]
-              ? row["nameEn"]
-              : row["name"] || row["source"] || row["label"] || row["title"] || row,
+            row["nameEn"] || row["name"] || row["source"] || row["label"] || row["title"] || row,
           );
+
           const url = str(row["url"] || row["link"] || row["sourceUrl"]);
           if (!label && !url) return null;
           return {

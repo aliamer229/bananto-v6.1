@@ -58,7 +58,7 @@ export function GlanceSection() {
         .join(" · "),
       accent: true,
     },
-    { icon: Shapes, label: t("glance.genre"), value: (game.genres ?? []).join(" · ") },
+    { icon: Shapes, label: t("glance.genre"), value: <span translate="no">{(game.genres ?? []).join(" · ")}</span> },
     { icon: Users, label: t("glance.players"), value: formatRange(game.multiplayer?.players) },
     {
       icon: Clock,
@@ -74,11 +74,16 @@ export function GlanceSection() {
       icon: Languages,
       label: t("glance.languages"),
       value: game.languages?.length
-        ? game.languages
-            .slice(0, 3)
-            .map((l) => l.name)
-            .join(" · ") + (game.languages.length > 3 ? ` +${game.languages.length - 3}` : "")
+        ? (
+            <span translate="no">
+              {game.languages
+                .slice(0, 3)
+                .map((l) => l.name)
+                .join(" · ") + (game.languages.length > 3 ? ` +${game.languages.length - 3}` : "")}
+            </span>
+          )
         : null,
+
     },
     { icon: Calendar, label: t("glance.releaseDate"), value: formatDate(game.releaseDate) },
     {
@@ -91,7 +96,7 @@ export function GlanceSection() {
       label: t("glance.ageRating"),
       value: game.ageRating ? `${game.ageRating.system} ${game.ageRating.label}` : null,
     },
-    { icon: Gauge, label: t("glance.frameRate"), value: frameRateSummary(game) },
+    { icon: Gauge, label: "FPS", value: frameRateSummary(game) },
   ];
 
   const description = game.description;
@@ -130,7 +135,7 @@ export function GlanceSection() {
 
           {description && (
             <div className="border-t border-white/[0.055] p-5 sm:p-6">
-              <h3 className="mb-2 text-sm font-extrabold">{t("glance.about")}</h3>
+              <h3 className="mb-2 text-sm font-extrabold" translate="no">About</h3>
               <p
                 className={cn(
                   "max-w-3xl text-sm leading-[1.75] muted",
@@ -182,7 +187,7 @@ export function FitSection() {
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
                   <Chip key={tag.id} tone={tag.positive ? "good" : "default"}>
-                    {tag.label}
+                    <span translate="no">{tag.label}</span>
                   </Chip>
                 ))}
               </div>
@@ -211,8 +216,9 @@ export function FitSection() {
                         className="h-full w-full object-cover"
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold transition-colors group-hover:text-nin-soft">
+                        <span className="block truncate text-sm font-bold transition-colors group-hover:text-nin-soft" translate="no">
                           {pick.title}
+
                         </span>
                         <span className="line-clamp-2 block text-[11px] leading-snug muted">
                           {pick.reasons[0]?.text}
