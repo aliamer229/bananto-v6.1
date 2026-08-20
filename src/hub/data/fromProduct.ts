@@ -523,8 +523,9 @@ function buildFaq(p: Record<string, unknown>, locale: "ar" | "en"): FaqItem[] | 
   if (!list.length) return undefined;
   return list.map((row, i) => ({
     id: `faq-${i}`,
-    question: localizedValue(row, "q", "qEn", locale),
-    answer: localizedValue(row, "a", "aEn", locale),
+    question: str(row["qEn"]) || str(row["q"]),
+    answer: str(row["aEn"]) || str(row["a"]),
+
   }));
 }
 
