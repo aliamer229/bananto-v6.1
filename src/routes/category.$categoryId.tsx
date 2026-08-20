@@ -113,13 +113,10 @@ function CategoryPage() {
         });
       }
       
-      // Also check for category/sub-category types that might be useful as genres
-      if (p.kind && p.kind !== categoryId) {
-        genreSet.add(p.kind);
-      }
+      // We no longer use p.kind as a genre filter because it often includes non-genre values like "account"
     });
     
-    return Array.from(genreSet).sort();
+    return Array.from(genreSet).filter(g => g.toLowerCase() !== 'account').sort();
   }, [store?.products, categoryId]);
 
   const isNintendoGames = categoryId === "nintendo-switch-games" || categoryId === "cat_nintendo" || categoryId === "nintendo_games" || categoryId === "cat_1";
