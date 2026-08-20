@@ -315,14 +315,6 @@ export default function HomeView({
                     <h3 className="truncate text-xl font-bold text-foreground">
                       {index === 0 ? "nintendo games" : t(category.title)}
                     </h3>
-
-                    <Link
-                      to="/category/$categoryId"
-                      params={{ categoryId: category.id }}
-                      className="text-[#EA8918] text-sm font-bold hover:underline"
-                    >
-                      {t("عرض الكل")}
-                    </Link>
                   </div>
 
                   <div className="relative mb-8 mt-2 min-h-[200px]">
