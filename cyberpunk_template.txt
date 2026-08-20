@@ -1,0 +1,313 @@
+# Nintendo Switch Game Import Template
+# =========================================
+# Verified for Cyberpunk 2077: Ultimate Edition — Nintendo Switch 2
+# Primary research sources: Nintendo, CD PROJEKT RED, Metacritic
+# =========================================
+
+schema_version=1.0
+
+# اسم اللعبة
+name=Cyberpunk 2077: Ultimate Edition
+slug=cyberpunk-2077-ultimate-edition-nintendo-switch-2
+platform=switch2
+edition=Ultimate Edition
+region=Global
+release_date=2025-06-05
+release_status=Active
+developer=CD PROJEKT RED
+publisher=CD PROJEKT
+players_count=1
+age_rating=ESRB M (Mature 17+) / PEGI 18
+metacritic_score=85
+metacritic_url=https://www.metacritic.com/game/cyberpunk-2077-ultimate-edition/critic-reviews/?platform=nintendo-switch-2
+opencritic_score=
+user_score=8.8
+game_size_gb=60.6
+official_url=https://www.cyberpunk.net/us/en/switch-2-features
+eshop_url=https://www.nintendo.com/us/store/products/cyberpunk-2077-ultimate-edition-switch-2/
+display_order=
+kind=account
+category=
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=Become cyber-enhanced mercenary V and explore Night City in the complete Cyberpunk 2077 experience, including the acclaimed Phantom Liberty expansion, optimized for Nintendo Switch 2.
+description_full<<EOF_DESC
+Cyberpunk 2077: Ultimate Edition is an open-world action-adventure RPG set in Night City, a sprawling futuristic megalopolis driven by power, glamour and body modification. You play as V, a customizable cyber-enhanced mercenary whose choices, relationships, skills and combat style shape a deeply branching journey through the dark future.
+
+The Nintendo Switch 2 Ultimate Edition includes the full Cyberpunk 2077 base game and the Phantom Liberty spy-thriller expansion set in Dogtown. It also benefits from the major systems, gameplay and quality-of-life improvements released for the modern version of the game.
+
+This edition was specifically optimized for Nintendo Switch 2 and supports Joy-Con 2 motion controls, adjustable gyroscope aiming, Joy-Con 2 mouse controls and touch-screen interaction for maps, menus, inventory and hacking. Cross-progression lets supported saves continue between platforms. Two graphics modes are available: Quality mode targets 1080p at 30 FPS, while Performance mode targets up to 40 FPS at 1080p in TV mode and 720p in handheld mode. Handheld play also uses VRR for smoother presentation.
+EOF_DESC
+
+description_ar<<EOF_AR
+Cyberpunk 2077: Ultimate Edition هي النسخة الكاملة من لعبة تقمص الأدوار والعالم المفتوح الشهيرة، وتضم اللعبة الأساسية مع توسعة Phantom Liberty. تدور الأحداث في Night City، حيث تلعب بشخصية V، مرتزق معزز بالتقنيات السيبرانية، وتحدد اختياراتك وأسلوب لعبك ومسار تطوير الشخصية شكل رحلتك ونهاياتها. نسخة Nintendo Switch 2 محسنة خصيصًا للجهاز وتدعم التحكم بالحركة، والتصويب بالجيروسكوب، ووضع الفأرة عبر Joy-Con 2، وشاشة اللمس، إضافة إلى الحفظ المشترك عبر المنصات المدعومة.
+EOF_AR
+
+# Images — direct Nintendo/CD PROJEKT RED CDN URLs
+cartridge_image=https://img-eshop.cdn.nintendo.net/i/f172668ac499434b33917199f2021f753d42b73862d76d3c93d04a474dade847.jpg
+cover_image=https://img-eshop.cdn.nintendo.net/i/f172668ac499434b33917199f2021f753d42b73862d76d3c93d04a474dade847.jpg
+box_front_url=https://img-eshop.cdn.nintendo.net/i/f172668ac499434b33917199f2021f753d42b73862d76d3c93d04a474dade847.jpg
+box_back_url=
+banner_image.1=https://cdn-s.cdprojektred.com/news/7c4482bb2a88253bef266c59fc00bd55_q90_1280x720.jpeg
+banner_image.2=https://img-eshop.cdn.nintendo.net/i/fafb315be0e638d33a11c745f03d13eca2cc8d9951bb024afaea58ce4a9b38d5.jpg
+banner_image.3=https://img-eshop.cdn.nintendo.net/i/6bb015d3b722dac0da85da21c34594b5980e33816fe8cbd4c912984e2eb57799.jpg
+
+trailer_url=https://www.youtube.com/watch?v=iRswiS_NvgA
+video.1.title=Cyberpunk 2077: Ultimate Edition — Nintendo Switch 2 Launch Trailer
+video.1.url=https://www.youtube.com/watch?v=iRswiS_NvgA
+video.2.title=Cyberpunk 2077: Ultimate Edition — Launch Trailer — Nintendo Switch 2
+video.2.url=https://www.youtube.com/watch?v=DtjZH9eIZbI
+video.3.title=
+video.3.url=
+
+nsuid=
+title_id=
+product_code=
+
+genre.1=Action
+genre.2=Role-Playing Game
+genre.3=First-Person Shooter
+
+nintendo_official_url=https://www.nintendo.com/au/games/nintendo-switch-2/cyberpunk-2077-ultimate-edition/
+nintendo_requires_switch_online=false
+nintendo_cloud_save=true
+nintendo_game_key_card=false
+nintendo_physical_requires_download=false
+nintendo_play_modes=TV Mode, Tabletop Mode, Handheld Mode
+nintendo_notes<<EOF_NOTES
+The Nintendo Switch 2 physical release is supplied on a 64 GB game card and contains the full game. A mandatory full-game download is not required for the physical release, although patches and optional voiceover language packs can require downloads. Save Data Cloud is supported and requires a paid Nintendo Switch Online membership. Some game features require an internet connection.
+EOF_NOTES
+
+switch2_enhanced=true
+switch2_feature.1=Joy-Con 2 motion controls, adjustable gyroscope aiming and Joy-Con 2 (R) mouse controls
+switch2_feature.2=Touch-screen controls for maps, menus, inventory, skills and hacking interactions
+switch2_feature.3=Quality and Performance graphics modes with handheld VRR and cross-progression support
+
+overview_tagline=Legends are made here. What will yours be?
+overview_suitable_for.1.value=Players who want a mature, story-rich open-world action RPG with meaningful choices and deep character customization
+overview_suitable_for.2.value=Players who enjoy first-person gunplay, stealth, hacking, cyberware builds and multiple approaches to missions
+overview_suitable_for.3.value=Players looking for a large AAA RPG that can be played both on a TV and portably on Nintendo Switch 2
+overview_not_suitable_for.1.value=Players seeking family-friendly content or a game suitable for younger audiences
+overview_not_suitable_for.2.value=Players who strongly prefer linear games with minimal exploration, dialogue or character-building systems
+overview_not_suitable_for.3.value=Players who require a locked 60 FPS experience or the highest-end console/PC visual settings
+
+main_story_hours=26
+completionist_hours=109
+
+edition.1.name=Cyberpunk 2077: Ultimate Edition
+edition.1.cover_image=https://img-eshop.cdn.nintendo.net/i/f172668ac499434b33917199f2021f753d42b73862d76d3c93d04a474dade847.jpg
+edition.1.content=Cyberpunk 2077 base game + Phantom Liberty expansion + available game updates and free content
+edition.2.name=
+edition.2.cover_image=
+edition.2.content=
+edition.3.name=
+edition.3.cover_image=
+edition.3.content=
+
+gameplay_pillar.1.title=Build Your V
+gameplay_pillar.1.description=Customize V with attributes, perks, cyberware, weapons and equipment to create gunner, netrunner, stealth, melee or hybrid builds.
+gameplay_pillar.1.image=https://img-eshop.cdn.nintendo.net/i/6ad6f9081aa3b7ca6971b924dfe19a9c1565ec077f64d0e59aaac6b383e7c485.jpg
+gameplay_pillar.2.title=Explore Night City
+gameplay_pillar.2.description=Travel through a dense open-world metropolis and its surrounding Badlands, taking on main jobs, side jobs, gigs and dynamic activities.
+gameplay_pillar.2.image=https://img-eshop.cdn.nintendo.net/i/3cae14b3a994822fe0a6f5bb8db70280d4001e32fda797aa2bccf5c9490bd9cd.jpg
+gameplay_pillar.3.title=Choose Your Path
+gameplay_pillar.3.description=Dialogue choices, relationships and mission decisions create consequences that can alter character outcomes and available endings.
+gameplay_pillar.3.image=https://img-eshop.cdn.nintendo.net/i/5627a888e0c156b9444e4597f68a8a18235f13695a5b253955edcb6867cdc634.jpg
+
+world_summary<<EOF_WORLD
+Night City is a vast dystopian metropolis on the California coast where corporations, gangs, mercenaries and fixers compete for influence. Its districts range from neon-packed commercial centers and corporate towers to industrial zones, gang-controlled neighborhoods and the surrounding Badlands. Phantom Liberty expands the playable world with Dogtown, a dangerous walled-off district ruled by a militarized faction. The setting combines high technology, extreme inequality, cybernetic body modification and a culture obsessed with reputation and survival.
+EOF_WORLD
+
+story_chapter.1.title=Becoming a Night City Mercenary
+story_chapter.1.text=Choose V's Lifepath, enter Night City's mercenary world and take on a job that permanently changes V's future.
+story_chapter.1.image=https://img-eshop.cdn.nintendo.net/i/fafb315be0e638d33a11c745f03d13eca2cc8d9951bb024afaea58ce4a9b38d5.jpg
+story_chapter.2.title=The Relic and Johnny Silverhand
+story_chapter.2.text=V must confront the consequences of the experimental Relic while dealing with the digital presence of legendary rockerboy Johnny Silverhand.
+story_chapter.2.image=https://img-eshop.cdn.nintendo.net/i/6bb015d3b722dac0da85da21c34594b5980e33816fe8cbd4c912984e2eb57799.jpg
+story_chapter.3.title=Phantom Liberty — Dogtown
+story_chapter.3.text=Enter Dogtown in a high-stakes spy-thriller involving the New United States, secret agents, shifting alliances and dangerous political intrigue.
+story_chapter.3.image=https://img-eshop.cdn.nintendo.net/i/5627a888e0c156b9444e4597f68a8a18235f13695a5b253955edcb6867cdc634.jpg
+
+gallery.1.image=https://img-eshop.cdn.nintendo.net/i/fafb315be0e638d33a11c745f03d13eca2cc8d9951bb024afaea58ce4a9b38d5.jpg
+gallery.1.description=Official Nintendo eShop screenshot from Cyberpunk 2077: Ultimate Edition on Nintendo Switch 2
+gallery.2.image=https://img-eshop.cdn.nintendo.net/i/6ad6f9081aa3b7ca6971b924dfe19a9c1565ec077f64d0e59aaac6b383e7c485.jpg
+gallery.2.description=Official Nintendo eShop screenshot showcasing Night City and its characters
+gallery.3.image=https://img-eshop.cdn.nintendo.net/i/3cae14b3a994822fe0a6f5bb8db70280d4001e32fda797aa2bccf5c9490bd9cd.jpg
+gallery.3.description=Official Nintendo eShop screenshot showcasing the game's futuristic open world
+
+feature.1.value=Includes the complete base game and the Phantom Liberty expansion
+feature.2.value=Supports cross-progression with compatible versions on other platforms
+feature.3.value=Switch 2-specific motion, gyro, touch-screen and Joy-Con 2 mouse control options
+
+performance_tv_resolution=Quality: 1080p / Performance: up to 1080p
+performance_handheld_resolution=Quality: 1080p / Performance: up to 720p
+performance_fps=Quality: 30 FPS / Performance: up to 40 FPS
+performance_hdr=
+performance_notes<<EOF_PERF
+CD PROJEKT RED provides two graphics modes. Performance mode targets up to 40 FPS at 1080p in TV mode and up to 40 FPS at 720p in handheld mode. Quality mode runs at 30 FPS at 1080p in both TV and handheld modes. Handheld mode uses Variable Refresh Rate (VRR) to improve smoothness. Actual performance can vary with scene complexity, particularly in demanding areas of Phantom Liberty.
+EOF_PERF
+
+storage_download_size_gb=60.6
+storage_required_space_gb=60.6
+storage_micro_sd_recommended=false
+storage_notes<<EOF_STORAGE
+Nintendo lists the digital game file size as 60.6 GB. The physical edition uses a 64 GB game card and does not require a full-game download. Optional non-English voiceover packs for the Global version are downloaded separately from Nintendo eShop and may require up to 2.9 GB each. Updates may require additional free storage.
+EOF_STORAGE
+
+audio_language.1=English
+audio_language.2=Brazilian Portuguese, Chinese, French, German, Italian, Korean, Polish, Spanish (downloadable voiceover packs in Global version)
+audio_language.3=Japanese (included in Japanese version; English voiceover available as additional download)
+text_language.1=English, Brazilian Portuguese, Chinese, French, German, Italian, Korean, Polish, Spanish
+text_language.2=Arabic, Czech, Hungarian, Latin American Spanish, Russian, Simplified Chinese, Thai, Traditional Chinese, Turkish, Ukrainian
+text_language.3=Japanese (Japanese version)
+supported_languages_raw=Global version — English text and voiceover included. Text included with downloadable voiceover packs: Brazilian Portuguese, Chinese, French, German, Italian, Korean, Polish, Spanish. Text-only languages: Arabic, Czech, Hungarian, Latin American Spanish, Russian, Simplified Chinese, Thai, Traditional Chinese, Turkish, Ukrainian. Japanese version includes Japanese text and voiceover, with English text and downloadable English voiceover.
+supports_arabic=true
+
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_split_screen=false
+multiplayer_local_wireless=false
+
+dlc.1.title=Phantom Liberty
+dlc.1.description=The acclaimed spy-thriller expansion set in Dogtown, included as part of Cyberpunk 2077: Ultimate Edition on Nintendo Switch 2.
+dlc.1.image=https://img-eshop.cdn.nintendo.net/i/5627a888e0c156b9444e4597f68a8a18235f13695a5b253955edcb6867cdc634.jpg
+dlc.2.title=Optional Voiceover Language Packs
+dlc.2.description=Free downloadable voiceover packs are available from Nintendo eShop for supported languages in the Global version; each may require up to 2.9 GB.
+dlc.2.image=
+dlc.3.title=
+dlc.3.description=
+dlc.3.image=
+
+guide.1.title=Nintendo Switch 2 — Performance & Resolution
+guide.1.summary=Official CD PROJEKT RED technical guide covering Quality and Performance modes, target resolutions, frame rates and handheld VRR.
+guide.1.url=https://support.cdprojektred.com/en/cyberpunk/nintendo-switch-2/sp-technical/issue/2816/performance-resolution
+guide.2.title=Nintendo Switch 2 — Language Support
+guide.2.summary=Official language matrix for the Global and Japanese versions, including included text, included voiceover and downloadable voice packs.
+guide.2.url=https://support.cdprojektred.com/en/cyberpunk/nintendo-switch-2/sp-technical/issue/2810/language-support-1
+guide.3.title=Cyberpunk 2077 — Nintendo Switch 2 Features
+guide.3.summary=Official overview of gyroscope aiming, motion controls, touch-screen interaction and Joy-Con 2 mouse controls.
+guide.3.url=https://www.cyberpunk.net/us/en/switch-2-features
+
+completion_main_story_hours=26
+completion_story_plus_dlc_hours=41
+completion_100_percent_hours=109
+
+faq.1.question=Does Cyberpunk 2077: Ultimate Edition on Nintendo Switch 2 include Phantom Liberty?
+faq.1.answer=Yes. The Nintendo Switch 2 Ultimate Edition includes both the full Cyberpunk 2077 base game and the Phantom Liberty expansion.
+faq.2.question=Does the physical Nintendo Switch 2 version require a full-game download?
+faq.2.answer=No. The physical release uses a 64 GB game card containing the full game. Updates and optional voiceover language packs can still require downloads.
+faq.3.question=Does the Nintendo Switch 2 version support Arabic?
+faq.3.answer=Yes. Arabic text is supported in the Global version. Arabic is text-only; an Arabic voiceover is not listed by CD PROJEKT RED.
+
+verdict_score=8.5
+verdict_summary<<EOF_VERDICT
+Cyberpunk 2077: Ultimate Edition is one of the most ambitious third-party releases on Nintendo Switch 2. It delivers the complete modern Cyberpunk 2077 experience, including Phantom Liberty, in a portable format while adding thoughtful platform-specific controls. Visual and frame-rate compromises remain compared with more powerful consoles and high-end PCs, but the Switch 2 release is a strong technical conversion and a compelling way to experience Night City on the go.
+EOF_VERDICT
+verdict_pro.1.value=Complete package with the base game and Phantom Liberty expansion
+verdict_pro.2.value=Excellent portable flexibility with gyro, motion, touch and mouse control options
+verdict_pro.3.value=Deep RPG systems, memorable characters, strong world-building and extensive replay value
+verdict_con.1.value=Lower visual fidelity than high-end PC, PlayStation 5 and Xbox Series versions
+verdict_con.2.value=Performance can dip below targets in demanding scenes, especially in Phantom Liberty
+verdict_con.3.value=Large storage footprint and optional voiceover packs require additional downloads
+
+review.1.source=Metacritic
+review.1.score=85/100 Metascore
+review.1.quote=Generally Favorable
+review.1.url=https://www.metacritic.com/game/cyberpunk-2077-ultimate-edition/critic-reviews/?platform=nintendo-switch-2
+review.2.source=GameSpew
+review.2.score=90/100
+review.2.quote=Cyberpunk 2077: Ultimate Edition offers tens, if not hundreds, of hours of engrossing open world action.
+review.2.url=https://www.metacritic.com/game/cyberpunk-2077-ultimate-edition/
+review.3.source=Press Start Australia
+review.3.score=90/100
+review.3.quote=CD Projekt Red’s done a fantastic job of bringing Cyberpunk 2077, Phantom Liberty DLC and all, to the Nintendo Switch 2.
+review.3.url=https://www.metacritic.com/game/cyberpunk-2077-ultimate-edition/critic-reviews/?platform=nintendo-switch-2
+
+timeline.1.date=2025-04-02
+timeline.1.title=Nintendo Switch 2 Version Announced
+timeline.1.details=CD PROJEKT RED announced Cyberpunk 2077: Ultimate Edition as a Nintendo Switch 2 launch-day title, including the base game and Phantom Liberty.
+timeline.2.date=2025-06-05
+timeline.2.title=Nintendo Switch 2 Launch
+timeline.2.details=Cyberpunk 2077: Ultimate Edition launched digitally and physically for Nintendo Switch 2 on the console's launch day.
+timeline.3.date=2025-09-11
+timeline.3.title=Patch 2.31
+timeline.3.details=Patch 2.31 rolled out for Nintendo Switch 2 alongside other current platforms, improving AutoDrive and Photo Mode and fixing common issues.
+
+update.1.version=2.3
+update.1.date=2025-07-17
+update.1.changes=Free content update adding new vehicles, AutoDrive, Delamain cabs, expanded Photo Mode features and vehicle customization; made available for Nintendo Switch 2.
+update.2.version=2.31
+update.2.date=2025-09-11
+update.2.changes=Improved AutoDrive behavior, adjusted Photo Mode and fixed a range of common issues on Nintendo Switch 2 and other supported platforms.
+update.3.version=
+update.3.date=
+update.3.changes=
+
+music.1.title=Cyberpunk 2077 Original Score
+music.1.url=https://www.cyberpunk.net/us/en/cyberpunk-2077
+music.2.title=Cyberpunk 2077 Radio Music
+music.2.url=https://www.cyberpunk.net/us/en/cyberpunk-2077
+music.3.title=Phantom Liberty Music
+music.3.url=https://www.cyberpunk.net/us/en/cyberpunk-2077
+
+series_name=Cyberpunk
+series_game.1.value=Cyberpunk 2077
+series_game.2.value=Cyberpunk 2077: Phantom Liberty
+series_game.3.value=Cyberpunk 2077: Ultimate Edition
+
+studio_name=CD PROJEKT RED
+studio_website=https://www.cdprojektred.com/
+studio_location=Warsaw, Poland
+studio_description<<EOF_STUDIO
+CD PROJEKT RED is a Polish video game development studio known for story-driven role-playing games, including The Witcher series and Cyberpunk 2077. The studio develops and publishes Cyberpunk 2077 and its Phantom Liberty expansion and handled the Nintendo Switch 2 version of Cyberpunk 2077: Ultimate Edition.
+EOF_STUDIO
+
+setting_requirement.1.value=Nintendo Switch 2 system
+setting_requirement.2.value=Approximately 60.6 GB free storage for the digital base installation, with additional space potentially needed for updates or optional voiceover packs
+setting_requirement.3.value=Internet connection required for downloads, updates, cross-progression and some game features; Nintendo Switch Online membership required for Save Data Cloud
+
+source.1.name=Nintendo — Cyberpunk 2077: Ultimate Edition for Nintendo Switch 2
+source.1.url=https://www.nintendo.com/au/games/nintendo-switch-2/cyberpunk-2077-ultimate-edition/
+source.2.name=CD PROJEKT RED — Cyberpunk 2077 on Nintendo Switch 2
+source.2.url=https://www.cyberpunk.net/us/en/switch-2-features
+source.3.name=CD PROJEKT RED Support — Nintendo Switch 2 Technical Information
+source.3.url=https://support.cdprojektred.com/en/cyberpunk/nintendo-switch-2
+
+# =========================================
+# Options & Types
+# =========================================
+option.1.id=opt_offline
+option.1.name=Offline Account
+option.1.description=Play using the store-provided account with offline access after setup.
+
+option.2.id=opt_online
+option.2.name=Online Account
+option.2.description=Play with online account access and supported connected game features.
+
+option.3.id=
+option.3.name=
+option.3.description=
+
+type.1.id=typ_std
+type.1.name=Ultimate Edition
+type.1.option_id=
+type.1.price=
+type.1.cost=
+type.1.description=Complete Nintendo Switch 2 release containing Cyberpunk 2077 and the Phantom Liberty expansion.
+
+type.2.id=
+type.2.name=
+type.2.option_id=
+type.2.price=
+type.2.cost=
+type.2.description=
+
+type.3.id=
+type.3.name=
+type.3.option_id=
+type.3.price=
+type.3.cost=
+type.3.description=

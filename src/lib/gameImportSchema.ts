@@ -278,7 +278,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   {
     key: "banner_image",
     type: "url",
-    target: "galleryImages",
+    target: "bannerImages",
     repeatable: true,
     description: "صور البنر / المعرض الرئيسي",
   },

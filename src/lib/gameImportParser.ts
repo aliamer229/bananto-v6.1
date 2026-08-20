@@ -29,13 +29,14 @@ export function parseGameImport(rawText: string): ParseResult {
     }
 
     // Check for multiline syntax: key<<EOF
-    const multilineMatch = line.match(/^([^=]+)<<EOF$/);
+    const multilineMatch = line.match(/^([^=]+)<<([A-Za-z0-9_]+)$/);
     if (multilineMatch) {
       const key = multilineMatch[1]?.trim();
       if (key) {
         let content = "";
         i++;
-        while (i < lines.length && lines[i]?.trim() !== "EOF") {
+        const eofMarker = multilineMatch[2];
+        while (i < lines.length && lines[i]?.trim() !== eofMarker) {
           content += (lines[i] || "") + "\n";
           i++;
         }
