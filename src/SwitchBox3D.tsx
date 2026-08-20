@@ -37,7 +37,7 @@ export function SwitchBox3D({
     const canvas = document.createElement('canvas');
     canvas.width = 1236;
     canvas.height = 951;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     const drawTexture = async () => {
@@ -79,6 +79,9 @@ export function SwitchBox3D({
         }
 
         const tex = new THREE.CanvasTexture(canvas);
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.generateMipmaps = false;
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.flipY = false;
         tex.needsUpdate = true;
@@ -104,16 +107,19 @@ export function SwitchBox3D({
   // Configure materials for realistic transparency and reflections
   if (materials.foil) {
     materials.foil.transparent = true;
-    materials.foil.opacity = 0.5;
+    materials.foil.opacity = 0.4;
+    materials.foil.depthWrite = false;
   }
   
   if (materials.plastic) {
     materials.plastic.transparent = true;
     materials.plastic.opacity = 0.8;
+    materials.plastic.depthWrite = true;
     // Fix: Ensure Switch 2 platform is correctly colored (Red) and Switch 1 is default (Clear/White)
     materials.plastic.color.set(platform === 'ns2' ? '#e60012' : '#ffffff');
-    materials.plastic.roughness = 0.05;
-    materials.plastic.metalness = 0.4;
+    materials.plastic.roughness = 0.02;
+    materials.plastic.metalness = 0.5;
+    materials.plastic.envMapIntensity = 2.0;
   }
 
   return (
@@ -127,13 +133,13 @@ export function SwitchBox3D({
         makeDefault
       />
       
-      <group ref={group} dispose={null} scale={0.5} position={[0, -0.4, 0]} rotation={[0, -Math.PI / 6, 0]}>
+      <group ref={group} dispose={null} scale={0.55} position={[0, 0, 0]} rotation={[0, -Math.PI / 6, 0]}>
         {/* The plastic outer case */}
-        <mesh geometry={nodes.box.geometry} material={materials.plastic} />
+        <mesh geometry={nodes.box.geometry} material={materials.plastic} renderOrder={0} />
         
         {/* The printed sleeve (the artwork) */}
         {texture ? (
-          <mesh geometry={nodes.placeholder.geometry}>
+          <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
             <meshStandardMaterial 
               map={texture} 
               roughness={0.1} 
@@ -150,7 +156,7 @@ export function SwitchBox3D({
         )}
         
         {/* The foil overlay */}
-        <mesh geometry={nodes.foil.geometry} material={materials.foil} />
+        <mesh geometry={nodes.foil.geometry} material={materials.foil} renderOrder={2} />
       </group>
     </>
   );
