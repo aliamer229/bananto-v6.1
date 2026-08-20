@@ -59,7 +59,7 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
           modelReady ? "opacity-100" : "opacity-0",
         )}
       >
-        <SafeBoundary onError={() => setModelReady(false)}>
+        <SafeBoundary onError={() => setHasError(true)}>
           <Suspense fallback={null}>
             <Canvas
               camera={{ position: [0, 0, 15], fov: 35 }}
