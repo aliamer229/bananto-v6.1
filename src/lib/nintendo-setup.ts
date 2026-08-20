@@ -40,7 +40,7 @@ export const ensureNintendoCategory = async () => {
 
     const missing: StoreCategory[] = [];
 
-    if (!have.has("cat_nintendo")) {
+    if (!have.has("cat_nintendo") && !have.has("nintendo_games") && !have.has("nintendo-switch-games")) {
       missing.push({
         id: "cat_nintendo",
         title: "Nintendo Switch games",
