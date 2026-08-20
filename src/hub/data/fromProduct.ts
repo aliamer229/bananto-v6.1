@@ -596,7 +596,7 @@ function buildSeries(p: Record<string, unknown>, locale: "ar" | "en"): GameSerie
 
 function buildVerdict(p: Record<string, unknown>, locale: "ar" | "en"): EditorVerdict | undefined {
   const score = num(p["verdictScore"]);
-  const summary = localizedValue(p, "verdictSummary", "verdictSummaryEn", locale);
+  const summary = str(p["verdictSummaryEn"]) || str(p["verdictSummary"]);
   const pros = rows(p["verdictPros"])
     .map((r) => {
       const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"] !== undefined ? r["value"] : r;
