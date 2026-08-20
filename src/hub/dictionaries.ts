@@ -7,6 +7,10 @@
  */
 
 export const ar = {
+  home: {
+    nintendoSwitchGames: "Nintendo Switch games",
+    latestNintendoGames: "آخر إصدارات نينتندو المضافة",
+  },
   common: {
     brand: "بنانتو",
     back: "رجوع",
