@@ -314,13 +314,6 @@ export default function HomeView({
                     <h3 className="truncate text-xl font-bold text-foreground">
                       {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames" ? "nintendo games" : t("home.nintendoSwitchGames")}
                     </h3>
-                    <Link
-                      to="/category/$categoryId"
-                      params={{ categoryId: category.id }}
-                      className="bg-[var(--shell-2)] border border-border px-4 py-1.5 rounded-full text-xs font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
-                    >
-                      {t("common.viewAll")}
-                    </Link>
                   </div>
 
                   <div className="relative mb-8 mt-2 min-h-[200px]">
@@ -362,7 +355,18 @@ export default function HomeView({
           return (
             <LazySection key={category.id}>
               <section className="-mx-4 mt-4">
-                <h3 className="text-xl font-bold text-foreground mb-4 px-8">{t(category.title)}</h3>
+                <div className="flex items-center justify-between gap-2 mb-4 px-8">
+                  <h3 className="text-xl font-bold text-foreground">{t(category.title)}</h3>
+                  {category.id === "nintendo-switch-games" && (
+                    <Link
+                      to="/category/$categoryId"
+                      params={{ categoryId: category.id }}
+                      className="bg-[var(--shell-2)] border border-border px-4 py-1.5 rounded-full text-xs font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
+                    >
+                      {t("common.viewAll")}
+                    </Link>
+                  )}
+                </div>
                 <ProductStrip
                   products={categoryProducts}
                   onSelect={(product: any) => onGameClick(product)}
