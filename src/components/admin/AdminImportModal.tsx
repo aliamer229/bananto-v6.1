@@ -10,7 +10,6 @@ import {
   Download,
   Eye,
   Table,
-  Layers,
 } from "lucide-react";
 import { parseGameImport } from "../../lib/gameImportParser";
 import { downloadTemplateFile } from "@/lib/downloadTemplate";
@@ -18,11 +17,10 @@ import { GAME_IMPORT_SCHEMA } from "../../lib/gameImportSchema";
 import { getTextValue } from "../../lib/utils";
 import { toast } from "sonner";
 import { useTranslation } from "../../i18n";
-import { cn } from "@/lib/utils";
 
 interface AdminImportModalProps {
   onClose: () => void;
-  onImport: (data: any, batch?: any[]) => void;
+  onImport: (data: any) => void;
 }
 
 export default function AdminImportModal({ onClose, onImport }: AdminImportModalProps) {
@@ -30,8 +28,7 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
   const [inputText, setInputText] = useState("");
   const [parseResult, setParseResult] = useState<any>(null);
   const [isValidating, setIsValidating] = useState(false);
-  const [viewMode, setViewMode] = useState<"status" | "preview" | "batch">("status");
-  const [selectedBatchIndex, setSelectedBatchIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<"status" | "preview">("status");
 
   const handleValidate = () => {
     if (!inputText.trim()) {
@@ -175,33 +172,20 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                 </label>
                 <button
                   type="button"
-                  onClick={() => void downloadTemplateFile("bulk-import-template.txt")}
-                  className="text-[10px] bg-indigo-600 text-white hover:bg-indigo-700 px-2 py-1 rounded font-bold cursor-pointer transition-colors flex items-center gap-1"
-                >
-                  <Download className="w-2.5 h-2.5" />
-                  تحميل قالب الدفعة (Batch)
-                </button>
-                <button
-                  type="button"
                   onClick={() => void downloadTemplateFile("nintendo-switch-game-template.txt")}
                   className="text-[10px] bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1 rounded font-bold cursor-pointer transition-colors flex items-center gap-1"
                 >
                   <Download className="w-2.5 h-2.5" />
-                  قالب منتج واحد
+                  {t("admin.import.downloadTemplate")}
                 </button>
               </div>
             </div>
-            <div className="flex-1 flex flex-col gap-2 overflow-hidden">
-              <textarea
-                className="flex-1 w-full border border-border rounded-xl p-3 text-[11px] font-mono bg-muted/20 focus:bg-background outline-none focus:ring-2 ring-primary/20 transition-all resize-none"
-                placeholder="[SHARED]&#10;price=25000&#10;platform=switch&#10;&#10;[[PRODUCT]]&#10;name=Game Title&#10;..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-              />
-              <p className="text-[9px] text-muted-foreground leading-tight italic">
-                يمكنك استخدام [SHARED] للقيم المشتركة و [[PRODUCT]] للفصل بين الألعاب المتعددة.
-              </p>
-            </div>
+            <textarea
+              className="flex-1 w-full border border-border rounded-xl p-3 text-[11px] font-mono bg-muted/20 focus:bg-background outline-none focus:ring-2 ring-primary/20 transition-all resize-none min-h-[300px]"
+              placeholder="name=Splatoon Raiders&#10;platform=switch2&#10;description_full<<EOF&#10;...&#10;EOF"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+            />
             <button
               disabled={isValidating}
               onClick={handleValidate}
@@ -227,14 +211,6 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                   >
                     <Table className="w-3.5 h-3.5" /> {t("admin.import.dataStatus")}
                   </button>
-                  {parseResult.batch && parseResult.batch.length > 1 && (
-                    <button
-                      onClick={() => setViewMode("batch")}
-                      className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors ${viewMode === "batch" ? "bg-primary text-white" : "hover:bg-muted"}`}
-                    >
-                      <Layers className="w-3.5 h-3.5" /> معاينة الدفعة ({parseResult.batch.length})
-                    </button>
-                  )}
                   <button
                     onClick={() => setViewMode("preview")}
                     className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors ${viewMode === "preview" ? "bg-primary text-white" : "hover:bg-muted"}`}
@@ -250,15 +226,9 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-background border border-border p-3 rounded-xl shadow-sm">
                           <div className="text-[10px] text-muted-foreground font-bold mb-1 uppercase">
-                            {parseResult.batch && parseResult.batch.length > 1
-                              ? "عدد الألعاب المكتشفة"
-                              : t("admin.import.detectedFields")}
+                            {t("admin.import.detectedFields")}
                           </div>
-                          <div className="text-xl font-bold">
-                            {parseResult.batch && parseResult.batch.length > 1
-                              ? parseResult.batch.length
-                              : detectedFields}
-                          </div>
+                          <div className="text-xl font-bold">{detectedFields}</div>
                         </div>
                         <div className="bg-background border border-border p-3 rounded-xl shadow-sm">
                           <div className="text-[10px] text-muted-foreground font-bold mb-1 uppercase">
@@ -339,48 +309,6 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
                           </div>
                         )}
                     </div>
-                  ) : viewMode === "batch" && parseResult.batch ? (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 gap-2">
-                        {parseResult.batch.map((item: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className={cn(
-                              "p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between",
-                              selectedBatchIndex === idx
-                                ? "bg-primary/5 border-primary shadow-sm"
-                                : "bg-background border-border hover:bg-muted/50"
-                            )}
-                            onClick={() => {
-                              setSelectedBatchIndex(idx);
-                              setParseResult({ ...parseResult, data: item });
-                            }}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center font-bold text-xs">
-                                {idx + 1}
-                              </div>
-                              <div>
-                                <div className="text-[11px] font-bold text-primary truncate max-w-[200px]">
-                                  {item.title || "بدون اسم"}
-                                </div>
-                                <div className="text-[9px] text-muted-foreground font-mono">
-                                  {item.price ? `${item.price} IQD` : "بدون سعر"} • {item.game_id ? "مرتبط بالمقايضة" : "غير مرتبط"}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              <div className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[8px] font-bold">
-                                {item.kind || "account"}
-                              </div>
-                              {selectedBatchIndex === idx && (
-                                <CheckCircle className="w-4 h-4 text-primary" />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   ) : (
                     <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">
                       <table className="w-full text-start text-[10px]">
@@ -430,9 +358,7 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
         <div className="p-4 border-t bg-muted/30 flex justify-between items-center px-6">
           <div className="text-[10px] text-muted-foreground font-bold">
             {parseResult &&
-              (parseResult.batch && parseResult.batch.length > 1
-                ? `تم اكتشاف ${parseResult.batch.length} منتج في الدفعة`
-                : `${t("admin.import.detectedFields")}: ${Object.keys(parseResult.data).length}`)}
+              `${t("admin.import.detectedFields")}: ${Object.keys(parseResult.data).length}`}
           </div>
           <div className="flex gap-3">
             <button
@@ -443,12 +369,10 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
             </button>
             <button
               disabled={!parseResult || errors.length > 0}
-              onClick={() => onImport(parseResult.data, parseResult.batch)}
+              onClick={() => onImport(parseResult.data)}
               className="px-8 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-900/10"
             >
-              {parseResult?.batch && parseResult.batch.length > 1
-                ? "استيراد كافة المنتجات"
-                : t("admin.import.importToForm")}
+              {t("admin.import.importToForm")}
             </button>
           </div>
         </div>

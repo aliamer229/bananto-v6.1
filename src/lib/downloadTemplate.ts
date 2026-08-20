@@ -29,40 +29,6 @@ export async function downloadTemplateFile(
     return;
   }
 
-  if (templateFile === "bulk-import-template.txt") {
-    const bulkTemplate = `[SHARED]
-# القيم المشتركة لجميع الألعاب في هذا الملف
-price=25000
-cost=15000
-platform=switch1
-kind=account
-isInfiniteStock=true
-trade_enabled=true
-
-[[PRODUCT]]
-# اللعبة الأولى
-name=The Legend of Zelda: Tears of the Kingdom
-game_id=zelda-tok-id
-cartridge_image=https://example.com/zelda.jpg
-
-[[PRODUCT]]
-# اللعبة الثانية
-name=Super Mario Bros. Wonder
-game_id=mario-wonder-id
-price=22000
-cartridge_image=https://example.com/mario.jpg
-`;
-    const objectUrl = URL.createObjectURL(
-      new Blob([bulkTemplate], { type: "text/plain;charset=utf-8" }),
-    );
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = templateFile;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-    return;
-  }
-
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error(String(res.status));

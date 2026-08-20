@@ -90,7 +90,7 @@ export function GameHub({
 
   return (
     <HubShell game={game} onNavigateGuide={onNavigateGuide}>
-      <article className="relative overflow-visible">
+      <article>
         <Hero />
         <HubNav items={navItems} />
 

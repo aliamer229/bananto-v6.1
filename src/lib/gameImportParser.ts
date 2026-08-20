@@ -4,25 +4,13 @@ import { str } from "./hub";
 
 export interface ParseResult {
   data: Record<string, any>;
-  batch?: Array<Record<string, any>>;
   errors: Array<{ key: string; message: string; severity: "error" | "warning" }>;
   unknownFields: string[];
 }
 
 export function parseGameImport(rawText: string): ParseResult {
-  const normalizedText = (rawText || "").replace(/\r\n/g, "\n");
-
-  // Check for bulk format: [SHARED] and [[PRODUCT]]
-  if (normalizedText.includes("[SHARED]") || normalizedText.includes("[[PRODUCT]]")) {
-    return parseBulkGameImport(normalizedText);
-  }
-
-  return parseSingleGameImport(normalizedText);
-}
-
-function parseSingleGameImport(normalizedText: string): ParseResult {
   const result: ParseResult = { data: {}, errors: [], unknownFields: [] };
-  const lines = normalizedText.split("\n");
+  const lines = (rawText || "").replace(/\r\n/g, "\n").split("\n");
   const rawPairs: Record<string, string> = {};
 
   let i = 0;
@@ -58,12 +46,15 @@ function parseSingleGameImport(normalizedText: string): ParseResult {
       if (key) {
         rawPairs[key] = value;
       }
-    } else if (line.length > 0) {
-      result.errors.push({
-        key: line,
-        message: "سطر غير صالح (يجب أن يكون key=value أو key<<EOF)",
-        severity: "warning",
-      });
+    } else {
+      // Potentially malformed line
+      if (line.length > 0) {
+        result.errors.push({
+          key: line,
+          message: "سطر غير صالح (يجب أن يكون key=value أو key<<EOF)",
+          severity: "warning",
+        });
+      }
     }
     i++;
   }
@@ -104,64 +95,6 @@ function parseSingleGameImport(normalizedText: string): ParseResult {
   flattenValueOnlyGroups(structuredData);
 
   result.data = structuredData;
-  return result;
-}
-
-/**
- * Bulk parser supporting [SHARED] and [[PRODUCT]] blocks.
- */
-function parseBulkGameImport(text: string): ParseResult {
-  const result: ParseResult = { data: {}, batch: [], errors: [], unknownFields: [] };
-
-  // 1. Extract Shared section
-  let sharedText = "";
-  const sharedMatch = text.match(/\[SHARED\]([\s\S]*?)(?=\[\[PRODUCT\]\]|$)/);
-  if (sharedMatch) {
-    sharedText = sharedMatch[1] || "";
-  }
-
-  // 2. Extract Product sections
-  const productBlocks = text.split("[[PRODUCT]]").slice(1);
-
-  if (productBlocks.length === 0 && !text.includes("[[PRODUCT]]")) {
-    return parseSingleGameImport(text.replace("[SHARED]", ""));
-  }
-
-  const batchData: Array<Record<string, any>> = [];
-
-  for (let i = 0; i < productBlocks.length; i++) {
-    const block = productBlocks[i];
-    if (!block || !block.trim()) continue;
-
-    // Combine shared settings with product-specific block
-    const fullText = `${sharedText}\n${block}`;
-    const singleResult = parseSingleGameImport(fullText);
-
-    if (singleResult.data && Object.keys(singleResult.data).length > 0) {
-      // Ensure defaults for bulk import: infinite stock by default
-      const processedData = {
-        ...singleResult.data,
-        isInfiniteStock: singleResult.data.isInfiniteStock ?? true,
-      };
-      batchData.push(processedData);
-    }
-
-    singleResult.errors.forEach((err) => {
-      result.errors.push({
-        ...err,
-        key: `Product ${i + 1}: ${err.key}`,
-      });
-    });
-    singleResult.unknownFields.forEach((f) => {
-      if (!result.unknownFields.includes(f)) {
-        result.unknownFields.push(f);
-      }
-    });
-  }
-
-  result.batch = batchData;
-  result.data = batchData[0] || {};
-
   return result;
 }
 
