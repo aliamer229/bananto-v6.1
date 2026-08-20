@@ -32,7 +32,9 @@ function hasWebGL(): boolean {
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
   const [modelReady, setModelReady] = useState(false);
-  const handleModelReady = useCallback(() => setModelReady(true), []);
+  const handleModelReady = useCallback(() => {
+    setModelReady(true);
+  }, []);
 
   const { motion } = readPrefs();
   const isReduced = motion === "lite";
@@ -46,10 +48,10 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
   }
 
   return (
-    <div className={cn("relative min-h-[400px]", className)}>
+    <div className={cn("relative z-10", className, "min-h-[440px] w-full flex items-center justify-center")}>
       <div
         className={cn(
-          "absolute inset-0 touch-none transition-opacity duration-700",
+          "absolute inset-0 touch-none transition-opacity duration-1000",
           modelReady ? "opacity-100" : "opacity-0",
         )}
       >
