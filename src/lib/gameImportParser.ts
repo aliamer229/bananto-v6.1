@@ -1,5 +1,6 @@
 import { GAME_IMPORT_SCHEMA, FieldDef } from "./gameImportSchema";
 import { getTextValue } from "./utils";
+import { str } from "./hub";
 
 export interface ParseResult {
   data: Record<string, any>;
@@ -111,7 +112,10 @@ function flattenValueOnlyGroups(data: Record<string, any>) {
     const list = data[target];
     if (!Array.isArray(list)) continue;
     data[target] = list
-      .map((item: any) => getTextValue(item && typeof item === "object" ? item.value : item))
+      .map((item: any) => {
+        const val = item && typeof item === "object" ? item.value : item;
+        return str(val);
+      })
       .filter((v: string) => Boolean(v && v.trim()));
   }
 }
@@ -251,7 +255,9 @@ function convertType(value: string, type: string): any {
       if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
       return undefined;
     case "url":
-      if (/^https?:\/\/.+/.test(value)) return value;
+      if (/^https?:\/\/.+/.test(value) || value.startsWith("/")) return value;
+      // Soften URL validation as requested to accept more formats
+      if (value.includes(".") && !value.includes(" ")) return value;
       return undefined;
     case "array":
       return value; // Handled by setValueByPath
