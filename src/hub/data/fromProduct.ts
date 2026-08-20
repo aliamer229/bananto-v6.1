@@ -199,8 +199,9 @@ function buildNintendo(
 
   const enhancementLines = rows(p["switch2Features"])
     .map((r) => {
-      const v = locale === "en" && r["valueEn"] ? r["valueEn"] : r["value"];
+      const v = r["valueEn"] ?? r["value"];
       return getTextValue(v !== undefined ? v : r);
+
     })
     .filter(Boolean);
   const enhancementMatchers: Array<{ id: Switch2Enhancement["id"]; re: RegExp }> = [
@@ -257,7 +258,7 @@ function buildPerformance(
   const handheld = str(p["perfResolutionHandheld"]);
   const fps = str(p["perfFps"]);
   const hasHdrField = "perfHdr" in p;
-  const notes = localizedValue(p, "perfNotes", "perfNotesEn", locale);
+  const notes = str(p["perfNotesEn"]) || str(p["perfNotes"]);
 
   if (!docked && !handheld && !fps && !hasHdrField && !notes) return undefined;
 
