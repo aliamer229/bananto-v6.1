@@ -137,7 +137,8 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
         id: `video-${i}`,
         kind: "gameplay" as const,
         title:
-          localizedValue(row, "title", "titleEn", locale) || (locale === "en" ? "Video" : "فيديو"),
+          str(row["titleEn"]) || str(row["title"]) || "Video",
+
         embedUrl,
       });
       return acc;
