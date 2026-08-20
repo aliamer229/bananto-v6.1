@@ -313,8 +313,9 @@ export default function HomeView({
                 <section className="relative mt-2 pb-6 -mx-4">
                   <div className="mb-3 px-8 flex items-center justify-between">
                     <h3 className="truncate text-xl font-bold text-foreground">
-                      {t(category.title)}
+                      {index === 0 ? "nintendo games" : t(category.title)}
                     </h3>
+
                     <Link
                       to="/category/$categoryId"
                       params={{ categoryId: category.id }}
@@ -346,8 +347,21 @@ export default function HomeView({
                       <div className="h-[6px] w-full bg-gradient-to-b from-[var(--gray-1)] to-[var(--gray-2)]"></div>
                       <div className="h-[12px] w-full bg-gradient-to-b from-[var(--gray-3)] to-[var(--gray-4)] shadow-[0_15px_25px_rgba(0,0,0,0.15)]"></div>
                     </div>
+                    
+                    {isCartridgeSection && (
+                      <div className="mt-8 flex justify-center pb-2">
+                        <Link
+                          to="/category/$categoryId"
+                          params={{ categoryId: category.id }}
+                          className="bg-[var(--shell-2)] border border-border px-6 py-2 rounded-full text-sm font-bold text-foreground hover:bg-[var(--shell-3)] transition-colors shadow-sm"
+                        >
+                          {t("عرض الكل")}
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </section>
+
 
                 {/* Section 2: Account Bundles (Horizontal Strip) */}
                 <BundleStrip
@@ -378,14 +392,24 @@ export default function HomeView({
         {/* Section 4: Latest Nintendo Games Added by Release Date */}
         <LazySection>
           <section className="-mx-4 mt-8">
-            <div className="flex items-center gap-2 mb-4 px-8">
-              <h3 className="text-xl font-bold text-foreground">
-                {t("أحدث ألعاب نينتندو المضافة")}
-              </h3>
-              <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                New
-              </span>
+            <div className="flex items-center justify-between gap-2 mb-4 px-8">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold text-foreground">
+                  Nintendo Switch games
+                </h3>
+                <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  New
+                </span>
+              </div>
+              <Link
+                to="/category/$categoryId"
+                params={{ categoryId: "nintendo-switch-games" }}
+                className="text-[#EA8918] text-sm font-bold hover:underline"
+              >
+                {t("عرض الكل")}
+              </Link>
             </div>
+
             <ProductStrip
               products={adminProducts
                 .filter((p) => {
