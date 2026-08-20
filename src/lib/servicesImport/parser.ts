@@ -109,12 +109,19 @@ export function extractKeyValues(text: string): Record<string, string> {
     // Standard key=value (fallback to "key: value")
     const eqIdx = rawLine.indexOf("=");
     const colonIdx = rawLine.indexOf(":");
-    const sepIdx =
-      eqIdx !== -1 && (colonIdx === -1 || eqIdx < colonIdx)
-        ? eqIdx
-        : colonIdx !== -1 && colonIdx < 100
-          ? colonIdx
-          : -1;
+    
+    // Improved separator detection: find the first one, but ignore if it's inside a URL-like string or seems like a bullet point
+    let sepIdx = -1;
+    if (eqIdx !== -1 && (colonIdx === -1 || eqIdx < colonIdx)) {
+      sepIdx = eqIdx;
+    } else if (colonIdx !== -1) {
+      // Basic heuristic: keys usually don't have spaces or are short before a colon
+      const preColon = rawLine.slice(0, colonIdx).trim();
+      if (preColon.length > 0 && preColon.length < 100) {
+        sepIdx = colonIdx;
+      }
+    }
+
     if (sepIdx !== -1) {
       const k = rawLine.slice(0, sepIdx).trim();
       const v = rawLine.slice(sepIdx + 1).trim();
@@ -1033,7 +1040,15 @@ export function parseContact(text: string): ServiceParseResult<ContactParseResul
  */
 export function parseTradeRules(text: string): ServiceParseResult<TradeRulesParseResultData> {
   const issues: ParsedIssue[] = [];
-  const json = tryParseJson(text);
+  
+  // Clean text from common copy-paste artifacts
+  const cleanText = text
+    .replace(/^\uFEFF/, "")
+    .split("\n")
+    .map(line => line.trim())
+    .join("\n");
+
+  const json = tryParseJson(cleanText);
   const stamp = Date.now().toString(36);
 
   const normalizeRule = (raw: any, idx: number): TradeRuleParsedItem | null => {

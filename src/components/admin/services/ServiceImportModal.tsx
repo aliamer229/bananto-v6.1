@@ -173,23 +173,39 @@ export default function ServiceImportModal({ type, onClose, onImport }: ServiceI
       toast.error(t("يرجى إدخال أو لصق محتوى القالب أولاً"));
       return;
     }
+    
     setIsValidating(true);
-    setTimeout(() => {
+    // Use a small delay for UI feedback
+    const processValidation = () => {
       try {
+        console.log(`[ServiceImport] Starting validation for type: ${type}`);
         const parsed = parseServiceTemplate(type, inputText);
+        console.log(`[ServiceImport] Parsed result:`, parsed);
+        
         setResult(parsed);
-        if (parsed.success && parsed.issues.filter((i) => i.severity === "error").length === 0) {
+        
+        const hasErrors = parsed.issues.some(i => i.severity === "error");
+        
+        if (parsed.success && !hasErrors) {
           toast.success(t("تم فحص وتجهيز البيانات بنجاح!"));
           setActiveTab("preview");
-        } else {
+        } else if (hasErrors) {
           toast.error(t("يرجى مراجعة الأخطاء الموضحة في القالب"));
+        } else {
+          // Success but with warnings
+          toast.info(t("تم الفحص مع وجود بعض التنبيهات"));
+          setActiveTab("preview");
         }
       } catch (err: any) {
+        console.error(`[ServiceImport] Validation error:`, err);
         toast.error(`${t("خطأ أثناء الفحص")}: ${err.message}`);
       } finally {
         setIsValidating(false);
       }
-    }, 40);
+    };
+
+    // Use requestAnimationFrame or a very short timeout to ensure the UI updates the 'isValidating' state
+    setTimeout(processValidation, 50);
   };
 
   // Apply parsed data to editor
