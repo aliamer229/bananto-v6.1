@@ -132,29 +132,23 @@ function CategoryPage() {
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
       const pKind = String(p.kind || "").toLowerCase();
       
-      // Match category ID mapping
       const isMatch = pCat === targetCat || pKind === targetCat || categoryId === "all" || 
                      (targetCat === "nintendo_games" && (pCat === "cat_nintendo" || pCat === "nintendo-switch-games" || pKind === "nintendo-switch-games"));
       return isMatch;
     });
 
-    console.log(`[Category:${categoryId}] Found ${categoryProducts.length} products for banners`);
-
     const bannerSet = new Set<string>();
     categoryProducts.forEach((p: any) => {
-      // Check all possible image fields
       const images = [
         p.banner, p.bannerImage, p.heroImage,
-        ...(Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? p.gallery.split(',').map(s => s.trim()) : [])),
+        ...(Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? p.gallery.split(',').map((s: string) => s.trim()) : [])),
         p.image, p.thumbnail
       ].filter(img => typeof img === 'string' && img.length > 5);
 
       images.forEach(img => bannerSet.add(img));
     });
 
-    const result = Array.from(bannerSet);
-    console.log(`[Category:${categoryId}] Total unique banners: ${result.length}`);
-    return result;
+    return Array.from(bannerSet);
   }, [store?.products, categoryId]);
 
   useEffect(() => {
