@@ -4,11 +4,13 @@ description: Replace the static category header with an auto-playing slideshow o
 ---
 
 ## User Request
+
 The user wants the top banner on the category page (which currently shows "cat_nintendo" and "Browse latest products") to feature game banner images that rotate automatically.
 
 ## Proposed Changes
 
 ### Frontend
+
 - **src/routes/category.$categoryId.tsx**
   - Extract all unique banner images from the filtered `products` list.
   - Implement an `AnimatePresence` based slideshow in the header section.
@@ -17,9 +19,11 @@ The user wants the top banner on the category page (which currently shows "cat_n
   - Ensure the text ("cat_nintendo", etc.) remains legible over the images using a dark overlay.
 
 ## Technical Details
+
 - The current `getCategoryInfo` returns a `bgColor`. We will keep this as a base, but layer the images on top.
 - We will collect `p.banner` or `p.bannerImage` from the loaded products.
 - Using Framer Motion (`motion/react`) for smooth cross-fade transitions.
 
 ## Security Considerations
+
 - No new security risks; all data is fetched from the existing `api.store` endpoint.

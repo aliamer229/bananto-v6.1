@@ -382,7 +382,8 @@ export function Hero() {
                     playSound("confirm");
                     openBuy();
                   }}
-                  id="hero-buy-button" className="btn btn-primary h-12 flex-1 px-7 text-sm sm:flex-none"
+                  id="hero-buy-button"
+                  className="btn btn-primary h-12 flex-1 px-7 text-sm sm:flex-none"
                 >
                   <ShoppingBag className="h-4 w-4" />
                   {t("hero.buyNow")}

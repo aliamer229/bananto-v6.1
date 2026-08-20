@@ -54,13 +54,13 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
       className={cn(
         "relative z-10",
         className,
-        "min-h-[440px] w-full flex items-center justify-center",
+        "min-h-[440px] w-full flex items-center justify-center overflow-visible",
       )}
     >
       <div
         className={cn(
-          "absolute inset-0 transition-opacity duration-700",
-          modelReady ? "opacity-0" : "opacity-100",
+          "w-full flex items-center justify-center transition-opacity duration-700",
+          modelReady ? "opacity-0 pointer-events-none absolute inset-0" : "opacity-100 relative",
         )}
       >
         <GameCase3D {...caseProps} />
@@ -68,14 +68,14 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
       <div
         className={cn(
           "absolute inset-0 touch-none transition-opacity duration-1000",
-          modelReady ? "opacity-100" : "opacity-0",
+          modelReady ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       >
         <SafeBoundary onError={() => setModelReady(false)}>
           <Suspense fallback={null}>
             <Canvas
               camera={{ position: [0, 0, 15], fov: 35 }}
-              style={{ touchAction: "none", cursor: "grab", userSelect: "none" }}
+              style={{ touchAction: "none", cursor: "grab", userSelect: "none", width: "100%", height: "100%" }}
             >
               <ambientLight intensity={1.5} />
               <directionalLight position={[5, 10, 5]} intensity={1.5} />

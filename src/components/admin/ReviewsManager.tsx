@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { CheckCircle2, EyeOff, ShieldCheck, Trash2 } from "lucide-react";
 
 interface AdminReview {
   id: string;
@@ -8,6 +9,7 @@ interface AdminReview {
   rating: number;
   comment: string;
   status: string;
+  is_buyer?: number | boolean;
   created_at: string;
   user_name?: string | null;
 }
@@ -17,7 +19,7 @@ export default function ReviewsManager() {
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "approved" | "hidden">("all");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "hidden">("pending");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,6 +46,8 @@ export default function ReviewsManager() {
     await load();
   };
 
+  const pendingCount = useMemo(() => reviews.filter((r) => r.status === "pending").length, [reviews]);
+
   const rows = useMemo(() => {
     const term = query.trim().toLowerCase();
     return reviews.filter((r) => {
@@ -63,20 +67,27 @@ export default function ReviewsManager() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="بحث في التقييمات..."
+          placeholder="بحث في التقييمات أو اسم المستخدم أو معرف المنتج..."
           className="min-w-[200px] flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm"
         />
-        {(["all", "approved", "hidden"] as const).map((value) => (
+        {(
+          [
+            { id: "pending", label: `بانتظار الموافقة (${pendingCount})` },
+            { id: "approved", label: "المنشورة" },
+            { id: "hidden", label: "المخفية" },
+            { id: "all", label: "الكل" },
+          ] as const
+        ).map((item) => (
           <button
-            key={value}
-            onClick={() => setFilter(value)}
-            className={`rounded-xl px-3 py-2 text-xs font-bold ${
-              filter === value
+            key={item.id}
+            onClick={() => setFilter(item.id)}
+            className={`rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
+              filter === item.id
                 ? "bg-[var(--brand-red)] text-white"
-                : "border border-border bg-card text-foreground"
+                : "border border-border bg-card text-foreground hover:bg-muted/10"
             }`}
           >
-            {value === "all" ? "الكل" : value === "approved" ? "منشور" : "مخفي"}
+            {item.label}
           </button>
         ))}
         <span className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold">
@@ -87,44 +98,80 @@ export default function ReviewsManager() {
       {loading ? (
         <p className="text-sm text-muted-foreground">جاري التحميل...</p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">لا توجد تقييمات مطابقة.</p>
+        <p className="text-sm text-muted-foreground p-8 text-center bg-card rounded-2xl border border-border">
+          لا توجد تقييمات مطابقة لهذا الفلتر.
+        </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {rows.map((r) => (
-            <div key={r.id} className="rounded-2xl border border-border bg-card p-3">
-              <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-bold text-foreground">
-                  {r.user_name || r.user_id.slice(0, 8)}
-                </span>
-                <span>{"★".repeat(Math.max(1, Math.min(5, r.rating)))}</span>
-                <span>{new Date(r.created_at).toLocaleDateString("ar")}</span>
-                <span className="rounded-lg bg-[var(--page-2)] px-2 py-0.5">{r.product_id}</span>
-                {r.status === "hidden" && (
-                  <span className="rounded-lg bg-red-500/15 px-2 py-0.5 text-red-500">مخفي</span>
-                )}
+            <div key={r.id} className="rounded-2xl border border-border bg-card p-4 space-y-2 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-foreground text-sm">
+                    {r.user_name || r.user_id.slice(0, 8)}
+                  </span>
+                  {r.is_buyer || r.order_id ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-extrabold text-emerald-600 border border-emerald-500/20">
+                      <ShieldCheck className="w-3 h-3" />
+                      مشتري موثق
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-slate-500/10 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                      عضو
+                    </span>
+                  )}
+                  <span className="rounded-lg bg-[var(--page-2)] px-2 py-0.5 text-[11px] text-muted-foreground">
+                    المنتج: {r.product_id}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-400 font-bold">{"★".repeat(Math.max(1, Math.min(5, r.rating)))}</span>
+                  <span className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar")}</span>
+                  {r.status === "pending" && (
+                    <span className="rounded-lg bg-amber-500/15 px-2 py-0.5 text-amber-600 font-bold">
+                      بانتظار الموافقة
+                    </span>
+                  )}
+                  {r.status === "approved" && (
+                    <span className="rounded-lg bg-emerald-500/15 px-2 py-0.5 text-emerald-600 font-bold">
+                      منشور
+                    </span>
+                  )}
+                  {r.status === "hidden" && (
+                    <span className="rounded-lg bg-red-500/15 px-2 py-0.5 text-red-500 font-bold">مخفي</span>
+                  )}
+                </div>
               </div>
-              <p className="whitespace-pre-wrap text-sm text-foreground">{r.comment || "—"}</p>
-              <div className="mt-2 flex gap-2">
+
+              <p className="whitespace-pre-wrap text-sm text-foreground bg-[var(--page-2)] p-3 rounded-xl">
+                {r.comment || "— لا يوجد تعليق نصي —"}
+              </p>
+
+              <div className="flex gap-2 pt-1">
                 {r.status !== "approved" && (
                   <button
                     onClick={() => void act(r.id, "approve")}
-                    className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-bold text-white"
+                    className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 active:scale-95 transition-all"
                   >
-                    نشر
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    موافقة ونشر
                   </button>
                 )}
                 {r.status !== "hidden" && (
                   <button
                     onClick={() => void act(r.id, "hide")}
-                    className="rounded-lg border border-border px-3 py-1 text-xs font-bold"
+                    className="inline-flex items-center gap-1 rounded-xl border border-border bg-card px-3.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted/20 active:scale-95 transition-all"
                   >
+                    <EyeOff className="w-3.5 h-3.5" />
                     إخفاء
                   </button>
                 )}
                 <button
                   onClick={() => void act(r.id, "delete")}
-                  className="rounded-lg bg-red-600 px-3 py-1 text-xs font-bold text-white"
+                  className="inline-flex items-center gap-1 rounded-xl bg-red-600/10 text-red-600 px-3.5 py-1.5 text-xs font-bold hover:bg-red-600 hover:text-white active:scale-95 transition-all border border-red-600/20"
                 >
+                  <Trash2 className="w-3.5 h-3.5" />
                   حذف
                 </button>
               </div>

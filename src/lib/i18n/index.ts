@@ -20,7 +20,7 @@ export type Locale = "ar" | "en" | "tr";
 export type TranslationKey = PathOf<Dictionary>;
 
 export const LOCALES: Locale[] = ["ar", "en", "tr"];
-export const DEFAULT_LOCALE: Locale = "en";
+export const DEFAULT_LOCALE: Locale = "ar";
 
 export const LOCALE_META: Record<
   Locale,

@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/components/product-details/ProductDetails.tsx', 'utf8');
+const fs = require("fs");
+let code = fs.readFileSync("src/components/product-details/ProductDetails.tsx", "utf8");
 
 code = code.replace(
   `  const handleAddToCart = () => {`,
@@ -11,6 +11,6 @@ code = code.replace(
         price: effectivePrice,
         kind: (view.schema.kind) ?? "accessory",
         requiresAddress: true
-    });`
+    });`,
 );
-fs.writeFileSync('src/components/product-details/ProductDetails.tsx', code);
+fs.writeFileSync("src/components/product-details/ProductDetails.tsx", code);

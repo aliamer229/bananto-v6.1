@@ -132,18 +132,10 @@ export default function HomeView({
       playSound("hover_s", 0.8);
     }
 
-    setTimeout(() => setClickedCartridgeId(game.id), 0);
+    setClickedCartridgeId(game.id);
 
-    // Preload image for smoother transition
-    if (game.image) {
-      const img = new Image();
-      img.src = game.image;
-    }
-
-    // Delay split reveal so the cartridge pop animation can be seen
-    setTimeout(() => {
-      onGameClick(game, true);
-    }, 400);
+    // Navigate immediately without artificial delay
+    onGameClick(game, true);
   };
 
   const PageSkeleton = () => (
@@ -373,7 +365,8 @@ export default function HomeView({
                     const valB = getVal(b);
 
                     // Sort descending purely by release date
-                    if (valA !== valB) return valB - valA; return String(b.id || "").localeCompare(String(a.id || ""));
+                    if (valA !== valB) return valB - valA;
+                    return String(b.id || "").localeCompare(String(a.id || ""));
                   })
                   .slice(0, 12)
                   .map((p) => {

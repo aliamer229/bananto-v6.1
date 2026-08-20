@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useI18n } from "../i18n";
 import { ShoppingCart, CheckCircle2, ArrowRight, Loader2, Trash2 } from "lucide-react";
 import { playSound, preloadSound } from "../utils/audio";
 import { cdnImage } from "@/lib/img";
+import { useCartStore } from "../store/useCartStore";
+import { useCurrency } from "../context/CurrencyContext";
 
 preloadSound("loading");
 preloadSound("bumper_end");
@@ -10,54 +12,34 @@ preloadSound("hover");
 
 export default function CartView() {
   const { t } = useI18n();
+  const { formatUSDPrice } = useCurrency();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [items, setItems] = useState([
-    {
-      id: "1",
-      title: "Grand Theft Auto V",
-      price: "د.ع 45000",
-      image: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2lbd.jpg",
-    },
-    {
-      id: "2",
-      title: "Red Dead Redemption 2",
-      price: "د.ع 60000",
-      image: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1q1f.jpg",
-    },
-  ]);
+  const { lines, remove, clear } = useCartStore();
 
   const handleCheckout = async () => {
     setIsSubmitting(true);
 
     try {
-      const totalStr = items
-        .reduce((sum, item) => sum + parseFloat(item.price.replace(/[^0-9.]/g, "")), 0)
-        .toFixed(2);
+      const totalAmount = lines.reduce((sum, item) => sum + item.price * item.quantity, 0);
       await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer: "مستخدم المتجر",
-          total: totalStr,
+          total: totalAmount.toFixed(2),
         }),
       });
       setIsSubmitting(false);
       setIsSuccess(true);
-      setItems([]);
+      clear();
       playSound("bumper_end", 0.6);
     } catch (e) {
       setIsSubmitting(false);
     }
   };
 
-  const removeItem = (id: string) => {
-    setItems(items.filter((item) => item.id !== id));
-  };
-
-  const totalAmount = items
-    .reduce((sum, item) => sum + parseFloat(item.price.replace(/[^0-9.]/g, "")), 0)
-    .toFixed(2);
+  const totalAmount = lines.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   if (isSuccess) {
     return (
@@ -86,7 +68,7 @@ export default function CartView() {
         <h1 className="text-2xl font-bold text-foreground">{t("سلة المشتريات")}</h1>
       </div>
 
-      {items.length === 0 ? (
+      {lines.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
           <ShoppingCart className="w-16 h-16 mb-4 opacity-50" />
           <p className="text-lg">{t("السلة فارغة")}</p>
@@ -94,23 +76,38 @@ export default function CartView() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
-            {items.map((item) => (
+            {lines.map((item) => (
               <div
-                key={item.id}
+                key={String(item.productId)}
                 className="flex items-center gap-4 p-4 bg-card rounded-2xl shadow-sm border border-border"
               >
-                <img
-                  src={cdnImage(item.image)}
-                  alt={item.title}
-                  className="w-16 h-20 object-cover rounded-xl shadow-sm"
-                />
-                <div className="flex-1">
+                {item.image && (
+                  <img
+                    src={cdnImage(item.image)}
+                    alt={item.title}
+                    className="w-16 h-20 object-cover rounded-xl shadow-sm"
+                  />
+                )}
+                <div className="flex-1" dir="ltr">
                   <h3 className="font-bold text-foreground line-clamp-1">{item.title}</h3>
-                  <div className="text-blue-600 font-bold mt-1">{item.price}</div>
+                  <div className="text-blue-600 font-bold mt-1">
+                    {formatUSDPrice(item.price)} × {item.quantity}
+                  </div>
+                  {item.offerLabel && (
+                    <div className="text-xs text-muted-foreground">{item.offerLabel}</div>
+                  )}
                 </div>
                 <button
                   onPointerDown={() => playSound("bumper_end", 0.6)}
-                  onClick={() => removeItem(item.id)}
+                  onClick={() =>
+                    remove(
+                      item.productId,
+                      item.offerKind,
+                      item.optionId,
+                      item.typeId,
+                      item.editionId,
+                    )
+                  }
                   className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
                 >
                   <Trash2 className="w-5 h-5" />
@@ -122,7 +119,9 @@ export default function CartView() {
           <div className="bg-card p-6 rounded-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border border-border mt-6">
             <div className="flex justify-between items-center mb-6">
               <span className="text-muted-foreground">{t("المجموع")}</span>
-              <span className="text-2xl font-bold text-foreground">د.ع {totalAmount}</span>
+              <span className="text-2xl font-bold text-foreground">
+                {formatUSDPrice(totalAmount)}
+              </span>
             </div>
 
             <button

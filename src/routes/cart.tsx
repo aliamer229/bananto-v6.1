@@ -213,7 +213,12 @@ function CartPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { currency, formatUSDPrice } = useCurrency();
-  const { clear } = useCartStore();
+  const {
+    lines: localLines,
+    setQuantity: setLocalQuantity,
+    remove: removeLocal,
+    clear,
+  } = useCartStore();
 
   const fetchCartFn = useServerFn(getCart);
   const updateItemFn = useServerFn(updateCartItem);
@@ -235,7 +240,21 @@ function CartPage() {
   const products = (storeData?.products ?? []) as Product[];
   const bundles = (storeData?.bundles ?? []) as any[];
 
+  // Combine both local Zustand lines and DB lines
   const lines: CartLine[] = useMemo(() => {
+    // If local lines exist, use local lines enriched with product data if needed
+    if (localLines && localLines.length > 0) {
+      return localLines.map((l) => {
+        const product = products.find((p) => String(p.id) === String(l.productId)) as any;
+        return {
+          ...l,
+          title: l.title || product?.titleEn || product?.english_name || product?.title || "منتج",
+          image: l.image || product?.image || product?.coverImage || product?.cartridgeImage || "",
+          price: l.price || product?.price || 0,
+        };
+      });
+    }
+
     return dbItems.map((item: any) => {
       const product = products.find((p) => String(p.id) === String(item.product_id)) as any;
       const bundle = bundles.find((b) => String(b.id) === String(item.product_id)) as any;
@@ -264,7 +283,7 @@ function CartPage() {
           : undefined,
       };
     });
-  }, [dbItems, products, bundles]);
+  }, [localLines, dbItems, products, bundles]);
 
   const [address, setAddress] = useState<Omit<Address, "id">>(
     () => user?.addresses.find((a) => a.isDefault) ?? emptyAddress,
@@ -274,18 +293,43 @@ function CartPage() {
   const needsAddress = cartNeedsAddress(lines);
   const total = cartTotal(lines);
 
-  const setQuantity = async (productId: string | number, quantity: number) => {
+  const setQuantity = async (
+    productId: string | number,
+    quantity: number,
+    offerKind?: string,
+    optionId?: string,
+    typeId?: string,
+    editionId?: string,
+  ) => {
+    setLocalQuantity(productId, quantity, offerKind, optionId, typeId, editionId);
     const item = dbItems.find((i: any) => String(i.product_id) === String(productId)) as any;
-    if (!item) return;
-    await updateItemFn({ data: { id: item.id, quantity } });
-    queryClient.invalidateQueries({ queryKey: ["cart"] });
+    if (item && user) {
+      try {
+        await updateItemFn({ data: { id: item.id, quantity } });
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+      } catch (err) {
+        console.error("Failed to update cart item:", err);
+      }
+    }
   };
 
-  const remove = async (productId: string | number) => {
+  const remove = async (
+    productId: string | number,
+    offerKind?: string,
+    optionId?: string,
+    typeId?: string,
+    editionId?: string,
+  ) => {
+    removeLocal(productId, offerKind, optionId, typeId, editionId);
     const item = dbItems.find((i: any) => String(i.product_id) === String(productId)) as any;
-    if (!item) return;
-    await removeItemFn({ data: { id: item.id } });
-    queryClient.invalidateQueries({ queryKey: ["cart"] });
+    if (item && user) {
+      try {
+        await removeItemFn({ data: { id: item.id } });
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+      } catch (err) {
+        console.error("Failed to remove cart item:", err);
+      }
+    }
   };
 
   const checkout = useMutation({
@@ -415,8 +459,19 @@ function CartPage() {
               <SwipeableCartItem
                 key={String(line.productId)}
                 line={line}
-                onUpdateQuantity={(_, q) => setQuantity(line.productId, q, line.offerKind, line.optionId, line.typeId, line.editionId)}
-                onRemove={() => remove(line.productId, line.offerKind, line.optionId, line.typeId, line.editionId)}
+                onUpdateQuantity={(_, q) =>
+                  setQuantity(
+                    line.productId,
+                    q,
+                    line.offerKind,
+                    line.optionId,
+                    line.typeId,
+                    line.editionId,
+                  )
+                }
+                onRemove={() =>
+                  remove(line.productId, line.offerKind, line.optionId, line.typeId, line.editionId)
+                }
               />
             ))}
           </AnimatePresence>

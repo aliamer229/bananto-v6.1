@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/hub/gamehub/CaseStage.tsx', 'utf8');
+const fs = require("fs");
+let code = fs.readFileSync("src/hub/gamehub/CaseStage.tsx", "utf8");
 
 const target = `      )}
     >
@@ -38,4 +38,4 @@ const replacement = `      )}
       >`;
 
 code = code.replace(target, replacement);
-fs.writeFileSync('src/hub/gamehub/CaseStage.tsx', code);
+fs.writeFileSync("src/hub/gamehub/CaseStage.tsx", code);

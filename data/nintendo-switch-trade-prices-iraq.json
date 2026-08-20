@@ -1,2604 +1,497 @@
 [
   {
-    "name": "Mario Kart World [Switch 2]",
-    "trade_price_iqd": 72000,
-    "store_offer_bonus_iqd": 11000
+    "title": "The Legend of Zelda: Tears of the Kingdom",
+    "trade_price_iqd": 45000,
+    "base_trade_value_iqd": 45000,
+    "store_offer_bonus_iqd": 5000,
+    "edition": "Standard",
+    "category": "Action / Adventure",
+    "switch_version": "Switch"
   },
   {
-    "name": "Pokémon Pokopia [Switch 2]",
-    "trade_price_iqd": 64000,
-    "store_offer_bonus_iqd": 10000
-  },
-  {
-    "name": "Donkey Kong Bananza [Switch 2]",
-    "trade_price_iqd": 62000,
-    "store_offer_bonus_iqd": 10000
-  },
-  {
-    "name": "Splatoon Raiders [Switch 2]",
-    "trade_price_iqd": 62000,
-    "store_offer_bonus_iqd": 10000
-  },
-  {
-    "name": "The Legend of Zelda: Tears of the Kingdom – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 61000,
-    "store_offer_bonus_iqd": 9000
-  },
-  {
-    "name": "The Legend of Zelda: Breath of the Wild – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 58000,
-    "store_offer_bonus_iqd": 9000
-  },
-  {
-    "name": "Super Mario Party Jamboree – Nintendo Switch 2 Edition + Jamboree TV",
-    "trade_price_iqd": 56000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Kirby Air Riders [Switch 2]",
-    "trade_price_iqd": 55000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Kirby and the Forgotten Land – Nintendo Switch 2 Edition + Star-Crossed World",
-    "trade_price_iqd": 55000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Mario Tennis Fever [Switch 2]",
-    "trade_price_iqd": 55000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Animal Crossing: New Horizons – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 55000,
-    "store_offer_bonus_iqd": 7000
-  },
-  {
-    "name": "Metroid Prime 4: Beyond – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 54000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Hyrule Warriors: Age of Imprisonment [Switch 2]",
-    "trade_price_iqd": 53000,
-    "store_offer_bonus_iqd": 7000
-  },
-  {
-    "name": "Super Mario Galaxy + Super Mario Galaxy 2",
-    "trade_price_iqd": 49000,
-    "store_offer_bonus_iqd": 10000
-  },
-  {
-    "name": "The Legend of Zelda: Tears of the Kingdom",
-    "trade_price_iqd": 50000,
-    "store_offer_bonus_iqd": 9000
-  },
-  {
-    "name": "Pokémon Legends: Z-A – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 50000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Pokémon Legends: Z-A",
-    "trade_price_iqd": 47000,
-    "store_offer_bonus_iqd": 9000
-  },
-  {
-    "name": "Super Mario 3D All-Stars",
-    "trade_price_iqd": 47000,
-    "store_offer_bonus_iqd": 9000
-  },
-  {
-    "name": "Cyberpunk 2077: Ultimate Edition [Switch 2]",
-    "trade_price_iqd": 49000,
-    "store_offer_bonus_iqd": 5000
-  },
-  {
-    "name": "Final Fantasy VII Rebirth [Switch 2]",
-    "trade_price_iqd": 47000,
-    "store_offer_bonus_iqd": 5000
-  },
-  {
-    "name": "Resident Evil Requiem [Switch 2]",
-    "trade_price_iqd": 47000,
-    "store_offer_bonus_iqd": 5000
-  },
-  {
-    "name": "Super Mario Bros. Wonder",
-    "trade_price_iqd": 44000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Super Mario Party Jamboree",
-    "trade_price_iqd": 42000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Super Smash Bros. Ultimate",
-    "trade_price_iqd": 42000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Splatoon 3",
-    "trade_price_iqd": 41000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "The Legend of Zelda: Breath of the Wild",
-    "trade_price_iqd": 41000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "The Legend of Zelda: Echoes of Wisdom",
-    "trade_price_iqd": 41000,
-    "store_offer_bonus_iqd": 8000
-  },
-  {
-    "name": "Mario Kart 8 Deluxe",
+    "title": "The Legend of Zelda: Breath of the Wild",
     "trade_price_iqd": 40000,
-    "store_offer_bonus_iqd": 8000
+    "base_trade_value_iqd": 40000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Action / Adventure",
+    "switch_version": "Switch"
   },
   {
-    "name": "Pokémon Legends: Arceus",
-    "trade_price_iqd": 41000,
-    "store_offer_bonus_iqd": 7000
-  },
-  {
-    "name": "Luigi's Mansion 2 HD",
+    "title": "Super Mario Bros.™ Wonder",
     "trade_price_iqd": 40000,
-    "store_offer_bonus_iqd": 7000
+    "base_trade_value_iqd": 40000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
   },
   {
-    "name": "Super Mario Odyssey",
-    "trade_price_iqd": 39000,
-    "store_offer_bonus_iqd": 8000
+    "title": "Mario Kart 8 Deluxe",
+    "trade_price_iqd": 38000,
+    "base_trade_value_iqd": 38000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Racing",
+    "switch_version": "Switch"
   },
   {
-    "name": "Final Fantasy VII Remake Intergrade [Switch 2]",
+    "title": "Super Smash Bros Ultimate",
     "trade_price_iqd": 42000,
-    "store_offer_bonus_iqd": 4000
+    "base_trade_value_iqd": 42000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Fighting",
+    "switch_version": "Switch"
   },
   {
-    "name": "Mario & Luigi: Brothership",
-    "trade_price_iqd": 39000,
-    "store_offer_bonus_iqd": 7000
+    "title": "Pokémon™ Legends: Arceus",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Sonic Racing: CrossWorlds – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 42000,
-    "store_offer_bonus_iqd": 4000
+    "title": "Pokémon Scarlet",
+    "trade_price_iqd": 35000,
+    "base_trade_value_iqd": 35000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Super Mario 3D World + Bowser's Fury",
-    "trade_price_iqd": 39000,
-    "store_offer_bonus_iqd": 7000
+    "title": "Pokémon Violet",
+    "trade_price_iqd": 35000,
+    "base_trade_value_iqd": 35000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Animal Crossing: New Horizons",
+    "title": "Pokémon Sword",
+    "trade_price_iqd": 32000,
+    "base_trade_value_iqd": 32000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Pokémon Shield",
+    "trade_price_iqd": 32000,
+    "base_trade_value_iqd": 32000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Super Mario Odyssey",
     "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 7000
+    "base_trade_value_iqd": 38000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
   },
   {
-    "name": "Kirby and the Forgotten Land",
-    "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 7000
+    "title": "Luigi's Mansion 3",
+    "trade_price_iqd": 35000,
+    "base_trade_value_iqd": 35000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Adventure",
+    "switch_version": "Switch"
   },
   {
-    "name": "Luigi's Mansion 3",
-    "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 7000
-  },
-  {
-    "name": "New Super Mario Bros. U Deluxe",
-    "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 7000
-  },
-  {
-    "name": "Pokémon Scarlet",
-    "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 7000
-  },
-  {
-    "name": "Pokémon Violet",
-    "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 7000
-  },
-  {
-    "name": "Donkey Kong Country Returns HD",
-    "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 6000
-  },
-  {
-    "name": "Dragon Ball: Sparking! ZERO [Switch 2]",
-    "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 5000
-  },
-  {
-    "name": "Persona 3 Reload [Switch 2]",
-    "trade_price_iqd": 39000,
-    "store_offer_bonus_iqd": 4000
-  },
-  {
-    "name": "Pokémon Shield",
+    "title": "Animal Crossing: New Horizons",
     "trade_price_iqd": 37000,
-    "store_offer_bonus_iqd": 6000
+    "base_trade_value_iqd": 37000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Simulation",
+    "switch_version": "Switch"
   },
   {
-    "name": "Pokémon Sword",
-    "trade_price_iqd": 37000,
-    "store_offer_bonus_iqd": 6000
+    "title": "Metroid Prime Remastered",
+    "trade_price_iqd": 30000,
+    "base_trade_value_iqd": 30000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Action",
+    "switch_version": "Switch"
   },
   {
-    "name": "Street Fighter 6: Years 1-2 Fighters Edition [Switch 2]",
+    "title": "Metroid Dread",
+    "trade_price_iqd": 32000,
+    "base_trade_value_iqd": 32000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Action",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Splatoon 3",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Shooter",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Splatoon 2",
+    "trade_price_iqd": 25000,
+    "base_trade_value_iqd": 25000,
+    "store_offer_bonus_iqd": 2500,
+    "edition": "Standard",
+    "category": "Shooter",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Xenoblade Chronicles 3",
     "trade_price_iqd": 38000,
-    "store_offer_bonus_iqd": 4000
+    "base_trade_value_iqd": 38000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Metroid Dread",
+    "title": "Xenoblade Chronicles Definitive Edition",
     "trade_price_iqd": 35000,
-    "store_offer_bonus_iqd": 6000
+    "base_trade_value_iqd": 35000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Pikmin 4",
-    "trade_price_iqd": 35000,
-    "store_offer_bonus_iqd": 6000
+    "title": "Fire Emblem: Three Houses",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Strategy / RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Yoshi's Crafted World",
-    "trade_price_iqd": 35000,
-    "store_offer_bonus_iqd": 6000
-  },
-  {
-    "name": "Metroid Prime Remastered",
+    "title": "Fire Emblem Engage",
     "trade_price_iqd": 34000,
-    "store_offer_bonus_iqd": 6000
+    "base_trade_value_iqd": 34000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Strategy / RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Persona 5 Royal",
-    "trade_price_iqd": 33000,
-    "store_offer_bonus_iqd": 4000
+    "title": "Kirby and the Forgotten Land",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
   },
   {
-    "name": "Red Dead Redemption",
-    "trade_price_iqd": 33000,
-    "store_offer_bonus_iqd": 4000
+    "title": "Super Mario Party Jamboree",
+    "trade_price_iqd": 42000,
+    "base_trade_value_iqd": 42000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Party",
+    "switch_version": "Switch"
   },
   {
-    "name": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2",
+    "title": "Mario Party Superstars",
+    "trade_price_iqd": 37000,
+    "base_trade_value_iqd": 37000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Party",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Super Mario 3D World + Bowser's Fury",
+    "trade_price_iqd": 37000,
+    "base_trade_value_iqd": 37000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Paper Mario: The Thousand-Year Door",
+    "trade_price_iqd": 39000,
+    "base_trade_value_iqd": 39000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Paper Mario: The Origami King",
+    "trade_price_iqd": 30000,
+    "base_trade_value_iqd": 30000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "RPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Mario + Rabbids Sparks of Hope",
+    "trade_price_iqd": 25000,
+    "base_trade_value_iqd": 25000,
+    "store_offer_bonus_iqd": 2500,
+    "edition": "Standard",
+    "category": "Strategy",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Donkey Kong Country: Tropical Freeze",
+    "trade_price_iqd": 35000,
+    "base_trade_value_iqd": 35000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Pikmin 4",
+    "trade_price_iqd": 38000,
+    "base_trade_value_iqd": 38000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Strategy",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Bayonetta 3",
     "trade_price_iqd": 32000,
-    "store_offer_bonus_iqd": 4000
+    "base_trade_value_iqd": 32000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Action",
+    "switch_version": "Switch"
   },
   {
-    "name": "The Witcher 3: Wild Hunt - Complete Edition",
-    "trade_price_iqd": 32000,
-    "store_offer_bonus_iqd": 4000
+    "title": "Astral Chain",
+    "trade_price_iqd": 34000,
+    "base_trade_value_iqd": 34000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Action",
+    "switch_version": "Switch"
   },
   {
-    "name": "Sonic X Shadow Generations",
-    "trade_price_iqd": 31000,
-    "store_offer_bonus_iqd": 4000
+    "title": "Monster Hunter Rise",
+    "trade_price_iqd": 26000,
+    "base_trade_value_iqd": 26000,
+    "store_offer_bonus_iqd": 2500,
+    "edition": "Standard",
+    "category": "Action RPG",
+    "switch_version": "Switch"
   },
   {
-    "name": "Crash Team Racing Nitro-Fueled",
-    "trade_price_iqd": 29000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Dragon Ball Z: Kakarot",
-    "trade_price_iqd": 27000,
-    "store_offer_bonus_iqd": 4000
-  },
-  {
-    "name": "Naruto x Boruto: Ultimate Ninja Storm Connections",
-    "trade_price_iqd": 27000,
-    "store_offer_bonus_iqd": 4000
-  },
-  {
-    "name": "No Man's Sky",
+    "title": "Hollow Knight",
     "trade_price_iqd": 28000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Metal Gear Solid: Master Collection Vol. 1",
-    "trade_price_iqd": 27000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Teenage Mutant Ninja Turtles: Shredder's Revenge",
-    "trade_price_iqd": 27000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Naruto Shippuden: Ultimate Ninja Storm 4 Road to Boruto",
-    "trade_price_iqd": 26000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "One Piece: Pirate Warriors 4",
-    "trade_price_iqd": 26000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Overcooked! + Overcooked! 2",
-    "trade_price_iqd": 27000,
-    "store_offer_bonus_iqd": 2000
-  },
-  {
-    "name": "Need for Speed Hot Pursuit Remastered",
-    "trade_price_iqd": 26000,
-    "store_offer_bonus_iqd": 2000
-  },
-  {
-    "name": "Dragon Ball FighterZ",
-    "trade_price_iqd": 24000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Hogwarts Legacy",
-    "trade_price_iqd": 24000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Dragon Ball Xenoverse 2",
-    "trade_price_iqd": 23000,
-    "store_offer_bonus_iqd": 3000
-  },
-  {
-    "name": "Minecraft",
-    "trade_price_iqd": 24000,
-    "store_offer_bonus_iqd": 2000
-  },
-  {
-    "name": "Resident Evil Generation Pack [Switch 2]",
-    "trade_price_iqd": 65000
-  },
-  {
-    "name": "Yoshi and the Mysterious Book [Switch 2]",
-    "trade_price_iqd": 64000
-  },
-  {
-    "name": "Star Fox [Switch 2]",
-    "trade_price_iqd": 62000
-  },
-  {
-    "name": "Super Mario Bros. Wonder – Nintendo Switch 2 Edition + Meetup in Bellabel Park",
-    "trade_price_iqd": 62000
-  },
-  {
-    "name": "Xenoblade Chronicles 2 – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 61000
-  },
-  {
-    "name": "Xenoblade Chronicles X: Definitive Edition – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 57000
-  },
-  {
-    "name": "Xenoblade Chronicles: Definitive Edition – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 56000
-  },
-  {
-    "name": "Xenoblade Chronicles 2",
-    "trade_price_iqd": 46000
-  },
-  {
-    "name": "Pragmata [Switch 2]",
-    "trade_price_iqd": 45000
-  },
-  {
-    "name": "Final Fantasy I-VI Pixel Remaster Collection",
-    "trade_price_iqd": 44000
-  },
-  {
-    "name": "Metroid Prime 4: Beyond",
-    "trade_price_iqd": 44000
-  },
-  {
-    "name": "Indiana Jones and the Great Circle [Switch 2]",
-    "trade_price_iqd": 43000
-  },
-  {
-    "name": "The Elder Scrolls IV: Oblivion Remastered [Switch 2]",
-    "trade_price_iqd": 43000
-  },
-  {
-    "name": "Assassin's Creed Shadows [Switch 2]",
-    "trade_price_iqd": 39000
-  },
-  {
-    "name": "Celeste",
-    "trade_price_iqd": 39000
-  },
-  {
-    "name": "Hades II – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 39000
-  },
-  {
-    "name": "Lies of P: Complete Edition [Switch 2]",
-    "trade_price_iqd": 39000
-  },
-  {
-    "name": "Monster Hunter Stories 3: Twisted Reflection [Switch 2]",
-    "trade_price_iqd": 39000
-  },
-  {
-    "name": "Attack on Titan 2: Final Battle",
-    "trade_price_iqd": 38000
-  },
-  {
-    "name": "Dragon Quest I & II HD-2D Remake",
-    "trade_price_iqd": 38000
-  },
-  {
-    "name": "Dragon Quest VII Reimagined [Switch 2]",
-    "trade_price_iqd": 38000
-  },
-  {
-    "name": "Final Fantasy Tactics - The Ivalice Chronicles",
-    "trade_price_iqd": 38000
-  },
-  {
-    "name": "Hollow Knight",
-    "trade_price_iqd": 38000
-  },
-  {
-    "name": "Xenoblade Chronicles X: Definitive Edition",
-    "trade_price_iqd": 38000
-  },
-  {
-    "name": "Digimon Story Time Stranger [Switch 2]",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "Fantasy Life i: The Girl Who Steals Time – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "Hades",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "Mario Party Superstars",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "Paper Mario: The Thousand-Year Door",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "Star Wars Outlaws [Switch 2]",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "Super Mario RPG",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "The Legend of Zelda: Link's Awakening",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "The Legend of Zelda: Skyward Sword HD",
-    "trade_price_iqd": 37000
-  },
-  {
-    "name": "Hogwarts Legacy [Switch 2]",
-    "trade_price_iqd": 36000
-  },
-  {
-    "name": "Rune Factory: Guardians of Azuma – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 36000
-  },
-  {
-    "name": "Stardew Valley",
-    "trade_price_iqd": 36000
-  },
-  {
-    "name": "Yakuza Kiwami 3 & Dark Ties [Switch 2]",
-    "trade_price_iqd": 36000
-  },
-  {
-    "name": "Cuphead",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Danganronpa Decadence",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Dragon Quest I & II HD-2D Remake [Switch 2]",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Dynasty Warriors: Origins [Switch 2]",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Fire Emblem: Three Houses",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Granblue Fantasy: Relink - Endless Ragnarok [Switch 2]",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Hyper Light Drifter - Special Edition",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Madden NFL 27 [Switch 2]",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Octopath Traveler 0 [Switch 2]",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Tales of Arise: Beyond the Dawn Edition [Switch 2]",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "The Adventures of Elliot: The Millennium Tales [Switch 2]",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "The Messenger",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Undertale",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Unicorn Overlord",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Xenoblade Chronicles 3",
-    "trade_price_iqd": 35000
-  },
-  {
-    "name": "Bravely Default: Flying Fairy HD Remaster [Switch 2]",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Hitman World of Assassination - Signature Edition [Switch 2]",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Hyrule Warriors: Definitive Edition",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Mortal Kombat: Legacy Kollection [Switch 2]",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Pikmin 1+2",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Pokémon Brilliant Diamond",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Pokémon Shining Pearl",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Pokémon: Let's Go, Eevee!",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Pokémon: Let's Go, Pikachu!",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Sonic X Shadow Generations [Switch 2]",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Suikoden I&II HD Remaster Gate Rune and Dunan Unification Wars",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Super Mario Maker 2",
-    "trade_price_iqd": 34000
-  },
-  {
-    "name": "Dragon Quest III HD-2D Remake",
-    "trade_price_iqd": 33000
-  },
-  {
-    "name": "LUNAR Remastered Collection",
-    "trade_price_iqd": 33000
-  },
-  {
-    "name": "Paper Mario: The Origami King",
-    "trade_price_iqd": 33000
-  },
-  {
-    "name": "Story of Seasons: Grand Bazaar – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 33000
-  },
-  {
-    "name": "Super Mario Party",
-    "trade_price_iqd": 33000
-  },
-  {
-    "name": "Atelier Ryza 3: Alchemist of the End & the Secret Key",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "Cronos: The New Dawn [Switch 2]",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "Daemon X Machina: Titanic Scion [Switch 2]",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "Donkey Kong Country: Tropical Freeze",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "High On Life 2 [Switch 2]",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "Monster Hunter Stories Collection",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "New Pokémon Snap",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "RAIDOU Remastered: The Mystery of the Soulless Army [Switch 2]",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "The Legend of Heroes: Trails Beyond the Horizon [Switch 2]",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "Wild Hearts S [Switch 2]",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "Yakuza 0: Director's Cut [Switch 2]",
-    "trade_price_iqd": 32000
-  },
-  {
-    "name": "Disgaea Mayhem [Switch 2]",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Fire Emblem Engage",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Little Nightmares III [Switch 2]",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Octopath Traveler II",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Pikmin 3 Deluxe",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Resident Evil Village Gold Edition [Switch 2]",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Romancing SaGa 2: Revenge of the Seven",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Shovel Knight: Treasure Trove",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Sonic Frontiers - Definitive Edition [Switch 2]",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Tales of Graces f Remastered",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "The Binding of Isaac: Repentance+ [Switch 2]",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Yakuza Kiwami 2 [Switch 2]",
-    "trade_price_iqd": 31000
-  },
-  {
-    "name": "Ace Combat 7: Skies Unknown Deluxe Edition",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Astral Chain",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Atelier Ryza 2: Lost Legends & the Secret Fairy",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Atelier Ryza: Ever Darkness & the Secret Hideout",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Disgaea 7 Complete [Switch 2]",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Dragon Quest Monsters: The Dark Prince",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Dragon Quest XI S: Echoes of an Elusive Age - Definitive Edition",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "EA Sports FC 26 [Switch 2]",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Fairy Tail 2",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Gundam Breaker 4",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Lollipop Chainsaw RePOP [Switch 2]",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Marvel vs. Capcom Fighting Collection: Arcade Classics",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "NieR:Automata The End of YoRHa Edition",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Sea of Stars",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Star Ocean: The Second Story R",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "The Binding of Isaac: Afterbirth+",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "The Legend of Heroes: Trails into Reverie",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "The Legend of Heroes: Trails through Daybreak",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Virtua Fighter 5 R.E.V.O. World Stage [Switch 2]",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "WWE 2K26 [Switch 2]",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Ys X: Nordics",
-    "trade_price_iqd": 30000
-  },
-  {
-    "name": "Farming Simulator: Signature Edition [Switch 2]",
-    "trade_price_iqd": 29000
-  },
-  {
-    "name": "SHUTEN ORDER – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 29000
-  },
-  {
-    "name": "The Rogue Prince of Persia [Switch 2]",
-    "trade_price_iqd": 29000
-  },
-  {
-    "name": "Yakuza Kiwami [Switch 2]",
-    "trade_price_iqd": 29000
-  },
-  {
-    "name": "Atelier Sophie 2: The Alchemist of the Mysterious Dream",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Attack on Titan 2",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Crysis Remastered Trilogy",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Culdcept BEGINS – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Destroy All Humans! [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "ENDER MAGNOLIA: Bloom in the Mist",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Final Fantasy VII & Final Fantasy VIII Remastered Twin Pack",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Fire Emblem Warriors: Three Hopes",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Kirby's Return to Dream Land Deluxe",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Little Nightmares Enhanced Edition [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Mario & Sonic at the Olympic Games Tokyo 2020",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Marvel Cosmic Invasion [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "NBA 2K26 [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "No Sleep For Kaname Date - From AI: THE SOMNIUM FILES [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "One Piece Odyssey: Deluxe Edition",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Outbound [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Pac-Man World 2 Re-Pac [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Pokémon Mystery Dungeon: Rescue Team DX",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Princess Peach: Showtime!",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "R-Type Dimensions III [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Resident Evil 7 biohazard Gold Edition [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "SnowRunner [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Splatoon 2",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "SpongeBob SquarePants: Titans of the Tide [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Starship Troopers: Ultimate Bug War! [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Subnautica + Subnautica: Below Zero",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Survival Kids [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Teenage Mutant Ninja Turtles: Splintered Fate – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "The Disney Afternoon Collection [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "The Legend of Heroes: Trails to Azure",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Yooka-Replaylee [Switch 2]",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "Ys VIII: Lacrimosa of Dana",
-    "trade_price_iqd": 28000
-  },
-  {
-    "name": "13 Sentinels: Aegis Rim",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Bayonetta 3",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Call of the Elder Gods [Switch 2]",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Captain Toad: Treasure Tracker",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Crisis Core: Final Fantasy VII Reunion",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Dragon Quest Builders 2",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Dying Light: Platinum Edition",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "EA Sports FC 26",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Fairy Tail",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Fate/Samurai Remnant",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Five Nights at Freddy's: Security Breach",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "GRID Autosport",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Hyrule Warriors: Age of Calamity",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Madden NFL 26 [Switch 2]",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Master Detective Archives: RAIN CODE",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Nicktoons & The Dice of Destiny [Switch 2]",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Nintendo World Championships: NES Edition",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Omori",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Puyo Puyo Tetris 2S [Switch 2]",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Ring Fit Adventure",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "SnowRunner",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Teenage Mutant Ninja Turtles: Splintered Fate",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "The Legend of Heroes: Trails from Zero",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "The World Ends with You: Final Remix",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Triangle Strategy",
-    "trade_price_iqd": 27000
-  },
-  {
-    "name": "Advance Wars 1+2: Re-Boot Camp",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "AI: The Somnium Files",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "AI: The Somnium Files - nirvanA Initiative",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Another Code: Recollection",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "ARMS",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Axiom Verge",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Batman: Arkham Trilogy",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Bayonetta 2",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Bayonetta Origins: Cereza and the Lost Demon",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Borderlands 3 Ultimate Edition",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Capcom Fighting Collection 2",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Captain Tsubasa: Rise of New Champions",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Crash Bandicoot 4: It's About Time",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Dark Souls: Remastered",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Dave the Diver: Anniversary Edition",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Digimon Story: Cyber Sleuth Complete Edition",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Disgaea 7: Vows of the Virtueless",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Eiyuden Chronicle: Hundred Heroes",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Emio - The Smiling Man: Famicom Detective Club",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Final Fantasy X/X-2 HD Remaster",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Final Fantasy XII: The Zodiac Age",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Five Nights at Freddy's: Help Wanted 2",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Goodnight Universe [Switch 2]",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Gris",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Harvestella",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "It Takes Two",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Katana ZERO",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Kirby Star Allies",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Live A Live",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "LoveR Kiss: Endless Memories – Nintendo Switch 2 Edition",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Mario Tennis Aces",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Marvel Ultimate Alliance 3: The Black Order",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Mega Man Battle Network Legacy Collection",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Metro Redux",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Miitopia",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Minecraft Dungeons: Ultimate Edition",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "MIO: Memories in Orbit [Switch 2]",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Monster Hunter Stories 2: Wings of Ruin",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Neon White",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Nintendo Switch Sports",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Ori and the Blind Forest: Definitive Edition",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Ori and the Will of the Wisps",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Overcooked! All You Can Eat",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "PGA TOUR 2K25 [Switch 2]",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Shin Megami Tensei V",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Shin Megami Tensei V: Vengeance",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Sonic Frontiers",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Star Wars: Heritage Pack",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Tactics Ogre: Reborn",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Taiko no Tatsujin: Rhythm Festival",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "The Elder Scrolls V: Skyrim",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "The Legend of Heroes: Trails of Cold Steel III",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "The Legend of Heroes: Trails of Cold Steel IV",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "The Plucky Squire",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "The Walking Dead: The Telltale Definitive Series",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Tomb Raider I-III Remastered Starring Lara Croft",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Tomb Raider IV-VI Remastered",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Trails of Cold Steel IV",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Truxton Extreme [Switch 2]",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "WarioWare: Get It Together!",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "World of Final Fantasy Maxima",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Ys IX: Monstrum Nox",
-    "trade_price_iqd": 26000
-  },
-  {
-    "name": "Axiom Verge 2",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Balatro",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Bloodstained: Ritual of the Night",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Bubsy 4D [Switch 2]",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Cassette Beasts",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Crash Bandicoot N. Sane Trilogy",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Dead Cells",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Disney Epic Mickey: Rebrushed",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Disney Illusion Island",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Dragon Quest Builders",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Fire Emblem Warriors",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Gear.Club Unlimited 3 [Switch 2]",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Hot Wheels Unleashed 2: Turbocharged",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Hotline Miami Collection",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Jujutsu Kaisen Cursed Clash",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Jump Force: Deluxe Edition",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Life is Strange: Arcadia Bay Collection",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Little Nightmares II",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Mario Golf: Super Rush",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Mario Strikers: Battle League",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Mario vs. Donkey Kong",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Monster Hunter Generations Ultimate",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Monster Hunter Rise",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Naruto Shippuden: Ultimate Ninja Storm Trilogy",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Persona 5 Strikers",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Persona 5 Tactica",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Poppy Playtime: Triple Pack",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Prince of Persia: The Lost Crown",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Sifu",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Spyro Reignited Trilogy",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Taiko no Tatsujin: Drum 'n' Fun!",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Terraria",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "The Outer Worlds",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Tokyo Mirage Sessions #FE Encore",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Trails of Cold Steel III",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Tunic",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "WarioWare: Move It!",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Wolfenstein II: The New Colossus",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "Xenoblade Chronicles: Definitive Edition",
-    "trade_price_iqd": 25000
-  },
-  {
-    "name": "A Hat in Time",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Assassin's Creed: The Ezio Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Assassin's Creed: The Rebel Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Bendy and the Dark Revival",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "BioShock: The Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Blasphemous",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Blasphemous 2",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Bluey's Quest for the Gold Pen [Switch 2]",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Borderlands Legendary Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Bravely Default II",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Capcom Fighting Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Carrion",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Chromagun 2: Dye Hard [Switch 2]",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Clubhouse Games: 51 Worldwide Classics",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Cocoon",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Cruis'n Blast",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Cult of the Lamb",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Darksiders Genesis",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Darksiders III",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Detective Pikachu Returns",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Diablo III: Eternal Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Digimon Survive",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Digimon World: Next Order",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "DOOM",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Dredge",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Enter the Gungeon",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Fitness Boxing 2: Rhythm & Exercise",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Ghostbusters: The Video Game Remastered",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Go Vacation",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Guacamelee! One-Two Punch Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Immortals Fenyx Rising",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "JoJo's Bizarre Adventure: All-Star Battle R",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Legend of Mana",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Life is Strange: True Colors",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Little Nightmares",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Mega Man 11",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Mortal Kombat 1",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "NEO: The World Ends with You",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Ni no Kuni II: Revenant Kingdom - Prince's Edition",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Octopath Traveler",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Pokkén Tournament DX",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "PowerWash Simulator",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Rune Factory 4 Special",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Rushing Beat X: Return of Brawl Brothers [Switch 2]",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Sakuna: Of Rice and Ruin",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Shin Megami Tensei III Nocturne HD Remaster",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Slay the Spire",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Sniper Elite 4",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Sonic Mania Plus",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Sonic Superstars",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "SpongeBob SquarePants: Battle for Bikini Bottom - Rehydrated",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Star Wars: Knights of the Old Republic",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Star Wars: Knights of the Old Republic II: The Sith Lords",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Star Wars: The Force Unleashed",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Story of Seasons: A Wonderful Life",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Story of Seasons: Friends of Mineral Town",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Super Bomberman R 2",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Teenage Mutant Ninja Turtles: The Cowabunga Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Tokyo Xanadu eX+",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Tony Hawk's Pro Skater 1 + 2",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Trials of Mana",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "XCOM 2 Collection",
-    "trade_price_iqd": 24000
-  },
-  {
-    "name": "Bendy and the Ink Machine",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Civilization VI",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Collection of Mana",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Dead by Daylight",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Disgaea 5 Complete",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Disgaea 6: Defiance of Destiny",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Disney Classic Games Collection",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Endless Ocean Luminous",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Farming Simulator 23: Nintendo Switch Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Five Nights at Freddy's: Core Collection",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Friday the 13th: The Game Ultimate Slasher Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Goat Simulator 3",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Hot Wheels Unleashed",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Jurassic World Evolution: Complete Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Kingdom Hearts: Melody of Memory",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Kingdoms of Amalur: Re-Reckoning",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Klonoa Phantasy Reverie Series",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Labyrinth of Galleria: The Moon Society",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Little Nightmares Complete Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Maneater",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Mario + Rabbids Sparks of Hope",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Mega Man X Legacy Collection 1 + 2",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Mega Man Zero/ZX Legacy Collection",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "MLB The Show 25",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Monster Sanctuary",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Mortal Shell: Complete Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "My Hero One's Justice 2",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Ni no Kuni: Wrath of the White Witch",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "One Piece: Pirate Warriors 3 Deluxe Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Order Up!! [Switch 2]",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Power Rangers Rita's Rewind",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Power Rangers: Battle for the Grid - Super Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Puyo Puyo Tetris 2",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Rayman Legends: Definitive Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Resident Evil Revelations Collection",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Resident Evil Triple Pack",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "RollerCoaster Tycoon Adventures Deluxe",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Rune Factory 3 Special",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Rune Factory 5",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Saints Row: The Third - The Full Package",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Sid Meier's Civilization VI",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Sonic Colors: Ultimate",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Sonic Origins Plus",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "South Park: Snow Day!",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "South Park: The Fractured But Whole",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Spiritfarer",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "SpongeBob SquarePants: The Cosmic Shake",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Star Wars Jedi Knight Collection",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Star Wars Republic Commando",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Star Wars: Racer and Commando Combo",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Super Dragon Ball Heroes: World Mission",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Sword Art Online: Alicization Lycoris",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Sword Art Online: Fatal Bullet Complete Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Tales of Vesperia: Definitive Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Team Sonic Racing",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Teenage Mutant Ninja Turtles: Mutants Unleashed",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Temtem",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "The DioField Chronicle",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "The Walking Dead: The Complete First Season",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Two Point Campus",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Two Point Campus: Enrolment Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Two Point Hospital: Jumbo Edition",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Untitled Goose Game",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "World War Z",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Yooka-Laylee",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Yu-Gi-Oh! Legacy of the Duelist: Link Evolution",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Zombie Army Trilogy",
-    "trade_price_iqd": 23000
-  },
-  {
-    "name": "Bandit Trap [Switch 2]",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Children of Morta",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Disney Magical World 2: Enchanted Edition",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Gang Beasts",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Hello Neighbor 2",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "LEGO Star Wars: The Skywalker Saga",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Minecraft Dungeons",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Mortal Kombat 11",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "MudRunner - American Wilds",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Pac-Man World Re-Pac",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Pastry Panic! [Switch 2]",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Plants vs. Zombies: Battle for Neighborville Complete Edition",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Risk of Rain 2",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Sonic Forces",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Tropico 6 - Nintendo Switch Edition",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Two Point Hospital",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Yooka-Laylee and the Impossible Lair",
-    "trade_price_iqd": 22000
-  },
-  {
-    "name": "Assassin's Creed III Remastered",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Barbie Project Friendship",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Big Brain Academy: Brain vs. Brain",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Bluey: The Videogame",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Cities: Skylines - Nintendo Switch Edition",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Darksiders II Deathinitive Edition",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Darksiders Warmastered Edition",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Game Builder Garage",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Mario + Rabbids Kingdom Battle",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Miraculous: Paris Under Siege",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "MLB The Show 24",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Moonlighter",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "MotoGP 25",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Moving Out 2",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "PGA TOUR 2K25",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Power Rangers: Battle for the Grid",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Prison Architect: Nintendo Switch Edition",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "RollerCoaster Tycoon Adventures",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Sniper Elite III Ultimate Edition",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "SpongeBob SquarePants: The Patrick Star Game",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Story of Seasons: Pioneers of Olive Town",
-    "trade_price_iqd": 21000
-  },
-  {
-    "name": "Bratz: Flaunt Your Fashion",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Burnout Paradise Remastered",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Cars 3: Driven to Win",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "DC Super Hero Girls: Teen Power",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Hello Neighbor",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Human: Fall Flat",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Miraculous: Rise of the Sphinx",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Monster Jam Showdown",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "MotoGP 24",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "My Hero One's Justice",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "NASCAR Heat Ultimate Edition+",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "One Piece: Unlimited World Red Deluxe Edition",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Rugrats: Adventures in Gameland",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Street Fighter 30th Anniversary Collection",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Truck Driver",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "Unravel Two",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "WRC Generations",
-    "trade_price_iqd": 20000
-  },
-  {
-    "name": "1-2-Switch",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "ARK: Survival Evolved",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "DC League of Super-Pets: The Adventures of Krypto and Ace",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "Gear.Club Unlimited 2: Ultimate Edition",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "Gigantosaurus: Dino Kart",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "L.A. Noire",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "LEGO 2K Drive",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "LEGO Harry Potter Collection",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "MLB The Show 23",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "Monster Jam Steel Titans 2",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "MotoGP 23",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "Nickelodeon All-Star Brawl 2",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "Puyo Puyo Tetris",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "Saints Row IV: Re-Elected",
-    "trade_price_iqd": 19000
-  },
-  {
-    "name": "Among Us: Crewmate Edition",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "AO Tennis 2",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Ben 10: Power Trip",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Dragon Ball: The Breakers - Special Edition",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "DreamWorks All-Star Kart Racing",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "DreamWorks Dragons: Dawn of New Riders",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Gigantosaurus: The Game",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Jumanji: Wild Adventures",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "LEGO Builder's Journey",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "LEGO City Undercover",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "LEGO DC Super-Villains",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "LEGO Marvel Super Heroes",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "LEGO Marvel Super Heroes 2",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Monster Jam Steel Titans",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "MotoGP 22",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Moving Out",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "My Little Pony: A Zephyr Heights Mystery",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Nickelodeon Kart Racers 3: Slime Speedway",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "Nintendo Labo Toy-Con 03: Vehicle Kit",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "PAW Patrol World",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "PJ Masks: Heroes of the Night",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "The Smurfs 2: The Prisoner of the Green Stone",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "The Smurfs: Mission Vileaf",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "WRC 10",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "WRC 9",
-    "trade_price_iqd": 18000
-  },
-  {
-    "name": "DreamWorks Spirit Lucky's Big Adventure",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Everybody 1-2-Switch!",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Farming Simulator 20",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Fast & Furious: Spy Racers Rise of SH1FT3R",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Garfield Kart: Furious Racing",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Gear.Club Unlimited 2",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Jumanji: The Video Game",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Just Dance 2022",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "LEGO Jurassic World",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "LEGO The Incredibles",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "MLB The Show 22",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "MotoGP 21",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "My Little Pony: A Maretime Bay Adventure",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "NBA 2K25",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Nintendo Labo Toy-Con 01: Variety Kit",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "PAW Patrol: Grand Prix",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Smurfs Kart",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Super Bomberman R",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "WRC 8 FIA World Rally Championship",
-    "trade_price_iqd": 17000
-  },
-  {
-    "name": "Ben 10",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "Garfield Lasagna Party",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "Gear.Club Unlimited",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "Hasbro Game Night",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "MotoGP 20",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "PAW Patrol Mighty Pups Save Adventure Bay",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "Peppa Pig: World Adventures",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "PGA Tour 2K21",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "Sushi Striker: The Way of Sushido",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "Trials Rising",
-    "trade_price_iqd": 16000
-  },
-  {
-    "name": "Carnival Games",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "EA Sports FC 25",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "Just Dance 2019",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "Just Dance 2020",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "Just Dance 2021",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "LEGO Brawls",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "LEGO Worlds",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "LOL Surprise! Movie Night",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "Minecraft Legends",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "Monopoly for Nintendo Switch",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "My Friend Peppa Pig",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "NBA 2K Playgrounds 2",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "Nickelodeon All-Star Brawl",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "Nickelodeon Kart Racers 2: Grand Prix",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "PAW Patrol The Movie: Adventure City Calls",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "PAW Patrol: On a Roll!",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "The LEGO Movie 2 Videogame",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "The LEGO NINJAGO Movie Video Game",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "WWE 2K Battlegrounds",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "WWE 2K18",
-    "trade_price_iqd": 15000
-  },
-  {
-    "name": "NBA 2K24",
-    "trade_price_iqd": 14000
-  },
-  {
-    "name": "EA Sports FC 24",
-    "trade_price_iqd": 13000
-  },
-  {
-    "name": "FIFA 23 Legacy Edition",
-    "trade_price_iqd": 13000
-  },
-  {
-    "name": "NBA 2K23",
-    "trade_price_iqd": 12000
-  },
-  {
-    "name": "FIFA 22 Legacy Edition",
-    "trade_price_iqd": 11000
-  },
-  {
-    "name": "FIFA 20 Legacy Edition",
-    "trade_price_iqd": 10000
-  },
-  {
-    "name": "FIFA 21 Legacy Edition",
-    "trade_price_iqd": 10000
-  },
-  {
-    "name": "NBA 2K22",
-    "trade_price_iqd": 10000
-  },
-  {
-    "name": "FIFA 18",
-    "trade_price_iqd": 9000
-  },
-  {
-    "name": "FIFA 19",
-    "trade_price_iqd": 9000
-  },
-  {
-    "name": "NBA 2K20",
-    "trade_price_iqd": 9000
-  },
-  {
-    "name": "NBA 2K21",
-    "trade_price_iqd": 9000
-  },
-  {
-    "name": "NBA 2K18",
-    "trade_price_iqd": 8000
-  },
-  {
-    "name": "NBA 2K19",
-    "trade_price_iqd": 8000
+    "base_trade_value_iqd": 28000,
+    "store_offer_bonus_iqd": 2500,
+    "edition": "Standard",
+    "category": "Metroidvania",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Hades",
+    "trade_price_iqd": 28000,
+    "base_trade_value_iqd": 28000,
+    "store_offer_bonus_iqd": 2500,
+    "edition": "Standard",
+    "category": "Roguelike",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Persona 5 Royal",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "JRPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Shin Megami Tensei V: Vengeance",
+    "trade_price_iqd": 38000,
+    "base_trade_value_iqd": 38000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "JRPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Dragon Quest XI S: Echoes of an Elusive Age",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Definitive Edition",
+    "category": "JRPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Octopath Traveler II",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "JRPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Sonic Frontiers",
+    "trade_price_iqd": 28000,
+    "base_trade_value_iqd": 28000,
+    "store_offer_bonus_iqd": 2500,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Crash Bandicoot 4: It's About Time",
+    "trade_price_iqd": 30000,
+    "base_trade_value_iqd": 30000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Spyro Reignited Trilogy",
+    "trade_price_iqd": 30000,
+    "base_trade_value_iqd": 30000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Platformer",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Prince of Persia: The Lost Crown",
+    "trade_price_iqd": 32000,
+    "base_trade_value_iqd": 32000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Action / Adventure",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Hogwarts Legacy",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Standard",
+    "category": "Action RPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Red Dead Redemption",
+    "trade_price_iqd": 38000,
+    "base_trade_value_iqd": 38000,
+    "store_offer_bonus_iqd": 4000,
+    "edition": "Standard",
+    "category": "Action / Adventure",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "The Witcher 3: Wild Hunt Complete Edition",
+    "trade_price_iqd": 36000,
+    "base_trade_value_iqd": 36000,
+    "store_offer_bonus_iqd": 3500,
+    "edition": "Complete Edition",
+    "category": "RPG",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "It Takes Two",
+    "trade_price_iqd": 32000,
+    "base_trade_value_iqd": 32000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Co-op Adventure",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Rayman Legends Definitive Edition",
+    "trade_price_iqd": 22000,
+    "base_trade_value_iqd": 22000,
+    "store_offer_bonus_iqd": 2000,
+    "edition": "Definitive Edition",
+    "category": "Platformer",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Minecraft",
+    "trade_price_iqd": 28000,
+    "base_trade_value_iqd": 28000,
+    "store_offer_bonus_iqd": 2500,
+    "edition": "Standard",
+    "category": "Sandbox",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Overcooked! All You Can Eat",
+    "trade_price_iqd": 30000,
+    "base_trade_value_iqd": 30000,
+    "store_offer_bonus_iqd": 3000,
+    "edition": "Standard",
+    "category": "Party",
+    "switch_version": "Switch"
+  },
+  {
+    "title": "Mario Kart World [Switch 2]",
+    "trade_price_iqd": 50000,
+    "base_trade_value_iqd": 50000,
+    "store_offer_bonus_iqd": 5000,
+    "edition": "Switch 2 Launch Edition",
+    "category": "Racing",
+    "switch_version": "Switch 2"
+  },
+  {
+    "title": "The Legend of Zelda: Next [Switch 2]",
+    "trade_price_iqd": 55000,
+    "base_trade_value_iqd": 55000,
+    "store_offer_bonus_iqd": 5000,
+    "edition": "Switch 2 Edition",
+    "category": "Action / Adventure",
+    "switch_version": "Switch 2"
+  },
+  {
+    "title": "Super Mario Universe [Switch 2]",
+    "trade_price_iqd": 52000,
+    "base_trade_value_iqd": 52000,
+    "store_offer_bonus_iqd": 5000,
+    "edition": "Switch 2 Edition",
+    "category": "Platformer",
+    "switch_version": "Switch 2"
+  },
+  {
+    "title": "Metroid Prime 4: Beyond [Switch 2]",
+    "trade_price_iqd": 50000,
+    "base_trade_value_iqd": 50000,
+    "store_offer_bonus_iqd": 5000,
+    "edition": "Switch 2 Edition",
+    "category": "Action",
+    "switch_version": "Switch 2"
+  },
+  {
+    "title": "Pokémon Legends: Z-A [Switch 2]",
+    "trade_price_iqd": 52000,
+    "base_trade_value_iqd": 52000,
+    "store_offer_bonus_iqd": 5000,
+    "edition": "Switch 2 Edition",
+    "category": "RPG",
+    "switch_version": "Switch 2"
   }
 ]

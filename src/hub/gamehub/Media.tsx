@@ -64,7 +64,12 @@ export function VideosSection() {
       }
     >
       <Reveal>
-        <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+        <div
+          className={cn(
+            "grid gap-3",
+            rest.length > 0 ? "lg:grid-cols-[1.6fr_1fr]" : "grid-cols-1 max-w-3xl mx-auto",
+          )}
+        >
           {lead && (
             <button
               onClick={() => openVideo(lead)}

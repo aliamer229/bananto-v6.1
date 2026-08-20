@@ -1,5 +1,5 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/hub/gamehub/Chrome.tsx', 'utf8');
+const fs = require("fs");
+let code = fs.readFileSync("src/hub/gamehub/Chrome.tsx", "utf8");
 
 code = code.replace(
   `      const heroBuyButton = document.getElementById("hero-buy-button");
@@ -15,7 +15,7 @@ code = code.replace(
         pastHero = heroBuyButton.getBoundingClientRect().bottom < 0;
       }
       const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - window.innerHeight; // don't hide too early unless footer is huge
-      setVisible(pastHero && !nearBottom);`
+      setVisible(pastHero && !nearBottom);`,
 );
 
-fs.writeFileSync('src/hub/gamehub/Chrome.tsx', code);
+fs.writeFileSync("src/hub/gamehub/Chrome.tsx", code);

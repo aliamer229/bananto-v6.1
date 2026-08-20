@@ -22,23 +22,9 @@ export interface NavItem {
  * which is what makes a thirty-section page navigable on a phone.
  */
 export function HubNav({ items }: { items: NavItem[] }) {
-  const { formatConverted } = useCurrency();
-  const { game, bestOffer, openBuy } = useHub();
+  const { game } = useHub();
   const active = useActiveSection(items.map((item) => item.id));
   const railRef = useRef<HTMLDivElement | null>(null);
-  const [scrolledPastHero, setScrolledPastHero] = useState(false);
-  const [buyBarVisible, setBuyBarVisible] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolledPastHero(window.scrollY > 520);
-      const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 380;
-      setBuyBarVisible(window.scrollY > 560 && !nearBottom);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   // Keep the active chip visible in the horizontal rail without yanking the page vertically.
   useEffect(() => {
@@ -54,19 +40,8 @@ export function HubNav({ items }: { items: NavItem[] }) {
     });
   }, [active]);
 
-  const isBuyBarVisible = buyBarVisible && bestOffer;
-
   return (
-    <div
-      className={cn(
-        "z-40 border-white/[0.06] bg-ink-900/90 backdrop-blur-xl transition-all duration-300",
-        "lg:sticky lg:top-[env(safe-area-inset-top,0px)] lg:border-b",
-        isBuyBarVisible
-          ? "max-lg:fixed max-lg:inset-x-0 max-lg:border-t"
-          : "max-lg:sticky max-lg:top-[env(safe-area-inset-top,0px)] max-lg:border-b",
-      )}
-      style={isBuyBarVisible ? { bottom: `calc(72px + env(safe-area-inset-bottom, 0px))` } : {}}
-    >
+    <div className="sticky top-0 z-30 border-b border-white/[0.06] bg-ink-900/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 lg:px-6">
         <div
           ref={railRef}
@@ -91,22 +66,6 @@ export function HubNav({ items }: { items: NavItem[] }) {
             </a>
           ))}
         </div>
-
-        {/* Compact buy affordance once the hero's CTA is off screen. */}
-        <AnimatePresence>
-          {scrolledPastHero && bestOffer && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              onClick={() => openBuy()}
-              className="btn btn-primary hidden h-9 shrink-0 px-4 text-xs lg:inline-flex"
-            >
-              <ShoppingBag className="h-3.5 w-3.5" />
-              <span className="num">{formatConverted(bestOffer.offer.price)}</span>
-            </motion.button>
-          )}
-        </AnimatePresence>
 
         <ShareButton title={game.title} />
       </div>
@@ -167,11 +126,12 @@ export function StickyBuyBar() {
   useEffect(() => {
     const onScroll = () => {
       const heroBuyButton = document.getElementById("hero-buy-button");
-      let pastHero = window.scrollY > 560;
+      let pastHero = window.scrollY > 600;
       if (heroBuyButton) {
+        // Trigger only when the hero buy button has completely scrolled above viewport
         pastHero = heroBuyButton.getBoundingClientRect().bottom < 0;
       }
-      const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - window.innerHeight; // don't hide too early unless footer is huge
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 160;
       setVisible(pastHero && !nearBottom);
     };
     onScroll();

@@ -159,7 +159,8 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  html, body {
+  html,
+  body {
     overflow-x: hidden;
   }
   body {

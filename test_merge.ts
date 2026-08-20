@@ -4,7 +4,7 @@ import fs from "fs";
 const content = fs.readFileSync("cyberpunk_template.txt", "utf8");
 const result = parseGameImport(content);
 
-let prev = { id: "test", categoryId: "cat_nintendo", titleEn: "" };
+const prev = { id: "test", categoryId: "cat_nintendo", titleEn: "" };
 const importedData = result.data;
 
 const newData = { ...prev };

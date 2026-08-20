@@ -6,7 +6,7 @@ async function run() {
   console.log("Loading cyberpunk template...");
   const content = fs.readFileSync("cyberpunk_template.txt", "utf8");
   const res = parseGameImport(content);
-  
+
   const formData = res.data;
   const selectedCategoryId = formData.category || "cat_nintendo";
   const cleanedData = {
@@ -27,7 +27,7 @@ async function run() {
     schemaId: "",
     kind: formData.kind || "account",
   };
-  
+
   if (formData.rawData) {
     Object.assign(cleanedData, formData.rawData);
     delete cleanedData.rawData;
@@ -38,8 +38,8 @@ async function run() {
     const nextStore = await updateStore((store) => {
       return {
         ...store,
-        products: [cleanedData, ...(store.products || [])]
-      }
+        products: [cleanedData, ...(store.products || [])],
+      };
     });
     console.log("SUCCESS. New product count:", nextStore.products.length);
   } catch (err) {

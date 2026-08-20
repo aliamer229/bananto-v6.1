@@ -198,7 +198,7 @@ export default function Header({
           isMenuOpen ? "bottom-0 pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="px-4 pt-6 pb-4 flex flex-row-reverse items-center gap-2 w-full [&>*]:pointer-events-auto relative">
+        <div className="px-4 pt-6 pb-4 flex items-center gap-3 w-full [&>*]:pointer-events-auto relative" dir="ltr">
           {!isHome && (
             <button
               onClick={(e) => {
@@ -207,15 +207,75 @@ export default function Header({
                 playSound("bumper_end", 0.6);
                 onBack();
               }}
-              className="p-2 rounded-full bg-black/20 text-white backdrop-blur-md shadow-sm border border-white/20 active:scale-95 transition-transform"
+              className="p-2 rounded-full bg-black/20 text-white backdrop-blur-md shadow-sm border border-white/20 active:scale-95 transition-transform shrink-0"
+              aria-label="Back"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 rtl:rotate-180" />
+            </button>
+          )}
+
+          {isHome ? (
+            <div
+              className={`flex-1 relative transition-all duration-300 z-0 ${isMenuOpen ? "opacity-30 blur-sm !pointer-events-none [&_*]:!pointer-events-none" : "opacity-100"}`}
+            >
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                placeholder={t("بحث ذكي عن الألعاب...")}
+                className="w-full h-10 rounded-full outline-none px-4 ps-10 text-sm transition-all bg-black/20 border border-white/20 text-white backdrop-blur-md placeholder-white/70 focus:border-white focus:bg-black/40 shadow-sm"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
+
+              {isSearchFocused && searchResults.length > 0 && (
+                <div className="absolute top-full mt-2 left-0 right-0 bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                  {searchResults.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        playSound("hover_s", 0.6);
+                        onNavigate(`product/${p.id}`);
+                        setSearchQuery("");
+                      }}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 text-left"
+                    >
+                      <img
+                        src={cdnImage(p.image || p.coverImage || p.cartridgeImage)}
+                        className="w-10 h-10 rounded-lg object-cover bg-white/10 shrink-0"
+                        alt=""
+                      />
+                      <div className="flex-1 min-w-0" dir="ltr">
+                        <div className="text-white font-bold text-sm truncate">
+                          {p.titleEn || p.english_name || p.title}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
+
+          {isHome && user?.isAdmin && (
+            <button
+              onPointerDown={() => {
+                playSound("bumper_end", 0.6);
+                navigate({ to: "/admin" });
+              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center bg-black/20 text-white backdrop-blur-md shadow-sm border border-white/20 hover:bg-black/30 transition-colors shrink-0"
+              title={t("لوحة الإدارة")}
+            >
+              <Shield className="w-5 h-5" />
             </button>
           )}
 
           {showProfile && (
             <FlowerMenu
-              className="z-[60]"
+              className="z-[60] shrink-0"
               menuItems={menuItems}
               startAngle={90}
               endAngle={180}
@@ -247,64 +307,6 @@ export default function Header({
                 </div>
               </div>
             </FlowerMenu>
-          )}
-
-          {isHome && (
-            <>
-              {user?.isAdmin && (
-                <button
-                  onPointerDown={() => {
-                    playSound("bumper_end", 0.6);
-                    navigate({ to: "/admin" });
-                  }}
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-black/20 text-white backdrop-blur-md shadow-sm border border-white/20 hover:bg-black/30 transition-colors shrink-0"
-                  title={t("لوحة الإدارة")}
-                >
-                  <Shield className="w-5 h-5" />
-                </button>
-              )}
-              <div
-                className={`flex-1 relative transition-all duration-300 z-0 ${isMenuOpen ? "opacity-30 blur-sm !pointer-events-none [&_*]:!pointer-events-none" : "opacity-100"}`}
-              >
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                  placeholder={t("بحث ذكي عن الألعاب...")}
-                  className="w-full h-10 rounded-full outline-none px-4 ps-10 text-sm transition-all bg-black/20 border border-white/20 text-white backdrop-blur-md placeholder-white/70 focus:border-white focus:bg-black/40 shadow-sm"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
-
-                {isSearchFocused && searchResults.length > 0 && (
-                  <div className="absolute top-full mt-2 left-0 right-0 bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-                    {searchResults.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => {
-                          playSound("hover_s", 0.6);
-                          onNavigate(`product/${p.id}`);
-                          setSearchQuery("");
-                        }}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 text-right"
-                      >
-                        <img
-                          src={cdnImage(p.image || p.coverImage || p.cartridgeImage)}
-                          className="w-10 h-10 rounded-lg object-cover bg-white/10"
-                          alt=""
-                        />
-                        <div className="flex-1 min-w-0" dir="ltr">
-                          <div className="text-white font-bold text-sm truncate">
-                            {p.titleEn || p.english_name || p.title}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
           )}
         </div>
       </header>

@@ -1,31 +1,26 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import React, { type CSSProperties, type ReactNode } from "react";
 
-/**
- * Fades + lifts an item into place. The delay is explicit (position inside its
- * batch) so every batch cascades in order instead of the nth-child pattern
- * shifting around as items are appended.
- */
+interface StaggerItemProps {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+  style?: CSSProperties;
+}
+
 export default function StaggerItem({
   children,
   className = "",
   delay = 0,
-}: {
-  children: ReactNode;
-  className?: string;
-  delay?: number;
-}) {
-  const [shown, setShown] = useState(false);
-  const raf = useRef<number>(0);
-
-  useEffect(() => {
-    raf.current = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(raf.current);
-  }, []);
-
+  style,
+}: StaggerItemProps) {
   return (
     <div
-      className={`stagger-item ${shown ? "is-in" : ""} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
+      className={`animate-fade-up ${className}`}
+      style={{
+        ...style,
+        animationDelay: `${delay}ms`,
+        animationFillMode: "both",
+      }}
     >
       {children}
     </div>

@@ -1,6 +1,6 @@
-const fs = require('fs');
-const file = 'src/hub/gamehub/Chrome.tsx';
-let code = fs.readFileSync(file, 'utf8');
+const fs = require("fs");
+const file = "src/hub/gamehub/Chrome.tsx";
+let code = fs.readFileSync(file, "utf8");
 
 code = code.replace(
   `  useEffect(() => {
@@ -19,7 +19,7 @@ code = code.replace(
       const nearBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 380;
       setVisible(pastHero && !nearBottom);
     };
-    onScroll();`
+    onScroll();`,
 );
 
 code = code.replace(
@@ -35,7 +35,7 @@ code = code.replace(
         setScrolledPastHero(window.scrollY > 400);
       }
     };
-    onScroll();`
+    onScroll();`,
 );
 
 fs.writeFileSync(file, code);

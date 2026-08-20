@@ -8,7 +8,7 @@ async function run() {
       id: "prd_test_123",
       title: "Test Game",
       price: 10,
-    })
+    }),
   });
   console.log(req.status);
   console.log(await req.text());

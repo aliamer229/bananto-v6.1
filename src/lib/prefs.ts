@@ -173,9 +173,8 @@ export function isLang(value: unknown): value is Lang {
 }
 
 /** Arabic and Kurdish are written right-to-left; English and Turkish are not. */
-export function dirOf(lang: Lang) {
-  // Always return "rtl" to prevent text direction change when changing language
-  return "rtl";
+export function dirOf(lang: Lang): "rtl" | "ltr" {
+  return lang === "ar" || lang === "ku" ? "rtl" : "ltr";
 }
 
 /** Everything <html> needs, resolved identically on server and client. */

@@ -347,7 +347,6 @@ export function BuySheet({
               ? offerLabelParts.join(" / ")
               : (OFFER_LABELS[offerKind] ?? offerKind);
 
-
             addToCart(
               {
                 productId: game.id,
