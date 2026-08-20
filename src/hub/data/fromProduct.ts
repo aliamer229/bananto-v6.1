@@ -79,10 +79,8 @@ function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
       : str(p["descriptionAr"]) || str(p["description"]) || str(p["descriptionEn"]);
 
 
-  const tag =
-    locale === "en"
-      ? str(p["taglineEn"]) || str(p["tagline"])
-      : str(p["tagline"]) || str(p["taglineEn"]);
+  const tag = str(p["taglineEn"]) || str(p["tagline"]);
+
 
   return {
     title: title || (locale === "en" ? "Product" : "منتج"),
