@@ -131,7 +131,16 @@ export function SwitchBox3D({
         
         {texture ? (
           <mesh geometry={nodes.placeholder.geometry}>
-            <meshStandardMaterial map={texture} roughness={0.6} metalness={0.1} side={THREE.DoubleSide} transparent={false} opacity={1} />
+            <meshStandardMaterial 
+              map={texture} 
+              roughness={0.05} 
+              metalness={0.15} 
+              side={THREE.DoubleSide} 
+              transparent={false} 
+              opacity={1} 
+              emissive={new THREE.Color('#ffffff')}
+              emissiveIntensity={0.05}
+            />
           </mesh>
         ) : (
           <mesh geometry={nodes.placeholder.geometry}>
