@@ -33,13 +33,8 @@ export function buildFeatures(
   if (!list.length) return undefined;
   const mapped = list
     .map((row) => {
-      const label = getTextValue(
-        locale === "en" && row["valueEn"]
-          ? row["valueEn"]
-          : row["value"] !== undefined
-            ? row["value"]
-            : row,
-      );
+      const label = getTextValue(row["valueEn"] ?? row["value"] ?? row);
+
       if (!label) return null;
       return { id: slugify(label), label };
     })
