@@ -125,6 +125,11 @@ export function SwitchBox3D({
     materials.plastic.envMapIntensity = 1.0;
   }
 
+  // Ensure the nodes exist before rendering to avoid "empty" space
+  if (!nodes.placeholder || !nodes.box || !nodes.foil) {
+    console.warn("[SwitchBox3D] Missing required geometry nodes", Object.keys(nodes));
+  }
+
   return (
     <>
       <OrbitControls
