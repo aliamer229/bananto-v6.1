@@ -129,7 +129,19 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error: rootError, reset }: { error: any; reset: () => void }) {
+  const error = rootError?.error || rootError;
+  const message =
+    error instanceof Response
+      ? `Response ${error.status}${error.url ? ` at ${error.url}` : ""}`
+      : error instanceof Error
+        ? error.message
+        : typeof error === "object" && error !== null
+          ? (error as any).message || JSON.stringify(error)
+          : String(error);
+
+  const is404 = (error as any)?.status === 404 || message.includes("404");
+
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -175,17 +187,16 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </svg>
       </div>
 
-      <h1 className="text-2xl font-black text-slate-900 mb-3">{tr("This page didn't load")}</h1>
+      <h1 className="text-2xl font-black text-slate-900 mb-3">
+        {is404 ? tr("Page not found") : tr("This page didn't load")}
+      </h1>
       <p className="text-slate-500 text-sm max-w-xs mb-8 leading-relaxed">
-        {tr("Something went wrong on our end. You can try refreshing or head back home.")}
-        {error?.message && (
+        {is404
+          ? tr("The page you are looking for doesn't exist or has been moved.")
+          : tr("Something went wrong on our end. You can try refreshing or head back home.")}
+        {message && (
           <span className="block mt-4 text-[10px] font-mono text-slate-400 opacity-50 overflow-hidden text-ellipsis whitespace-nowrap">
-            Error: {error.message}
-          </span>
-        )}
-        {error?.stack && (
-          <span className="block mt-2 text-[8px] font-mono text-slate-300 opacity-30 overflow-hidden text-ellipsis max-h-20 text-left ltr">
-            {error.stack}
+            Error: {message}
           </span>
         )}
       </p>

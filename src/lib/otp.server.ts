@@ -365,12 +365,13 @@ export async function sendVerificationCode(
     if (!chatId) {
       const link = await d1First<{ telegram_chat_id: number }>(
         `SELECT telegram_chat_id FROM telegram_links
-          WHERE (user_id = ? OR user_id = ? OR telegram_phone = ?) AND telegram_chat_id IS NOT NULL AND verified = 1
+          WHERE (user_id = ? OR user_id = ? OR telegram_phone = ? OR telegram_user_id = ?) AND telegram_chat_id IS NOT NULL AND verified = 1
           ORDER BY linked_at DESC
           LIMIT 1`,
         userId || `guest:${canonicalPhone}`,
         `guest:${canonicalPhone}`,
         canonicalPhone,
+        userId || "",
       );
 
       if (!link?.telegram_chat_id) {

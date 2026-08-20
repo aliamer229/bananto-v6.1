@@ -127,7 +127,7 @@ export function getD1(): D1Like | undefined {
   // In local dev / preview the platform hands us an *empty local* D1 binding.
   // Writes there vanish and the admin sees "nothing was saved", so whenever
   // REST credentials for the real database are configured we prefer them.
-  const preferRest = restConfigAvailable && Boolean(import.meta.env?.DEV);
+  const preferRest = restConfigAvailable;
 
   if (!preferRest && db && typeof db.prepare === "function") return db;
 

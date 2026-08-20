@@ -125,7 +125,11 @@ export const Route = createFileRoute("/api/data")({
     handlers: {
       GET: async ({ request }) =>
         guard(async () => {
-          await forceFullImport();
+          try {
+            await forceFullImport();
+          } catch (err) {
+            console.error("[api:data] forceFullImport failed:", err);
+          }
           const viewer = await getSessionUser(request);
           const availability = await getAdminAvailabilityStatus();
           const availabilityConfig = viewer?.isAdmin
