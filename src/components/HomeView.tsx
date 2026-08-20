@@ -340,11 +340,11 @@ export default function HomeView({
                   }
 
                   // Final fallback to ID or creation to ensure deterministic order
-                  const createA = new Date(a.createdAt || a.created_at || 0).getTime();
-                  const createB = new Date(b.createdAt || b.created_at || 0).getTime();
-                  if (createA !== createB) return createB - createA;
+                  const createA = new Date(a.createdAt || a.created_at || a.created_time || 0).getTime();
+                  const createB = new Date(b.createdAt || b.created_at || b.created_time || 0).getTime();
+                  if (createA !== createB && !isNaN(createA) && !isNaN(createB)) return createB - createA;
                   
-                  return String(b.id).localeCompare(String(a.id));
+                  return String(b.id || "").localeCompare(String(a.id || ""));
                 })
                 .slice(0, 12)
                 .map((p) => {
