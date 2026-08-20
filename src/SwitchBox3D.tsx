@@ -25,12 +25,10 @@ export function SwitchBox3D({
 
   useEffect(() => {
     if (nodes && materials) {
-      const timer = setTimeout(() => {
-        onReady?.();
-      }, 100);
-      return () => clearTimeout(timer);
+      console.log("[SwitchBox3D] Geometry loaded, nodes:", Object.keys(nodes));
+      // Notify parent that we are ready to be displayed even if textures are pending
+      onReady?.();
     }
-    return undefined;
   }, [nodes, materials, onReady]);
 
   useEffect(() => {
@@ -62,21 +60,21 @@ export function SwitchBox3D({
         // 2. Overlay game-specific cover image
         if (coverImage) {
           const img = new Image();
-          if (!coverImage.startsWith('data:')) {
-            img.crossOrigin = 'anonymous';
-          }
-          img.src = coverImage;
+          img.crossOrigin = 'anonymous';
           
+          // Use a promise to load the image
           await new Promise((resolve) => {
             img.onload = resolve;
             img.onerror = (e) => {
-              console.warn("Cover image load failed", e);
+              console.warn("[SwitchBox3D] Cover image load failed", coverImage, e);
               resolve(null);
             };
+            img.src = coverImage;
           });
           
-          if (!isMounted) return;
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          if (isMounted && img.complete && img.naturalWidth > 0) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
         }
 
         const tex = new THREE.CanvasTexture(canvas);
@@ -155,5 +153,10 @@ export function SwitchBox3D({
   );
 }
 
+// Preload both assets to ensure they are cached
 useGLTF.preload(glbAsset.url);
+if (typeof window !== 'undefined') {
+  const img = new Image();
+  img.src = textureAsset.url;
+}
 export default SwitchBox3D;
