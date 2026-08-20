@@ -386,20 +386,14 @@ export default function HomeView({
             <div className="flex items-center justify-between gap-2 mb-4 px-8">
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold text-foreground">
-                  Nintendo Switch games
+                  {t("latest nintendo games released")}
                 </h3>
                 <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
                   New
                 </span>
               </div>
-              <Link
-                to="/category/$categoryId"
-                params={{ categoryId: "nintendo-switch-games" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline"
-              >
-                {t("عرض الكل")}
-              </Link>
             </div>
+
 
             <ProductStrip
               products={adminProducts
