@@ -126,12 +126,13 @@ export const Route = createFileRoute("/api/data")({
       GET: async ({ request }) =>
         guard(async () => {
           await forceFullImport();
-          const store = await getStore();
           const viewer = await getSessionUser(request);
           const availability = await getAdminAvailabilityStatus();
           const availabilityConfig = viewer?.isAdmin
             ? await getAdminAvailabilityConfig()
             : undefined;
+
+          const store = await getStore();
 
           const visibleStore = viewer?.isAdmin
             ? {
