@@ -111,6 +111,12 @@ async function handleUpdate(update: any) {
   // 2. Inline button callbacks
   const callback = update?.callback_query;
   if (callback) {
+    // The operator's console gets first refusal on every press, and answers
+    // even the ones that are not theirs, so no member's bot ever behaves as if
+    // an administrative button exists.
+    const { handleAdminCallback } = await import("@/lib/telegram-admin-console.server");
+    if (await handleAdminCallback(callback)) return;
+
     const chatId = callback.message?.chat?.id;
     const userId = callback.from?.id;
 
@@ -174,6 +180,12 @@ async function handleUpdate(update: any) {
 
   if (msg.chat.type !== "private" || String(msg.from?.id) !== String(chatId)) return;
 
+  // Operator commands run before the member flow — including the channel
+  // subscription gate, which is a member onboarding step and must never stand
+  // between the operator and a pending top-up.
+  const { handleAdminCommand } = await import("@/lib/telegram-admin-console.server");
+  if (await handleAdminCommand(msg)) return;
+
   // Verify Channel Subscription (@banan_to)
   const subCheck = await checkChannelSubscription(fromId, "@banan_to");
   if (!subCheck.isMember) {
@@ -195,6 +207,24 @@ async function handleUpdate(update: any) {
 
   if (text.startsWith("/start")) {
     const tokenCandidate = text.split(/\s+/)[1] || "";
+
+    // A contest link is a start parameter too, and it is not an account-linking
+    // token: without this it fell through to the link handler and the member
+    // was told their token was invalid instead of being entered.
+    if (/^contest_[a-z0-9]{8,64}$/i.test(tokenCandidate)) {
+      const { enterContest } = await import("@/lib/telegram-contests.server");
+      const entry = await enterContest(tokenCandidate, msg.from);
+      const reply = !entry.ok
+        ? entry.reason === "closed"
+          ? "⌛ انتهت هذه المسابقة، ترقّب القادمة!"
+          : "⚠️ لم نعثر على هذه المسابقة."
+        : entry.reason === "already_entered"
+          ? `✅ أنت مشارك بالفعل في «${escapeHtml(entry.title ?? "")}».\n👥 عدد المشاركين: ${entry.entries}`
+          : `🎉 تم تسجيل مشاركتك في «${escapeHtml(entry.title ?? "")}»!\n🏆 الجائزة: ${escapeHtml(entry.prize ?? "")}\n👥 عدد المشاركين: ${entry.entries}`;
+      await sendTelegramMessage(chatId, reply, { parse_mode: "HTML" });
+      return;
+    }
+
     const token = /^[A-Za-z0-9_-]{8,128}$/.test(tokenCandidate) ? tokenCandidate : null;
     if (token) {
       const { bindSessionChat } = await import("@/lib/telegram-link.server");

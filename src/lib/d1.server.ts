@@ -634,6 +634,11 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE telegram_link_tokens ADD COLUMN used_at TEXT`,
   `CREATE INDEX IF NOT EXISTS idx_telegram_otp_sessions_token ON telegram_otp_sessions (session_token)`,
   `CREATE INDEX IF NOT EXISTS idx_telegram_otp_sessions_phone ON telegram_otp_sessions (phone)`,
+  // Contests gained a publishing target (channel or group topic) and a record
+  // of who created them once the operator could create one from the bot.
+  `ALTER TABLE telegram_contests ADD COLUMN channel_id TEXT`,
+  `ALTER TABLE telegram_contests ADD COLUMN message_thread_id INTEGER`,
+  `ALTER TABLE telegram_contests ADD COLUMN created_by TEXT`,
   // Wallet top-up review trail. Without these, an approved request records no
   // reviewer, no timestamp and no credited amount, so there is nothing to audit
   // after the money has moved.
@@ -1340,7 +1345,7 @@ export function ensureUsersSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 8;
+const RUNTIME_SCHEMA_VERSION = 9;
 
 async function runSchemaStatements(
   db: D1Like,

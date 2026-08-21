@@ -65,6 +65,7 @@ import { Route as TelegramContestsRouteImport } from './routes/telegram/contests
 import { Route as TelegramNotificationsRouteImport } from './routes/telegram/notifications'
 import { Route as TelegramReferralsRouteImport } from './routes/telegram/referrals'
 import { Route as TelegramSecurityRouteImport } from './routes/telegram/security'
+import { Route as TelegramWalletReviewRouteImport } from './routes/telegram/wallet-review'
 import { Route as ApiAdminAssetsRouteImport } from './routes/api/admin/assets'
 import { Route as ApiAdminBananaRouteImport } from './routes/api/admin/banana'
 import { Route as ApiAdminBinanceTopupsRouteImport } from './routes/api/admin/binance-topups'
@@ -90,6 +91,7 @@ import { Route as ApiPublicTelegramDiagnosticRouteImport } from './routes/api/pu
 import { Route as ApiPublicTelegramHealthRouteImport } from './routes/api/public/telegram/health'
 import { Route as ApiPublicTelegramSetupWebhookRouteImport } from './routes/api/public/telegram/setup-webhook'
 import { Route as ApiPublicTelegramTestSendRouteImport } from './routes/api/public/telegram/test-send'
+import { Route as ApiPublicTelegramWalletReviewRouteImport } from './routes/api/public/telegram/wallet-review'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicWhatsappConfigRouteImport } from './routes/api/public/whatsapp/config'
 import { Route as ApiPublicWhatsappTestSendRouteImport } from './routes/api/public/whatsapp/test-send'
@@ -378,6 +380,11 @@ const TelegramSecurityRoute = TelegramSecurityRouteImport.update({
   path: '/telegram/security',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TelegramWalletReviewRoute = TelegramWalletReviewRouteImport.update({
+  id: '/telegram/wallet-review',
+  path: '/telegram/wallet-review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminAssetsRoute = ApiAdminAssetsRouteImport.update({
   id: '/api/admin/assets',
   path: '/api/admin/assets',
@@ -510,6 +517,12 @@ const ApiPublicTelegramTestSendRoute =
     path: '/api/public/telegram/test-send',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTelegramWalletReviewRoute =
+  ApiPublicTelegramWalletReviewRouteImport.update({
+    id: '/api/public/telegram/wallet-review',
+    path: '/api/public/telegram/wallet-review',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicTelegramWebhookRoute =
   ApiPublicTelegramWebhookRouteImport.update({
     id: '/api/public/telegram/webhook',
@@ -603,6 +616,7 @@ export interface FileRoutesByFullPath {
   '/telegram/notifications': typeof TelegramNotificationsRoute
   '/telegram/referrals': typeof TelegramReferralsRoute
   '/telegram/security': typeof TelegramSecurityRoute
+  '/telegram/wallet-review': typeof TelegramWalletReviewRoute
   '/admin/': typeof AdminIndexRoute
   '/bundles/': typeof BundlesIndexRoute
   '/orders/': typeof OrdersIndexRoute
@@ -632,6 +646,7 @@ export interface FileRoutesByFullPath {
   '/api/public/telegram/health': typeof ApiPublicTelegramHealthRoute
   '/api/public/telegram/setup-webhook': typeof ApiPublicTelegramSetupWebhookRoute
   '/api/public/telegram/test-send': typeof ApiPublicTelegramTestSendRoute
+  '/api/public/telegram/wallet-review': typeof ApiPublicTelegramWalletReviewRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/whatsapp/config': typeof ApiPublicWhatsappConfigRoute
   '/api/public/whatsapp/test-send': typeof ApiPublicWhatsappTestSendRoute
@@ -693,6 +708,7 @@ export interface FileRoutesByTo {
   '/telegram/notifications': typeof TelegramNotificationsRoute
   '/telegram/referrals': typeof TelegramReferralsRoute
   '/telegram/security': typeof TelegramSecurityRoute
+  '/telegram/wallet-review': typeof TelegramWalletReviewRoute
   '/admin': typeof AdminIndexRoute
   '/bundles': typeof BundlesIndexRoute
   '/orders': typeof OrdersIndexRoute
@@ -722,6 +738,7 @@ export interface FileRoutesByTo {
   '/api/public/telegram/health': typeof ApiPublicTelegramHealthRoute
   '/api/public/telegram/setup-webhook': typeof ApiPublicTelegramSetupWebhookRoute
   '/api/public/telegram/test-send': typeof ApiPublicTelegramTestSendRoute
+  '/api/public/telegram/wallet-review': typeof ApiPublicTelegramWalletReviewRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/whatsapp/config': typeof ApiPublicWhatsappConfigRoute
   '/api/public/whatsapp/test-send': typeof ApiPublicWhatsappTestSendRoute
@@ -784,6 +801,7 @@ export interface FileRoutesById {
   '/telegram/notifications': typeof TelegramNotificationsRoute
   '/telegram/referrals': typeof TelegramReferralsRoute
   '/telegram/security': typeof TelegramSecurityRoute
+  '/telegram/wallet-review': typeof TelegramWalletReviewRoute
   '/admin/': typeof AdminIndexRoute
   '/bundles/': typeof BundlesIndexRoute
   '/orders/': typeof OrdersIndexRoute
@@ -813,6 +831,7 @@ export interface FileRoutesById {
   '/api/public/telegram/health': typeof ApiPublicTelegramHealthRoute
   '/api/public/telegram/setup-webhook': typeof ApiPublicTelegramSetupWebhookRoute
   '/api/public/telegram/test-send': typeof ApiPublicTelegramTestSendRoute
+  '/api/public/telegram/wallet-review': typeof ApiPublicTelegramWalletReviewRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/whatsapp/config': typeof ApiPublicWhatsappConfigRoute
   '/api/public/whatsapp/test-send': typeof ApiPublicWhatsappTestSendRoute
@@ -876,6 +895,7 @@ export interface FileRouteTypes {
     | '/telegram/notifications'
     | '/telegram/referrals'
     | '/telegram/security'
+    | '/telegram/wallet-review'
     | '/admin/'
     | '/bundles/'
     | '/orders/'
@@ -905,6 +925,7 @@ export interface FileRouteTypes {
     | '/api/public/telegram/health'
     | '/api/public/telegram/setup-webhook'
     | '/api/public/telegram/test-send'
+    | '/api/public/telegram/wallet-review'
     | '/api/public/telegram/webhook'
     | '/api/public/whatsapp/config'
     | '/api/public/whatsapp/test-send'
@@ -966,6 +987,7 @@ export interface FileRouteTypes {
     | '/telegram/notifications'
     | '/telegram/referrals'
     | '/telegram/security'
+    | '/telegram/wallet-review'
     | '/admin'
     | '/bundles'
     | '/orders'
@@ -995,6 +1017,7 @@ export interface FileRouteTypes {
     | '/api/public/telegram/health'
     | '/api/public/telegram/setup-webhook'
     | '/api/public/telegram/test-send'
+    | '/api/public/telegram/wallet-review'
     | '/api/public/telegram/webhook'
     | '/api/public/whatsapp/config'
     | '/api/public/whatsapp/test-send'
@@ -1056,6 +1079,7 @@ export interface FileRouteTypes {
     | '/telegram/notifications'
     | '/telegram/referrals'
     | '/telegram/security'
+    | '/telegram/wallet-review'
     | '/admin/'
     | '/bundles/'
     | '/orders/'
@@ -1085,6 +1109,7 @@ export interface FileRouteTypes {
     | '/api/public/telegram/health'
     | '/api/public/telegram/setup-webhook'
     | '/api/public/telegram/test-send'
+    | '/api/public/telegram/wallet-review'
     | '/api/public/telegram/webhook'
     | '/api/public/whatsapp/config'
     | '/api/public/whatsapp/test-send'
@@ -1147,6 +1172,7 @@ export interface RootRouteChildren {
   TelegramNotificationsRoute: typeof TelegramNotificationsRoute
   TelegramReferralsRoute: typeof TelegramReferralsRoute
   TelegramSecurityRoute: typeof TelegramSecurityRoute
+  TelegramWalletReviewRoute: typeof TelegramWalletReviewRoute
   AdminIndexRoute: typeof AdminIndexRoute
   BundlesIndexRoute: typeof BundlesIndexRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
@@ -1174,6 +1200,7 @@ export interface RootRouteChildren {
   ApiPublicTelegramHealthRoute: typeof ApiPublicTelegramHealthRoute
   ApiPublicTelegramSetupWebhookRoute: typeof ApiPublicTelegramSetupWebhookRoute
   ApiPublicTelegramTestSendRoute: typeof ApiPublicTelegramTestSendRoute
+  ApiPublicTelegramWalletReviewRoute: typeof ApiPublicTelegramWalletReviewRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicWhatsappConfigRoute: typeof ApiPublicWhatsappConfigRoute
   ApiPublicWhatsappTestSendRoute: typeof ApiPublicWhatsappTestSendRoute
@@ -1573,6 +1600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TelegramSecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/telegram/wallet-review': {
+      id: '/telegram/wallet-review'
+      path: '/telegram/wallet-review'
+      fullPath: '/telegram/wallet-review'
+      preLoaderRoute: typeof TelegramWalletReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/assets': {
       id: '/api/admin/assets'
       path: '/api/admin/assets'
@@ -1748,6 +1782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTelegramTestSendRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/telegram/wallet-review': {
+      id: '/api/public/telegram/wallet-review'
+      path: '/api/public/telegram/wallet-review'
+      fullPath: '/api/public/telegram/wallet-review'
+      preLoaderRoute: typeof ApiPublicTelegramWalletReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/telegram/webhook': {
       id: '/api/public/telegram/webhook'
       path: '/api/public/telegram/webhook'
@@ -1893,6 +1934,7 @@ const rootRouteChildren: RootRouteChildren = {
   TelegramNotificationsRoute: TelegramNotificationsRoute,
   TelegramReferralsRoute: TelegramReferralsRoute,
   TelegramSecurityRoute: TelegramSecurityRoute,
+  TelegramWalletReviewRoute: TelegramWalletReviewRoute,
   AdminIndexRoute: AdminIndexRoute,
   BundlesIndexRoute: BundlesIndexRoute,
   OrdersIndexRoute: OrdersIndexRoute,
@@ -1920,6 +1962,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTelegramHealthRoute: ApiPublicTelegramHealthRoute,
   ApiPublicTelegramSetupWebhookRoute: ApiPublicTelegramSetupWebhookRoute,
   ApiPublicTelegramTestSendRoute: ApiPublicTelegramTestSendRoute,
+  ApiPublicTelegramWalletReviewRoute: ApiPublicTelegramWalletReviewRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicWhatsappConfigRoute: ApiPublicWhatsappConfigRoute,
   ApiPublicWhatsappTestSendRoute: ApiPublicWhatsappTestSendRoute,
