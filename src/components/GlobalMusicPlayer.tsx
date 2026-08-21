@@ -37,6 +37,14 @@ export default function GlobalMusicPlayer({ musicList = [] }: { musicList?: any[
   const currentTrackRef = useRef<RadioTrack | null>(null);
   const isTransitioningRef = useRef(false);
   const userGesturePendingRef = useRef(false);
+  /**
+   * The element that actually holds the current track. `activeSlotRef` only
+   * catches up when the crossfade finishes 1.5s later, so anything that needs
+   * "the audio that should be playing right now" has to read this instead.
+   */
+  const playingAudioRef = useRef<HTMLAudioElement | null>(null);
+  /** True once the browser has really produced sound at least once. */
+  const hasEverPlayedRef = useRef(false);
 
   // Initialize or replenish the Shuffle Bag
   const getNextTrack = (): RadioTrack | null => {
@@ -89,6 +97,14 @@ export default function GlobalMusicPlayer({ musicList = [] }: { musicList?: any[
     const startVolOut = outgoing ? outgoing.volume : 0;
 
     incoming.volume = 0;
+    playingAudioRef.current = incoming;
+    incoming.addEventListener(
+      "playing",
+      () => {
+        hasEverPlayedRef.current = true;
+      },
+      { once: true },
+    );
     const playPromise = incoming.play();
     if (playPromise) {
       playPromise.catch(() => {
@@ -156,6 +172,7 @@ export default function GlobalMusicPlayer({ musicList = [] }: { musicList?: any[
       b.volume = 0;
     }
     currentTrackRef.current = null;
+    playingAudioRef.current = null;
     isTransitioningRef.current = false;
   };
 
@@ -237,17 +254,31 @@ export default function GlobalMusicPlayer({ musicList = [] }: { musicList?: any[
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    /**
+     * Autoplay recovery.
+     *
+     * This used to fire only when a previous `play()` had been seen to reject,
+     * and then reached for the audio element of the *outgoing* slot — so a
+     * rejection that landed after the member's first tap, or a browser that
+     * simply left the element paused without rejecting, meant no music until
+     * the page was reloaded. It now looks at what is actually happening: if
+     * nothing has ever played, every gesture is another chance to start.
+     * Once sound has genuinely been produced, a pause is the member's own
+     * doing and is left alone.
+     */
     const unlockGesture = () => {
-      if (userGesturePendingRef.current && musicEnabled) {
-        userGesturePendingRef.current = false;
-        const { a, b } = getAudioElements();
-        const activeAudio = activeSlotRef.current === "A" ? a : b;
-        if (activeAudio && activeAudio.src) {
-          activeAudio.play().catch(() => {});
-        } else {
-          startPlayback();
+      if (!musicEnabled || hasEverPlayedRef.current) return;
+      userGesturePendingRef.current = false;
+
+      const active = playingAudioRef.current;
+      if (active?.src) {
+        if (active.paused) {
+          const resumed = active.play();
+          if (resumed) resumed.catch(() => {});
         }
+        return;
       }
+      startPlayback();
     };
 
     window.addEventListener("pointerdown", unlockGesture, { passive: true });

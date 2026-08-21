@@ -34,6 +34,10 @@ export function safeRandomUUID(): string {
 }
 
 const CHUNK_RELOAD_KEY = "bananto_chunk_reload_at";
+const RECOVERY_ID = "bananto-recovery-screen";
+const CHUNK_RELOAD_COUNT_KEY = "bananto_chunk_reload_count";
+/** Reloading more than this in one session is a loop, not a recovery. */
+const MAX_AUTOMATIC_RELOADS = 2;
 
 export const isScriptImportError = (errString: string) => {
   const s = String(errString || "").toLowerCase();
@@ -55,11 +59,109 @@ export const isScriptImportError = (errString: string) => {
   );
 };
 
+/**
+ * Last-resort recovery UI, built with plain DOM so it works when React is gone.
+ *
+ * Reloading is the fix for a stale chunk, but a reload that lands on the same
+ * broken build would loop. When that happens the page used to be left blank
+ * with the failure already swallowed — the member saw nothing at all. This puts
+ * something on screen and hands them the button instead.
+ */
+export function showRecoveryScreen(): void {
+  if (typeof document === "undefined") return;
+  if (document.getElementById(RECOVERY_ID)) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = RECOVERY_ID;
+  overlay.setAttribute("dir", "rtl");
+  overlay.setAttribute("role", "alert");
+  overlay.style.cssText = [
+    "position:fixed",
+    "inset:0",
+    "z-index:2147483647",
+    "display:flex",
+    "flex-direction:column",
+    "align-items:center",
+    "justify-content:center",
+    "gap:16px",
+    "padding:24px",
+    "background:#fcf9f5",
+    "color:#221a15",
+    "font-family:system-ui,-apple-system,'Segoe UI',sans-serif",
+    "text-align:center",
+  ].join(";");
+
+  const title = document.createElement("p");
+  title.textContent = "تعذر تحميل الصفحة";
+  title.style.cssText = "margin:0;font-size:18px;font-weight:800";
+
+  const hint = document.createElement("p");
+  hint.textContent = "قد تكون لديك نسخة قديمة محفوظة. اضغط لإعادة التحميل.";
+  hint.style.cssText = "margin:0;font-size:14px;opacity:.75;max-width:26rem;line-height:1.7";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "إعادة التحميل";
+  button.style.cssText = [
+    "appearance:none",
+    "border:0",
+    "cursor:pointer",
+    "border-radius:14px",
+    "padding:12px 28px",
+    "font-size:15px",
+    "font-weight:800",
+    "color:#fff",
+    "background:#d2231f",
+  ].join(";");
+  button.addEventListener("click", () => {
+    // The member asked for this one, so it is not part of any loop budget.
+    try {
+      window.sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      window.sessionStorage.removeItem(CHUNK_RELOAD_COUNT_KEY);
+    } catch {
+      /* private mode */
+    }
+    handleModuleReload(true);
+  });
+
+  overlay.append(title, hint, button);
+  document.body.appendChild(overlay);
+}
+
 export const handleModuleReload = (force = false) => {
   if (typeof window === "undefined") return;
-  const previousReload = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
-  if (!force && Date.now() - previousReload < 15_000) return;
-  window.sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
+  let previousReload = 0;
+  try {
+    previousReload = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
+  } catch {
+    /* sessionStorage can throw in private mode; treat it as never reloaded */
+  }
+  if (!force && Date.now() - previousReload < 15_000) {
+    // Reloading again would loop on the same broken build. Show the member a
+    // way out rather than leaving them on a blank page.
+    showRecoveryScreen();
+    return;
+  }
+
+  let attempts = 0;
+  try {
+    attempts = Number(window.sessionStorage.getItem(CHUNK_RELOAD_COUNT_KEY) ?? "0");
+  } catch {
+    /* ignore */
+  }
+  if (attempts >= MAX_AUTOMATIC_RELOADS) {
+    // Even a forced reload stops here: whatever is broken is not going to be
+    // fixed by loading the same thing a third time.
+    showRecoveryScreen();
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
+    window.sessionStorage.setItem(CHUNK_RELOAD_COUNT_KEY, String(attempts + 1));
+  } catch {
+    /* ignore */
+  }
 
   const doReload = () => {
     try {
@@ -108,6 +210,22 @@ export const handleModuleReload = (force = false) => {
   }
 };
 
+function isScriptElement(target: EventTarget | null): target is HTMLScriptElement {
+  return Boolean(target && (target as HTMLElement).tagName === "SCRIPT");
+}
+
+/** A script tag from this origin, i.e. part of the build we shipped. */
+function isOwnScriptElement(target: EventTarget | null): boolean {
+  if (!isScriptElement(target)) return false;
+  const src = target.getAttribute("src");
+  if (!src) return false;
+  try {
+    return new URL(src, window.location.href).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 export function installPolyfills() {
   const g = globalThis as { crypto?: UuidCrypto };
   if (!g.crypto) {
@@ -146,14 +264,13 @@ export function installPolyfills() {
       "error",
       (e: ErrorEvent) => {
         const target = e.target as HTMLElement | null;
-        const isScriptTag = target && target.tagName === "SCRIPT";
-        const msg = String(
-          e.message ||
-            e.error?.message ||
-            e.error ||
-            (isScriptTag ? "failed to load module script" : ""),
-        );
-        if (isScriptTag || isScriptImportError(msg)) {
+        const msg = String(e.message || e.error?.message || e.error || "");
+        // Only our own build's scripts mean "this page is broken, reload it".
+        // Any <script> tag used to qualify, so a third-party script that failed
+        // for reasons of its own — telegram-web-app.js behind a blocker, an
+        // analytics tag on a bad network — reloaded the app, failed again, and
+        // reloaded again: an endless loop that shows the member nothing.
+        if (isOwnScriptElement(target) || (!isScriptElement(target) && isScriptImportError(msg))) {
           try {
             e.preventDefault();
             e.stopImmediatePropagation();
@@ -185,4 +302,47 @@ export function installPolyfills() {
   }
 }
 
+/**
+ * Blank-screen watchdog.
+ *
+ * Whatever kills the app — a chunk that never arrives, a hydration error that
+ * tears the root down — the member is left staring at a white page, and any
+ * audio that had already started keeps playing, which makes it look like the
+ * site is running when nothing is. The app always paints something, so an empty
+ * body a few seconds after load means it never came up: reload once, and if
+ * that did not help, put the recovery screen in front of them.
+ */
+function installBlankScreenWatchdog() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  if ((window as any).__bananto_blank_watchdog_installed) return;
+  (window as any).__bananto_blank_watchdog_installed = true;
+
+  const looksBlank = () => {
+    const body = document.body;
+    if (!body) return true;
+    if (document.getElementById(RECOVERY_ID)) return false;
+    if ((body.innerText || "").trim().length > 0) return false;
+    // Text can legitimately be empty while an image-only view paints, so only
+    // call it blank when nothing renderable is in the tree at all.
+    return body.querySelectorAll("img,svg,canvas,video,input,button").length === 0;
+  };
+
+  const check = () => {
+    if (!looksBlank()) return;
+    let previousReload = 0;
+    try {
+      previousReload = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
+    } catch {
+      /* ignore */
+    }
+    if (Date.now() - previousReload < 30_000) showRecoveryScreen();
+    else handleModuleReload();
+  };
+
+  const start = () => window.setTimeout(check, 8_000);
+  if (document.readyState === "complete") start();
+  else window.addEventListener("load", start, { once: true });
+}
+
 installPolyfills();
+installBlankScreenWatchdog();

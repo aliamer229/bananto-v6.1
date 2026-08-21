@@ -160,7 +160,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        name: "viewport",
+        // interactive-widget shrinks the layout when the on-screen keyboard
+        // opens, so a full-height chat keeps its composer and bottom bar in
+        // view instead of pushing them behind it. Left at the default
+        // viewport-fit so every other page keeps rendering inside the safe area.
+        content: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
+      },
       { name: "format-detection", content: "telephone=no" },
       { title: "بنانا ستور — ألعاب وحسابات ننتندو سويتش" },
       {

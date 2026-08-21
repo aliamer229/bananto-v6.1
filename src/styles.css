@@ -440,6 +440,24 @@
   }
 }
 
+/* ---------------------------- Full-height shells --------------------------- */
+/*
+ * `100vh` on a phone is the viewport with the browser chrome hidden, so a
+ * full-screen page is taller than what is actually on screen: scroll down and
+ * the top bar leaves the viewport, scroll up and the bottom bar does. `100dvh`
+ * follows the chrome as it slides, which is what a fixed app shell needs. The
+ * `vh` declaration stays as the fallback for browsers without dynamic units.
+ */
+.h-screen-dynamic {
+  height: 100vh;
+}
+
+@supports (height: 100dvh) {
+  .h-screen-dynamic {
+    height: 100dvh;
+  }
+}
+
 /* ------------------------- Staggered batch reveal ------------------------- */
 .stagger-item {
   opacity: 0;
