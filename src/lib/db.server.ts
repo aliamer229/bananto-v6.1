@@ -214,10 +214,21 @@ function chunkJson(value: unknown): string[] {
   return parts;
 }
 
+/**
+ * Visit/view counters live in their own `store_kv` rows rather than inside the
+ * store blob. Tracking a page view used to go through `updateStore()`, which
+ * rewrites the entire catalogue (products, banners, content, bundles — hundreds
+ * of KB) on every single hit and could clobber a concurrent admin edit. They are
+ * overlaid onto the loaded document below so readers still see `store.visits`
+ * and `store.views` exactly as before.
+ */
+const COUNTER_KEYS = { visits: "analytics:visits", views: "analytics:views" } as const;
+
 async function loadStore(): Promise<StoreDoc> {
   if (await d1Ready()) {
     const rows = await d1RawAll<{ key: string; value: string }>(
-      `SELECT key, value FROM store_kv WHERE key = 'store' OR key LIKE 'store:%'`,
+      `SELECT key, value FROM store_kv
+       WHERE key = 'store' OR key LIKE 'store:%' OR key LIKE 'analytics:%'`,
     );
     const base = rows.find((r) => r.key === "store");
     const doc = { ...emptyStore, ...parse<Partial<StoreDoc>>(base?.value, {}) } as Record<
@@ -236,9 +247,64 @@ async function loadStore(): Promise<StoreDoc> {
       if (parsed !== undefined) doc[section] = parsed;
     }
 
+    for (const [field, key] of Object.entries(COUNTER_KEYS)) {
+      const row = rows.find((r) => r.key === key);
+      if (!row) continue;
+      const value = Number(row.value);
+      if (Number.isFinite(value)) doc[field] = value;
+    }
+
     return doc as unknown as StoreDoc;
   }
   return readJson<StoreDoc>(STORE_KEY, emptyStore);
+}
+
+/**
+ * Bump the site counters without touching the catalogue.
+ *
+ * The increment happens inside the UPSERT so parallel hits add up instead of
+ * overwriting each other. The first write seeds from whatever the store blob
+ * already held, so existing totals carry over.
+ */
+export async function incrementSiteCounters(delta: {
+  visits?: number;
+  views?: number;
+}): Promise<{ visits: number; views: number }> {
+  const store = await getStore();
+  const current = { visits: store.visits ?? 0, views: store.views ?? 0 };
+  const next = {
+    visits: current.visits + (delta.visits ?? 0),
+    views: current.views + (delta.views ?? 0),
+  };
+
+  if (!(await d1Ready())) {
+    await updateStore((doc) => ({ ...doc, ...next }));
+    return next;
+  }
+
+  const now = new Date().toISOString();
+  for (const [field, key] of Object.entries(COUNTER_KEYS) as [
+    "visits" | "views",
+    string,
+  ][]) {
+    const amount = delta[field] ?? 0;
+    if (!amount) continue;
+    await d1Execute(
+      `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+       ON CONFLICT(key) DO UPDATE SET
+         value = CAST(CAST(store_kv.value AS INTEGER) + ? AS TEXT),
+         updated_at = excluded.updated_at`,
+      key,
+      String(next[field]),
+      now,
+      amount,
+    );
+  }
+
+  // Keep the in-isolate cache coherent so the next reader does not serve a
+  // stale total for the rest of the TTL.
+  if (storeCache) storeCache = { doc: { ...storeCache.doc, ...next }, at: storeCache.at };
+  return next;
 }
 
 async function persistStore(next: StoreDoc) {
@@ -307,19 +373,28 @@ export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Prom
 
   storeCache = { doc: next, at: Date.now() };
 
-  // Notification: Product Price Change
-  const oldProducts = current.products;
-  const newProducts = next.products;
+  // Notification: Product Price Change.
+  // Collect the changes first: the previous version called getUsers() — a full
+  // table scan — once per repriced product, so a bulk catalogue save loaded
+  // every user hundreds of times while the admin's request was still open.
+  const previousPrices = new Map(
+    (current.products ?? []).map((product) => [String(product.id), product.price]),
+  );
+  const repriced = (next.products ?? []).filter((product) => {
+    const before = previousPrices.get(String(product.id));
+    return before !== undefined && before !== product.price;
+  });
 
-  for (const newP of newProducts) {
-    const oldP = oldProducts.find((p) => String(p.id) === String(newP.id));
-    if (oldP && oldP.price !== newP.price) {
-      const users = await getUsers();
-      const interestedUsers = users.filter((u) => u.telegramId && u.favorites?.includes(newP.id));
-      for (const u of interestedUsers) {
+  if (repriced.length > 0) {
+    const users = await getUsers();
+    const watchers = users.filter((u) => u.telegramId && u.favorites?.length);
+    for (const product of repriced) {
+      const before = previousPrices.get(String(product.id));
+      for (const watcher of watchers) {
+        if (!watcher.favorites?.includes(product.id)) continue;
         await sendTelegramMessage(
-          u.telegramId!,
-          `🔔 *تنبيه تغيير السعر*\n\nتغير سعر المنتج *${newP.title}* الذي تتابعه.\n\nالسعر السابق: ${oldP.price} IQD\nالسعر الجديد: ${newP.price} IQD`,
+          watcher.telegramId!,
+          `🔔 *تنبيه تغيير السعر*\n\nتغير سعر المنتج *${product.title}* الذي تتابعه.\n\nالسعر السابق: ${before} IQD\nالسعر الجديد: ${product.price} IQD`,
         );
       }
     }
@@ -1431,6 +1506,18 @@ export async function createWalletTransaction(
   return full;
 }
 
+/**
+ * Move money in or out of a wallet.
+ *
+ * The balance is changed with a single conditional `UPDATE ... SET
+ * wallet_balance = wallet_balance + ?` rather than a read-modify-write, so two
+ * concurrent requests can never both read the same starting balance and clobber
+ * each other. Debits carry their own `wallet_balance >= ?` guard, which is what
+ * makes overdrawing impossible even under a race. The ledger row is written in
+ * the same D1 batch and is skipped (`WHERE changes() = 1`) when the balance
+ * update did not apply, so the ledger can never record a transfer that did not
+ * happen.
+ */
 export async function adjustUserWalletBalance(
   userId: string,
   amount: number,
@@ -1438,25 +1525,68 @@ export async function adjustUserWalletBalance(
   description?: string,
   orderId?: string,
 ): Promise<User | undefined> {
+  if (!Number.isFinite(amount)) throw new Error("invalid_amount");
+
   const user = await findUserById(userId);
   if (!user) return undefined;
 
-  const newBalance = (user.walletBalance ?? 0) + amount;
-  if (newBalance < 0 && amount < 0) {
-    throw new Error("Insufficient wallet balance");
+  if (!(await d1Ready())) {
+    // JSON fallback driver (local sandbox only): no transactions available.
+    const newBalance = (user.walletBalance ?? 0) + amount;
+    if (newBalance < 0 && amount < 0) throw new Error("Insufficient wallet balance");
+    const updated = await updateUser(userId, (u) => ({ ...u, walletBalance: newBalance }));
+    if (updated) {
+      await createWalletTransaction({
+        userId,
+        amount,
+        kind,
+        description: description ?? `Wallet adjustment: ${kind}`,
+        orderId: orderId ?? "",
+      });
+    }
+    return updated;
   }
 
-  const updated = await updateUser(userId, (u) => ({ ...u, walletBalance: newBalance }));
-  if (updated) {
-    await createWalletTransaction({
-      userId,
-      amount,
-      kind,
-      description: description ?? `Wallet adjustment: ${kind}`,
-      orderId: orderId ?? "",
-    });
+  const now = new Date().toISOString();
+  const balanceSql =
+    amount < 0
+      ? `UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ? AND wallet_balance >= ?`
+      : `UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?`;
+  const balanceParams = amount < 0 ? [amount, userId, -amount] : [amount, userId];
+  const ledgerParams = [
+    randomId("wtx"),
+    userId,
+    kind,
+    amount,
+    description ?? `Wallet adjustment: ${kind}`,
+    orderId ?? "",
+    now,
+  ];
+  const ledgerSql = `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, created_at)
+            SELECT ?, ?, ?, ?, ?, ?, ? WHERE changes() = 1`;
+
+  const db = getD1();
+  if (db?.batch) {
+    const results = await d1Batch([
+      { sql: balanceSql, params: balanceParams },
+      { sql: ledgerSql, params: ledgerParams },
+    ]);
+    if (Number(results[0]?.meta?.changes ?? 0) !== 1) {
+      throw new Error("Insufficient wallet balance");
+    }
+    return findUserById(userId);
   }
-  return updated;
+
+  // Driver without batch support: the guard still runs inside the single
+  // UPDATE, so the balance stays correct; only the ledger row loses atomicity.
+  const changed = await d1RunChanges(balanceSql, ...balanceParams);
+  if (changed !== 1) throw new Error("Insufficient wallet balance");
+  await d1Execute(
+    `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ...ledgerParams,
+  );
+  return findUserById(userId);
 }
 
 export async function createRechargeRequest(

@@ -3,7 +3,10 @@ import { fetchRemoteImage, readLimitedBody, safeRemoteImageUrl } from "@/lib/sec
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 
 const MAX_BYTES = 8 * 1024 * 1024;
-const ALLOWED = /^image\/(?:png|jpeg|webp|gif|avif|svg\+xml)$/i;
+// SVG is deliberately excluded: it is an active document, so echoing one
+// back from our own origin would be a script-execution primitive on
+// banan.to for any attacker-supplied URL.
+const ALLOWED = /^image\/(?:png|jpeg|webp|gif|avif)$/i;
 
 function detectMime(buffer: Uint8Array, fallbackUrl: string, headerMime?: string | null): string {
   if (headerMime && ALLOWED.test(headerMime)) {
@@ -45,7 +48,6 @@ function detectMime(buffer: Uint8Array, fallbackUrl: string, headerMime?: string
   if (clean.endsWith(".webp")) return "image/webp";
   if (clean.endsWith(".gif")) return "image/gif";
   if (clean.endsWith(".avif")) return "image/avif";
-  if (clean.endsWith(".svg")) return "image/svg+xml";
 
   return "image/jpeg";
 }
@@ -78,6 +80,10 @@ export const Route = createFileRoute("/api/public/img-proxy")({
               "Content-Type": mime,
               "Access-Control-Allow-Origin": "*",
               "Cache-Control": "public, max-age=86400",
+              // Defence in depth: this body is attacker-controlled and served
+              // from our own origin, so it must never execute as a document.
+              "X-Content-Type-Options": "nosniff",
+              "Content-Security-Policy": "default-src 'none'; sandbox",
             },
           });
         } catch {

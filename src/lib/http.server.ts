@@ -60,19 +60,11 @@ export function errorRef(): string {
  * leaking the message to the caller.
  */
 export function logServerError(scope: string, ref: string, error: unknown): void {
-  import("fs").then((fs) =>
-    fs.appendFileSync(
-      "error_log_runtime.txt",
-      "\n[" +
-        new Date().toISOString() +
-        "] " +
-        scope +
-        " (" +
-        ref +
-        "): " +
-        String((error as any)?.stack || error),
-    ),
-  );
+  // This runs inside a Cloudflare Worker: there is no writable filesystem, and
+  // the previous `import("fs").then(fs => fs.appendFileSync(...))` had no catch,
+  // so every handled server error also produced an unhandled rejection.
+  // `wrangler tail` / Workers Logs is the log sink; the ref ties a user report
+  // to a single line there.
   const detail = error instanceof Error ? error : new Error(String(error));
   console.error(`[${scope}:error] ref=${ref} ${detail.name}: ${detail.message}`, detail.stack);
 }
