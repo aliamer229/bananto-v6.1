@@ -54,6 +54,14 @@ describe("admin reply suggestions", () => {
     expect(out[0]!.id).toBe("apology_wait");
   });
 
+  it("hears the chase in Iraqi phrasing that uses none of the obvious words", () => {
+    const out = suggestAdminReplies({
+      messages: [msg("شكد بعد يريد وقت؟ صار زمان وانا انتظر")],
+      ctx: ctx(),
+    });
+    expect(out[0]!.id).toBe("apology_wait");
+  });
+
   it("asks for the receipt when payment is not confirmed", () => {
     const out = suggestAdminReplies({
       messages: [msg("هلو")],

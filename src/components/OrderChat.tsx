@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { api, fileToDataUrl } from "@/lib/api";
 import { isAccountKind, type ChatMessage, type Order, type OrderItem } from "@/lib/types";
 import OrderReviewModal from "@/components/OrderReviewModal";
+import { AccountBatchPanel } from "@/components/admin/AccountBatchPanel";
 
 function Bubble({ message, children }: { message: ChatMessage; children: React.ReactNode }) {
   const mine = message.senderRole === "user";
@@ -434,6 +435,8 @@ function AdminPanel({ order, onDone }: { order: Order; onDone: () => void }) {
               إرسال الرمز
             </button>
           </div>
+
+          <AccountBatchPanel orderId={order.id} itemId={itemId} onOrderChanged={onDone} />
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
