@@ -39,6 +39,7 @@ export const isScriptImportError = (errString: string) => {
   const s = String(errString || "").toLowerCase();
   return (
     s.includes("importing a module script failed") ||
+    s.includes("module script") ||
     s.includes("dynamically imported module") ||
     s.includes("error loading dynamically imported module") ||
     s.includes("failed to fetch dynamically imported module") ||
@@ -48,14 +49,16 @@ export const isScriptImportError = (errString: string) => {
     s.includes("chunkloaderror") ||
     s.includes("loading chunk") ||
     s.includes("failed to resolve module") ||
-    s.includes("javascript mime type")
+    s.includes("javascript mime type") ||
+    s.includes("mime type") ||
+    s.includes("networkerror when attempting to fetch resource")
   );
 };
 
 export const handleModuleReload = (force = false) => {
   if (typeof window === "undefined") return;
   const previousReload = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
-  if (!force && Date.now() - previousReload < 20_000) return;
+  if (!force && Date.now() - previousReload < 15_000) return;
   window.sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
 
   const doReload = () => {
@@ -142,20 +145,43 @@ export function installPolyfills() {
     window.addEventListener(
       "error",
       (e: ErrorEvent) => {
-        const msg = String(e.message || e.error?.message || e.error || "");
-        if (isScriptImportError(msg)) {
+        const target = e.target as HTMLElement | null;
+        const isScriptTag = target && target.tagName === "SCRIPT";
+        const msg = String(
+          e.message ||
+            e.error?.message ||
+            e.error ||
+            (isScriptTag ? "failed to load module script" : ""),
+        );
+        if (isScriptTag || isScriptImportError(msg)) {
+          try {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          } catch {
+            // ignore
+          }
           handleModuleReload();
         }
       },
       true,
     );
 
-    window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
-      const reasonMsg = String(e.reason?.message || e.reason || "");
-      if (isScriptImportError(reasonMsg)) {
-        handleModuleReload();
-      }
-    });
+    window.addEventListener(
+      "unhandledrejection",
+      (e: PromiseRejectionEvent) => {
+        const reasonMsg = String(e.reason?.message || e.reason || "");
+        if (isScriptImportError(reasonMsg)) {
+          try {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          } catch {
+            // ignore
+          }
+          handleModuleReload();
+        }
+      },
+      true,
+    );
   }
 }
 

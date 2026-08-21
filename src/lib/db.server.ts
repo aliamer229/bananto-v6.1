@@ -1555,39 +1555,87 @@ export async function rejectRechargeRequest(
 
 export async function consumeBananCode(
   userId: string,
-  code: string,
+  rawCode: string,
 ): Promise<{ success: boolean; amount?: number; currency?: string; error?: string }> {
-  if (!(await d1Ready())) return { success: false, error: "Database not ready" };
-
-  const bc = await d1First<BananCode>(
-    `SELECT * FROM banan_codes WHERE code = ? AND is_used = 0`,
-    code,
-  );
-  if (!bc) return { success: false, error: "كود غير صالح أو مستخدم مسبقاً" };
+  const code = String(rawCode ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+  if (!code) return { success: false, error: "يرجى إدخال الكود" };
 
   const store = await getStore();
   const now = new Date().toISOString();
-  const claimed = await d1RunChanges(
-    `UPDATE banan_codes SET is_used = 1, used_by = ?, used_at = ?
-     WHERE id = ? AND is_used = 0`,
-    userId,
-    now,
-    bc.id,
-  );
-  if (claimed !== 1) return { success: false, error: "كود غير صالح أو مستخدم مسبقاً" };
 
-  // Credit full amount directly in IQD (Iraqi Dinar)
+  if (await d1Ready()) {
+    const bc = await d1First<{ id: string; code: string; value: number; is_used: number }>(
+      `SELECT * FROM banan_codes WHERE UPPER(code) = ? AND is_used = 0`,
+      code,
+    );
+    if (!bc) return { success: false, error: "كود غير صالح أو مستخدم مسبقاً" };
+
+    const claimed = await d1RunChanges(
+      `UPDATE banan_codes SET is_used = 1, used_by = ?, used_at = ?
+       WHERE id = ? AND is_used = 0`,
+      userId,
+      now,
+      bc.id,
+    );
+    if (claimed !== 1) return { success: false, error: "كود غير صالح أو مستخدم مسبقاً" };
+
+    // Credit full amount directly in IQD (Iraqi Dinar)
+    await adjustUserWalletBalance(
+      userId,
+      bc.value,
+      "deposit",
+      `كود بنانتو: ${bc.code} (${bc.value.toLocaleString("en-US")} د.ع)`,
+    );
+
+    // Reward user with bananas based on dinarPerBanana setting
+    const dinarPerBanana = Number(store.settings?.["dinarPerBanana"] || 1000);
+    if (dinarPerBanana > 0) {
+      const bananasEarned = Math.floor(bc.value / dinarPerBanana);
+      if (bananasEarned > 0) {
+        await updateUser(userId, (u) => ({
+          ...u,
+          bananaBalance: (Number(u.bananaBalance) || 0) + bananasEarned,
+        }));
+      }
+    }
+
+    return { success: true, amount: bc.value, currency: "IQD" };
+  }
+
+  // Fallback storage when D1 is not active
+  let targetCode: BananCode | undefined;
+  await mutateJson<BananCode[]>("banan_codes.json", [], (list) => {
+    return list.map((c) => {
+      if (c.code.toUpperCase() === code && !c.isUsed) {
+        targetCode = c;
+        return {
+          ...c,
+          isUsed: true,
+          usedBy: userId,
+          usedAt: now,
+        };
+      }
+      return c;
+    });
+  });
+
+  if (!targetCode) {
+    return { success: false, error: "كود غير صالح أو مستخدم مسبقاً" };
+  }
+
   await adjustUserWalletBalance(
     userId,
-    bc.value,
+    targetCode.value,
     "deposit",
-    `كود بنانتو: ${code} (${bc.value.toLocaleString("en-US")} د.ع)`,
+    `كود بنانتو: ${targetCode.code} (${targetCode.value.toLocaleString("en-US")} د.ع)`,
   );
 
-  // Reward user with bananas based on dinarPerBanana setting
   const dinarPerBanana = Number(store.settings?.["dinarPerBanana"] || 1000);
   if (dinarPerBanana > 0) {
-    const bananasEarned = Math.floor(bc.value / dinarPerBanana);
+    const bananasEarned = Math.floor(targetCode.value / dinarPerBanana);
     if (bananasEarned > 0) {
       await updateUser(userId, (u) => ({
         ...u,
@@ -1596,33 +1644,170 @@ export async function consumeBananCode(
     }
   }
 
-  return { success: true, amount: bc.value, currency: "IQD" };
+  return { success: true, amount: targetCode.value, currency: "IQD" };
 }
 
 export async function createBananCode(value: number): Promise<BananCode> {
-  const code = randomId("BANAN")
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "")
-    .slice(0, 12);
-  const full: BananCode = {
-    id: randomId("bc"),
-    code,
-    value,
-    isUsed: false,
-    createdAt: new Date().toISOString(),
-  };
+  const codes = await createBananCodesBatch(value, 1);
+  return codes[0];
+}
+
+export async function createBananCodesBatch(value: number, count = 1): Promise<BananCode[]> {
+  const effectiveCount = Math.max(1, Math.min(100, Math.floor(Number(count) || 1)));
+  const codes: BananCode[] = [];
+  const now = new Date().toISOString();
+
+  for (let i = 0; i < effectiveCount; i++) {
+    const rawSuffix = randomId("BANAN")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 7);
+    const code = `BANAN${rawSuffix}`.slice(0, 12);
+    codes.push({
+      id: randomId("bc"),
+      code,
+      value,
+      isUsed: false,
+      createdAt: now,
+    });
+  }
 
   if (await d1Ready()) {
-    await d1Execute(
-      `INSERT INTO banan_codes (id, code, value, is_used, created_at) VALUES (?, ?, ?, ?, ?)`,
-      full.id,
-      full.code,
-      full.value,
-      0,
-      full.createdAt,
-    );
+    for (const c of codes) {
+      await d1Execute(
+        `INSERT INTO banan_codes (id, code, value, is_used, created_at) VALUES (?, ?, ?, ?, ?)`,
+        c.id,
+        c.code,
+        c.value,
+        0,
+        c.createdAt,
+      );
+    }
+  } else {
+    await mutateJson<BananCode[]>("banan_codes.json", [], (list) => [...codes, ...list]);
   }
-  return full;
+
+  return codes;
+}
+
+export interface BananCodeDetail {
+  id: string;
+  code: string;
+  value: number;
+  isUsed: boolean;
+  usedBy?: string;
+  usedAt?: string;
+  createdAt: string;
+  usedByUser?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    username?: string;
+    memberNo?: string;
+  } | null;
+}
+
+export async function listBananCodesWithDetails(): Promise<BananCodeDetail[]> {
+  if (await d1Ready()) {
+    const rows = await d1All<{
+      id: string;
+      code: string;
+      value: number;
+      is_used: number;
+      used_by: string | null;
+      used_at: string | null;
+      created_at: string;
+      user_name: string | null;
+      user_email: string | null;
+      user_phone: string | null;
+      user_member_no: string | null;
+      user_username: string | null;
+    }>(
+      `SELECT 
+        bc.id,
+        bc.code,
+        bc.value,
+        bc.is_used,
+        bc.used_by,
+        bc.used_at,
+        bc.created_at,
+        u.name as user_name,
+        u.email as user_email,
+        u.phone as user_phone,
+        u.member_no as user_member_no,
+        u.username as user_username
+      FROM banan_codes bc
+      LEFT JOIN users u ON u.id = bc.used_by
+      ORDER BY bc.created_at DESC
+      LIMIT 500`,
+    );
+
+    return rows.map((r) => ({
+      id: r.id,
+      code: r.code,
+      value: Number(r.value),
+      isUsed: Boolean(r.is_used),
+      usedBy: r.used_by ?? undefined,
+      usedAt: r.used_at ?? undefined,
+      createdAt: r.created_at,
+      usedByUser: r.used_by
+        ? {
+            id: r.used_by,
+            name: r.user_name || "مستخدم مسجل",
+            email: r.user_email ?? undefined,
+            phone: r.user_phone ?? undefined,
+            username: r.user_username ?? undefined,
+            memberNo: r.user_member_no ?? undefined,
+          }
+        : null,
+    }));
+  }
+
+  // Fallback storage
+  const rawCodes = await readJson<BananCode[]>("banan_codes.json", []);
+  const users = await getUsers();
+  const userMap = new Map(users.map((u) => [u.id, u]));
+
+  return rawCodes.map((c) => {
+    const u = c.usedBy ? userMap.get(c.usedBy) : undefined;
+    return {
+      id: c.id,
+      code: c.code,
+      value: Number(c.value),
+      isUsed: Boolean(c.isUsed),
+      usedBy: c.usedBy,
+      usedAt: c.usedAt,
+      createdAt: c.createdAt,
+      usedByUser: c.usedBy
+        ? {
+            id: c.usedBy,
+            name: u?.name || "مستخدم مسجل",
+            email: u?.email,
+            phone: u?.phone,
+            username: u?.username,
+            memberNo: u?.memberNo,
+          }
+        : null,
+    };
+  });
+}
+
+export async function deleteBananCode(id: string): Promise<boolean> {
+  if (await d1Ready()) {
+    const changes = await d1RunChanges(`DELETE FROM banan_codes WHERE id = ? AND is_used = 0`, id);
+    return changes > 0;
+  }
+  let deleted = false;
+  await mutateJson<BananCode[]>("banan_codes.json", [], (list) => {
+    const item = list.find((c) => c.id === id);
+    if (item && !item.isUsed) {
+      deleted = true;
+      return list.filter((c) => c.id !== id);
+    }
+    return list;
+  });
+  return deleted;
 }
 
 export async function listAllRechargeRequests(): Promise<WalletRechargeRequest[]> {

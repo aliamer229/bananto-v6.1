@@ -15,16 +15,9 @@ import { rankByPreference } from "@/lib/recommend";
 import { useAuth } from "@/hooks/useAuth";
 import { cdnImage } from "@/lib/img";
 import { LazySection } from "./LazySection";
-import { lazyWithRetry } from "@/lib/lazyRetry";
-
-// Heavy components lazily loaded with retry
-const NintendoNews = lazyWithRetry(() => import("./NintendoNews"));
-const HomeBananaMarket = lazyWithRetry(() =>
-  import("./HomeBananaMarket").then((m) => ({ default: m.HomeBananaMarket })),
-);
-const StoreServices = lazyWithRetry(() =>
-  import("./StoreServices").then((m) => ({ default: m.StoreServices })),
-);
+import NintendoNews from "./NintendoNews";
+import { HomeBananaMarket } from "./HomeBananaMarket";
+import { StoreServices } from "./StoreServices";
 
 preloadSound("hover");
 preloadSound("hover_s");

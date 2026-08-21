@@ -61,6 +61,11 @@ import {
   BookOpen,
   ShieldCheck,
   LifeBuoy,
+  Copy,
+  CheckCircle2,
+  UserCheck,
+  Key,
+  ShieldAlert,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -4334,113 +4339,590 @@ function WalletManagementView() {
 }
 
 function BananCodesView() {
-  const [amount, setAmount] = useState("");
+  const queryClient = useQueryClient();
+  const [amount, setAmount] = useState("10000");
   const [count, setCount] = useState("1");
-  const [generatedCodes, setGeneratedCodes] = useState<any[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "used">("all");
+  const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
+  const [latestBatch, setLatestBatch] = useState<any[] | null>(null);
 
-  const handleGenerate = async () => {
-    if (!amount) return;
-    setIsGenerating(true);
-    try {
-      const results = [];
-      for (let i = 0; i < Number(count); i++) {
-        const res = await adminApi.createBananCode(Number(amount));
-        results.push(res.code);
-      }
-      setGeneratedCodes([...results, ...generatedCodes]);
-      setAmount("");
-      toast.success(`تم إنشاء ${count} كود بنانتا`);
-    } catch (e) {
-      toast.error("فشل الإنشاء");
-    } finally {
-      setIsGenerating(false);
+  const { data, isLoading, isFetching, refetch } = useQuery({
+    queryKey: ["admin-banan-codes"],
+    queryFn: () => adminApi.listBananCodes(),
+  });
+
+  const createBatchMutation = useMutation({
+    mutationFn: ({ val, cnt }: { val: number; cnt: number }) => adminApi.createBananCode(val, cnt),
+    onSuccess: (res) => {
+      const created = res.codes || (res.code ? [res.code] : []);
+      setLatestBatch(created);
+      toast.success(`تم إنشاء وحفظ ${created.length} كود بنانتو بنجاح في النظام`);
+      queryClient.invalidateQueries({ queryKey: ["admin-banan-codes"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "فشل إنشاء الأكواد");
+    },
+  });
+
+  const deleteCodeMutation = useMutation({
+    mutationFn: (id: string) => adminApi.deleteBananCode(id),
+    onSuccess: () => {
+      toast.success("تم حذف الكود بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["admin-banan-codes"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "فشل حذف الكود");
+    },
+  });
+
+  const handleGenerate = () => {
+    const numAmount = Number(amount);
+    const numCount = Number(count) || 1;
+    if (!numAmount || numAmount <= 0) {
+      toast.error("يرجى تحديد قيمة الكود بالدينار العراقي");
+      return;
     }
+    if (numCount < 1 || numCount > 100) {
+      toast.error("الكمية يجب أن تكون بين 1 و 100 كود");
+      return;
+    }
+    createBatchMutation.mutate({ val: numAmount, cnt: numCount });
   };
+
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCodeId(id);
+    toast.success(`تم نسخ الكود: ${text}`);
+    setTimeout(() => setCopiedCodeId(null), 2000);
+  };
+
+  const copyAllBatchCodes = (codes: any[]) => {
+    const textList = codes
+      .map((c) => `${c.code} (${c.value?.toLocaleString("en-US")} د.ع)`)
+      .join("\n");
+    navigator.clipboard.writeText(textList);
+    toast.success(`تم نسخ جميع الأكواد (${codes.length} كود) إلى الحافظة`);
+  };
+
+  const allCodes = data?.codes || [];
+
+  const totalCodesCount = allCodes.length;
+  const activeCodes = allCodes.filter((c: any) => !c.isUsed && !c.is_used);
+  const usedCodes = allCodes.filter((c: any) => c.isUsed || c.is_used);
+  const totalValue = allCodes.reduce((acc: number, c: any) => acc + (Number(c.value) || 0), 0);
+  const activeValue = activeCodes.reduce((acc: number, c: any) => acc + (Number(c.value) || 0), 0);
+  const usedValue = usedCodes.reduce((acc: number, c: any) => acc + (Number(c.value) || 0), 0);
+
+  const filteredCodes = allCodes.filter((c: any) => {
+    const isCodeUsed = Boolean(c.isUsed || c.is_used);
+    if (statusFilter === "active" && isCodeUsed) return false;
+    if (statusFilter === "used" && !isCodeUsed) return false;
+
+    if (!search.trim()) return true;
+    const query = search.trim().toLowerCase();
+
+    const codeMatch = String(c.code || "")
+      .toLowerCase()
+      .includes(query);
+    const userNameMatch = String(c.usedByUser?.name || "")
+      .toLowerCase()
+      .includes(query);
+    const userPhoneMatch = String(c.usedByUser?.phone || "").includes(query);
+    const userEmailMatch = String(c.usedByUser?.email || "")
+      .toLowerCase()
+      .includes(query);
+    const userMemberMatch = String(c.usedByUser?.memberNo || "")
+      .toLowerCase()
+      .includes(query);
+    const usedByMatch = String(c.usedBy || c.used_by || "")
+      .toLowerCase()
+      .includes(query);
+
+    return (
+      codeMatch ||
+      userNameMatch ||
+      userPhoneMatch ||
+      userEmailMatch ||
+      userMemberMatch ||
+      usedByMatch
+    );
+  });
+
+  const PRESET_AMOUNTS = [5000, 10000, 25000, 50000, 100000];
+  const PRESET_COUNTS = [1, 5, 10, 20, 50];
 
   return (
     <div className="p-6 space-y-8 animate-in fade-in duration-300">
-      <h1 className="text-2xl font-black flex items-center gap-2">
-        <Coins className="w-8 h-8 text-amber-500" />
-        إدارة أكواد بنانتا
-      </h1>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black flex items-center gap-2">
+            <Coins className="w-8 h-8 text-amber-500" />
+            إدارة وتتبع أكواد بنانتو
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            إنشاء أكواد التعبئة الفورية وتتبع المستخدمين المستفيدين لحماية وأمان النظام
+          </p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="self-start sm:self-auto flex items-center gap-2 bg-muted/60 hover:bg-muted border border-border px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-amber-500" : ""}`} />
+          تحديث السجلات
+        </button>
+      </div>
 
-      <div className="w-full bg-white p-6 rounded-2xl border border-border shadow-sm">
-        <h2 className="font-black mb-4">إنشاء دفعة جديدة</h2>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground">قيمة الكود (د.ع)</label>
+      {/* KPI Stats Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-muted-foreground">إجمالي الأكواد</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+              <Key className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black">{totalCodesCount.toLocaleString("en-US")}</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            القيمة الكلية: {totalValue.toLocaleString("en-US")} د.ع
+          </div>
+        </div>
+
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-green-600">الأكواد المتاحة والنشطة</span>
+            <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-green-600">
+            {activeCodes.length.toLocaleString("en-US")}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            قيمة المتاح: {activeValue.toLocaleString("en-US")} د.ع
+          </div>
+        </div>
+
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-blue-600">الأكواد المستخدمة والمشحونة</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+              <UserCheck className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-blue-600">
+            {usedCodes.length.toLocaleString("en-US")}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            قيمة المشحون: {usedValue.toLocaleString("en-US")} د.ع
+          </div>
+        </div>
+
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-muted-foreground">نسبة الاستهلاك</span>
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black">
+            {totalCodesCount > 0
+              ? `${Math.round((usedCodes.length / totalCodesCount) * 100)}%`
+              : "0%"}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            تتبع فوري ومحمي في قاعدة البيانات
+          </div>
+        </div>
+      </div>
+
+      {/* Code Generation Form */}
+      <div className="bg-card rounded-3xl p-6 border border-border shadow-sm space-y-6">
+        <div>
+          <h2 className="text-lg font-black flex items-center gap-2">
+            <Plus className="w-5 h-5 text-amber-500" />
+            إنشاء وتوليد دفعة أكواد بنانتو جديدة
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            الأكواد تنشأ فورياً وتُحفظ تلقائياً في النظام ويمكن نسخها وتوزيعها على المستخدمين
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Amount Section */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-muted-foreground">
+              قيمة الكود (بالدينار العراقي د.ع)
+            </label>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full p-3 rounded-xl bg-muted/50 border border-border outline-none"
-              placeholder="10"
+              className="w-full p-3.5 rounded-xl bg-muted/40 border border-border outline-none focus:border-amber-500 font-bold text-lg"
+              placeholder="مثال: 10000"
             />
+            <div className="flex flex-wrap gap-1.5">
+              {PRESET_AMOUNTS.map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  onClick={() => setAmount(String(amt))}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    amount === String(amt)
+                      ? "bg-amber-500 text-white shadow-sm"
+                      : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {amt.toLocaleString("en-US")} د.ع
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground">الكمية</label>
+
+          {/* Count Section */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-muted-foreground">عدد الأكواد المطلوبة</label>
             <input
               type="number"
+              min="1"
+              max="100"
               value={count}
               onChange={(e) => setCount(e.target.value)}
-              className="w-full p-3 rounded-xl bg-muted/50 border border-border outline-none"
-              placeholder="1"
+              className="w-full p-3.5 rounded-xl bg-muted/40 border border-border outline-none focus:border-amber-500 font-bold text-lg"
+              placeholder="مثال: 10"
             />
+            <div className="flex flex-wrap gap-1.5">
+              {PRESET_COUNTS.map((cnt) => (
+                <button
+                  key={cnt}
+                  type="button"
+                  onClick={() => setCount(String(cnt))}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    count === String(cnt)
+                      ? "bg-amber-500 text-white shadow-sm"
+                      : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {cnt} {cnt === 1 ? "كود واحد" : "أكواد"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+
         <button
           onClick={handleGenerate}
-          disabled={isGenerating || !amount}
-          className="w-full bg-amber-500 text-white font-black py-3 rounded-2xl hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
+          disabled={createBatchMutation.isPending || !amount || !count}
+          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
         >
-          {isGenerating ? (
-            <RefreshCw className="w-5 h-5 animate-spin" />
+          {createBatchMutation.isPending ? (
+            <>
+              <RefreshCw className="w-5 h-5 animate-spin" />
+              جاري توليد وحفظ الأكواد في النظام...
+            </>
           ) : (
-            <Plus className="w-5 h-5" />
+            <>
+              <Coins className="w-5 h-5" />
+              توليد وحفظ {count || 1} كود بقيمة {Number(amount || 0).toLocaleString("en-US")} د.ع
+            </>
           )}
-          توليد الأكواد
         </button>
+
+        {/* Newly Generated Batch Highlight Card */}
+        {latestBatch && latestBatch.length > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 space-y-4 animate-in slide-in-from-top-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-amber-600" />
+                <span className="font-black text-amber-900 dark:text-amber-300">
+                  تم توليد {latestBatch.length} كود جديد بنجاح
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => copyAllBatchCodes(latestBatch)}
+                  className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-black px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  نسخ جميع الأكواد الـ ({latestBatch.length})
+                </button>
+                <button
+                  onClick={() => setLatestBatch(null)}
+                  className="text-xs text-muted-foreground hover:text-foreground px-2 py-1"
+                >
+                  إخفاء
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 max-h-48 overflow-y-auto p-1">
+              {latestBatch.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => copyToClipboard(c.code, `batch-${c.id}`)}
+                  className="bg-card border border-amber-500/20 hover:border-amber-500 p-2.5 rounded-xl cursor-pointer transition-all flex items-center justify-between group shadow-sm"
+                  title="انقر لنسخ الكود"
+                >
+                  <span className="font-mono font-black text-sm tracking-wider text-amber-700 dark:text-amber-400">
+                    {c.code}
+                  </span>
+                  {copiedCodeId === `batch-${c.id}` ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 text-muted-foreground group-hover:text-amber-600" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-border bg-muted/20">
-          <h2 className="font-black">الأكواد المنشأة مؤخراً</h2>
+      {/* Codes List & Tracking Table */}
+      <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden space-y-4">
+        {/* Table Header & Search Bar */}
+        <div className="p-6 border-b border-border bg-muted/10 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-black text-lg flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-amber-500" />
+                سجل الأكواد وتتبع الاستخدام ({filteredCodes.length} من {allCodes.length})
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                تتبع كامل وهوية المستفيد من كل كود للحماية ومكافحة التلاعب
+              </p>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex items-center bg-muted/50 p-1 rounded-xl border border-border self-start sm:self-auto">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  statusFilter === "all"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                الكل ({allCodes.length})
+              </button>
+              <button
+                onClick={() => setStatusFilter("active")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  statusFilter === "active"
+                    ? "bg-card text-green-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🟢 المتاحة ({activeCodes.length})
+              </button>
+              <button
+                onClick={() => setStatusFilter("used")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  statusFilter === "used"
+                    ? "bg-card text-blue-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🔴 المستخدمة ({usedCodes.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Search Box */}
+          <div className="relative">
+            <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="البحث برقم الكود، اسم المستخدم، رقم الهاتف، رقم العضوية أو البريد..."
+              className="w-full pr-10 pl-4 py-2.5 rounded-xl bg-card border border-border text-sm outline-none focus:border-amber-500 transition-colors"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+              >
+                مسح
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Table Content */}
         <div className="overflow-x-auto">
-          <table className="w-full text-right">
+          <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="text-xs text-muted-foreground bg-muted/50">
-                <th className="px-6 py-4">الكود</th>
-                <th className="px-6 py-4">القيمة</th>
-                <th className="px-6 py-4">الحالة</th>
-                <th className="px-6 py-4">تاريخ الإنشاء</th>
+              <tr className="text-xs text-muted-foreground bg-muted/30 border-b border-border">
+                <th className="px-6 py-3.5 font-bold">الكود</th>
+                <th className="px-6 py-3.5 font-bold">القيمة</th>
+                <th className="px-6 py-3.5 font-bold">الحالة</th>
+                <th className="px-6 py-3.5 font-bold">المستخدم المستفيد (تتبع وأمان)</th>
+                <th className="px-6 py-3.5 font-bold">تاريخ الإنشاء</th>
+                <th className="px-6 py-3.5 font-bold text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
-              {generatedCodes.map((c: any) => (
-                <tr key={c.id} className="hover:bg-muted/10 transition-colors">
-                  <td className="px-6 py-4 font-mono font-black text-blue-600">{c.code}</td>
-                  <td className="px-6 py-4 font-black">{c.value.toLocaleString()} د.ع</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-black ${c.isUsed ? "bg-muted text-muted-foreground" : "bg-green-100 text-green-700"}`}
-                    >
-                      {c.isUsed ? `استخدمه ${c.usedBy || "مجهول"}` : "نشط"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-xs text-muted-foreground">
-                    {new Date(c.createdAt).toLocaleString("ar-EG")}
-                  </td>
-                </tr>
-              ))}
-              {generatedCodes.length === 0 && (
+            <tbody className="divide-y divide-border text-sm">
+              {filteredCodes.map((c: any) => {
+                const isCodeUsed = Boolean(c.isUsed || c.is_used);
+                const user = c.usedByUser;
+                const usedAtDate = c.usedAt || c.used_at;
+                const createdAtDate = c.createdAt || c.created_at;
+
+                return (
+                  <tr key={c.id} className="hover:bg-muted/20 transition-colors">
+                    {/* Code Column */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-base tracking-wider bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
+                          {c.code}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(c.code, c.id)}
+                          className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          title="نسخ الكود"
+                        >
+                          {copiedCodeId === c.id ? (
+                            <Check className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* Value Column */}
+                    <td className="px-6 py-4">
+                      <span className="font-black text-foreground">
+                        {Number(c.value || 0).toLocaleString("en-US")} د.ع
+                      </span>
+                    </td>
+
+                    {/* Status Column */}
+                    <td className="px-6 py-4">
+                      {isCodeUsed ? (
+                        <div className="space-y-1">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+                            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                            تم الاستخدام والشحن
+                          </span>
+                          {usedAtDate && (
+                            <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(usedAtDate).toLocaleString("ar-IQ", {
+                                dateStyle: "short",
+                                timeStyle: "short",
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20">
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          نشط (جاهز للشحن)
+                        </span>
+                      )}
+                    </td>
+
+                    {/* User Tracking & Security Info */}
+                    <td className="px-6 py-4">
+                      {isCodeUsed ? (
+                        <div className="space-y-1 bg-muted/40 p-2.5 rounded-xl border border-border">
+                          <div className="flex items-center gap-1.5 font-bold text-foreground">
+                            <UserCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                            <span>{user?.name || "مستخدم مسجل"}</span>
+                            {user?.memberNo && (
+                              <span className="text-[10px] bg-primary/10 text-primary font-mono px-1.5 py-0.5 rounded">
+                                #{user.memberNo}
+                              </span>
+                            )}
+                          </div>
+                          {user?.phone && (
+                            <div className="text-xs text-muted-foreground font-mono">
+                              📱 {user.phone}
+                            </div>
+                          )}
+                          {user?.email && (
+                            <div className="text-xs text-muted-foreground font-mono">
+                              ✉️ {user.email}
+                            </div>
+                          )}
+                          {!user && (c.usedBy || c.used_by) && (
+                            <div className="text-xs text-muted-foreground font-mono">
+                              ID: {c.usedBy || c.used_by}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic font-medium">
+                          — لم يُستخدم بعد
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Created Date */}
+                    <td className="px-6 py-4 text-xs text-muted-foreground">
+                      {createdAtDate
+                        ? new Date(createdAtDate).toLocaleString("ar-IQ", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })
+                        : "—"}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => copyToClipboard(c.code, c.id)}
+                          className="p-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground transition-all hover:scale-105"
+                          title="نسخ الكود"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        {!isCodeUsed && (
+                          <button
+                            onClick={() => {
+                              if (confirm(`هل أنت متأكد من حذف الكود ${c.code} نهائياً؟`)) {
+                                deleteCodeMutation.mutate(c.id);
+                              }
+                            }}
+                            disabled={deleteCodeMutation.isPending}
+                            className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 transition-all hover:scale-105"
+                            title="إلغاء وحذف الكود غير المستخدم"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {filteredCodes.length === 0 && !isLoading && (
                 <tr>
                   <td
-                    colSpan={4}
-                    className="p-12 text-center text-muted-foreground font-bold italic"
+                    colSpan={6}
+                    className="p-12 text-center text-muted-foreground font-bold space-y-2"
                   >
-                    قم بتوليد أكواد لتظهر هنا
+                    <Coins className="w-10 h-10 mx-auto text-muted-foreground/40" />
+                    <div>
+                      {search
+                        ? "لا توجد أكواد مطابقة لمعايير البحث"
+                        : "لا توجد أكواد حتى الآن. قم بتوليد دفعة جديدة لتظهر هنا."}
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {isLoading && (
+                <tr>
+                  <td colSpan={6} className="p-12 text-center text-muted-foreground font-bold">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-amber-500 mb-2" />
+                    جاري تحميل سجل الأكواد من النظام...
                   </td>
                 </tr>
               )}

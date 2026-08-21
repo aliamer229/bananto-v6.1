@@ -236,7 +236,7 @@ function RootShell({ children }: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <head>
-        <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+        <script src="https://telegram.org/js/telegram-web-app.js?63" async></script>
         <HeadContent />
       </head>
       <body>
@@ -287,19 +287,6 @@ function RootInner() {
   }, []);
 
   useEffect(() => {
-    // 1. Prioritize critical audio (non-blocking)
-    import("../utils/audio")
-      .then(({ preloadAllSounds }) => {
-        void preloadAllSounds(true); // onlyCritical
-        // 2. Load the rest when idle
-        if (globalThis.requestIdleCallback) {
-          globalThis.requestIdleCallback(() => void preloadAllSounds(false));
-        } else {
-          setTimeout(() => void preloadAllSounds(false), 2000);
-        }
-      })
-      .catch(() => undefined);
-
     void ensureNintendoCategory();
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
 

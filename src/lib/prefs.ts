@@ -152,14 +152,6 @@ export function writeCookie(name: string, value: string) {
   // Use SameSite=Lax for preference cookies to ensure they are sent in
   // cross-site navigations from social apps (Messenger/Insta/etc).
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${MAX_AGE}; samesite=lax`;
-
-  // Sync with DB if logged in
-  import("./settings.functions")
-    .then(({ savePreferences }) => {
-      const prefs = readPrefs();
-      savePreferences({ data: { prefs } }).catch(() => {});
-    })
-    .catch(() => {});
 }
 
 /** Records an explicit language choice separately from automatic detection. */

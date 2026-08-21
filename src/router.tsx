@@ -15,10 +15,10 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    // Warm route code + data as soon as a link is hovered/touched.
+    // Warm route code + data with a reasonable delay to prevent spurious import abortions on rapid hover.
     defaultPreload: "intent",
-    defaultPreloadDelay: 40,
-    defaultPreloadStaleTime: 0,
+    defaultPreloadDelay: 150,
+    defaultPreloadStaleTime: 30_000,
   });
 
   return router;

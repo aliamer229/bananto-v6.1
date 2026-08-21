@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
+import { api } from "@/lib/api";
 import { MessageCard } from "./MessageCard";
 import { AccountToolsModal } from "./AccountToolsModal";
 import { QuickRepliesModal } from "./QuickRepliesModal";
@@ -239,14 +240,10 @@ export function ActiveConversation({
 
     // Broadcast typing
     if (thread) {
-      import("@/lib/api").then(({ api }) => {
-        void api.sendTyping(thread.id, true, "admin");
-      });
+      void api.sendTyping(thread.id, true, "admin").catch(() => {});
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
-        import("@/lib/api").then(({ api }) => {
-          void api.sendTyping(thread.id, false, "admin");
-        });
+        void api.sendTyping(thread.id, false, "admin").catch(() => {});
       }, 3000);
     }
   };
@@ -263,9 +260,7 @@ export function ActiveConversation({
     }
 
     if (thread) {
-      import("@/lib/api").then(({ api }) => {
-        void api.sendTyping(thread.id, false, "admin");
-      });
+      void api.sendTyping(thread.id, false, "admin").catch(() => {});
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     }
   };

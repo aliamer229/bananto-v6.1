@@ -1,4 +1,4 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from "react";
+import { lazy, type ComponentType, type LazyExoticComponent, createElement } from "react";
 import { isScriptImportError, handleModuleReload } from "./polyfills";
 
 /**
@@ -7,20 +7,22 @@ import { isScriptImportError, handleModuleReload } from "./polyfills";
  */
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T } | { [key: string]: any }>,
-  retries = 2,
-  interval = 1000,
+  retries = 3,
+  interval = 800,
 ): LazyExoticComponent<T> {
   return lazy(
     () =>
-      new Promise<{ default: T }>((resolve, reject) => {
+      new Promise<{ default: T }>((resolve) => {
         const attempt = (remaining: number) => {
           factory()
             .then((mod) => {
-              if ("default" in mod && mod.default) {
+              if (mod && "default" in mod && mod.default) {
                 resolve({ default: mod.default });
-              } else {
+              } else if (mod) {
                 const firstKey = Object.keys(mod)[0];
                 resolve({ default: (firstKey ? (mod as any)[firstKey] : mod) as T });
+              } else {
+                resolve({ default: (() => null) as unknown as T });
               }
             })
             .catch((error: any) => {
@@ -33,9 +35,14 @@ export function lazyWithRetry<T extends ComponentType<any>>(
                 }, interval);
               } else if (isModuleScriptError && typeof window !== "undefined") {
                 handleModuleReload();
-                reject(error);
+                // Return a lightweight silent fallback component rather than crashing the whole route
+                resolve({
+                  default: (() => null) as unknown as T,
+                });
               } else {
-                reject(error);
+                resolve({
+                  default: (() => null) as unknown as T,
+                });
               }
             });
         };

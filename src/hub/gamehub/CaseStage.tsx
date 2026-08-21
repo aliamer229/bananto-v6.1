@@ -3,7 +3,6 @@ import { Canvas } from "@react-three/fiber";
 import { GameCase3D, type GameCase3DProps } from "./GameCase3D";
 import SafeBoundary from "@/components/SafeBoundary";
 import { cn } from "@/hub/utils/cn";
-import { lazyWithRetry } from "@/lib/lazyRetry";
 import { cdnImage } from "@/lib/img";
 import { readPrefs } from "@/lib/prefs";
 
