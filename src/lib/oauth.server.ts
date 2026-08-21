@@ -8,6 +8,7 @@
  */
 
 import { signValue, unsignValue } from "./crypto.server";
+import { constantTimeEqual } from "./security.server";
 
 export type OAuthProvider = "google" | "apple";
 
@@ -47,20 +48,78 @@ export function redirectUri(origin: string, provider: OAuthProvider) {
   return `${origin}/api/oauth/${provider}/callback`;
 }
 
+export const OAUTH_NONCE_COOKIE = "banana_oauth";
+const OAUTH_STATE_TTL_MS = 15 * 60 * 1000;
+
+/**
+ * Single-use nonce tying an authorization request to the browser that started
+ * it.
+ *
+ * Without it the signed state is bearer material: anyone can fetch a valid
+ * state, hand the resulting link to someone else, and land that person's
+ * browser in *their* account (login CSRF) — which on a store with a wallet
+ * means the victim tops up an attacker-controlled balance. The nonce lives in a
+ * cookie; only its digest travels in the state, so a state observed in a
+ * redirect chain or a server log is useless on its own.
+ */
+export function createNonce(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export async function nonceDigest(nonce: string): Promise<string> {
+  const hash = await crypto.subtle.digest("SHA-256", encoder.encode(`oauth-nonce:${nonce}`));
+  return Array.from(new Uint8Array(hash).slice(0, 16))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Apple replies with a cross-site POST (`response_mode=form_post`), which a
+ * `Lax` cookie is not sent on — so this mirrors the session cookie's recipe,
+ * the one already proven to survive the Telegram and Instagram in-app browsers.
+ */
+export function oauthNonceCookie(nonce: string, secure: boolean): string {
+  const attrs = secure ? "SameSite=None; Secure; Partitioned" : "SameSite=Lax";
+  const maxAge = Math.floor(OAUTH_STATE_TTL_MS / 1000);
+  return `${OAUTH_NONCE_COOKIE}=${nonce}; Path=/; HttpOnly; ${attrs}; Max-Age=${maxAge}`;
+}
+
+export function clearOauthNonceCookie(secure: boolean): string {
+  const attrs = secure ? "SameSite=None; Secure; Partitioned" : "SameSite=Lax";
+  return `${OAUTH_NONCE_COOKIE}=; Path=/; HttpOnly; ${attrs}; Max-Age=0`;
+}
+
+export function readOauthNonceCookie(request: Request): string | undefined {
+  const header = request.headers.get("cookie") ?? "";
+  for (const part of header.split(";")) {
+    const [name, ...rest] = part.trim().split("=");
+    if (name === OAUTH_NONCE_COOKIE) return rest.join("=");
+  }
+  return undefined;
+}
+
 /** HMAC-signed state so no server-side state table is needed. */
-export async function createState(provider: OAuthProvider, next: string) {
-  return signValue(`${provider}|${Date.now()}|${next}`);
+export async function createState(provider: OAuthProvider, next: string, nonce: string) {
+  return signValue(`${provider}|${Date.now()}|${await nonceDigest(nonce)}|${next}`);
 }
 
 export async function readState(
   raw: string,
   provider: OAuthProvider,
+  nonce: string | undefined,
 ): Promise<{ next: string } | undefined> {
   const value = await unsignValue(raw);
   if (!value) return undefined;
-  const [stateProvider, issued, ...rest] = value.split("|");
+  const [stateProvider, issued, digest, ...rest] = value.split("|");
   if (stateProvider !== provider) return undefined;
-  if (Date.now() - Number(issued) > 15 * 60 * 1000) return undefined;
+  if (Date.now() - Number(issued) > OAUTH_STATE_TTL_MS) return undefined;
+  if (!digest || !/^[a-f0-9]{32}$/.test(digest)) return undefined;
+  // Fails closed: a callback that cannot present the nonce this state was
+  // issued against does not get a session.
+  if (!nonce || !constantTimeEqual(await nonceDigest(nonce), digest)) return undefined;
   return { next: rest.join("|") || "/" };
 }
 
