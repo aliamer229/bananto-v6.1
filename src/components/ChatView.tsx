@@ -662,15 +662,29 @@ export default function ChatView({
   const orders = ordersQuery.data?.orders ?? [];
   const threads = threadsQuery.data?.threads ?? [];
 
-  // Auto-select thread for initialOrderId if passed
+  /**
+   * Open the conversation that belongs to an order arriving in the URL.
+   *
+   * Arriving from an order card or the /orders redirect must land the member in
+   * that order's own conversation — not in a fresh assistant chat, which is what
+   * "you sent me somewhere else entirely" looks like. Matching only against the
+   * threads list made that dependent on the list having loaded and on nothing
+   * else being selected yet; the order itself carries its threadId, so that is
+   * the primary source and the thread list is only a fallback.
+   */
+  const resolvedOrderThreadRef = useRef<string | null>(null);
   useEffect(() => {
-    if (initialOrderId && !threadId && threads.length > 0) {
-      const matching = threads.find((t) => t.orderId === initialOrderId);
-      if (matching) {
-        setThreadId(matching.id);
-      }
-    }
-  }, [initialOrderId, threadId, threads]);
+    if (!initialOrderId) return;
+    if (resolvedOrderThreadRef.current === initialOrderId) return;
+
+    const fromOrder = orders.find((order) => order.id === initialOrderId)?.threadId;
+    const fromThreads = threads.find((thread) => thread.orderId === initialOrderId)?.id;
+    const target = fromOrder || fromThreads;
+    if (!target) return;
+
+    resolvedOrderThreadRef.current = initialOrderId;
+    setThreadId(target);
+  }, [initialOrderId, orders, threads]);
 
   const purchased = useMemo(() => {
     const ids = new Set(

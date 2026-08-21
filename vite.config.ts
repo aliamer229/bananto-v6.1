@@ -45,7 +45,8 @@ export default defineConfig(({ mode }) => {
       // Cloudflare Worker runtime cannot boot ("http.createServer is not
       // implemented"). The Worker build must use the Cloudflare module preset.
       nitro({
-        preset: "node-server",
+        preset: "cloudflare-module",
+        cloudflare: { deployConfig: false },
         // Cloudflare Builds runs `wrangler deploy` from the repository root.
         // Keep Wrangler on the checked-in config instead of generating a
         // dist/server config plus a .wrangler pointer that can retain stale
@@ -85,7 +86,13 @@ export default defineConfig(({ mode }) => {
       react(),
     ],
     css: { transformer: "lightningcss" },
-    build: {},
+    build: {
+      // Vite 8 builds with Rolldown. This is a Cloudflare runtime-provided
+      // module and must remain an external import in the emitted Worker.
+      rolldownOptions: {
+        external: ["cloudflare:workers"],
+      },
+    },
     resolve: {
       alias: {
         "@": `${process.cwd()}/src`,
@@ -101,8 +108,13 @@ export default defineConfig(({ mode }) => {
         "react/jsx-runtime",
         "react/jsx-dev-runtime",
       ],
+      exclude: ["cloudflare:workers"],
     },
-    ssr: {},
+    // `cloudflare:workers` is a runtime-provided module. Preserve the import in
+    // the SSR bundle instead of asking Vite/Node to resolve it during build.
+    ssr: {
+      external: ["cloudflare:workers"],
+    },
     server: {
       host: "0.0.0.0",
       port: 3000,
