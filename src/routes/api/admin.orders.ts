@@ -191,7 +191,17 @@ export const Route = createFileRoute("/api/admin/orders")({
                   { status: 409 },
                 );
               }
-              next = { ...order, status: "delivering", updatedAt: now };
+              // Mark the line as delivered exactly as the single-account path
+              // does: credsSentAt is what the support engine, the order screens
+              // and the password reveal all read to decide whether anything has
+              // reached the buyer yet.
+              next = patchItem(order, data.itemId, {
+                deliveryEmail: released.email,
+                ...(order.items.find((i) => i.id === data.itemId)?.credsSentAt
+                  ? {}
+                  : { credsSentAt: now }),
+              });
+              next = { ...next, status: "delivering", updatedAt: now };
               await saveOrder(next);
               return json({
                 released: released.seq,
@@ -234,7 +244,16 @@ export const Route = createFileRoute("/api/admin/orders")({
               // preparing them in bulk.
               if (await markAccountRegistered(order.id, data.itemId)) {
                 const released = await deliverNextAccount(next, data.itemId, adminName);
-                if (released) next = { ...next, status: "delivering" };
+                if (released) {
+                  // A fresh account is now with the buyer, so the line is back
+                  // to awaiting their registration rather than finished.
+                  next = patchItem(next, data.itemId, {
+                    deliveryEmail: released.email,
+                    credsSentAt: now,
+                    loggedInAt: undefined,
+                  });
+                  next = { ...next, status: "delivering" };
+                }
               }
               break;
             }

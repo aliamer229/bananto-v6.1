@@ -12,10 +12,12 @@ import {
   getAdminAvailabilityStatus,
   getAdminAvailabilityConfig,
   saveAdminAvailabilityConfig,
+  findUserById,
 } from "@/lib/db.server";
 import { body, guard, json } from "@/lib/http.server";
 import { requireUser, requireAdmin } from "@/lib/session.server";
 import { buildSupportContext } from "@/lib/support-context.server";
+import { suggestAdminReplies } from "@/lib/support/admin-suggestions";
 import { supportAnswer } from "@/lib/support/engine";
 import { imageAnswer } from "@/lib/support/images";
 import { understand } from "@/lib/support/understand.server";
@@ -203,7 +205,8 @@ export const Route = createFileRoute("/api/chat")({
               | "search"
               | "skip_queue"
               | "resume_queue"
-              | "queue_reminder";
+              | "queue_reminder"
+              | "reply_suggestions";
             threadId?: string;
             chatType?: ChatType;
             kind?: MessageKind;
@@ -353,6 +356,34 @@ export const Route = createFileRoute("/api/chat")({
             await requireAdmin(request);
             const updated = await resumeQueueCustomer(data.threadId);
             return json({ success: true, thread: updated });
+          }
+
+          // Ranked reply suggestions for the staff member answering a thread.
+          if (data.action === "reply_suggestions" && data.threadId) {
+            const admin = await requireAdmin(request);
+            const targetThread = await getThread(data.threadId);
+            if (!targetThread) return json({ error: "not_found" }, { status: 404 });
+
+            const history = await getMessages(data.threadId);
+            const owner = await findUserById(targetThread.userId);
+            if (!owner) return json({ error: "not_found" }, { status: 404 });
+
+            // The same sanitised context the automated assistant runs on, so a
+            // suggestion can never contain anything the customer may not see.
+            const suggestionCtx = await buildSupportContext({
+              user: owner,
+              thread: targetThread,
+            });
+            const suggestions = suggestAdminReplies({
+              messages: history.map((message) => ({
+                senderRole: message.senderRole,
+                kind: message.kind,
+                text: typeof message.body?.["text"] === "string" ? message.body["text"] : "",
+                createdAt: message.createdAt,
+              })),
+              ctx: suggestionCtx,
+            });
+            return json({ suggestions, actor: admin.id });
           }
 
           if (data.action === "queue_reminder" && data.threadId) {
