@@ -168,3 +168,45 @@ describe("SQL column coverage", () => {
     expect(missing).toEqual([]);
   });
 });
+
+/**
+ * A column added by a migration must also be added by SCHEMA_PATCHES.
+ *
+ * `CREATE TABLE IF NOT EXISTS` in SCHEMA only shapes a database created from
+ * scratch; it never widens one that already exists. So a migration that adds a
+ * column is only half the job — a deployed database gets it from SCHEMA_PATCHES
+ * or not at all.
+ *
+ * This is not hypothetical. `messages.client_message_id` was added by
+ * migration 0037 and written by every `appendMessage` INSERT, but was only ever
+ * declared in the CREATE TABLE. On any database created before that migration
+ * the column did not exist, so every message — assistant, admin, order — failed
+ * with "no such column", surfaced as a 500, and left members tapping retry.
+ */
+describe("migration columns reach existing databases", () => {
+  it("has a SCHEMA_PATCHES ALTER for every column a migration adds", () => {
+    const d1Source = readFileSync(join(ROOT, "src", "lib", "d1.server.ts"), "utf8");
+    const patchesBlock = d1Source.slice(d1Source.indexOf("const SCHEMA_PATCHES"));
+
+    const patched = new Set<string>();
+    for (const match of patchesBlock.matchAll(
+      /ALTER\s+TABLE\s+([a-z_][a-z0-9_]*)\s+ADD\s+COLUMN\s+([a-z_][a-z0-9_]*)/gi,
+    )) {
+      patched.add(`${match[1]!.toLowerCase()}.${match[2]!.toLowerCase()}`);
+    }
+
+    const missing: string[] = [];
+    const migrationsDir = join(ROOT, "migrations");
+    for (const file of readdirSync(migrationsDir).filter((name) => name.endsWith(".sql"))) {
+      const sql = readFileSync(join(migrationsDir, file), "utf8");
+      for (const match of sql.matchAll(
+        /ALTER\s+TABLE\s+([a-z_][a-z0-9_]*)\s+ADD\s+COLUMN\s+([a-z_][a-z0-9_]*)/gi,
+      )) {
+        const key = `${match[1]!.toLowerCase()}.${match[2]!.toLowerCase()}`;
+        if (!patched.has(key)) missing.push(`${key} (${file})`);
+      }
+    }
+
+    expect(missing).toEqual([]);
+  });
+});

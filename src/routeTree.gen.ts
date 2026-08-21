@@ -73,6 +73,7 @@ import { Route as ApiAdminCouponsRouteImport } from './routes/api/admin/coupons'
 import { Route as ApiAdminImportGameRouteImport } from './routes/api.admin.import-game'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin.orders'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
+import { Route as ApiAdminPurgeRouteImport } from './routes/api/admin/purge'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiOauthProviderRouteImport } from './routes/api/oauth.$provider'
@@ -421,6 +422,11 @@ const ApiAdminProductsRoute = ApiAdminProductsRouteImport.update({
   path: '/api/admin/products',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminPurgeRoute = ApiAdminPurgeRouteImport.update({
+  id: '/api/admin/purge',
+  path: '/api/admin/purge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   id: '/api/admin/users',
   path: '/api/admin/users',
@@ -634,6 +640,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
+  '/api/admin/purge': typeof ApiAdminPurgeRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
@@ -727,6 +734,7 @@ export interface FileRoutesByTo {
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
+  '/api/admin/purge': typeof ApiAdminPurgeRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
@@ -821,6 +829,7 @@ export interface FileRoutesById {
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
+  '/api/admin/purge': typeof ApiAdminPurgeRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
@@ -916,6 +925,7 @@ export interface FileRouteTypes {
     | '/api/admin/import-game'
     | '/api/admin/orders'
     | '/api/admin/products'
+    | '/api/admin/purge'
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/oauth/$provider'
@@ -1009,6 +1019,7 @@ export interface FileRouteTypes {
     | '/api/admin/import-game'
     | '/api/admin/orders'
     | '/api/admin/products'
+    | '/api/admin/purge'
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/oauth/$provider'
@@ -1102,6 +1113,7 @@ export interface FileRouteTypes {
     | '/api/admin/import-game'
     | '/api/admin/orders'
     | '/api/admin/products'
+    | '/api/admin/purge'
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/oauth/$provider'
@@ -1196,6 +1208,7 @@ export interface RootRouteChildren {
   ApiAdminImportGameRoute: typeof ApiAdminImportGameRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRouteWithChildren
+  ApiAdminPurgeRoute: typeof ApiAdminPurgeRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiFilesSplatRoute: typeof ApiFilesSplatRoute
   ApiOauthProviderRoute: typeof ApiOauthProviderRouteWithChildren
@@ -1669,6 +1682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/purge': {
+      id: '/api/admin/purge'
+      path: '/api/admin/purge'
+      fullPath: '/api/admin/purge'
+      preLoaderRoute: typeof ApiAdminPurgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/users': {
       id: '/api/admin/users'
       path: '/api/admin/users'
@@ -1966,6 +1986,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminImportGameRoute: ApiAdminImportGameRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRouteWithChildren,
+  ApiAdminPurgeRoute: ApiAdminPurgeRoute,
   ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiFilesSplatRoute: ApiFilesSplatRoute,
   ApiOauthProviderRoute: ApiOauthProviderRouteWithChildren,

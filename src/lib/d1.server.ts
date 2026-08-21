@@ -746,6 +746,27 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE messages ADD COLUMN context_kind TEXT DEFAULT 'general'`,
   `ALTER TABLE messages ADD COLUMN context_id TEXT`,
   `ALTER TABLE messages ADD COLUMN internal INTEGER DEFAULT 0`,
+  // migrations/0037_message_idempotency.sql added client_message_id, but the
+  // CREATE TABLE above only carries it for a database created from scratch:
+  // `CREATE TABLE IF NOT EXISTS` never widens an existing table. Without this
+  // ALTER, every INSERT in appendMessage names a column an older database does
+  // not have, so *every* message — assistant, admin, order — fails with a 500
+  // and the member sees nothing but "retry".
+  `ALTER TABLE messages ADD COLUMN client_message_id TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS messages_client_msg_idx ON messages (thread_id, client_message_id) WHERE client_message_id IS NOT NULL`,
+  // The same omission, found by the migration-coverage test, for every other
+  // column a migration added after its table already existed in the wild.
+  // wallet_transactions.reference_* is the one that matters most: without it a
+  // top-up approval fails the moment it tries to record what it credited.
+  `ALTER TABLE wallet_transactions ADD COLUMN reference_type TEXT`,
+  `ALTER TABLE wallet_transactions ADD COLUMN reference_id TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS wallet_transactions_ref_idx ON wallet_transactions (reference_type, reference_id) WHERE reference_type IS NOT NULL AND reference_id IS NOT NULL`,
+  `ALTER TABLE users ADD COLUMN friend_id TEXT`,
+  `ALTER TABLE users ADD COLUMN email_verified_at TEXT`,
+  `ALTER TABLE legacy_claims ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1`,
+  `ALTER TABLE legacy_claims ADD COLUMN last_error_code TEXT`,
+  `ALTER TABLE legacy_claims ADD COLUMN updated_at TEXT`,
+  `ALTER TABLE legacy_claims ADD COLUMN completed_at TEXT`,
   // 20260813_deep_catalog.sql ends in Postgres-style GRANT statements, which D1
   // rejects, so its ALTERs cannot be relied on having run. Repeat them here
   // where a failure on an already-applied statement is expected and swallowed.
@@ -1346,7 +1367,7 @@ export function ensureUsersSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 9;
+const RUNTIME_SCHEMA_VERSION = 10;
 
 async function runSchemaStatements(
   db: D1Like,
