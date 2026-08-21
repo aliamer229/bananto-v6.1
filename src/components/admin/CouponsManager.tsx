@@ -4,7 +4,14 @@ import { toast } from "sonner";
 import { Plus, Trash2, Edit, Check, X, Tag } from "lucide-react";
 import { adminApi } from "@/lib/api";
 import type { Coupon } from "@/lib/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function CouponsManager() {
   const queryClient = useQueryClient();
@@ -84,16 +91,24 @@ export default function CouponsManager() {
           </h2>
           <p className="text-sm text-muted-foreground mt-1">قم بإنشاء وتعديل أكواد الخصم</p>
         </div>
-        <Dialog open={isAdding} onOpenChange={(open) => {
-          setIsAdding(open);
-          if (!open) {
-            setEditingId(null);
-            setForm({
-              code: "", discountType: "percentage", discountValue: 10,
-              perUserLimit: 1, minOrderAmount: 0, isActive: true, onlyDigitalProducts: false
-            });
-          }
-        }}>
+        <Dialog
+          open={isAdding}
+          onOpenChange={(open) => {
+            setIsAdding(open);
+            if (!open) {
+              setEditingId(null);
+              setForm({
+                code: "",
+                discountType: "percentage",
+                discountValue: 10,
+                perUserLimit: 1,
+                minOrderAmount: 0,
+                isActive: true,
+                onlyDigitalProducts: false,
+              });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <button className="flex items-center gap-2 bg-brand-blue hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-blue-500/20">
               <Plus className="w-4 h-4" />
@@ -139,17 +154,26 @@ export default function CouponsManager() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-muted-foreground">أقصى مبلغ للخصم (اختياري)</label>
+                  <label className="text-xs font-bold text-muted-foreground">
+                    أقصى مبلغ للخصم (اختياري)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm"
                     value={form.maxDiscountAmount || ""}
-                    onChange={(e) => setForm({ ...form, maxDiscountAmount: e.target.value ? Number(e.target.value) : undefined })}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        maxDiscountAmount: e.target.value ? Number(e.target.value) : undefined,
+                      })
+                    }
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-muted-foreground">الحد الأدنى للطلب (د.ع)</label>
+                  <label className="text-xs font-bold text-muted-foreground">
+                    الحد الأدنى للطلب (د.ع)
+                  </label>
                   <input
                     required
                     type="number"
@@ -160,7 +184,9 @@ export default function CouponsManager() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-muted-foreground">الحد الأقصى للاستخدام لكل مستخدم</label>
+                  <label className="text-xs font-bold text-muted-foreground">
+                    الحد الأقصى للاستخدام لكل مستخدم
+                  </label>
                   <input
                     required
                     type="number"
@@ -171,17 +197,24 @@ export default function CouponsManager() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-muted-foreground">الحد الأقصى الإجمالي (اختياري)</label>
+                  <label className="text-xs font-bold text-muted-foreground">
+                    الحد الأقصى الإجمالي (اختياري)
+                  </label>
                   <input
                     type="number"
                     min="1"
                     className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm"
                     value={form.usageLimit || ""}
-                    onChange={(e) => setForm({ ...form, usageLimit: e.target.value ? Number(e.target.value) : undefined })}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        usageLimit: e.target.value ? Number(e.target.value) : undefined,
+                      })
+                    }
                   />
                 </div>
               </div>
-              
+
               <div className="flex flex-col gap-2 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -190,7 +223,9 @@ export default function CouponsManager() {
                     checked={form.onlyDigitalProducts}
                     onChange={(e) => setForm({ ...form, onlyDigitalProducts: e.target.checked })}
                   />
-                  <span className="text-sm font-bold text-foreground">خصم للمنتجات الرقمية فقط</span>
+                  <span className="text-sm font-bold text-foreground">
+                    خصم للمنتجات الرقمية فقط
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -235,45 +270,71 @@ export default function CouponsManager() {
                 <tr key={coupon.id} className="hover:bg-muted/20">
                   <td className="px-4 py-3 font-bold uppercase">{coupon.code}</td>
                   <td className="px-4 py-3">
-                    {coupon.discount_type === "percentage" || coupon.discountType === "percentage" 
-                      ? `%${coupon.discount_value || coupon.discountValue}` 
+                    {coupon.discount_type === "percentage" || coupon.discountType === "percentage"
+                      ? `%${coupon.discount_value || coupon.discountValue}`
                       : `${(coupon.discount_value || coupon.discountValue).toLocaleString("en-US")} د.ع`}
                   </td>
                   <td className="px-4 py-3">
                     لكل مستخدم: {coupon.per_user_limit || coupon.perUserLimit}
-                    {coupon.usage_limit || coupon.usageLimit ? ` / كلي: ${coupon.usage_limit || coupon.usageLimit}` : ""}
+                    {coupon.usage_limit || coupon.usageLimit
+                      ? ` / كلي: ${coupon.usage_limit || coupon.usageLimit}`
+                      : ""}
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {(coupon.only_digital_products || coupon.onlyDigitalProducts) && <span className="block text-blue-500">للرقمية فقط</span>}
-                    {(coupon.min_order_amount || coupon.minOrderAmount) > 0 && <span className="block">حد أدنى {(coupon.min_order_amount || coupon.minOrderAmount).toLocaleString()}</span>}
+                    {(coupon.only_digital_products || coupon.onlyDigitalProducts) && (
+                      <span className="block text-blue-500">للرقمية فقط</span>
+                    )}
+                    {(coupon.min_order_amount || coupon.minOrderAmount) > 0 && (
+                      <span className="block">
+                        حد أدنى{" "}
+                        {(coupon.min_order_amount || coupon.minOrderAmount).toLocaleString()}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    {(coupon.is_active || coupon.isActive) ? (
-                      <span className="text-green-500 bg-green-500/10 px-2 py-1 rounded-lg text-xs font-bold">فعال</span>
+                    {coupon.is_active || coupon.isActive ? (
+                      <span className="text-green-500 bg-green-500/10 px-2 py-1 rounded-lg text-xs font-bold">
+                        فعال
+                      </span>
                     ) : (
-                      <span className="text-red-500 bg-red-500/10 px-2 py-1 rounded-lg text-xs font-bold">معطل</span>
+                      <span className="text-red-500 bg-red-500/10 px-2 py-1 rounded-lg text-xs font-bold">
+                        معطل
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => openEdit({
-                        ...coupon,
-                        discountType: coupon.discount_type || coupon.discountType,
-                        discountValue: coupon.discount_value || coupon.discountValue,
-                        perUserLimit: coupon.per_user_limit || coupon.perUserLimit,
-                        minOrderAmount: coupon.min_order_amount || coupon.minOrderAmount,
-                        isActive: coupon.is_active === undefined ? coupon.isActive : coupon.is_active,
-                        onlyDigitalProducts: coupon.only_digital_products === undefined ? coupon.onlyDigitalProducts : coupon.only_digital_products,
-                        maxDiscountAmount: coupon.max_discount_amount || coupon.maxDiscountAmount,
-                        usageLimit: coupon.usage_limit || coupon.usageLimit,
-                      })} className="text-blue-500 hover:text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 p-2 rounded-lg transition-colors">
+                      <button
+                        onClick={() =>
+                          openEdit({
+                            ...coupon,
+                            discountType: coupon.discount_type || coupon.discountType,
+                            discountValue: coupon.discount_value || coupon.discountValue,
+                            perUserLimit: coupon.per_user_limit || coupon.perUserLimit,
+                            minOrderAmount: coupon.min_order_amount || coupon.minOrderAmount,
+                            isActive:
+                              coupon.is_active === undefined ? coupon.isActive : coupon.is_active,
+                            onlyDigitalProducts:
+                              coupon.only_digital_products === undefined
+                                ? coupon.onlyDigitalProducts
+                                : coupon.only_digital_products,
+                            maxDiscountAmount:
+                              coupon.max_discount_amount || coupon.maxDiscountAmount,
+                            usageLimit: coupon.usage_limit || coupon.usageLimit,
+                          })
+                        }
+                        className="text-blue-500 hover:text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 p-2 rounded-lg transition-colors"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => {
-                        if (confirm("هل أنت متأكد من حذف هذا الكوبون؟")) {
-                          deleteMutation.mutate(coupon.id);
-                        }
-                      }} className="text-red-500 hover:text-red-600 bg-red-500/10 hover:bg-red-500/20 p-2 rounded-lg transition-colors">
+                      <button
+                        onClick={() => {
+                          if (confirm("هل أنت متأكد من حذف هذا الكوبون؟")) {
+                            deleteMutation.mutate(coupon.id);
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-600 bg-red-500/10 hover:bg-red-500/20 p-2 rounded-lg transition-colors"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

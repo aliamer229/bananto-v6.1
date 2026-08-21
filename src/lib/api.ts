@@ -229,7 +229,11 @@ export const api = {
     request<{ order: Order; thread: Thread; messages: ChatMessage[] }>(
       `/api/orders?orderId=${encodeURIComponent(orderId)}`,
     ),
-  checkout: (items: { productId: string | number; quantity: number }[], address?: unknown, couponCode?: string) =>
+  checkout: (
+    items: { productId: string | number; quantity: number }[],
+    address?: unknown,
+    couponCode?: string,
+  ) =>
     request<{ order: Order }>("/api/orders", {
       method: "POST",
       body: JSON.stringify({ items, address, couponCode }),
@@ -562,9 +566,18 @@ export const adminApi = {
       body: JSON.stringify(patch),
     }),
   getCoupons: () => request<{ coupons: any[] }>("/api/admin/coupons"),
-  createCoupon: (data: any) => request<{ success: boolean; id: string }>("/api/admin/coupons", { method: "POST", body: JSON.stringify(data) }),
-  updateCoupon: (data: any) => request<{ success: boolean }>("/api/admin/coupons", { method: "PUT", body: JSON.stringify(data) }),
-  deleteCoupon: (id: string) => request<{ success: boolean }>(`/api/admin/coupons?id=${id}`, { method: "DELETE" }),
+  createCoupon: (data: any) =>
+    request<{ success: boolean; id: string }>("/api/admin/coupons", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateCoupon: (data: any) =>
+    request<{ success: boolean }>("/api/admin/coupons", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  deleteCoupon: (id: string) =>
+    request<{ success: boolean }>(`/api/admin/coupons?id=${id}`, { method: "DELETE" }),
   getUsers: () => request<{ users: any[]; rechargeRequests: any[] }>("/api/admin/users"),
   createBananCode: (value: number, count = 1) =>
     request<{ success: boolean; codes: any[]; code: any }>("/api/admin/banana", {

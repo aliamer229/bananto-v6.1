@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/admin/coupons")({
           const data = await body(request);
           const id = uuidv4();
           const createdAt = new Date().toISOString();
-          
+
           await d1Execute(
             `INSERT INTO coupons (
               id, code, discount_type, discount_value, expiration_at, 
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/admin/coupons")({
             data.maxDiscountAmount || data.max_discount_amount || null,
             data.isActive === false || data.is_active === 0 ? 0 : 1,
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0,
-            createdAt
+            createdAt,
           );
 
           return json({ success: true, id });
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/admin/coupons")({
         guard(async () => {
           await requireAdmin(request);
           const data = await body(request);
-          
+
           await d1Execute(
             `UPDATE coupons SET 
               code = ?, discount_type = ?, discount_value = ?, expiration_at = ?, 
@@ -71,7 +71,7 @@ export const Route = createFileRoute("/api/admin/coupons")({
             data.maxDiscountAmount || data.max_discount_amount || null,
             data.isActive === false || data.is_active === 0 ? 0 : 1,
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0,
-            data.id
+            data.id,
           );
 
           return json({ success: true });

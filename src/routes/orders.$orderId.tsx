@@ -17,9 +17,8 @@ export const Route = createFileRoute("/orders/$orderId")({
 
 function OrderChatPage() {
   const { orderId } = Route.useParams();
-  
-  // Redirect to the main chat interface, which will automatically 
+
+  // Redirect to the main chat interface, which will automatically
   // select the thread associated with this order.
   return <Navigate to="/chat" search={{ initialOrderId: orderId }} />;
 }
-

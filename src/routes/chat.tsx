@@ -3,11 +3,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import ChatView from "@/components/ChatView";
 
 export const Route = createFileRoute("/chat")({
-  validateSearch: (search: Record<string, unknown>) => {
-    return {
-      initialOrderId: search.initialOrderId as string | undefined,
-    };
-  },
+  // Returning the key unconditionally made it a *required* search param, so
+  // every plain `navigate({ to: "/chat" })` in the app stopped type-checking.
+  validateSearch: (search: Record<string, unknown>): { initialOrderId?: string } =>
+    typeof search["initialOrderId"] === "string" && search["initialOrderId"]
+      ? { initialOrderId: search["initialOrderId"] }
+      : {},
   head: () => ({
     meta: [
       { title: "المحادثة والدعم — بنانا ستور" },

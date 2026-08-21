@@ -12,6 +12,7 @@ import {
   d1All,
 } from "./db.server";
 import { sendTelegramMessage } from "./telegram.server";
+import { checkCoupon, couponDiscount, rowToCoupon, type CouponRow } from "./coupons";
 import type {
   Address,
   Order,
@@ -118,7 +119,7 @@ export async function createOrderForUser(
   user: User,
   lines: CheckoutLine[],
   address?: Address,
-  couponCode?: string
+  couponCode?: string,
 ): Promise<Order> {
   const store = await getStore();
   const items: OrderItem[] = [];
@@ -138,44 +139,41 @@ export async function createOrderForUser(
   const now = new Date().toISOString();
   let discountAmount = 0;
   let appliedCouponId: string | null = null;
-  
+
   if (couponCode) {
-    const coupon = await d1First("SELECT * FROM coupons WHERE code = ? AND is_active = 1", couponCode);
-    if (coupon) {
-      const isExpired = coupon.expiration_at && new Date(coupon.expiration_at).getTime() < Date.now();
-      const meetsMinOrder = itemsTotal >= (coupon.min_order_amount || 0);
-      
-      let isDigitalOnlyValid = true;
-      if (coupon.only_digital_products) {
-         isDigitalOnlyValid = !items.some(i => ["hardware", "physical", "accessory", "device", "collectible"].includes(i.kind));
-      }
-      
-      if (!isExpired && meetsMinOrder && isDigitalOnlyValid) {
-         const globalUsage = await d1First<{total: number}>("SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?", coupon.id);
-         const userUsage = await d1First<{total: number}>("SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?", coupon.id, user.id);
-         
-         if ((!coupon.usage_limit || (globalUsage?.total || 0) < coupon.usage_limit) && 
-             (!coupon.per_user_limit || (userUsage?.total || 0) < coupon.per_user_limit)) {
-               
-            if (coupon.discount_type === "fixed") {
-              discountAmount = coupon.discount_value || 0;
-            } else {
-              discountAmount = Math.floor(itemsTotal * ((coupon.discount_value || 0) / 100));
-            }
-            if (coupon.max_discount_amount && discountAmount > coupon.max_discount_amount) {
-              discountAmount = coupon.max_discount_amount;
-            }
-            
-            appliedCouponId = coupon.id;
-         } else {
-            throw new Error("coupon_invalid");
-         }
-      } else {
-         throw new Error("coupon_invalid");
-      }
-    } else {
-       throw new Error("coupon_invalid");
-    }
+    const row = await d1First<CouponRow>(
+      "SELECT * FROM coupons WHERE code = ? AND is_active = 1",
+      couponCode,
+    );
+    if (!row) throw new Error("coupon_invalid");
+
+    // Mapped through the same reader the validator uses, so what the member was
+    // told at the cart is exactly what checkout applies.
+    const coupon = rowToCoupon(row);
+    const [globalUsage, userUsage] = await Promise.all([
+      d1First<{ total: number }>(
+        "SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?",
+        coupon.id,
+      ),
+      d1First<{ total: number }>(
+        "SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?",
+        coupon.id,
+        user.id,
+      ),
+    ]);
+
+    const verdict = checkCoupon({
+      coupon,
+      userId: user.id,
+      orderAmount: itemsTotal,
+      items,
+      globalUses: Number(globalUsage?.total ?? 0),
+      userUses: Number(userUsage?.total ?? 0),
+    });
+    if (!verdict.ok) throw new Error("coupon_invalid");
+
+    discountAmount = couponDiscount(coupon, itemsTotal);
+    appliedCouponId = coupon.id;
   }
 
   const finalItemsTotal = Math.max(0, itemsTotal - discountAmount);

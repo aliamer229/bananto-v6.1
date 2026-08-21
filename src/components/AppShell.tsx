@@ -126,7 +126,8 @@ export default function AppShell({
   return (
     <div
       className="flex min-h-screen flex-col bg-[var(--page)]"
-      dir={lang === "en" ? "ltr" : "rtl"} suppressHydrationWarning={true}
+      dir={lang === "en" ? "ltr" : "rtl"}
+      suppressHydrationWarning={true}
     >
       {!isTelegramMiniApp && (
         <Header

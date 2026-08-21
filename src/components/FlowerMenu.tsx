@@ -206,9 +206,12 @@ export default function FlowerMenu({
                     item.onClick?.();
                   }
                 }}
-                title={item.label} suppressHydrationWarning
+                title={item.label}
+                suppressHydrationWarning
               >
-                <span className="sr-only" suppressHydrationWarning>{item.label}</span>
+                <span className="sr-only" suppressHydrationWarning>
+                  {item.label}
+                </span>
                 {item.icon}
               </button>
 
@@ -269,9 +272,12 @@ export default function FlowerMenu({
                             setActiveSubMenuIndex(null);
                             subItem.onClick?.();
                           }}
-                          title={subItem.label} suppressHydrationWarning
+                          title={subItem.label}
+                          suppressHydrationWarning
                         >
-                          <span className="sr-only" suppressHydrationWarning>{subItem.label}</span>
+                          <span className="sr-only" suppressHydrationWarning>
+                            {subItem.label}
+                          </span>
                           {subItem.icon}
                         </button>
                       </li>
