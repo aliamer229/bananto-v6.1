@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isVideoUrl } from "@/lib/uploads";
 import {
   Check,
   CheckCircle2,
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 import { api, fileToDataUrl } from "@/lib/api";
 import { isAccountKind, type ChatMessage, type Order, type OrderItem } from "@/lib/types";
 import OrderReviewModal from "@/components/OrderReviewModal";
+import { AccountBatchPanel } from "@/components/admin/AccountBatchPanel";
 
 function Bubble({ message, children }: { message: ChatMessage; children: React.ReactNode }) {
   const mine = message.senderRole === "user";
@@ -232,18 +234,27 @@ function MessageBody({ message, order }: { message: ChatMessage; order: Order })
   }
 
   switch (message.kind) {
+    case "video":
     case "image":
-    case "payment_receipt":
+    case "payment_receipt": {
+      const mediaUrl = String(message.body["imageUrl"] ?? "");
       return (
         <div className="space-y-2">
-          <img
-            src={String(message.body["imageUrl"] ?? "")}
-            alt="مرفق"
-            className="max-h-64 rounded-xl object-cover"
-          />
+          {isVideoUrl(mediaUrl) ? (
+            <video
+              src={mediaUrl}
+              controls
+              preload="metadata"
+              playsInline
+              className="max-h-64 rounded-xl bg-black"
+            />
+          ) : (
+            <img src={mediaUrl} alt="مرفق" className="max-h-64 rounded-xl object-cover" />
+          )}
           {message.body["text"] ? <p>{String(message.body["text"])}</p> : null}
         </div>
       );
+    }
     case "payment_methods_card": {
       const methods =
         (message.body["methods"] as { id: string; name: string; details?: string }[]) ?? [];
@@ -424,6 +435,8 @@ function AdminPanel({ order, onDone }: { order: Order; onDone: () => void }) {
               إرسال الرمز
             </button>
           </div>
+
+          <AccountBatchPanel orderId={order.id} itemId={itemId} onOrderChanged={onDone} />
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -595,7 +608,7 @@ export default function OrderChat({
           <ImagePlus className="h-5 w-5" />
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];

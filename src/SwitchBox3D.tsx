@@ -59,10 +59,23 @@ export function SwitchBox3D({
         ctx.fillStyle = "#111317";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        let artworkDrawn = false;
+
         if (coverImage) {
           const img = new Image();
-          if (!coverImage.startsWith("data:") && !coverImage.startsWith("blob:")) {
-            img.crossOrigin = "anonymous";
+          // Only a genuinely cross-origin image needs (and can use) CORS mode.
+          // `cdnImage()` already rewrites remote artwork to the same-origin
+          // /api/img proxy, and asking for CORS on a same-origin URL can only
+          // fail the load — which left the sleeve on its dark base fill and made
+          // the cartridge look black.
+          if (/^https?:\/\//i.test(coverImage)) {
+            try {
+              if (new URL(coverImage).origin !== window.location.origin) {
+                img.crossOrigin = "anonymous";
+              }
+            } catch {
+              img.crossOrigin = "anonymous";
+            }
           }
 
           await new Promise((resolve) => {
@@ -75,6 +88,7 @@ export function SwitchBox3D({
           });
 
           if (isMounted && img.complete && img.naturalWidth > 0) {
+            artworkDrawn = true;
             const aspect = img.naturalWidth / img.naturalHeight;
 
             // If image is a full retail box sleeve wrap (aspect ratio > 1.15)
@@ -195,8 +209,12 @@ export function SwitchBox3D({
               ctx.restore();
             }
           }
-        } else {
-          // Fallback if no cover image
+        }
+
+        // A cover that was supplied but never decoded used to fall through with
+        // nothing but the dark base fill, so the case rendered as a black slab.
+        // Treat it exactly like having no artwork at all.
+        if (!artworkDrawn) {
           ctx.fillStyle = brandColor;
           ctx.fillRect(spineX, 0, spineWidth, canvas.height);
 
@@ -252,8 +270,16 @@ export function SwitchBox3D({
 
   if (materials?.plastic) {
     materials.plastic.transparent = true;
-    materials.plastic.opacity = platform === "ns2" ? 0.85 : 0.78;
-    materials.plastic.depthWrite = true;
+    // A retail Switch case is clear plastic with the printed sleeve read
+    // through it. At 0.78-0.85 this shell sat in front of the artwork as a
+    // near-opaque white (or red) coat and washed it out — the "layer covering
+    // the cartridge" people were seeing. Keep enough tint to read as coloured
+    // plastic, and let the sleeve dominate.
+    materials.plastic.opacity = platform === "ns2" ? 0.32 : 0.16;
+    // A transparent material must not write depth: doing so lets the shell's
+    // own far faces occlude its near faces and the sleeve behind it, which
+    // shows up as flat opaque patches over the art.
+    materials.plastic.depthWrite = false;
     materials.plastic.depthTest = true;
     materials.plastic.color.set(platform === "ns2" ? "#d60012" : "#f5f5f5");
     materials.plastic.roughness = 0.08;
@@ -288,7 +314,10 @@ export function SwitchBox3D({
         <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
           <meshStandardMaterial
             map={texture}
-            color={texture ? "#ffffff" : "#eeeeee"}
+            // Tint only ever multiplies the map, so it must stay white once
+            // there is artwork. Before the canvas is ready this used to paint a
+            // near-white panel, which is what a missing texture looked like.
+            color={texture ? "#ffffff" : "#3a3f47"}
             roughness={0.65}
             metalness={0.0}
             side={THREE.DoubleSide}

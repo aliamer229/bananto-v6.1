@@ -18,7 +18,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
-import { api } from "@/lib/api";
+import { api, type AdminReplySuggestion } from "@/lib/api";
 import { MessageCard } from "./MessageCard";
 import { AccountToolsModal } from "./AccountToolsModal";
 import { QuickRepliesModal } from "./QuickRepliesModal";
@@ -140,6 +140,8 @@ export function ActiveConversation({
   const [isCustomerDrawerOpen, setIsCustomerDrawerOpen] = useState(false);
   const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
+  const [smartSuggestions, setSmartSuggestions] = useState<AdminReplySuggestion[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -160,6 +162,47 @@ export function ActiveConversation({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
+
+  // Ranked reply suggestions, derived on the server from how the customer
+  // phrased things and from where their order actually stands. They refresh
+  // whenever the customer says something new, so the strip always answers the
+  // latest message rather than the one that opened the thread.
+  const threadId = thread?.id ?? null;
+  let lastCustomerMessageId = "";
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.senderRole === "user") {
+      lastCustomerMessageId = messages[i]?.id ?? "";
+      break;
+    }
+  }
+
+  useEffect(() => {
+    if (!threadId) {
+      setSmartSuggestions([]);
+      return;
+    }
+    const controller = new AbortController();
+    let active = true;
+    setIsLoadingSuggestions(true);
+    api
+      .replySuggestions(threadId, controller.signal)
+      .then((result) => {
+        if (!active) return;
+        setSmartSuggestions(Array.isArray(result?.suggestions) ? result.suggestions : []);
+      })
+      .catch(() => {
+        // A failed suggestion fetch must never block answering the customer:
+        // the static contextual pills stay in place as the fallback.
+        if (active) setSmartSuggestions([]);
+      })
+      .finally(() => {
+        if (active) setIsLoadingSuggestions(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [threadId, lastCustomerMessageId]);
 
   if (!thread) {
     return (
@@ -691,18 +734,40 @@ export function ActiveConversation({
         <div className="px-3 py-1.5 border-t border-border bg-card/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
           <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 shrink-0">
             <Sparkles className="w-3 h-3 text-amber-500" />
-            اقتراحات:
+            {smartSuggestions.length > 0 ? "اقتراحات ذكية:" : "اقتراحات:"}
           </span>
-          {getContextSuggestions().map((sugg, idx) => (
+          {isLoadingSuggestions && smartSuggestions.length === 0 && (
+            <span className="text-[10px] text-muted-foreground shrink-0">جاري التحليل...</span>
+          )}
+          {/* Ranked suggestions lead; the contextual pills stay behind them so
+              the strip is never sparse and nothing that used to be one click
+              away has moved. */}
+          {smartSuggestions.map((suggestion) => (
             <button
-              key={idx}
+              key={suggestion.id}
               type="button"
-              onClick={() => setInputText(sugg)}
-              className="whitespace-nowrap px-2.5 py-1 bg-muted/40 hover:bg-muted text-foreground text-[11px] rounded-lg transition-colors border border-border/40 shrink-0"
+              title={suggestion.reason}
+              onClick={() => {
+                setInputText(suggestion.text);
+                textareaRef.current?.focus();
+              }}
+              className="whitespace-nowrap px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-foreground text-[11px] rounded-lg transition-colors border border-amber-500/25 shrink-0"
             >
-              {sugg}
+              {suggestion.text}
             </button>
           ))}
+          {getContextSuggestions()
+            .filter((sugg) => !smartSuggestions.some((s) => s.text === sugg))
+            .map((sugg, idx) => (
+              <button
+                key={`ctx-${idx}`}
+                type="button"
+                onClick={() => setInputText(sugg)}
+                className="whitespace-nowrap px-2.5 py-1 bg-muted/40 hover:bg-muted text-foreground text-[11px] rounded-lg transition-colors border border-border/40 shrink-0"
+              >
+                {sugg}
+              </button>
+            ))}
         </div>
 
         {/* 5. Modern Composer Toolbar & Input */}

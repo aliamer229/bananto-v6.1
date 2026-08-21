@@ -44,6 +44,7 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatRealtime } from "@/hooks/useChatRealtime";
 import { api, uploadFileWithProgress } from "@/lib/api";
+import { isVideoUrl } from "@/lib/uploads";
 import { supportAnswer, type SupportContext } from "@/lib/support";
 import { viewHistoryForSupport } from "@/lib/view-history";
 import type {
@@ -1555,13 +1556,25 @@ export default function ChatView({
                   />
                 ) : msg.type === "image" && msg.payload ? (
                   <div className="relative w-64 max-w-[85%] overflow-hidden rounded-2xl border border-[var(--surface-4)] bg-card p-1.5 shadow-xs">
-                    <img
-                      src={String(msg.payload["imageUrl"] ?? "")}
-                      alt="مرفق"
-                      className={`max-h-64 w-full rounded-[12px] object-cover ${
-                        msg.status === "sending" ? "blur-[2px]" : ""
-                      }`}
-                    />
+                    {isVideoUrl(String(msg.payload["imageUrl"] ?? "")) ? (
+                      <video
+                        src={String(msg.payload["imageUrl"] ?? "")}
+                        controls
+                        preload="metadata"
+                        playsInline
+                        className={`max-h-64 w-full rounded-[12px] bg-black ${
+                          msg.status === "sending" ? "blur-[2px]" : ""
+                        }`}
+                      />
+                    ) : (
+                      <img
+                        src={String(msg.payload["imageUrl"] ?? "")}
+                        alt="مرفق"
+                        className={`max-h-64 w-full rounded-[12px] object-cover ${
+                          msg.status === "sending" ? "blur-[2px]" : ""
+                        }`}
+                      />
+                    )}
                     {msg.status === "sending" && typeof msg.uploadProgress === "number" && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white backdrop-blur-xs">
                         <div className="relative h-12 w-12 flex items-center justify-center">
@@ -1913,7 +1926,7 @@ export default function ChatView({
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];

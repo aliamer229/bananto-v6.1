@@ -7,12 +7,23 @@ import { writeBinary } from "@/lib/storage.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 
 const MAX_BYTES = 4 * 1024 * 1024;
+/** Video is allowed to be larger, but only over multipart — a base64 data URL
+ *  of this size would not survive the JSON body limit. */
+const MAX_VIDEO_BYTES = 25 * 1024 * 1024;
+
 const MIME_EXT: Record<string, string> = {
   "image/png": "png",
   "image/jpeg": "jpg",
   "image/webp": "webp",
   "image/gif": "gif",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+  "video/quicktime": "mov",
 };
+
+function isVideo(mime: string): boolean {
+  return mime.startsWith("video/");
+}
 
 function matchesMagic(bytes: Uint8Array, mime: string): boolean {
   if (mime === "image/png") {
@@ -29,6 +40,14 @@ function matchesMagic(bytes: Uint8Array, mime: string): boolean {
       new TextDecoder().decode(bytes.slice(0, 4)) === "RIFF" &&
       new TextDecoder().decode(bytes.slice(8, 12)) === "WEBP"
     );
+  }
+  // MP4 and QuickTime both carry an ISO base-media `ftyp` box at offset 4.
+  if (mime === "video/mp4" || mime === "video/quicktime") {
+    return new TextDecoder().decode(bytes.slice(4, 8)) === "ftyp";
+  }
+  // WebM/Matroska EBML header.
+  if (mime === "video/webm") {
+    return bytes[0] === 0x1a && bytes[1] === 0x45 && bytes[2] === 0xdf && bytes[3] === 0xa3;
   }
   return false;
 }
@@ -62,11 +81,18 @@ export const Route = createFileRoute("/api/upload")({
               return json({ error: "missing_file" }, { status: 400 });
             }
 
-            if (file.size > MAX_BYTES) {
-              return json({ error: "الملف كبير جداً (الحد ٤ ميغابايت)" }, { status: 413 });
-            }
-
             mime = file.type || "image/jpeg";
+            const limit = isVideo(mime) ? MAX_VIDEO_BYTES : MAX_BYTES;
+            if (file.size > limit) {
+              return json(
+                {
+                  error: isVideo(mime)
+                    ? "الفيديو كبير جداً (الحد ٢٥ ميغابايت)"
+                    : "الملف كبير جداً (الحد ٤ ميغابايت)",
+                },
+                { status: 413 },
+              );
+            }
             const buffer = await file.arrayBuffer();
             bytes = new Uint8Array(buffer);
           } else {
@@ -89,11 +115,11 @@ export const Route = createFileRoute("/api/upload")({
           }
 
           const ext = MIME_EXT[mime];
-          if (!ext) return json({ error: "unsupported_image_type" }, { status: 415 });
+          if (!ext) return json({ error: "unsupported_media_type" }, { status: 415 });
 
           const rawFolder = targetFolder.replace(/[^a-z0-9/_-]/gi, "");
           const rootMatch =
-            /^(uploads|products|cartridges|covers|banners|hardware|amiibo|accessories|bundles|used|giftcards|wallets|chat|avatars|orders|support|receipts|documents)/i.exec(
+            /^(uploads|products|cartridges|covers|banners|hardware|amiibo|accessories|bundles|used|giftcards|wallets|chat|avatars|orders|support|receipts|documents|reviews)/i.exec(
               rawFolder,
             );
           if (!rootMatch) {
@@ -105,6 +131,8 @@ export const Route = createFileRoute("/api/upload")({
           const safeFolder = `${root}/${user.id}`;
           const key = `files/${safeFolder}/${randomId("f")}.${ext}`;
 
+          // The declared type must match the actual bytes, so a script cannot
+          // arrive wearing an image or video content type.
           if (!matchesMagic(bytes, mime)) {
             return json({ error: "file_signature_mismatch" }, { status: 415 });
           }

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/api/files/$")({
         guard(async () => {
           const path = (params as { _splat?: string })._splat ?? "";
           if (
-            !/^(?:[a-z0-9_-]{1,64}\/)*[a-z0-9_-]{1,96}\.(?:png|jpe?g|webp|gif|avif|pdf)$/i.test(
+            !/^(?:[a-z0-9_-]{1,64}\/)*[a-z0-9_-]{1,96}\.(?:png|jpe?g|webp|gif|avif|pdf|mp4|webm|mov)$/i.test(
               path,
             )
           ) {

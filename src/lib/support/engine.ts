@@ -10,6 +10,7 @@
 import { detect, findProducts, type Detection } from "./intent";
 import { BUILTIN_ARTICLES } from "./kb";
 import { INTENT_PHRASES } from "./lexicon";
+import { detectSensitive, sensitiveReply } from "./sensitive";
 import { detectLang, matchAny, norm, surfaces } from "./normalize";
 import {
   emptyMemory,
@@ -298,6 +299,28 @@ export function supportAnswer(
   };
   const symbol = ctx.currencySymbol || "د.ع";
   const lang: SupportLang = detectLang(input, ctx.lang ?? "ar");
+
+  // Decline before interpreting: asked for another customer's data the intent
+  // detector would otherwise answer about the asker's own account, which reads
+  // as if the request had been honoured.
+  const sensitive = detectSensitive(input);
+  if (sensitive) {
+    return {
+      text: sensitiveReply(sensitive, lang),
+      cards: [],
+      suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+      // A refusal should not dead-end: staff can still take it from here.
+      escalate: sensitive !== "other_customer",
+      memory: ctx.memory,
+      trace: {
+        intent: "unknown",
+        candidates: [],
+        confidence: "high",
+        reason: `sensitive_${sensitive}`,
+      },
+    };
+  }
+
   const base = detect(input, ctx);
 
   const hintedProduct = hint?.productId
@@ -635,6 +658,43 @@ export function supportAnswer(
     }
 
     case "banana_wallet": {
+      // Answer with the member's own figures when they are available — a
+      // generic explainer is useless to someone asking where their top-up went.
+      const wallet = ctx.wallet;
+      if (wallet) {
+        const money = `${Math.round(wallet.balance).toLocaleString("en-US")} ${
+          lang === "en" ? "IQD" : "د.ع"
+        }`;
+        const lines: string[] =
+          lang === "en"
+            ? [
+                `Your wallet balance is ${money}, and you have ${wallet.bananaBalance.toLocaleString("en-US")} Bananas.`,
+              ]
+            : [
+                `رصيد محفظتك الحالي ${money}، ولديك ${wallet.bananaBalance.toLocaleString("en-US")} موزة.`,
+              ];
+
+        if (wallet.pendingTopUps.length) {
+          const total = wallet.pendingTopUps.reduce((sum, entry) => sum + entry.amount, 0);
+          lines.push(
+            lang === "en"
+              ? `You have ${wallet.pendingTopUps.length} top-up request(s) worth ${Math.round(total).toLocaleString("en-US")} IQD still under review — they are credited as soon as the team confirms the transfer.`
+              : `لديك ${wallet.pendingTopUps.length} طلب تعبئة بقيمة ${Math.round(total).toLocaleString("en-US")} د.ع قيد المراجعة، وتُضاف فور تأكيد الفريق للتحويل.`,
+          );
+        }
+
+        lines.push(
+          lang === "en"
+            ? "Bananas are earned on every order and can be redeemed for discounts or traded in the Banana Market."
+            : "تُجمع الموز من كل طلب، ويمكن استبدالها بخصومات أو تداولها في سوق الموز.",
+        );
+
+        return build(lines.join(" "), {
+          suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+          reason: wallet.pendingTopUps.length ? "wallet_balance_pending" : "wallet_balance",
+        });
+      }
+
       const text =
         lang === "en"
           ? "Banana Wallet is our reward points system: earn Bananas on every order, redeem them for discounts and perks, or trade them in the live peer-to-peer Banana Market!"

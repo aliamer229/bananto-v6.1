@@ -20,18 +20,21 @@ export function getBinanceConfig(): BinanceConfig {
   const receiverId = (env("BINANCE_RECEIVER_ID") || "").trim();
   const allowedAsset = (env("BINANCE_ALLOWED_ASSET") || "USDT").trim().toUpperCase();
 
-  // Strict normalization for kill switch: must explicitly be "true"
-  const rawTopupEnabled = (env("BINANCE_TOPUP_ENABLED") || "").trim().toLowerCase();
-  const topupEnabled = rawTopupEnabled === "true";
-
   const isConfigured = Boolean(apiKey && apiSecret && receiverId && allowedAsset);
+
+  // Kill switch. Top-up is on once the credentials are in place; setting
+  // BINANCE_TOPUP_ENABLED to "false" (or "0"/"off") turns it back off without
+  // removing the API keys.
+  const rawTopupEnabled = (env("BINANCE_TOPUP_ENABLED") || "").trim().toLowerCase();
+  const explicitlyDisabled = ["false", "0", "off", "no"].includes(rawTopupEnabled);
+  const topupEnabled = isConfigured && !explicitlyDisabled;
 
   return {
     apiKey,
     apiSecret,
     receiverId,
     allowedAsset,
-    topupEnabled: topupEnabled && isConfigured,
+    topupEnabled,
     isConfigured,
     intentTtlMs: 15 * 60 * 1000, // 15 minutes window
     lockTtlMs: 30 * 1000, // 30 seconds verification lock
@@ -51,12 +54,15 @@ export function isBinanceConfigured(): boolean {
 /**
  * Returns public parameters safe to expose to clients (never secrets or API keys).
  */
-export function getPublicBinanceConfig() {
+export function getPublicBinanceConfig(usdIqdRate?: number) {
   const config = getBinanceConfig();
   return {
     enabled: config.topupEnabled,
     asset: config.allowedAsset,
     receiverId: config.receiverId,
     intentTtlMinutes: 15,
+    // Lets the top-up screen quote the exact IQD the member will receive,
+    // using the same rate the server credits with.
+    ...(usdIqdRate ? { usdIqdRate } : {}),
   };
 }

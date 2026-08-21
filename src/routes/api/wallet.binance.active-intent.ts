@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getPublicBinanceConfig } from "@/lib/binance-pay/config.server";
+import { getUsdIqdRate } from "@/lib/exchange-rate.server";
 import { getActiveTopUpIntent } from "@/lib/binance-pay/service.server";
 import { guard, json } from "@/lib/http.server";
 import { requireUser } from "@/lib/session.server";
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/api/wallet/binance/active-intent")({
         guard(async () => {
           const user = await requireUser(request);
           const activeIntent = await getActiveTopUpIntent(user.id);
-          const config = getPublicBinanceConfig();
+          const config = getPublicBinanceConfig(await getUsdIqdRate());
 
           return json({
             activeIntent,

@@ -9,6 +9,33 @@ import type {
   AdminAvailabilityConfig,
 } from "./types";
 
+/** One queued account in a bulk preparation batch (mirrors the server shape). */
+export interface AccountBatchEntry {
+  id: string;
+  seq: number;
+  email: string;
+  status: "staged" | "sent" | "registered";
+  sent_at: string | null;
+  registered_at: string | null;
+}
+
+export interface AccountBatchProgress {
+  total: number;
+  staged: number;
+  sent: number;
+  registered: number;
+  current?: AccountBatchEntry;
+  next?: AccountBatchEntry;
+  entries: AccountBatchEntry[];
+}
+
+export interface AdminReplySuggestion {
+  id: string;
+  text: string;
+  reason: string;
+  score: number;
+}
+
 export class RequestTimeoutError extends Error {
   constructor(message = "انتهت مهلة الاتصال، تحقق من الإنترنت وحاول مجدداً") {
     super(message);
@@ -353,6 +380,41 @@ export const api = {
     request<{ order: Order }>("/api/admin/orders", {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+
+  /** Queue several accounts at once; they are released to the buyer one by one. */
+  stageAccountBatch: (payload: {
+    orderId: string;
+    itemId: string;
+    accounts: { email: string; password?: string }[];
+  }) =>
+    request<{ added: number; progress: AccountBatchProgress }>("/api/admin/orders", {
+      method: "POST",
+      body: JSON.stringify({ action: "stage_account_batch", ...payload }),
+    }),
+
+  /** Hand the next staged account to the buyer. */
+  releaseNextAccount: (payload: { orderId: string; itemId: string }) =>
+    request<{ released: number; order: Order; progress: AccountBatchProgress }>(
+      "/api/admin/orders",
+      {
+        method: "POST",
+        body: JSON.stringify({ action: "release_next_account", ...payload }),
+      },
+    ),
+
+  accountBatchStatus: (payload: { orderId: string; itemId: string }) =>
+    request<{ progress: AccountBatchProgress }>("/api/admin/orders", {
+      method: "POST",
+      body: JSON.stringify({ action: "batch_status", ...payload }),
+    }),
+
+  /** Ranked reply suggestions for the staff member answering a thread. */
+  replySuggestions: (threadId: string, signal?: AbortSignal) =>
+    request<{ suggestions: AdminReplySuggestion[] }>("/api/chat", {
+      method: "POST",
+      body: JSON.stringify({ action: "reply_suggestions", threadId }),
+      ...(signal ? { signal } : {}),
     }),
 
   revealPassword: (orderId: string, itemId: string) =>

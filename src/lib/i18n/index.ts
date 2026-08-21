@@ -12,8 +12,6 @@
  */
 
 import { ar, type Dictionary } from "./dictionaries/ar";
-import { en } from "./dictionaries/en";
-import { tr as trDict } from "./dictionaries/tr";
 import type { PathOf, Translations } from "./types";
 
 export type Locale = "ar" | "en" | "tr";
@@ -63,11 +61,47 @@ export const LOCALE_META: Record<
   },
 };
 
-const DICTIONARIES: Record<Locale, Translations<Dictionary>> = {
+/**
+ * Arabic is the default locale *and* the fallback every other locale resolves
+ * through, so it is always present. English and Turkish are fetched on demand —
+ * an Arabic shopper (the default for the store's audience) has no reason to
+ * download them. Until a locale arrives, `translate()` falls back to Arabic
+ * rather than showing a raw dotted key, so a failed fetch degrades instead of
+ * breaking; `ensureLanguageAssets()` in src/i18n.ts awaits the load before the
+ * first render so that fallback is never actually seen.
+ */
+const DICTIONARIES: Partial<Record<Locale, Translations<Dictionary>>> = {
   ar: ar as unknown as Translations<Dictionary>,
-  en,
-  tr: trDict,
 };
+
+const loaders: Record<Exclude<Locale, "ar">, () => Promise<Translations<Dictionary>>> = {
+  en: () => import("./dictionaries/en").then((m) => m.en),
+  tr: () => import("./dictionaries/tr").then((m) => m.tr),
+};
+
+const inFlight = new Map<Locale, Promise<void>>();
+
+export function loadKeyedDictionary(locale: Locale): Promise<void> {
+  if (locale === DEFAULT_LOCALE || DICTIONARIES[locale]) return Promise.resolve();
+  let pending = inFlight.get(locale);
+  if (!pending) {
+    pending = loaders[locale as Exclude<Locale, "ar">]()
+      .then((dict) => {
+        DICTIONARIES[locale] = dict;
+      })
+      .catch((error) => {
+        console.error(`[i18n] failed to load the ${locale} dictionary`, error);
+        inFlight.delete(locale);
+      });
+    inFlight.set(locale, pending);
+  }
+  return pending;
+}
+
+/** True once the locale can be rendered without falling back to Arabic. */
+export function isDictionaryLoaded(locale: Locale): boolean {
+  return Boolean(DICTIONARIES[locale]);
+}
 
 export function isLocale(value: unknown): value is Locale {
   return value === "ar" || value === "en" || value === "tr";
@@ -209,5 +243,7 @@ export function detectBrowserLocale(languages?: readonly string[]): Locale {
 }
 
 export type { Dictionary };
-export { ar, en };
-export { trDict as trDictionary };
+// `en` / `trDict` are deliberately not re-exported: a static re-export would
+// pin both dictionaries back onto the critical path, which is what this module
+// now goes out of its way to avoid. Use `translate()` / `loadKeyedDictionary()`.
+export { ar };

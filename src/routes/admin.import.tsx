@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { checkAdminAccess } from "@/lib/admin-access.functions";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { parseGameData } from "@/lib/gameData/parser";
 import { validateGameData } from "@/lib/gameData/validator";
@@ -19,6 +20,17 @@ import { toast } from "sonner";
 import { adminApi } from "@/lib/api";
 
 export const Route = createFileRoute("/admin/import")({
+  /**
+   * Server-side gate. Runs during SSR and before a client navigation resolves,
+   * so a non-admin never receives the dashboard bundle at all — the client-side
+   * `user.isAdmin` check below is now only a second line of defence.
+   */
+  beforeLoad: async () => {
+    const { isAdmin, signedIn } = await checkAdminAccess();
+    if (!isAdmin) {
+      throw redirect({ to: signedIn ? "/" : "/auth" });
+    }
+  },
   component: AdminImportPage,
 });
 

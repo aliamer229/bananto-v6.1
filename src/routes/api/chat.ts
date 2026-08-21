@@ -12,10 +12,12 @@ import {
   getAdminAvailabilityStatus,
   getAdminAvailabilityConfig,
   saveAdminAvailabilityConfig,
+  findUserById,
 } from "@/lib/db.server";
 import { body, guard, json } from "@/lib/http.server";
 import { requireUser, requireAdmin } from "@/lib/session.server";
 import { buildSupportContext } from "@/lib/support-context.server";
+import { suggestAdminReplies } from "@/lib/support/admin-suggestions";
 import { supportAnswer } from "@/lib/support/engine";
 import { imageAnswer } from "@/lib/support/images";
 import { understand } from "@/lib/support/understand.server";
@@ -32,6 +34,7 @@ import { randomId } from "@/lib/crypto.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import { redactMessageForMember } from "@/lib/redaction";
 import { canAccessThread } from "@/lib/thread-access";
+import { isOwnUploadUrl, isVideoUploadUrl } from "@/lib/uploads";
 
 /** Modes where the automated assistant must stay silent (read-only). */
 const SILENT_MODES: ThreadMode[] = [
@@ -202,7 +205,8 @@ export const Route = createFileRoute("/api/chat")({
               | "search"
               | "skip_queue"
               | "resume_queue"
-              | "queue_reminder";
+              | "queue_reminder"
+              | "reply_suggestions";
             threadId?: string;
             chatType?: ChatType;
             kind?: MessageKind;
@@ -354,6 +358,34 @@ export const Route = createFileRoute("/api/chat")({
             return json({ success: true, thread: updated });
           }
 
+          // Ranked reply suggestions for the staff member answering a thread.
+          if (data.action === "reply_suggestions" && data.threadId) {
+            const admin = await requireAdmin(request);
+            const targetThread = await getThread(data.threadId);
+            if (!targetThread) return json({ error: "not_found" }, { status: 404 });
+
+            const history = await getMessages(data.threadId);
+            const owner = await findUserById(targetThread.userId);
+            if (!owner) return json({ error: "not_found" }, { status: 404 });
+
+            // The same sanitised context the automated assistant runs on, so a
+            // suggestion can never contain anything the customer may not see.
+            const suggestionCtx = await buildSupportContext({
+              user: owner,
+              thread: targetThread,
+            });
+            const suggestions = suggestAdminReplies({
+              messages: history.map((message) => ({
+                senderRole: message.senderRole,
+                kind: message.kind,
+                text: typeof message.body?.["text"] === "string" ? message.body["text"] : "",
+                createdAt: message.createdAt,
+              })),
+              ctx: suggestionCtx,
+            });
+            return json({ suggestions, actor: admin.id });
+          }
+
           if (data.action === "queue_reminder" && data.threadId) {
             await requireAdmin(request);
             const targetThread = await getThread(data.threadId);
@@ -451,14 +483,7 @@ export const Route = createFileRoute("/api/chat")({
           if (data.text && data.text.length > 4000) {
             return json({ error: "message_too_long" }, { status: 413 });
           }
-          const ownChatPrefix = `/api/files/chat/${user.id}/`;
-          if (
-            data.imageUrl &&
-            (!data.imageUrl.startsWith(ownChatPrefix) ||
-              !/^\/api\/files\/chat\/usr_[a-z0-9]+\/[a-z0-9_-]+\.(?:png|jpe?g|webp|gif)$/i.test(
-                data.imageUrl,
-              ))
-          ) {
+          if (data.imageUrl && !isOwnUploadUrl(data.imageUrl, user.id)) {
             return json({ error: "invalid_image" }, { status: 400 });
           }
 
@@ -596,7 +621,11 @@ export const Route = createFileRoute("/api/chat")({
                   ? "system"
                   : "user",
             senderName: user.name,
-            kind: data.imageUrl ? (data.kind ?? "image") : "text",
+            kind: data.imageUrl
+              ? isVideoUploadUrl(data.imageUrl)
+                ? "video"
+                : (data.kind ?? "image")
+              : "text",
             clientMessageId: data.clientMessageId,
             body: data.imageUrl
               ? { imageUrl: data.imageUrl, ...(data.text ? { text: data.text } : {}) }

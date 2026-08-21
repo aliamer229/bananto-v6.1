@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { ar } from "./dictionaries/ar";
 import { en } from "./dictionaries/en";
@@ -10,6 +10,7 @@ import {
   detectBrowserLocale,
   dirOf,
   formatNumber,
+  loadKeyedDictionary,
   plural,
   translate,
 } from "./index";
@@ -28,6 +29,13 @@ function paths(node: Tree, prefix = ""): string[] {
     return typeof value === "object" && value !== null ? paths(value as Tree, path) : [path];
   });
 }
+
+// English and Turkish are fetched on demand in the app (Arabic is the static
+// fallback), so a test that asserts their copy has to load them first —
+// otherwise `translate()` correctly answers in Arabic.
+beforeAll(async () => {
+  await Promise.all([loadKeyedDictionary("en"), loadKeyedDictionary("tr")]);
+});
 
 describe("dictionaries", () => {
   const arPaths = paths(ar as unknown as Tree).sort();

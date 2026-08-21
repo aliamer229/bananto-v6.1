@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
+
+import { loadKeyedDictionary } from "../i18n";
 
 import { HARDWARE_SCHEMA } from "./hardwareSchema";
 import { parseProductImport } from "./parser";
@@ -47,6 +49,12 @@ function build(locale: "ar" | "en" | "tr") {
     locale,
   );
 }
+
+// Spec labels resolve through the keyed dictionaries, and English and Turkish
+// are fetched on demand in the app, so load them before asserting their copy.
+beforeAll(async () => {
+  await Promise.all([loadKeyedDictionary("en"), loadKeyedDictionary("tr")]);
+});
 
 describe("product view model", () => {
   it("turns schema scalars into localized spec tables without per-field UI code", () => {

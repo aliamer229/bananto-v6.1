@@ -133,6 +133,30 @@ export interface SupportMemory {
   lastErrorCode?: string;
 }
 
+/**
+ * The member's own wallet, as far as support is allowed to discuss it.
+ *
+ * Balances and their own pending top-ups only — never another member's data,
+ * never an admin adjustment note, never a payment proof URL.
+ */
+export interface SafeWallet {
+  balance: number;
+  currency: string;
+  bananaBalance: number;
+  /** Top-up requests this member filed that staff have not settled yet. */
+  pendingTopUps: { amount: number; method: string; createdAt: string }[];
+  recentTransactions: { kind: string; amount: number; createdAt: string }[];
+}
+
+/** A trade-in this member submitted, with the staff notes stripped. */
+export interface SafeTrade {
+  id: string;
+  gameName: string;
+  status: string;
+  offerIqd?: number;
+  createdAt: string;
+}
+
 export interface SupportContext {
   lang: SupportLang;
   userName?: string;
@@ -144,6 +168,10 @@ export interface SupportContext {
   /** built-in + admin managed troubleshooting articles */
   articles: KbArticle[];
   policies?: { title: string; body: string }[];
+  /** the member's own wallet — absent when it could not be read */
+  wallet?: SafeWallet;
+  /** the member's own trade-ins */
+  trades?: SafeTrade[];
   memory: SupportMemory;
   /** page the user is on right now, sent by the client */
   pageContext?: { path?: string; productId?: string; productTitle?: string };

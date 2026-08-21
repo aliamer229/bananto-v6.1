@@ -1,7 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { findOrCreateOAuthUser } from "@/lib/db.server";
-import { exchangeCode, readState } from "@/lib/oauth.server";
+import {
+  clearOauthNonceCookie,
+  exchangeCode,
+  readOauthNonceCookie,
+  readState,
+} from "@/lib/oauth.server";
 import type { OAuthProvider } from "@/lib/oauth.server";
 import { setSessionCookie } from "@/lib/session.server";
 import { textBody } from "@/lib/http.server";
@@ -59,8 +64,21 @@ async function handle(request: Request, providerParam: string) {
     throw redirect({ href: `/auth?error=${encodeURIComponent(input.error ?? "oauth_failed")}` });
   }
 
-  const state = await readState(input.state, provider);
-  if (!state) throw redirect({ href: "/auth?error=invalid_state" });
+  const secure =
+    new URL(request.url).protocol === "https:" ||
+    (request.headers.get("x-forwarded-proto") ?? "").split(",")[0]?.trim() === "https";
+  const dropNonce = clearOauthNonceCookie(secure);
+
+  // The nonce cookie proves this callback belongs to the browser that started
+  // the sign-in. Missing or mismatched means the state was replayed from
+  // somewhere else, so no session is issued.
+  const state = await readState(input.state, provider, readOauthNonceCookie(request));
+  if (!state) {
+    return new Response(null, {
+      status: 302,
+      headers: { Location: "/auth?error=invalid_state", "Set-Cookie": dropNonce },
+    });
+  }
 
   try {
     const profile = await exchangeCode(provider, input.code, origin, input.appleUser);
@@ -81,13 +99,11 @@ async function handle(request: Request, providerParam: string) {
 
     // Explicitly return a redirect with the session cookie in the headers.
     // D1 environment needs standard Response for set-cookie to persist reliably.
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: next,
-        "Set-Cookie": sessionCookie,
-      },
-    });
+    const headers = new Headers({ Location: next, "cache-control": "no-store" });
+    headers.append("Set-Cookie", sessionCookie);
+    // The nonce is single use.
+    headers.append("Set-Cookie", dropNonce);
+    return new Response(null, { status: 302, headers });
   } catch (error) {
     console.error("oauth callback failed", error);
     throw redirect({ href: "/auth?error=oauth_failed" });

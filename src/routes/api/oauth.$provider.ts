@@ -1,7 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { sessionSecretConfigured } from "@/lib/crypto.server";
-import { authorizationUrl, createState, isProviderConfigured } from "@/lib/oauth.server";
+import {
+  authorizationUrl,
+  createNonce,
+  createState,
+  isProviderConfigured,
+  oauthNonceCookie,
+} from "@/lib/oauth.server";
 import type { OAuthProvider } from "@/lib/oauth.server";
 
 function authError(code: string): never {
@@ -34,9 +40,11 @@ export const Route = createFileRoute("/api/oauth/$provider")({
           !requestedNext.includes("\\")
             ? requestedNext
             : "/profile";
+        // Bind this authorization request to this browser (see oauth.server).
+        const nonce = createNonce();
         let target: string;
         try {
-          const state = await createState(provider, next);
+          const state = await createState(provider, next, nonce);
           target = await authorizationUrl(provider, url.origin, state);
         } catch (error) {
           console.error(
@@ -45,7 +53,18 @@ export const Route = createFileRoute("/api/oauth/$provider")({
           );
           return authError("oauth_start_failed");
         }
-        throw redirect({ href: target });
+
+        const secure =
+          url.protocol === "https:" ||
+          (request.headers.get("x-forwarded-proto") ?? "").split(",")[0]?.trim() === "https";
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: target,
+            "Set-Cookie": oauthNonceCookie(nonce, secure),
+            "cache-control": "no-store",
+          },
+        });
       },
     },
   },

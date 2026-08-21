@@ -33,6 +33,8 @@ export default function BinanceTopUpSection({ onBalanceUpdated }: BinanceTopUpSe
     amount?: string;
     currency?: string;
     transactionId?: string;
+    creditedIqd?: number;
+    usdIqdRate?: number;
   } | null>(null);
 
   // Load active intent and public config
@@ -178,6 +180,8 @@ export default function BinanceTopUpSection({ onBalanceUpdated }: BinanceTopUpSe
   };
 
   const isServiceDisabled = config && config.enabled === false;
+  // Same rate the server credits with, so the quote and the credit always agree.
+  const usdIqdRate = Number((config as { usdIqdRate?: number } | undefined)?.usdIqdRate ?? 0);
 
   const expectedUsdt = activeIntent
     ? (activeIntent.expected_amount_atomic / 1_000_000).toFixed(2)
@@ -232,8 +236,16 @@ export default function BinanceTopUpSection({ onBalanceUpdated }: BinanceTopUpSe
             <span>تم استلام التحويل وإضافة الرصيد بنجاح!</span>
           </div>
           <p className="text-xs text-emerald-800 dark:text-emerald-200 font-medium">
-            تم قيد <span className="font-black text-sm">{successResult.amount} USDT</span> في
-            محفظتك.
+            تم قيد{" "}
+            <span className="font-black text-sm">
+              {successResult.creditedIqd != null
+                ? `${successResult.creditedIqd.toLocaleString("en-US")} د.ع`
+                : `${successResult.amount} USDT`}
+            </span>{" "}
+            في محفظتك
+            {successResult.creditedIqd != null && successResult.amount
+              ? ` (بقيمة ${successResult.amount}$).`
+              : "."}
             {successResult.transactionId && (
               <span className="block mt-1 font-mono text-[11px] opacity-80">
                 رقم المعاملة: {successResult.transactionId}
@@ -427,6 +439,17 @@ export default function BinanceTopUpSection({ onBalanceUpdated }: BinanceTopUpSe
                 USDT
               </span>
             </div>
+            {usdIqdRate > 0 && Number(amountInput) > 0 && (
+              <p className="text-[11px] font-bold text-muted-foreground px-1">
+                سيُضاف إلى رصيدك:{" "}
+                <span className="text-foreground font-black">
+                  {Math.floor(Number(amountInput) * usdIqdRate).toLocaleString("en-US")} د.ع
+                </span>{" "}
+                <span className="opacity-70">
+                  (سعر الصرف: 1$ = {usdIqdRate.toLocaleString("en-US")} د.ع)
+                </span>
+              </p>
+            )}
           </div>
 
           {/* Preset Buttons */}
