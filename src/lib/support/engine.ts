@@ -26,6 +26,24 @@ import {
 } from "./types";
 import type { SupportHint } from "./understand.server";
 
+/**
+ * `pending` is an order that has not been prepared yet — it says nothing about
+ * payment, so the wording has to come from the payment status as well. Calling
+ * it "awaiting payment" is what made a wallet purchase report both "بانتظار
+ * الدفع" and "مدفوع" in the same line.
+ */
+export function orderStatusLabel(
+  status: string,
+  paymentStatus: string | undefined,
+  lang: SupportLang,
+): string {
+  const table = STATUS_I18N[lang] ?? STATUS_I18N.ar;
+  if (status === "pending" && paymentStatus === "paid") {
+    return table["processing"] ?? status;
+  }
+  return table[status] ?? status;
+}
+
 const STATUS_I18N: Record<SupportLang, Record<string, string>> = {
   ar: {
     pending: "بانتظار الدفع",
@@ -169,9 +187,8 @@ function productCard(product: SafeProduct, symbol: string, lang: SupportLang): S
 
 function orderLines(order: SafeOrder, symbol: string, lang: SupportLang): string {
   const items = order.items.map((item) => `${item.title} ×${item.quantity}`).join(", ");
-  const statusMap = STATUS_I18N[lang] || STATUS_I18N.ar;
   const paymentMap = PAYMENT_I18N[lang] || PAYMENT_I18N.ar;
-  const statusStr = statusMap[order.status] ?? order.status;
+  const statusStr = orderStatusLabel(order.status, order.paymentStatus, lang);
   const paymentStr = paymentMap[order.paymentStatus] ?? order.paymentStatus;
 
   if (lang === "en") {

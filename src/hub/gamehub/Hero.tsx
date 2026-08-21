@@ -335,7 +335,11 @@ export function Hero() {
                 </Metric>
               )}
               {game.ageRating && (
-                <span className="rounded border border-white/15 px-1.5 py-0.5 text-[10px] font-extrabold">
+                <span
+                  dir="ltr"
+                  className="max-w-full truncate rounded border border-white/15 px-1.5 py-0.5 text-[10px] font-extrabold"
+                  title={`${game.ageRating.system} ${game.ageRating.label}`}
+                >
                   {game.ageRating.system} {game.ageRating.label}
                 </span>
               )}

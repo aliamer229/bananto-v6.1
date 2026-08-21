@@ -163,11 +163,17 @@ export function BuySheet({
                     )}
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="block truncate text-xs sm:text-sm font-bold text-foreground">
+                      <span
+                        dir="auto"
+                        className="block truncate text-xs sm:text-sm font-bold text-foreground"
+                      >
                         {opt.name}
                       </span>
                       {opt.description && (
-                        <span className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
+                        <span
+                          dir="auto"
+                          className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground"
+                        >
                           {opt.description}
                         </span>
                       )}
@@ -210,11 +216,17 @@ export function BuySheet({
                     )}
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="block truncate text-xs sm:text-sm font-bold text-foreground">
+                      <span
+                        dir="auto"
+                        className="block truncate text-xs sm:text-sm font-bold text-foreground"
+                      >
                         {typ.name}
                       </span>
                       {typ.description && (
-                        <span className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
+                        <span
+                          dir="auto"
+                          className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground"
+                        >
                           {typ.description}
                         </span>
                       )}
@@ -257,11 +269,17 @@ export function BuySheet({
                     )}
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="block truncate text-xs sm:text-sm font-bold text-foreground">
+                      <span
+                        dir="auto"
+                        className="block truncate text-xs sm:text-sm font-bold text-foreground"
+                      >
                         {edition.name}
                       </span>
                       {edition.description && (
-                        <span className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
+                        <span
+                          dir="auto"
+                          className="mt-0.5 block line-clamp-2 text-[11px] leading-relaxed text-muted-foreground"
+                        >
                           {edition.description}
                         </span>
                       )}

@@ -421,6 +421,26 @@ export const api = {
       ...(signal ? { signal } : {}),
     }),
 
+  /**
+   * Member-side steps on their own order: attaching the sign-in proof and
+   * asking for the next prepared account.
+   */
+  orderAction: (payload: {
+    orderId: string;
+    action: "submit_login_proof" | "account_next" | "confirm_received";
+    itemId?: string;
+    imageUrl?: string;
+  }) =>
+    request<{
+      order?: Order;
+      released?: number | null;
+      waiting?: boolean;
+      progress?: AccountBatchProgress;
+    }>("/api/orders", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+
   revealPassword: (orderId: string, itemId: string) =>
     request<{ password: string }>("/api/reveal-password", {
       method: "POST",

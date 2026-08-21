@@ -219,7 +219,10 @@ export async function createOrderForUser(
     items,
     total,
     currency: "IQD",
-    status: "pending",
+    // A wallet purchase is paid the moment it is created, so it goes straight to
+    // preparation. Leaving it "pending" is what made a paid order read back to
+    // the member as "awaiting payment" while also saying "paid".
+    status: needsWalletPayment ? "processing" : "pending",
     paymentStatus: needsWalletPayment ? "paid" : "unpaid",
     needsAddress,
     ...(address ? { address } : {}),

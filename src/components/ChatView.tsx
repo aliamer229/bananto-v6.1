@@ -686,6 +686,23 @@ export default function ChatView({
     setThreadId(target);
   }, [initialOrderId, orders, threads]);
 
+  /**
+   * A signed-in member always talks in a real conversation.
+   *
+   * The assistant used to answer from client state alone: nothing was stored,
+   * so leaving the page threw the whole conversation away and staff had no way
+   * to see it or reply. Reusing the member's own assistant thread keeps the
+   * history and puts every message where the admin inbox can reach it.
+   */
+  useEffect(() => {
+    if (!user || threadId || initialOrderId || initialThreadId) return;
+    const existing = threads.find(
+      (thread) =>
+        thread.chatType === "AUTOMATED_SUPPORT" && thread.status === "open" && !thread.orderId,
+    );
+    if (existing) setThreadId(existing.id);
+  }, [user, threadId, initialOrderId, initialThreadId, threads]);
+
   const purchased = useMemo(() => {
     const ids = new Set(
       orders.flatMap((order) => order.items.map((item) => String(item.productId))),
@@ -703,6 +720,61 @@ export default function ChatView({
     () => (currentThread?.orderId ? orders.find((o) => o.id === currentThread.orderId) : null),
     [currentThread, orders],
   );
+
+  /* ------------------------- order delivery steps ------------------------- */
+  const proofInputRef = useRef<HTMLInputElement | null>(null);
+  const proofItemRef = useRef<string>("");
+  const [deliveryBusy, setDeliveryBusy] = useState(false);
+  const [proofSentItems, setProofSentItems] = useState<Record<string, boolean>>({});
+
+  const reloadThread = useCallback(async () => {
+    if (!threadId) return;
+    const res = await api.threadMessages(threadId, { limit: 30 });
+    setServerMessages(res.messages.map(mapServerMessage));
+    setHasMore(res.hasMore ?? false);
+    setNextCursor(res.nextCursor ?? null);
+  }, [threadId]);
+
+  /** Upload the member's sign-in screenshot and attach it to the order line. */
+  const submitLoginProof = async (file: File) => {
+    const itemId = proofItemRef.current;
+    const orderId = currentOrder?.id;
+    if (!itemId || !orderId) return;
+    setDeliveryBusy(true);
+    try {
+      const { url } = await uploadFileWithProgress(file, "orders");
+      await api.orderAction({ orderId, action: "submit_login_proof", itemId, imageUrl: url });
+      setProofSentItems((prev) => ({ ...prev, [itemId]: true }));
+      await reloadThread();
+    } catch (err) {
+      console.error("Failed to submit the sign-in proof", err);
+      toast.error(tr("تعذر إرسال صورة الإثبات، حاول مرة أخرى"));
+    } finally {
+      setDeliveryBusy(false);
+    }
+  };
+
+  /** Ask for the next prepared account, or finish when the line is done. */
+  const requestNextAccount = async (itemId: string) => {
+    const orderId = currentOrder?.id;
+    if (!orderId) return;
+    setDeliveryBusy(true);
+    try {
+      const res = await api.orderAction({ orderId, action: "account_next", itemId });
+      await reloadThread();
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      if (res?.released) {
+        toast.success(tr("تم إرسال الحساب التالي"));
+      } else {
+        toast.message(tr("لا يوجد حساب جاهز بعد — سيصلك فور تجهيزه"));
+      }
+    } catch (err) {
+      console.error("Failed to request the next account", err);
+      toast.error(tr("تعذر طلب الحساب التالي"));
+    } finally {
+      setDeliveryBusy(false);
+    }
+  };
 
   const createThread = useMutation({
     mutationFn: (args?: string | { subject?: string; chatType?: ChatType; orderId?: string }) => {
@@ -1013,6 +1085,55 @@ export default function ChatView({
         );
       }
       return;
+    }
+
+    // A signed-in member with no conversation yet gets one created now, so the
+    // message is stored and answered in a thread rather than in page state.
+    if (user) {
+      try {
+        const created = await createThread.mutateAsync({
+          subject: "محادثة المساعد الآلي",
+          chatType: "AUTOMATED_SUPPORT",
+        });
+        const newThreadId = created?.thread?.id;
+        if (newThreadId) {
+          setThreadId(newThreadId);
+          const clientMessageId = `client-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+          setServerMessages([
+            {
+              id: clientMessageId,
+              clientMessageId,
+              sender: "user",
+              text: value,
+              createdAt: new Date().toISOString(),
+              status: "sending",
+            },
+          ]);
+          const res = await api.sendMessage({
+            threadId: newThreadId,
+            text: value,
+            clientMessageId,
+            pageContext: {
+              path: typeof window !== "undefined" ? window.location.pathname : "/chat",
+            },
+            viewHistory: viewHistoryForSupport(),
+          });
+          setServerMessages((prev) =>
+            prev.map((m) =>
+              m.clientMessageId === clientMessageId
+                ? { ...mapServerMessage(res.message), status: "sent" }
+                : m,
+            ),
+          );
+          if (res.assistant) {
+            setServerMessages((prev) => [...prev, mapServerMessage(res.assistant!)]);
+          }
+          void queryClient.invalidateQueries({ queryKey: ["threads"] });
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to open a support conversation", err);
+      }
     }
 
     // Local / Guest AI chat
@@ -1637,6 +1758,27 @@ export default function ChatView({
                   <AccountCard
                     kind={String(msg.payload["kind"] ?? "")}
                     body={msg.payload["body"] as Record<string, unknown>}
+                    locale={lang === "en" ? "en" : "ar"}
+                    {...(currentOrder && String(msg.payload["kind"] ?? "") === "item_credentials"
+                      ? {
+                          delivery: {
+                            onAttachProof: (itemId: string) => {
+                              proofItemRef.current = itemId;
+                              proofInputRef.current?.click();
+                            },
+                            onNext: requestNextAccount,
+                            proofSent: Boolean(
+                              proofSentItems[
+                                String(
+                                  (msg.payload["body"] as Record<string, unknown>)?.["itemId"] ??
+                                    "",
+                                )
+                              ],
+                            ),
+                            busy: deliveryBusy,
+                          },
+                        }
+                      : {})}
                   />
                 ) : msg.type === "image" && msg.payload ? (
                   <div className="relative w-64 max-w-[85%] overflow-hidden rounded-2xl border border-[var(--surface-4)] bg-card p-1.5 shadow-xs">
@@ -1916,6 +2058,19 @@ export default function ChatView({
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Hidden picker for the sign-in proof, driven by the account card. */}
+      <input
+        type="file"
+        ref={proofInputRef}
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (file) void submitLoginProof(file);
+        }}
+      />
 
       {/* 4. Bottom Sheet Composer & Navigation Area */}
       <div className="relative z-10 mx-auto flex w-full shrink-0 flex-col gap-2.5 rounded-t-[28px] border-t border-white/80 bg-[var(--surface)] px-4 pb-4 pt-2 shadow-[0_-10px_40px_rgba(150,130,120,0.15)] sm:px-6">
