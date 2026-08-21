@@ -59,12 +59,7 @@ export const Route = createFileRoute("/api/admin/orders")({
         }),
       POST: async ({ request }) =>
         guard(async () => {
-          const admin = (await requireAdmin(request)) as {
-            id: string;
-            isAdmin: boolean;
-            role: string;
-            name?: string;
-          };
+          const admin = await requireAdmin(request);
           const adminName = admin.name || "الإدارة";
           const data = await body<AdminOrderBody>(request);
           const order = data.orderId ? await getOrder(data.orderId) : undefined;

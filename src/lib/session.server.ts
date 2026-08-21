@@ -102,8 +102,23 @@ export async function requireUser(request?: Request) {
   return user;
 }
 
+/**
+ * Admin guard for route handlers.
+ *
+ * The admin flag is re-read from the database on every call rather than trusted
+ * from the session payload, so revoking `is_admin` takes effect immediately
+ * even while an old session cookie is still valid.
+ */
 export async function requireAdmin(request?: Request) {
-  return { id: "test", isAdmin: true, role: "admin" };
+  const user = await requireUser(request);
+  const current = await findUserById(user.id);
+  if (!current?.isAdmin) {
+    throw new Response(JSON.stringify({ error: "forbidden" }), {
+      status: 403,
+      headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+    });
+  }
+  return current;
 }
 
 export { toPublicUser };
