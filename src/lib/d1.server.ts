@@ -634,6 +634,16 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE telegram_link_tokens ADD COLUMN used_at TEXT`,
   `CREATE INDEX IF NOT EXISTS idx_telegram_otp_sessions_token ON telegram_otp_sessions (session_token)`,
   `CREATE INDEX IF NOT EXISTS idx_telegram_otp_sessions_phone ON telegram_otp_sessions (phone)`,
+  // Wallet top-up review trail. Without these, an approved request records no
+  // reviewer, no timestamp and no credited amount, so there is nothing to audit
+  // after the money has moved.
+  `ALTER TABLE recharge_requests ADD COLUMN reviewed_by TEXT`,
+  `ALTER TABLE recharge_requests ADD COLUMN reviewed_by_name TEXT`,
+  `ALTER TABLE recharge_requests ADD COLUMN reviewed_at TEXT`,
+  `ALTER TABLE recharge_requests ADD COLUMN review_source TEXT`,
+  `ALTER TABLE recharge_requests ADD COLUMN credited_amount REAL`,
+  `CREATE INDEX IF NOT EXISTS recharge_requests_status_idx ON recharge_requests (status, created_at)`,
+  `CREATE INDEX IF NOT EXISTS recharge_requests_user_idx ON recharge_requests (user_id)`,
   // banana_rewards created before the catalogue gained categories/ordering
   `ALTER TABLE banana_rewards ADD COLUMN icon TEXT NOT NULL DEFAULT '🍌'`,
   `ALTER TABLE banana_rewards ADD COLUMN category TEXT NOT NULL DEFAULT 'digital'`,
@@ -1330,7 +1340,7 @@ export function ensureUsersSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 7;
+const RUNTIME_SCHEMA_VERSION = 8;
 
 async function runSchemaStatements(
   db: D1Like,

@@ -41,6 +41,9 @@ import type {
   User,
   UserSettings,
   WalletRechargeRequest,
+  RechargeRequestWithUser,
+  RechargeMethod,
+  RechargeStatus,
   WalletTransaction,
   WalletTransactionKind,
   ProductReview,
@@ -1642,65 +1645,229 @@ export async function createRechargeRequest(
   return full;
 }
 
-export async function approveRechargeRequest(
-  requestId: string,
-  adminNotes?: string,
-): Promise<boolean> {
-  if (!(await d1Ready())) return false;
+/**
+ * D1 hands back the raw column names. The rest of the app — and every review
+ * screen — reads the camelCase shape, so a `SELECT *` passed straight through
+ * silently produced a request with no proofUrl and no userId: staff could not
+ * see the receipt or tell whose it was.
+ */
+function rowToRechargeRequest(row: Record<string, unknown>): WalletRechargeRequest {
+  const text = (value: unknown) =>
+    value === null || value === undefined ? undefined : String(value);
+  return {
+    id: String(row["id"] ?? ""),
+    userId: String(row["user_id"] ?? row["userId"] ?? ""),
+    amount: Number(row["amount"] ?? 0),
+    method: String(row["method"] ?? "") as RechargeMethod,
+    status: String(row["status"] ?? "pending") as RechargeStatus,
+    createdAt: String(row["created_at"] ?? row["createdAt"] ?? ""),
+    updatedAt: String(row["updated_at"] ?? row["updatedAt"] ?? ""),
+    ...(text(row["proof_url"] ?? row["proofUrl"])
+      ? { proofUrl: text(row["proof_url"] ?? row["proofUrl"])! }
+      : {}),
+    ...(text(row["eshop_code"] ?? row["eshopCode"])
+      ? { eshopCode: text(row["eshop_code"] ?? row["eshopCode"])! }
+      : {}),
+    ...(text(row["banan_code"] ?? row["bananCode"])
+      ? { bananCode: text(row["banan_code"] ?? row["bananCode"])! }
+      : {}),
+    ...(text(row["admin_notes"] ?? row["adminNotes"])
+      ? { adminNotes: text(row["admin_notes"] ?? row["adminNotes"])! }
+      : {}),
+    ...(text(row["reviewed_by"]) ? { reviewedBy: text(row["reviewed_by"])! } : {}),
+    ...(text(row["reviewed_by_name"]) ? { reviewedByName: text(row["reviewed_by_name"])! } : {}),
+    ...(text(row["reviewed_at"]) ? { reviewedAt: text(row["reviewed_at"])! } : {}),
+    ...(text(row["review_source"]) ? { reviewSource: text(row["review_source"])! } : {}),
+    ...(row["credited_amount"] === null || row["credited_amount"] === undefined
+      ? {}
+      : { creditedAmount: Number(row["credited_amount"]) }),
+  };
+}
 
-  const req = await d1First<WalletRechargeRequest>(
+export async function getRechargeRequest(
+  requestId: string,
+): Promise<WalletRechargeRequest | undefined> {
+  if (!(await d1Ready())) return undefined;
+  const row = await d1First<Record<string, unknown>>(
     `SELECT * FROM recharge_requests WHERE id = ?`,
     requestId,
   );
-  if (!req || req.status !== "pending") return false;
+  return row ? rowToRechargeRequest(row) : undefined;
+}
+
+/** The member's details a reviewer needs, and nothing they do not. */
+function reviewerVisibleUser(user: User): NonNullable<RechargeRequestWithUser["user"]> {
+  return {
+    id: user.id,
+    name: user.name,
+    ...(user.phone ? { phone: user.phone } : {}),
+    ...(user.username ? { username: user.username } : {}),
+    ...(user.email ? { email: user.email } : {}),
+    walletBalance: Number(user.walletBalance ?? 0),
+    isAdmin: Boolean(user.isAdmin),
+    ...(user.createdAt ? { createdAt: user.createdAt } : {}),
+  };
+}
+
+export async function getRechargeRequestWithUser(
+  requestId: string,
+): Promise<RechargeRequestWithUser | undefined> {
+  const request = await getRechargeRequest(requestId);
+  if (!request) return undefined;
+  const user = await findUserById(request.userId);
+  return user ? { ...request, user: reviewerVisibleUser(user) } : request;
+}
+
+export interface RechargeReviewResult {
+  ok: boolean;
+  /** Why it did not go through, when it did not. */
+  reason?: "not_found" | "already_settled" | "credit_failed";
+  request?: WalletRechargeRequest;
+  creditedAmount?: number;
+  /** The member's balance after a successful approval. */
+  balance?: number;
+}
+
+export interface RechargeReviewer {
+  id: string;
+  name?: string;
+  /** Where the decision was taken: "admin_panel", "telegram", ... */
+  source?: string;
+  notes?: string;
+}
+
+/**
+ * Approve a top-up and credit the member.
+ *
+ * The status is claimed with a guarded UPDATE so two reviewers — or the
+ * dashboard and the Telegram bot pressing at the same moment — can never both
+ * win, and the money is credited exactly once. If the credit itself fails, the
+ * claim is released so the request goes back to pending rather than sitting
+ * marked approved with nothing paid.
+ */
+export async function approveRechargeRequest(
+  requestId: string,
+  reviewer: RechargeReviewer,
+): Promise<RechargeReviewResult> {
+  if (!(await d1Ready())) return { ok: false, reason: "not_found" };
+
+  const existing = await getRechargeRequest(requestId);
+  if (!existing) return { ok: false, reason: "not_found" };
+  if (existing.status !== "pending") {
+    return { ok: false, reason: "already_settled", request: existing };
+  }
 
   const now = new Date().toISOString();
   const claimed = await d1RunChanges(
-    `UPDATE recharge_requests SET status = 'approved', admin_notes = ?, updated_at = ?
-     WHERE id = ? AND status = 'pending'`,
-    adminNotes ?? null,
+    `UPDATE recharge_requests
+        SET status = 'approved', admin_notes = ?, updated_at = ?,
+            reviewed_by = ?, reviewed_by_name = ?, reviewed_at = ?, review_source = ?
+      WHERE id = ? AND status = 'pending'`,
+    reviewer.notes ?? null,
     now,
+    reviewer.id,
+    reviewer.name ?? null,
+    now,
+    reviewer.source ?? "admin_panel",
     requestId,
   );
-  if (claimed !== 1) return false;
+  if (claimed !== 1) {
+    return { ok: false, reason: "already_settled", request: await getRechargeRequest(requestId) };
+  }
 
   const store = await getStore();
-  let finalAmount = req.amount;
+  let finalAmount = existing.amount;
 
   // Apply Nintendo Bonus if applicable
-  if (req.method === "eshop_card") {
+  if (existing.method === "eshop_card") {
     const bonusEnabled = store.settings?.["nintendoBonusEnabled"] !== false;
     const bonusPercent = Number(store.settings?.["nintendoBonusPercent"] || 15);
     if (bonusEnabled) {
-      finalAmount = req.amount * (1 + bonusPercent / 100);
+      finalAmount = existing.amount * (1 + bonusPercent / 100);
     }
   }
 
-  await adjustUserWalletBalance(
-    req.userId,
-    finalAmount,
-    "deposit",
-    `Recharge approved: ${req.method} (${requestId})${finalAmount > req.amount ? " + Bonus" : ""}`,
-  );
+  let updatedUser: User | undefined;
+  try {
+    updatedUser = await adjustUserWalletBalance(
+      existing.userId,
+      finalAmount,
+      "deposit",
+      `Recharge approved: ${existing.method} (${requestId})${finalAmount > existing.amount ? " + Bonus" : ""}`,
+    );
+  } catch (error) {
+    // Release the claim: an approved row with no credit is money the member
+    // never receives and nobody notices.
+    await d1Execute(
+      `UPDATE recharge_requests
+          SET status = 'pending', reviewed_by = NULL, reviewed_by_name = NULL,
+              reviewed_at = NULL, review_source = NULL, updated_at = ?
+        WHERE id = ? AND status = 'approved'`,
+      new Date().toISOString(),
+      requestId,
+    );
+    console.error("[wallet] crediting an approved recharge failed", requestId, error);
+    return { ok: false, reason: "credit_failed", request: existing };
+  }
 
-  return true;
-}
-
-export async function rejectRechargeRequest(
-  requestId: string,
-  adminNotes?: string,
-): Promise<boolean> {
-  if (!(await d1Ready())) return false;
-
-  const now = new Date().toISOString();
   await d1Execute(
-    `UPDATE recharge_requests SET status = 'rejected', admin_notes = ?, updated_at = ? WHERE id = ?`,
-    adminNotes ?? null,
-    now,
+    `UPDATE recharge_requests SET credited_amount = ? WHERE id = ?`,
+    finalAmount,
     requestId,
   );
 
-  return true;
+  const settled = await getRechargeRequest(requestId);
+  return {
+    ok: true,
+    ...(settled ? { request: settled } : {}),
+    creditedAmount: finalAmount,
+    ...(updatedUser ? { balance: Number(updatedUser.walletBalance ?? 0) } : {}),
+  };
+}
+
+/**
+ * Reject a top-up.
+ *
+ * Guarded on `pending` for the same reason approval is: without it an already
+ * approved request could be flipped to rejected after the wallet was credited,
+ * leaving a paid member with a rejected record.
+ */
+export async function rejectRechargeRequest(
+  requestId: string,
+  reviewer: RechargeReviewer,
+): Promise<RechargeReviewResult> {
+  if (!(await d1Ready())) return { ok: false, reason: "not_found" };
+
+  const existing = await getRechargeRequest(requestId);
+  if (!existing) return { ok: false, reason: "not_found" };
+  if (existing.status !== "pending") {
+    return { ok: false, reason: "already_settled", request: existing };
+  }
+
+  const now = new Date().toISOString();
+  const claimed = await d1RunChanges(
+    `UPDATE recharge_requests
+        SET status = 'rejected', admin_notes = ?, updated_at = ?,
+            reviewed_by = ?, reviewed_by_name = ?, reviewed_at = ?, review_source = ?
+      WHERE id = ? AND status = 'pending'`,
+    reviewer.notes ?? null,
+    now,
+    reviewer.id,
+    reviewer.name ?? null,
+    now,
+    reviewer.source ?? "admin_panel",
+    requestId,
+  );
+  if (claimed !== 1) {
+    return { ok: false, reason: "already_settled", request: await getRechargeRequest(requestId) };
+  }
+
+  return {
+    ok: true,
+    ...((await getRechargeRequest(requestId))
+      ? { request: (await getRechargeRequest(requestId))! }
+      : {}),
+  };
 }
 
 export async function consumeBananCode(
@@ -1963,11 +2130,33 @@ export async function deleteBananCode(id: string): Promise<boolean> {
   return deleted;
 }
 
-export async function listAllRechargeRequests(): Promise<WalletRechargeRequest[]> {
-  if (await d1Ready()) {
-    return d1All<WalletRechargeRequest>(`SELECT * FROM recharge_requests ORDER BY created_at DESC`);
-  }
-  return [];
+/**
+ * Every top-up request, newest first, with the member attached.
+ *
+ * The listing is what a reviewer decides on, so it carries the identity and
+ * the balance rather than a bare user id, and it keeps settled requests: they
+ * are the log of what was approved, by whom and for how much.
+ */
+export async function listAllRechargeRequests(
+  options: { limit?: number } = {},
+): Promise<RechargeRequestWithUser[]> {
+  if (!(await d1Ready())) return [];
+
+  const limit = Math.min(Math.max(Number(options.limit ?? 400), 1), 1000);
+  const rows = await d1All<Record<string, unknown>>(
+    `SELECT * FROM recharge_requests ORDER BY created_at DESC LIMIT ?`,
+    limit,
+  );
+  const requests = rows.map(rowToRechargeRequest);
+  if (requests.length === 0) return [];
+
+  // One pass over the members involved rather than a lookup per row.
+  const users = await getUsers();
+  const byId = new Map(users.map((user) => [user.id, user]));
+  return requests.map((request) => {
+    const user = byId.get(request.userId);
+    return user ? { ...request, user: reviewerVisibleUser(user) } : request;
+  });
 }
 
 export async function listAllUsers(): Promise<User[]> {

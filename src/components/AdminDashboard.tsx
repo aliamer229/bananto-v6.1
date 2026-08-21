@@ -91,6 +91,7 @@ import { BananaManagementView } from "./admin/BananaManagementView";
 import { StoreAdvisorSection } from "./admin/StoreAdvisorSection";
 import AdminInboxView from "./admin/inbox/AdminInboxView";
 import OrdersManagerView from "./admin/OrdersManagerView";
+import { RechargeReviewPanel } from "./admin/RechargeReviewPanel";
 import { adminApi, fileToDataUrl } from "@/lib/api";
 import mascot from "@/assets/bananto_logo.webp.asset.json";
 import { useAuth } from "@/hooks/useAuth";
@@ -3585,56 +3586,14 @@ function UsersManagementView() {
         </div>
       </div>
 
-      {/* Recharge Requests */}
-      {data?.rechargeRequests &&
-        data.rechargeRequests.filter((r: any) => r.status === "pending").length > 0 && (
-          <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-500" />
-              طلبات الشحن المعلقة
-            </h2>
-            <div className="space-y-4">
-              {data.rechargeRequests
-                .filter((r: any) => r.status === "pending")
-                .map((req: any) => (
-                  <div
-                    key={req.id}
-                    className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-muted rounded-2xl gap-4 border border-border/50"
-                  >
-                    <div>
-                      <p className="font-bold">
-                        {req.amount} $ - {req.method}
-                      </p>
-                      <p className="text-xs text-muted-foreground">معرف المستخدم: {req.userId}</p>
-                      {req.proofUrl && (
-                        <a
-                          href={req.proofUrl}
-                          target="_blank"
-                          className="text-blue-600 text-xs underline flex items-center gap-1 mt-1"
-                        >
-                          عرض الإثبات <ArrowUpRight className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                    <div className="flex gap-2 w-full md:w-auto">
-                      <button
-                        onClick={() => approveRecharge.mutate(req.id)}
-                        className="flex-1 md:flex-none bg-green-600 text-white p-2 rounded-xl hover:bg-green-700 transition-colors"
-                      >
-                        <Check className="w-5 h-5 mx-auto" />
-                      </button>
-                      <button
-                        onClick={() => rejectRecharge.mutate(req.id)}
-                        className="flex-1 md:flex-none bg-rose-600 text-white p-2 rounded-xl hover:bg-rose-700 transition-colors"
-                      >
-                        <X className="w-5 h-5 mx-auto" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
+      {/* Recharge Requests — review with the receipt and the member in view */}
+      <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+        <RechargeReviewPanel
+          requests={(data?.rechargeRequests ?? []) as any}
+          onSettled={() => refetch()}
+          compact
+        />
+      </div>
 
       {/* Users Table */}
       <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
@@ -4278,60 +4237,10 @@ function WalletManagementView() {
         </div>
 
         <div className="space-y-6">
-          <h2 className="font-black flex items-center gap-2 mb-2">
-            <Clock className="w-5 h-5 text-amber-500" /> طلبات التعبئة
-          </h2>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              {data?.rechargeRequests
-                ?.filter((r: any) => r.status === "pending")
-                .map((req: any) => (
-                  <div
-                    key={req.id}
-                    className="bg-white p-3 rounded-2xl border border-border shadow-sm flex items-center justify-between gap-3 text-sm"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-black whitespace-nowrap">{req.amount} $</span>
-                        <span className="text-[10px] text-muted-foreground truncate">
-                          {req.method} • {new Date(req.createdAt).toLocaleDateString("ar-EG")}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {req.proofUrl && (
-                        <a
-                          href={req.proofUrl}
-                          target="_blank"
-                          className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                        >
-                          <ImageIcon className="w-4 h-4" />
-                        </a>
-                      )}
-                      <button
-                        onClick={() => approveRecharge.mutate(req.id)}
-                        className="bg-emerald-600 text-white p-2 rounded-lg hover:bg-emerald-700 transition-colors"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => rejectRecharge.mutate(req.id)}
-                        className="bg-rose-600 text-white p-2 rounded-lg hover:bg-rose-700 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-            {(!data?.rechargeRequests ||
-              data.rechargeRequests.filter((r: any) => r.status === "pending").length === 0) && (
-              <div className="p-12 text-center bg-muted/30 rounded-3xl border border-dashed border-border">
-                <FileText className="w-12 h-12 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-muted-foreground font-bold">لا يوجد طلبات معلقة</p>
-              </div>
-            )}
-          </div>
+          <RechargeReviewPanel
+            requests={(data?.rechargeRequests ?? []) as any}
+            onSettled={() => refetch()}
+          />
         </div>
       </div>
     </div>
