@@ -1,5 +1,6 @@
 import { d1All, d1Batch, d1Execute, d1First, d1Ready, d1RunChanges, getD1 } from "@/lib/d1.server";
 import { findUserById } from "@/lib/db.server";
+import { getUsdIqdRate, usdToIqd } from "@/lib/exchange-rate.server";
 import { fetchBinancePayTransactions } from "./client.server";
 import {
   ALLOWED_BINANCE_PAY_ORDER_TYPES,
@@ -184,7 +185,7 @@ export async function createTopUpIntent(params: {
     if (existingActive.expected_amount_atomic === atomicAmount) {
       return {
         intent: existingActive,
-        config: getPublicBinanceConfig(),
+        config: getPublicBinanceConfig(await getUsdIqdRate()),
         isExisting: true,
       };
     }
@@ -241,7 +242,7 @@ export async function createTopUpIntent(params: {
 
   return {
     intent,
-    config: getPublicBinanceConfig(),
+    config: getPublicBinanceConfig(await getUsdIqdRate()),
     isExisting: false,
   };
 }
@@ -301,6 +302,9 @@ export interface VerifyTopUpResult {
   message?: string;
   retryAfter?: number;
   attemptsLeft?: number;
+  /** IQD actually added to the wallet, and the rate used to get there. */
+  creditedIqd?: number;
+  usdIqdRate?: number;
 }
 
 /**
@@ -621,9 +625,27 @@ export async function verifyTopUp(params: {
   const amountUsdtNum = Number(amountUsdtStr);
   const isoNow = new Date().toISOString();
 
+  // The wallet is denominated in IQD, so the USDT that arrived has to be
+  // converted at the admin-configured rate before it touches the balance.
+  // Crediting the raw dollar figure would have made a $10 deposit worth 10 IQD.
+  const usdIqdRate = await getUsdIqdRate();
+  const creditIqd = usdToIqd(amountUsdtNum, usdIqdRate);
+  if (creditIqd <= 0) {
+    await d1Execute(
+      `UPDATE binance_topup_intents SET status = 'pending' WHERE id = ? AND status = 'verifying'`,
+      intent.id,
+    );
+    return {
+      success: false,
+      code: "VERIFICATION_TEMPORARILY_UNAVAILABLE",
+      message: "تعذر احتساب قيمة التعبئة بالدينار حالياً. لم يتم خصم أي مبلغ.",
+      attemptsLeft,
+    };
+  }
+
   const user = await findUserById(params.userId);
   const balanceBefore = user?.walletBalance ?? 0;
-  const balanceAfter = balanceBefore + amountUsdtNum;
+  const balanceAfter = balanceBefore + creditIqd;
 
   try {
     const batchStatements = [
@@ -655,11 +677,11 @@ export async function verifyTopUp(params: {
         params: [
           ledgerId,
           params.userId,
-          amountUsdtNum,
+          creditIqd,
           balanceBefore,
           balanceAfter,
           cleanTxId,
-          `Binance Pay Top-Up (${cleanTxId})`,
+          `Binance Pay Top-Up $${amountUsdtStr} @ ${usdIqdRate} = ${creditIqd} IQD (${cleanTxId})`,
           isoNow,
         ],
       },
@@ -671,15 +693,15 @@ export async function verifyTopUp(params: {
         params: [
           walletTxId,
           params.userId,
-          amountUsdtNum,
-          `Binance Top-Up +$${amountUsdtStr} (${cleanTxId})`,
+          creditIqd,
+          `تعبئة Binance: $${amountUsdtStr} × ${usdIqdRate} = ${creditIqd.toLocaleString("en-US")} د.ع`,
           isoNow,
         ],
       },
       // 4. Increment user wallet balance
       {
         sql: `UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?`,
-        params: [amountUsdtNum, params.userId],
+        params: [creditIqd, params.userId],
       },
       // 5. Finalize intent state to 'credited'
       {
@@ -709,7 +731,9 @@ export async function verifyTopUp(params: {
       amount: amountUsdtStr,
       currency: intent.currency,
       transactionId: cleanTxId,
-      message: `تم التحقق بنجاح وتمت إضافة ${amountUsdtStr} $ إلى رصيدك.`,
+      creditedIqd: creditIqd,
+      usdIqdRate,
+      message: `تم التحقق بنجاح وتمت إضافة ${creditIqd.toLocaleString("en-US")} د.ع (بقيمة ${amountUsdtStr}$) إلى رصيدك.`,
     };
   } catch (creditErr: any) {
     console.error("[BinancePay] Batch credit failed:", creditErr?.message || creditErr);
