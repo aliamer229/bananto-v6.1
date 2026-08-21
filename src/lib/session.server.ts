@@ -1,5 +1,19 @@
 import { getRequestHeader } from "@tanstack/react-start/server";
 
+/**
+ * `getRequestHeader` reads TanStack's request-scoped store and throws when
+ * there is no active server event. These helpers also run with an explicit
+ * Request in hand (queue consumers, scheduled jobs, tests), where the absence
+ * of that store means "no header", not "crash".
+ */
+function ambientHeader(name: string): string | undefined {
+  try {
+    return getRequestHeader(name);
+  } catch {
+    return undefined;
+  }
+}
+
 import { signValue, unsignValue } from "./crypto.server.ts";
 import { constantTimeEqual } from "./security.server";
 import { findUserById, toPublicUser } from "./db.server";
@@ -10,7 +24,7 @@ const MAX_AGE = 60 * 60 * 24 * 30;
 
 /** `Secure` breaks cookies on plain-http local dev, so only set it over https. */
 function isSecureRequest(request?: Request) {
-  const proto = request?.headers.get("x-forwarded-proto") ?? getRequestHeader("x-forwarded-proto");
+  const proto = request?.headers.get("x-forwarded-proto") ?? ambientHeader("x-forwarded-proto");
   if (proto) return proto.split(",")[0]!.trim() === "https";
   if (request) {
     try {
@@ -19,7 +33,7 @@ function isSecureRequest(request?: Request) {
       // Fall through to host detection for non-standard request URLs.
     }
   }
-  const host = request?.headers.get("host") ?? getRequestHeader("host") ?? "";
+  const host = request?.headers.get("host") ?? ambientHeader("host") ?? "";
   return !host.startsWith("localhost") && !host.startsWith("127.0.0.1");
 }
 
@@ -54,7 +68,7 @@ export function clearSessionCookie(request?: Request) {
 }
 
 function readCookie(request?: Request) {
-  const header = request?.headers.get("cookie") ?? getRequestHeader("cookie") ?? "";
+  const header = request?.headers.get("cookie") ?? ambientHeader("cookie") ?? "";
   for (const part of header.split(";")) {
     const [name, ...rest] = part.trim().split("=");
     if (name === COOKIE) return decodeURIComponent(rest.join("="));
