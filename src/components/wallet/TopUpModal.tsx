@@ -73,7 +73,10 @@ export function TopUpModal({
     setIsUploading(true);
     try {
       const dataUrl = await fileToDataUrl(file);
-      const res = await api.upload(dataUrl, "wallet-proofs");
+      // Must be "wallets": /api/wallet only accepts a proof under
+      // /api/files/wallets/<your id>/, and "wallet-proofs" is not an allowed
+      // upload folder at all, so this used to fail before it ever got there.
+      const res = await api.upload(dataUrl, "wallets");
       setProofUrl(res.url);
       toast.success("تم رفع صورة الإثبات");
     } catch (err) {

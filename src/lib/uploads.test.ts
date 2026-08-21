@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isOwnUploadUrl } from "./uploads";
+import { isOwnUploadUrl, isVideoUploadUrl, isVideoUrl } from "./uploads";
 
 const ME = "usr_member1";
 
@@ -49,5 +49,31 @@ describe("isOwnUploadUrl", () => {
 
   it("refuses an id that merely starts with the member's id", () => {
     expect(isOwnUploadUrl(`/api/files/chat/${ME}9/f_abc.png`, ME)).toBe(false);
+  });
+});
+
+describe("video attachments", () => {
+  it("accepts the member's own video uploads", () => {
+    for (const ext of ["mp4", "webm", "mov"]) {
+      expect(isOwnUploadUrl(`/api/files/chat/${ME}/f_abc.${ext}`, ME)).toBe(true);
+      expect(isVideoUploadUrl(`/api/files/chat/${ME}/f_abc.${ext}`)).toBe(true);
+    }
+  });
+
+  it("does not mistake an image for a video", () => {
+    expect(isVideoUploadUrl(`/api/files/chat/${ME}/f_abc.png`)).toBe(false);
+    expect(isVideoUrl(`/api/files/chat/${ME}/f_abc.png`)).toBe(false);
+  });
+
+  it("recognises stored video URLs at render time, including with a query", () => {
+    expect(isVideoUrl(`/api/files/chat/${ME}/f_abc.mp4`)).toBe(true);
+    expect(isVideoUrl(`/api/files/chat/${ME}/f_abc.webm?v=2`)).toBe(true);
+    expect(isVideoUrl(null)).toBe(false);
+    expect(isVideoUrl(undefined)).toBe(false);
+    expect(isVideoUrl("")).toBe(false);
+  });
+
+  it("still refuses another member's video", () => {
+    expect(isOwnUploadUrl(`/api/files/chat/usr_other/f_abc.mp4`, ME)).toBe(false);
   });
 });

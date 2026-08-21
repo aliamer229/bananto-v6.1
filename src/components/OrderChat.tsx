@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isVideoUrl } from "@/lib/uploads";
 import {
   Check,
   CheckCircle2,
@@ -232,18 +233,27 @@ function MessageBody({ message, order }: { message: ChatMessage; order: Order })
   }
 
   switch (message.kind) {
+    case "video":
     case "image":
-    case "payment_receipt":
+    case "payment_receipt": {
+      const mediaUrl = String(message.body["imageUrl"] ?? "");
       return (
         <div className="space-y-2">
-          <img
-            src={String(message.body["imageUrl"] ?? "")}
-            alt="مرفق"
-            className="max-h-64 rounded-xl object-cover"
-          />
+          {isVideoUrl(mediaUrl) ? (
+            <video
+              src={mediaUrl}
+              controls
+              preload="metadata"
+              playsInline
+              className="max-h-64 rounded-xl bg-black"
+            />
+          ) : (
+            <img src={mediaUrl} alt="مرفق" className="max-h-64 rounded-xl object-cover" />
+          )}
           {message.body["text"] ? <p>{String(message.body["text"])}</p> : null}
         </div>
       );
+    }
     case "payment_methods_card": {
       const methods =
         (message.body["methods"] as { id: string; name: string; details?: string }[]) ?? [];
@@ -595,7 +605,7 @@ export default function OrderChat({
           <ImagePlus className="h-5 w-5" />
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];

@@ -12,9 +12,26 @@
  * to the ones members upload into.
  */
 const MEMBER_UPLOAD_URL =
-  /^\/api\/files\/(chat|uploads|orders|receipts|support|documents)\/(usr_[a-z0-9]+)\/[a-z0-9_-]{1,96}\.(?:png|jpe?g|webp|gif)$/i;
+  /^\/api\/files\/(chat|uploads|orders|receipts|support|documents)\/(usr_[a-z0-9]+)\/[a-z0-9_-]{1,96}\.(png|jpe?g|webp|gif|mp4|webm|mov)$/i;
+
+const VIDEO_EXT = /^(mp4|webm|mov)$/i;
 
 export function isOwnUploadUrl(url: string, userId: string): boolean {
   const match = MEMBER_UPLOAD_URL.exec(url);
   return Boolean(match && match[2] === userId);
+}
+
+/** True when the member's own upload is a video rather than a still image. */
+export function isVideoUploadUrl(url: string): boolean {
+  const match = MEMBER_UPLOAD_URL.exec(url);
+  return Boolean(match && VIDEO_EXT.test(match[3] ?? ""));
+}
+
+/**
+ * Render-time check for any stored media URL, including ones saved before
+ * video was supported. Used by the chat views to decide between <img> and
+ * <video>; it deliberately does not care who owns the file.
+ */
+export function isVideoUrl(url: string | null | undefined): boolean {
+  return typeof url === "string" && /\.(mp4|webm|mov)(?:\?|#|$)/i.test(url);
 }

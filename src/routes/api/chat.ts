@@ -32,7 +32,7 @@ import { randomId } from "@/lib/crypto.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import { redactMessageForMember } from "@/lib/redaction";
 import { canAccessThread } from "@/lib/thread-access";
-import { isOwnUploadUrl } from "@/lib/uploads";
+import { isOwnUploadUrl, isVideoUploadUrl } from "@/lib/uploads";
 
 /** Modes where the automated assistant must stay silent (read-only). */
 const SILENT_MODES: ThreadMode[] = [
@@ -590,7 +590,11 @@ export const Route = createFileRoute("/api/chat")({
                   ? "system"
                   : "user",
             senderName: user.name,
-            kind: data.imageUrl ? (data.kind ?? "image") : "text",
+            kind: data.imageUrl
+              ? isVideoUploadUrl(data.imageUrl)
+                ? "video"
+                : (data.kind ?? "image")
+              : "text",
             clientMessageId: data.clientMessageId,
             body: data.imageUrl
               ? { imageUrl: data.imageUrl, ...(data.text ? { text: data.text } : {}) }

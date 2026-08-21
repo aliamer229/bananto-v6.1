@@ -702,6 +702,7 @@ export interface Order {
 export type MessageKind =
   | "text"
   | "image"
+  | "video"
   | "system"
   | "payment_methods_card"
   | "payment_receipt_prompt"

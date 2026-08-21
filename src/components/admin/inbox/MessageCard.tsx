@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { isVideoUrl } from "@/lib/uploads";
 import {
   Key,
   ShieldCheck,
@@ -237,12 +238,22 @@ export function MessageCard({ message, onSelectSuggestion }: MessageCardProps) {
         {body.imageUrl && !legacyCardType ? (
           <div className="space-y-2">
             <div className="relative group overflow-hidden rounded-xl border border-border/40 max-w-sm">
-              <img
-                src={body.imageUrl}
-                alt="مرفق محادثة"
-                className="w-full max-h-60 object-cover cursor-pointer hover:scale-102 transition-transform"
-                onClick={() => setShowImageZoom(true)}
-              />
+              {isVideoUrl(body.imageUrl) ? (
+                <video
+                  src={body.imageUrl}
+                  controls
+                  preload="metadata"
+                  playsInline
+                  className="w-full max-h-60 bg-black"
+                />
+              ) : (
+                <img
+                  src={body.imageUrl}
+                  alt="مرفق محادثة"
+                  className="w-full max-h-60 object-cover cursor-pointer hover:scale-102 transition-transform"
+                  onClick={() => setShowImageZoom(true)}
+                />
+              )}
               <button
                 type="button"
                 onClick={() => setShowImageZoom(true)}
