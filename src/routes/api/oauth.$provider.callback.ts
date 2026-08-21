@@ -15,19 +15,28 @@ interface CallbackInput {
   appleUser?: AppleUser;
 }
 
+/** Apple's `user` field is caller-supplied JSON; a malformed one must not 500. */
+function parseAppleUser(raw: string | null): AppleUser | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === "object" ? (parsed as AppleUser) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function readCallback(request: Request): Promise<CallbackInput> {
   const url = new URL(request.url);
   if (request.method === "POST") {
     // Apple posts the result as form data (response_mode=form_post).
     const form = new URLSearchParams(await textBody(request, 64 * 1024));
-    const rawUser = form.get("user");
+    const appleUser = parseAppleUser(form.get("user"));
     return {
       code: form.get("code") ?? "",
       state: form.get("state") ?? "",
       ...(form.get("error") ? { error: String(form.get("error")) } : {}),
-      ...(typeof rawUser === "string" && rawUser
-        ? { appleUser: JSON.parse(rawUser) as AppleUser }
-        : {}),
+      ...(appleUser ? { appleUser } : {}),
     };
   }
   return {

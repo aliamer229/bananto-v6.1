@@ -5,6 +5,7 @@ import {
   getOrder,
   getThread,
   listOrders,
+  listOrdersByUser,
   saveOrder,
   appendMessage,
   d1Run,
@@ -66,11 +67,10 @@ export const Route = createFileRoute("/api/orders")({
             });
           }
 
-          const allOrders = await listOrders();
           const orders =
             user.isAdmin && url.searchParams.get("all")
-              ? allOrders
-              : allOrders.filter((o) => o.userId === user.id);
+              ? await listOrders()
+              : await listOrdersByUser(user.id);
           return json({ orders: orders.map(redactOrder) });
         }),
       POST: async ({ request }) =>

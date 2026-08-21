@@ -52,6 +52,17 @@ export function normalizePhoneHelper(phone?: string | null): string | null {
  * Atomically claims a legacy user matching verified phone or OAuth email.
  * Guarantees strict identifier separation and collision handling.
  */
+/** Legacy `raw_json` payloads are untrusted text; a bad one must not abort a claim. */
+function safeJson<T>(raw: string | null): T | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed && typeof parsed === "object" ? (parsed as T) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function claimLegacyAccount(params: {
   userId: string;
   phone?: string | null;
@@ -137,17 +148,23 @@ export async function claimLegacyAccount(params: {
     }
   }
 
-  // Ensure legacy_claims entry exists (Checkpoint tracker)
+  // Ensure legacy_claims entry exists (Checkpoint tracker).
+  // `claimed_at` is NOT NULL with no default and was previously omitted, so
+  // this INSERT never created a row; the SELECT below then returned nothing and
+  // every claim bailed out with `checkpoint_not_found` — after already flipping
+  // legacy_users.claim_state to 'claiming', which permanently blocked retries.
   await d1Run(
     `INSERT INTO legacy_claims (
-      id, legacy_user_id, claimed_by_user_id, claim_type, claim_identifier, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, 'claiming', ?, ?)
+      id, legacy_user_id, claimed_by_user_id, claim_type, claim_identifier, status,
+      claimed_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, 'claiming', ?, ?, ?)
     ON CONFLICT(legacy_user_id) DO NOTHING`,
     `lcm_${legacyId}`,
     legacyId,
     userId,
     claimType,
     String(targetPhone || targetEmail),
+    now,
     now,
     now,
   );
@@ -212,25 +229,48 @@ export async function claimLegacyAccount(params: {
       const finalItems = items.map((i) => ({
         id: i.legacy_id,
         productId: i.product_id,
+        title: safeJson<{ title?: string }>(i.raw_json)?.title ?? String(i.product_id),
+        kind: "account",
         quantity: i.quantity,
-        price: i.price_iqd,
-        meta: i.raw_json ? JSON.parse(i.raw_json) : {},
+        unitPrice: i.price_iqd,
+        meta: safeJson<Record<string, unknown>>(i.raw_json) ?? {},
       }));
 
-      await d1Run(
-        `INSERT INTO orders (
-          id, code, user_id, user_name, total, currency, status, payment_status, items, thread_id, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, 'IQD', 'completed', 'paid', ?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id`,
-        liveOrderId,
-        ord.order_no || `LEG-${ord.legacy_id.slice(-6)}`,
+      const createdAt = ord.created_at || now;
+      // The whole order lives in the `doc` column — that is what getOrder() and
+      // listOrders() parse. Writing user_name/currency/items/thread_id as
+      // columns targeted fields the orders table does not have, so the INSERT
+      // failed (silently, since d1Run swallows the error) and the claim was
+      // marked done having imported nothing.
+      const orderDoc = {
+        id: liveOrderId,
+        code: ord.order_no || `LEG-${ord.legacy_id.slice(-6)}`,
         userId,
-        legacyUser.name || "عضو بنانتو",
-        ord.total_iqd || 0,
-        JSON.stringify(finalItems),
-        `legacy_thr_${ord.legacy_id}`,
-        ord.created_at || now,
-        ord.created_at || now,
+        userName: legacyUser.name || "عضو بنانتو",
+        items: finalItems,
+        total: ord.total_iqd || 0,
+        currency: "IQD",
+        status: "completed",
+        paymentStatus: "paid",
+        needsAddress: false,
+        threadId: `legacy_thr_${ord.legacy_id}`,
+        createdAt,
+        updatedAt: createdAt,
+        events: [{ type: "order_created", at: createdAt }],
+        legacyImport: true,
+      };
+
+      await d1Run(
+        `INSERT INTO orders (id, code, user_id, doc, status, payment_status, total, created_at, updated_at)
+         VALUES (?, ?, ?, ?, 'completed', 'paid', ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, doc = excluded.doc`,
+        liveOrderId,
+        orderDoc.code,
+        userId,
+        JSON.stringify(orderDoc),
+        orderDoc.total,
+        createdAt,
+        createdAt,
       );
     }
     await d1Run(
@@ -251,16 +291,29 @@ export async function claimLegacyAccount(params: {
 
     for (const thr of legacyThreads) {
       const liveThreadId = `legacy_thr_${thr.legacy_id}`;
+      const threadCreatedAt = thr.created_at || now;
+      // Same as the orders above: readers parse `doc`, and user_name / subject /
+      // status / mode / migration_archive are not columns on threads.
+      const threadDoc = {
+        id: liveThreadId,
+        userId,
+        userName: legacyUser.name || "عضو بنانتو",
+        subject: thr.subject || "محادثة أرشيفية",
+        status: "closed",
+        mode: "RESOLVED",
+        chatType: "GENERAL_SUPPORT",
+        migrationArchive: true,
+        lastMessageAt: threadCreatedAt,
+        createdAt: threadCreatedAt,
+      };
       await d1Run(
-        `INSERT INTO threads (
-          id, user_id, user_name, subject, status, mode, migration_archive, created_at
-        ) VALUES (?, ?, ?, ?, 'closed', 'RESOLVED', 1, ?)
-        ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id`,
+        `INSERT INTO threads (id, user_id, order_id, doc, last_message_at)
+         VALUES (?, ?, NULL, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, doc = excluded.doc`,
         liveThreadId,
         userId,
-        legacyUser.name || "عضو بنانتو",
-        thr.subject || "محادثة أرشيفية",
-        thr.created_at || now,
+        JSON.stringify(threadDoc),
+        threadCreatedAt,
       );
 
       const msgs = await d1All<{

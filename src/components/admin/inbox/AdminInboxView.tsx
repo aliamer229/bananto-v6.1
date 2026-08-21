@@ -294,8 +294,9 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
         const remainingQueue = threads.filter(
           (t) => t.id !== variables.threadId && t.status === "open" && t.mode !== "RESOLVED",
         );
-        if (remainingQueue.length > 0) {
-          setSelectedThreadId(remainingQueue[0].id);
+        const nextThread = remainingQueue[0];
+        if (nextThread) {
+          setSelectedThreadId(nextThread.id);
         }
       }
     },
@@ -315,8 +316,9 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
           t.mode !== "RESOLVED" &&
           t.queueStatus !== "snoozed",
       );
-      if (nextActiveInQueue.length > 0) {
-        setSelectedThreadId(nextActiveInQueue[0].id);
+      const nextThread = nextActiveInQueue[0];
+      if (nextThread) {
+        setSelectedThreadId(nextThread.id);
       }
     },
   });
@@ -336,8 +338,9 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
       sendQueueReminder({ data: { threadId, text } }),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
-      if (res?.message && selectedThreadId) {
-        setLiveMessages((prev) => [...prev, res.message as ChatMessage]);
+      const created = (res as { message?: ChatMessage } | undefined)?.message;
+      if (created && selectedThreadId) {
+        setLiveMessages((prev) => [...prev, created]);
       }
       toast.success("تم إرسال تنبيه عدم الرد إلى العميل");
     },

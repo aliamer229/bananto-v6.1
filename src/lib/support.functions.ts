@@ -88,7 +88,9 @@ export const sendQueueReminder = createServerFn({ method: "POST" })
     thread.mode = "WAITING_FOR_USER";
     await saveThread(thread);
 
-    return { success: true, message: msg };
+    // `body` is Record<string, unknown>, which the server-fn serializer rejects.
+    // Same widening the paginated reader below already uses.
+    return { success: true, message: { ...msg, body: (msg.body || {}) as Record<string, any> } };
   });
 
 export const getThreadMessages = createServerFn({ method: "GET" })

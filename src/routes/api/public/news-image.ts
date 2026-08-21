@@ -48,12 +48,18 @@ export const Route = createFileRoute("/api/public/news-image")({
             return new Response("upstream error", { status: 502 });
           }
           const type = upstream.headers.get("content-type") || "image/jpeg";
-          if (!type.startsWith("image/")) return new Response("not an image", { status: 415 });
+          // SVG is an active document; re-serving one from our origin would let
+          // a compromised feed CDN run script on banan.to.
+          if (!/^image\/(?:png|jpeg|webp|gif|avif)\b/i.test(type)) {
+            return new Response("not an image", { status: 415 });
+          }
 
           return new Response(upstream.body, {
             headers: {
               "Content-Type": type,
               "Cache-Control": "public, max-age=86400, s-maxage=86400",
+              "X-Content-Type-Options": "nosniff",
+              "Content-Security-Policy": "default-src 'none'; sandbox",
             },
           });
         } catch {

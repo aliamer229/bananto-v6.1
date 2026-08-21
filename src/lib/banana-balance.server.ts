@@ -6,7 +6,7 @@
  * All modifications are logged to `banana_transactions` with optional idempotency keys.
  */
 
-import { d1First, d1Run, d1BatchRun, d1Ready } from "./d1.server";
+import { d1First, d1BatchRun, d1RunChanges, d1Ready } from "./d1.server";
 
 export interface BananaBalanceResult {
   balance: number;
@@ -129,18 +129,34 @@ export async function debitBananaBalance(
   const kind = options.kind || "spend";
   const metaJson = JSON.stringify({ reason: options.reason, ...options.meta });
 
+  // The balance read above can go stale before the write lands, so the debit
+  // carries its own `banana_balance >= ?` guard and is applied on its own. That
+  // single guarded statement is what makes overdrawing and double-spending
+  // impossible under concurrent requests; the bookkeeping writes below only run
+  // once it has actually applied.
+  //
+  // An earlier version wrote NULL into banana_balance when the guard failed.
+  // The column is NOT NULL, so that aborted the whole batch and reached the
+  // caller as a raw exception instead of a clean `insufficient_balance`.
+  const debited = await d1RunChanges(
+    `UPDATE users SET banana_balance = banana_balance - ? WHERE id = ? AND banana_balance >= ?`,
+    amount,
+    userId,
+    amount,
+  );
+
+  if (debited !== 1) {
+    const latest = await getUserBananaBalance(userId);
+    return { success: false, newBalance: latest.balance, error: "insufficient_balance" };
+  }
+
   await d1BatchRun([
-    // 1. Canonical update in users table
-    {
-      sql: `UPDATE users SET banana_balance = CASE WHEN banana_balance >= ? THEN banana_balance - ? ELSE NULL END WHERE id = ?`,
-      binds: [amount, amount, userId],
-    },
-    // 2. Keep banana_wallets in sync
+    // Mirror wallet, kept in sync for backwards compatibility.
     {
       sql: `UPDATE banana_wallets SET balance = MAX(0, balance - ?), updated_at = ? WHERE user_id = ?`,
       binds: [amount, now, userId],
     },
-    // 3. Ledger record
+    // Ledger record.
     {
       sql: `INSERT INTO banana_transactions (id, user_id, kind, amount, meta, created_at)
             VALUES (?, ?, ?, ?, ?, ?)`,

@@ -286,8 +286,13 @@ function RootInner() {
     return () => document.removeEventListener("error", onImgError, true);
   }, []);
 
+  // Seed any missing storefront sections from the catalogue already in hand.
   useEffect(() => {
-    void ensureNintendoCategory();
+    if (!store) return;
+    void ensureNintendoCategory(store.categories);
+  }, [store]);
+
+  useEffect(() => {
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
 
     const isDevOrPreview =

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { updateStore } from "@/lib/db.server";
+import { incrementSiteCounters } from "@/lib/db.server";
 import { body, guard, json } from "@/lib/http.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 
@@ -15,12 +15,11 @@ export const Route = createFileRoute("/api/track")({
           if (type !== "visit" && type !== "view") {
             return json({ error: "invalid_event" }, { status: 400 });
           }
-          const store = await updateStore((current) => ({
-            ...current,
-            visits: (current.visits ?? 0) + (type === "visit" ? 1 : 0),
-            views: (current.views ?? 0) + (type === "view" ? 1 : 0),
-          }));
-          return json({ visits: store.visits, views: store.views });
+          const totals = await incrementSiteCounters({
+            visits: type === "visit" ? 1 : 0,
+            views: type === "view" ? 1 : 0,
+          });
+          return json(totals);
         }),
     },
   },

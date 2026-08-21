@@ -138,6 +138,49 @@ function slimStore(store: any) {
   };
 }
 
+/**
+ * Serialised public catalogue, memoised per store snapshot.
+ *
+ * Building it means a deep recursive redaction walk over every product plus a
+ * JSON.stringify of the whole catalogue, and it was repeated for every
+ * anonymous request. `getStore()` hands back the same object reference for as
+ * long as its cache is warm, so that reference is the cache key — a refreshed
+ * store is a new object and the memo drops itself.
+ *
+ * Availability flips independently of the catalogue, so it is part of the key.
+ */
+let publicPayloadCache:
+  | {
+      store: StoreDoc;
+      availabilityKey: string;
+      visible: ReturnType<typeof publicStore>;
+      full?: string;
+      slim?: string;
+    }
+  | undefined;
+
+function publicPayload(
+  store: StoreDoc,
+  availability: AdminAvailabilityStatus | undefined,
+  slim: boolean,
+): string {
+  const availabilityKey = JSON.stringify(availability ?? null);
+  if (
+    publicPayloadCache?.store !== store ||
+    publicPayloadCache.availabilityKey !== availabilityKey
+  ) {
+    publicPayloadCache = {
+      store,
+      availabilityKey,
+      visible: publicStore(store, availability),
+    };
+  }
+
+  const cache = publicPayloadCache;
+  if (slim) return (cache.slim ??= JSON.stringify(slimStore(cache.visible)));
+  return (cache.full ??= JSON.stringify(cache.visible));
+}
+
 export const Route = createFileRoute("/api/data")({
   server: {
     handlers: {
@@ -155,17 +198,19 @@ export const Route = createFileRoute("/api/data")({
             : undefined;
 
           const store = await getStore();
-
-          const visibleStore = viewer?.isAdmin
-            ? {
-                ...store,
-                adminAvailability: availability,
-                adminAvailabilityConfig: availabilityConfig,
-              }
-            : publicStore(store, availability);
-
           const slim = new URL(request.url).searchParams.has("slim");
-          const payload = JSON.stringify(slim ? slimStore(visibleStore) : visibleStore);
+
+          let payload: string;
+          if (viewer?.isAdmin) {
+            const visibleStore = {
+              ...store,
+              adminAvailability: availability,
+              adminAvailabilityConfig: availabilityConfig,
+            };
+            payload = JSON.stringify(slim ? slimStore(visibleStore) : visibleStore);
+          } else {
+            payload = publicPayload(store, availability, slim);
+          }
           const etag = etagFor(payload);
           const headers = {
             "content-type": "application/json; charset=utf-8",

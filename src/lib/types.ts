@@ -964,8 +964,13 @@ export type ChatRealtimeEvent =
       };
     }
   | {
-      type: "thread.update";
+      /** Event name on the wire — the SSE client listens for `thread.updated`. */
+      type: "thread.updated";
       payload: {
         threadId: string;
+        status?: Thread["status"];
+        mode?: ThreadMode;
+        queueStatus?: Thread["queueStatus"];
+        thread?: Thread;
       };
     };

@@ -135,9 +135,12 @@ export const Route = createFileRoute("/api/reviews")({
             return json({ error: "المنتج والتقييم مطلوبان" }, { status: 400 });
           }
 
-          // Check if user is a verified buyer of this product
+          // Check if user is a verified buyer of this product.
+          // The order payload lives in the `doc` column; `orders.items` does not
+          // exist, so this query used to raise "no such column" and turn every
+          // review submission into a 500.
           const orderMatch = await d1All<{ id: string }>(
-            `SELECT id FROM orders WHERE user_id = ? AND (items LIKE ? OR items LIKE ?) LIMIT 1`,
+            `SELECT id FROM orders WHERE user_id = ? AND (doc LIKE ? OR doc LIKE ?) LIMIT 1`,
             user.id,
             `%"productId":"${productId}"%`,
             `%"productId":${productId}%`,

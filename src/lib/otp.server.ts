@@ -14,7 +14,15 @@
 
 import { env } from "./env.server";
 import { randomId, verifyPassword } from "./crypto.server";
-import { d1All, d1First, d1Run, ensureOtpSchema, ensureSchema, getD1 } from "./d1.server";
+import {
+  d1All,
+  d1First,
+  d1Run,
+  d1RunChanges,
+  ensureOtpSchema,
+  ensureSchema,
+  getD1,
+} from "./d1.server";
 import { mutateJson, readJson } from "./storage.server";
 import { sendWhatsappOtp, maskPhoneForLog } from "./whatsapp.server";
 import { sendTelegramMessage } from "./telegram.server";
@@ -67,8 +75,14 @@ export async function computeOtpHash(
   phone: string,
   purpose: string,
 ): Promise<string> {
-  const secret =
-    env("OTP_HASH_SECRET") || env("SESSION_SECRET") || "banana_secure_otp_hmac_hash_key";
+  const configured = env("OTP_HASH_SECRET") || env("SESSION_SECRET");
+  // The development fallback is a literal in public source. Deriving real OTP
+  // digests from it would make them reproducible by anyone reading the repo, so
+  // production refuses to run without a configured secret instead.
+  if (!configured && env("APP_ENV") === "production") {
+    throw new OtpError("إعداد رموز التحقق غير مكتمل على الخادم حالياً");
+  }
+  const secret = configured || "banana_secure_otp_hmac_hash_key";
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
@@ -170,7 +184,10 @@ async function insert(record: OtpRecord) {
 
 async function bumpAttempts(id: string, attempts: number) {
   if (await d1Ready()) {
-    await d1Run(`UPDATE otp_codes SET attempts = ? WHERE id = ?`, attempts, id);
+    // Increment in SQL rather than writing back a value read earlier: parallel
+    // guesses against the same code would otherwise each store `attempts + 1`
+    // from the same stale read and never reach OTP_MAX_ATTEMPTS.
+    await d1Run(`UPDATE otp_codes SET attempts = attempts + 1 WHERE id = ?`, id);
     return;
   }
   await mutateJson<OtpRecord[]>(OTP_STORAGE_KEY, [], (current) =>
@@ -179,17 +196,32 @@ async function bumpAttempts(id: string, attempts: number) {
 }
 
 /**
- * Mark OTP as atomically consumed.
+ * Claim an OTP for single use.
+ *
+ * Returns false when the code was already consumed. The `verified_at IS NULL`
+ * guard is what makes this a claim rather than a plain write: two requests
+ * arriving with the same still-valid code race on this UPDATE and exactly one
+ * of them sees `changes() = 1`.
  */
-async function markConsumed(id: string) {
+async function markConsumed(id: string): Promise<boolean> {
   const now = new Date().toISOString();
   if (await d1Ready()) {
-    await d1Run(`UPDATE otp_codes SET verified_at = ? WHERE id = ?`, now, id);
-    return;
+    const claimed = await d1RunChanges(
+      `UPDATE otp_codes SET verified_at = ? WHERE id = ? AND verified_at IS NULL`,
+      now,
+      id,
+    );
+    return claimed === 1;
   }
+  let claimed = false;
   await mutateJson<OtpRecord[]>(OTP_STORAGE_KEY, [], (current) =>
-    current.map((row) => (row.id === id ? { ...row, verifiedAt: now } : row)),
+    current.map((row) => {
+      if (row.id !== id || row.verifiedAt) return row;
+      claimed = true;
+      return { ...row, verifiedAt: now };
+    }),
   );
+  return claimed;
 }
 
 async function purge(phone: string, purpose: OtpPurpose) {
@@ -486,6 +518,8 @@ export async function assertOtp(phone: string, purpose: OtpPurpose, code: string
   }
 
   // Atomically mark consumed and purge old entries
-  await markConsumed(record.id);
+  if (!(await markConsumed(record.id))) {
+    throw new OtpError("تم استخدام هذا الرمز مسبقاً، اطلب رمزاً جديداً");
+  }
   await purge(canonicalPhone, purpose);
 }

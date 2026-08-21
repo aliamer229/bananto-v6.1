@@ -2,6 +2,12 @@ import { listThreads, getThread, saveThread, appendMessage, getMessages } from "
 import { chatRealtime } from "./chat-realtime.server";
 import type { Thread, ChatMessage } from "./types";
 
+/** Message bodies are untyped JSON; keep only a real string for the preview. */
+function previewText(message: ChatMessage): string | undefined {
+  const text = message.body?.["text"];
+  return typeof text === "string" ? text : undefined;
+}
+
 /**
  * Determines whether a thread is a pure automated AI assistant chat
  * that should be hidden from the admin inbox.
@@ -98,7 +104,7 @@ export async function processInactivityAndQueue(): Promise<void> {
             needsAdmin: false,
             humanRequested: false,
             lastMessageAt: autoCloseMsg.createdAt,
-            lastMessagePreview: autoCloseMsg.body?.text,
+            lastMessagePreview: previewText(autoCloseMsg),
           });
 
           await chatRealtime.broadcast(thread.id, {
@@ -138,7 +144,7 @@ export async function processInactivityAndQueue(): Promise<void> {
             ...thread,
             inactivityReminders: [...reminders, "5m"],
             lastMessageAt: reminderMsg.createdAt,
-            lastMessagePreview: reminderMsg.body?.text,
+            lastMessagePreview: previewText(reminderMsg),
           });
 
           await chatRealtime.broadcast(thread.id, {
@@ -160,7 +166,7 @@ export async function processInactivityAndQueue(): Promise<void> {
             ...thread,
             inactivityReminders: [...reminders, "7m"],
             lastMessageAt: reminderMsg.createdAt,
-            lastMessagePreview: reminderMsg.body?.text,
+            lastMessagePreview: previewText(reminderMsg),
           });
 
           await chatRealtime.broadcast(thread.id, {
@@ -182,7 +188,7 @@ export async function processInactivityAndQueue(): Promise<void> {
             ...thread,
             inactivityReminders: [...reminders, "9m"],
             lastMessageAt: reminderMsg.createdAt,
-            lastMessagePreview: reminderMsg.body?.text,
+            lastMessagePreview: previewText(reminderMsg),
           });
 
           await chatRealtime.broadcast(thread.id, {
@@ -208,7 +214,7 @@ export async function processInactivityAndQueue(): Promise<void> {
             mode: "WAITING_FOR_USER",
             inactivityReminders: [...reminders, "10m_snoozed"],
             lastMessageAt: snoozeMsg.createdAt,
-            lastMessagePreview: snoozeMsg.body?.text,
+            lastMessagePreview: previewText(snoozeMsg),
           });
 
           await chatRealtime.broadcast(thread.id, {

@@ -40,13 +40,22 @@ export const Route = createFileRoute("/api/admin/users")({
             if (!Number.isFinite(amount) || Math.abs(amount) > 1_000_000_000 || amount === 0) {
               return json({ error: "invalid_amount" }, { status: 400 });
             }
-            const updated = await adjustUserWalletBalance(
-              data.userId,
-              amount,
-              "admin_adjustment",
-              data.description || "Admin manual adjustment",
-            );
-            return json({ success: !!updated, user: updated ? toPublicUser(updated) : null });
+            try {
+              const updated = await adjustUserWalletBalance(
+                data.userId,
+                amount,
+                "admin_adjustment",
+                data.description || "Admin manual adjustment",
+              );
+              return json({ success: !!updated, user: updated ? toPublicUser(updated) : null });
+            } catch (error) {
+              // A debit larger than the balance is a rejected request, not a
+              // server fault; without this it surfaced as an opaque 500.
+              if (error instanceof Error && /Insufficient wallet balance/.test(error.message)) {
+                return json({ error: "insufficient_balance" }, { status: 400 });
+              }
+              throw error;
+            }
           }
 
           if (data.action === "approve_recharge") {

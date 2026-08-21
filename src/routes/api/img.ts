@@ -5,7 +5,10 @@ import { fetchRemoteImage, readLimitedBody, safeRemoteImageUrl } from "@/lib/sec
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 
 const MAX_BYTES = 8 * 1024 * 1024;
-const ALLOWED = /^image\/(?:png|jpeg|webp|gif|avif|svg\+xml)$/i;
+// SVG is deliberately excluded: it is an active document, so echoing one
+// back from our own origin would be a script-execution primitive on
+// banan.to for any attacker-supplied URL.
+const ALLOWED = /^image\/(?:png|jpeg|webp|gif|avif)$/i;
 
 function detectMime(buffer: Uint8Array, fallbackUrl: string, headerMime?: string | null): string {
   if (headerMime && ALLOWED.test(headerMime)) {
@@ -48,7 +51,6 @@ function detectMime(buffer: Uint8Array, fallbackUrl: string, headerMime?: string
   if (clean.endsWith(".webp")) return "image/webp";
   if (clean.endsWith(".gif")) return "image/gif";
   if (clean.endsWith(".avif")) return "image/avif";
-  if (clean.endsWith(".svg")) return "image/svg+xml";
 
   // If the host is a known image CDN or the buffer has non-trivial size, default to image/jpeg
   return "image/jpeg";
@@ -83,6 +85,10 @@ export const Route = createFileRoute("/api/img")({
             "content-type": mime,
             "cache-control": "public, max-age=86400, stale-while-revalidate=604800",
             "x-image-proxy": "edge",
+            // Defence in depth: this body is attacker-controlled and served from
+            // our own origin, so make sure it can never execute as a document.
+            "x-content-type-options": "nosniff",
+            "content-security-policy": "default-src 'none'; sandbox",
           });
 
           const res = await fetchRemoteImage(safeUrl.toString(), {

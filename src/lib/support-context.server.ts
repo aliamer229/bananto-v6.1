@@ -7,7 +7,7 @@
  * because those fields are never copied into the returned object.
  */
 
-import { getStore, listOrders, getMessages, findUserById } from "./db.server";
+import { getStore, listOrdersByUser, getMessages, findUserById } from "./db.server";
 import { emptyMemory } from "./support/types";
 import type {
   SafeOrder,
@@ -119,9 +119,9 @@ export async function buildSupportContext(input: {
 }): Promise<SupportContext> {
   const { user, thread } = input;
   const store = await getStore();
-  // Scoped to this user only — never all orders.
-  const allOrders = await listOrders();
-  const orders = allOrders.filter((order) => order.userId === user.id);
+  // Scoped to this user only — never all orders. Resolved through the
+  // orders_user_idx index instead of loading the whole table and filtering.
+  const orders = await listOrdersByUser(user.id);
   const settings = (store.settings ?? {}) as Record<string, unknown>;
   const profile = (await findUserById(user.id)) ?? user;
 

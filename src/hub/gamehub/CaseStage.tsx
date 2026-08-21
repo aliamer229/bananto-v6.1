@@ -1,9 +1,8 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
 import { GameCase3D, type GameCase3DProps } from "./GameCase3D";
 import SafeBoundary from "@/components/SafeBoundary";
 import { cn } from "@/hub/utils/cn";
-import { cdnImage } from "@/lib/img";
+import { lazyWithRetry } from "@/lib/lazyRetry";
 import { readPrefs } from "@/lib/prefs";
 
 /**
@@ -15,7 +14,7 @@ import { readPrefs } from "@/lib/prefs";
  * ready. If WebGL is unavailable or the device is small, the CSS case simply stays.
  */
 
-import { SwitchBox3D } from "@/SwitchBox3D";
+const CaseStageWebGL = lazyWithRetry(() => import("./CaseStageWebGL"));
 
 function hasWebGL(): boolean {
   if (typeof window === "undefined") return false;
@@ -31,9 +30,15 @@ function hasWebGL(): boolean {
 
 export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
   const [modelReady, setModelReady] = useState(false);
+  // three + R3F are only worth downloading in a browser that can actually
+  // render them, and never during SSR.
+  const [webglReady, setWebglReady] = useState(false);
+
+  useEffect(() => {
+    if (hasWebGL()) setWebglReady(true);
+  }, []);
 
   const handleModelReady = useCallback(() => {
-    console.log("[CaseStage] Model reported ready");
     setModelReady(true);
   }, []);
 
@@ -70,32 +75,13 @@ export function CaseStage({ className, ...caseProps }: GameCase3DProps & { class
           modelReady ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       >
-        <SafeBoundary onError={() => setModelReady(false)}>
-          <Suspense fallback={null}>
-            <Canvas
-              camera={{ position: [0, 0, 15], fov: 35 }}
-              style={{
-                touchAction: "none",
-                cursor: "grab",
-                userSelect: "none",
-                width: "100%",
-                height: "100%",
-              }}
-            >
-              <ambientLight intensity={1.5} />
-              <directionalLight position={[5, 10, 5]} intensity={1.5} />
-              <directionalLight position={[-5, -5, -5]} intensity={0.5} />
-              <SwitchBox3D
-                coverImage={cdnImage(caseProps.sleeve?.url || caseProps.coverUrl || "") || null}
-                platform={
-                  (caseProps as any).platform === "ns2" || caseProps.isSwitch2 ? "ns2" : "ns1"
-                }
-                gameName={caseProps.title}
-                onReady={handleModelReady}
-              />
-            </Canvas>
-          </Suspense>
-        </SafeBoundary>
+        {webglReady ? (
+          <SafeBoundary onError={() => setModelReady(false)}>
+            <Suspense fallback={null}>
+              <CaseStageWebGL {...caseProps} onReady={handleModelReady} />
+            </Suspense>
+          </SafeBoundary>
+        ) : null}
       </div>
     </div>
   );
