@@ -32,6 +32,7 @@ import { randomId } from "@/lib/crypto.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import { redactMessageForMember } from "@/lib/redaction";
 import { canAccessThread } from "@/lib/thread-access";
+import { isOwnUploadUrl } from "@/lib/uploads";
 
 /** Modes where the automated assistant must stay silent (read-only). */
 const SILENT_MODES: ThreadMode[] = [
@@ -451,14 +452,7 @@ export const Route = createFileRoute("/api/chat")({
           if (data.text && data.text.length > 4000) {
             return json({ error: "message_too_long" }, { status: 413 });
           }
-          const ownChatPrefix = `/api/files/chat/${user.id}/`;
-          if (
-            data.imageUrl &&
-            (!data.imageUrl.startsWith(ownChatPrefix) ||
-              !/^\/api\/files\/chat\/usr_[a-z0-9]+\/[a-z0-9_-]+\.(?:png|jpe?g|webp|gif)$/i.test(
-                data.imageUrl,
-              ))
-          ) {
+          if (data.imageUrl && !isOwnUploadUrl(data.imageUrl, user.id)) {
             return json({ error: "invalid_image" }, { status: 400 });
           }
 
