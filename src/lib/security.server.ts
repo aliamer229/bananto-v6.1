@@ -74,6 +74,11 @@ function applyAdminHeaders(headers: Headers, pathname: string): void {
   if (!existing) headers.set("content-security-policy", "frame-ancestors 'none'");
 }
 
+/** True for responses the browser treats as a navigable document. */
+function isDocumentResponse(headers: Headers): boolean {
+  return (headers.get("content-type") ?? "").toLowerCase().includes("text/html");
+}
+
 export function withSecurityHeaders(response: Response, url?: URL): Response {
   const headers = new Headers(response.headers);
   headers.set("x-content-type-options", "nosniff");
@@ -84,6 +89,15 @@ export function withSecurityHeaders(response: Response, url?: URL): Response {
   headers.set("cross-origin-opener-policy", "same-origin-allow-popups");
   if (!headers.has("cache-control") && response.status >= 400) {
     headers.set("cache-control", "no-store");
+  }
+  // Documents must never be reused without asking us first. The HTML carries
+  // the hashed <script> tags for the current build, so a browser that serves it
+  // from its own heuristic cache after a deploy asks for chunks that no longer
+  // exist — which is what leaves members on an old version until they reload by
+  // hand, and what turns into a blank page when the chunks are actually gone.
+  // `no-cache` still allows a 304, so this costs a revalidation, not a download.
+  if (!headers.has("cache-control") && isDocumentResponse(headers)) {
+    headers.set("cache-control", "private, no-cache, must-revalidate");
   }
   if (env("APP_ENV") === "production") {
     headers.set("strict-transport-security", "max-age=31536000; includeSubDomains; preload");

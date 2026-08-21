@@ -89,11 +89,10 @@ export const getCtx = getAudioContext;
 /**
  * Resume AudioContext if suspended (Safari/iOS policy).
  */
-export function resumeAudioContext(): void {
+export function resumeAudioContext(): Promise<void> {
   const ctx = getAudioContext();
-  if (ctx && ctx.state === "suspended") {
-    void ctx.resume().catch(() => {});
-  }
+  if (!ctx || ctx.state !== "suspended") return Promise.resolve();
+  return ctx.resume().catch(() => {});
 }
 
 /**
@@ -317,19 +316,30 @@ export async function preloadAllSounds(onlyCritical = false): Promise<void> {
 let isWarmupComplete = false;
 function performUserGestureWarmup(): void {
   if (isWarmupComplete || typeof window === "undefined") return;
-  isWarmupComplete = true;
 
-  resumeAudioContext();
-  warmAudioHardware();
-
-  // Decode all critical and secondary sounds into RAM immediately
+  // Decoding is idempotent and worth doing on the first gesture either way.
   const allSoundNames = Object.keys(soundMap);
   for (const name of allSoundNames) {
     if (!audioBufferCache.has(name)) {
       void decodeAudioBuffer(name);
     }
   }
+
+  // `resume()` is asynchronous and can be refused — a tab restored from
+  // bfcache or opened in the background comes back suspended. Only treat the
+  // warm-up as done once the context is genuinely running, so the gesture
+  // listeners stay armed for another try instead of leaving the site silent
+  // until the member reloads.
+  void resumeAudioContext().then(() => {
+    const ctx = getAudioContext();
+    if (!ctx || ctx.state !== "running") return;
+    isWarmupComplete = true;
+    warmAudioHardware();
+    detachFirstGestureListeners();
+  });
 }
+
+let detachFirstGestureListeners: () => void = () => {};
 
 // Bootstrap lifecycle: Kick off background fetch immediately upon script evaluation
 if (typeof window !== "undefined") {
@@ -344,6 +354,9 @@ if (typeof window !== "undefined") {
   const gestureEvents = ["pointerdown", "touchstart", "keydown", "click", "mousedown"];
   const handleFirstGesture = () => {
     performUserGestureWarmup();
+  };
+
+  detachFirstGestureListeners = () => {
     for (const evt of gestureEvents) {
       window.removeEventListener(evt, handleFirstGesture, { capture: true });
     }
@@ -397,9 +410,14 @@ function playCachedBuffer(
   const ctx = getAudioContext();
   if (!ctx) return;
 
-  // Make sure context is unpaused
+  // A node started on a suspended context is simply lost — which is why the
+  // first click after arriving on the page used to make no sound. Resume
+  // first, then play, and drop the sound only if the context never comes back.
   if (ctx.state === "suspended") {
-    void ctx.resume().catch(() => {});
+    void resumeAudioContext().then(() => {
+      if (ctx.state === "running") playCachedBuffer(soundName, buffer, volume, channel);
+    });
+    return;
   }
   warmAudioHardware();
 

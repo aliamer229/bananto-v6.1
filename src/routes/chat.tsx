@@ -22,7 +22,7 @@ export const Route = createFileRoute("/chat")({
 function ChatPage() {
   const navigate = useNavigate();
   return (
-    <div className="h-screen w-full overflow-hidden">
+    <div className="h-screen-dynamic w-full overflow-hidden">
       <ChatView onBack={() => void navigate({ to: "/" })} />
     </div>
   );

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { rejectCrossSiteMutation, safeRemoteImageUrl } from "./security.server";
+import {
+  rejectCrossSiteMutation,
+  safeRemoteImageUrl,
+  withSecurityHeaders,
+} from "./security.server";
 
 describe("request security boundaries", () => {
   it("blocks cross-site cookie API mutations", async () => {
@@ -31,6 +35,33 @@ describe("request security boundaries", () => {
         }),
       ),
     ).toBeUndefined();
+  });
+
+  it("stops documents being reused after a deploy without revalidating", () => {
+    const html = withSecurityHeaders(
+      new Response("<!doctype html><p>hi</p>", {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      }),
+      new URL("https://banan.to/"),
+    );
+    expect(html.headers.get("cache-control")).toBe("private, no-cache, must-revalidate");
+  });
+
+  it("leaves an explicit cache-control alone, and does not touch non-documents", () => {
+    const asset = withSecurityHeaders(
+      new Response("body{}", {
+        headers: {
+          "content-type": "text/css",
+          "cache-control": "public, max-age=31536000, immutable",
+        },
+      }),
+    );
+    expect(asset.headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
+
+    const json = withSecurityHeaders(
+      new Response("{}", { headers: { "content-type": "application/json" } }),
+    );
+    expect(json.headers.get("cache-control")).toBeNull();
   });
 
   it("rejects private, local, credentialed, and non-HTTPS image targets", () => {

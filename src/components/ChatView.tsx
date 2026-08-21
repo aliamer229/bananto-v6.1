@@ -1,4 +1,5 @@
 import { tr, useI18n } from "@/i18n";
+import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -43,7 +44,7 @@ import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatRealtime } from "@/hooks/useChatRealtime";
-import { api, uploadFileWithProgress } from "@/lib/api";
+import { api, uploadFileWithProgress, walletApi } from "@/lib/api";
 import { isVideoUrl } from "@/lib/uploads";
 import { supportAnswer, type SupportContext } from "@/lib/support";
 import { viewHistoryForSupport } from "@/lib/view-history";
@@ -59,6 +60,7 @@ import { cdnImage } from "@/lib/img";
 import { accountCardTypeFor } from "@/lib/account-cards";
 import AccountCard from "@/components/chat/AccountCard";
 import { DigitalOrderCard } from "@/components/chat/DigitalOrderCard";
+import { TopUpModal } from "@/components/wallet/TopUpModal";
 
 export type MessageStatus = "sending" | "sent" | "failed";
 
@@ -376,50 +378,76 @@ function LocationSelectionView({
   );
 }
 
-function WalletView({ balance, onSend }: { balance: number; onSend: (value: string) => void }) {
-  const { currency, getCurrencyInfo } = useCurrency();
+/**
+ * The wallet inside the conversation is the same wallet as everywhere else.
+ *
+ * It used to show the sum of the member's orders under a "balance" heading and
+ * offer three payment buttons that only posted a chat message — nothing it
+ * displayed or did touched the real wallet. It now reads the real balance and
+ * the real ledger, and tops up through the very same modal and endpoints as
+ * /wallet, so a top-up started here is a top-up.
+ *
+ * Sending money to another person is not a feature this site has, so the
+ * amount box is what it always really was: a message to support asking about a
+ * transfer. It now says so, and refuses an amount the member does not have.
+ */
+function WalletView({
+  onSend,
+  settings,
+}: {
+  onSend: (value: string) => void;
+  settings: Record<string, any>;
+}) {
+  const { currency, formatIQDPrice, getCurrencyInfo } = useCurrency();
   const activeCurrencyInfo = getCurrencyInfo(currency);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
   const [confirmStep, setConfirmStep] = useState(false);
-  const [mode, setMode] = useState("main");
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
 
-  if (mode === "topup") {
-    return (
-      <div
-        className="flex h-full flex-col overflow-y-auto overflow-x-hidden pb-4 text-right"
-        dir="rtl"
-      >
-        <div className="mb-6 flex items-center">
-          <button
-            onClick={() => setMode("main")}
-            className="ml-auto rounded-full bg-[var(--surface-3)] p-2 text-[var(--ink)] transition-colors hover:bg-[var(--line)] cursor-pointer"
-          >
-            <X className="h-4 w-4" />
-          </button>
-          <h2 className="text-xl font-bold text-[var(--ink)]">{tr("تعبئة الرصيد")}</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <p className="mb-4 text-sm font-medium text-[var(--ink)]/80">
-            {tr("اختر طريقة الدفع لتعبئة محفظتك:")}
-          </p>
-          <div className="space-y-3">
-            {["Apple Pay", "زين كاش", "البطاقة الائتمانية"].map((method) => (
-              <button
-                key={method}
-                onClick={() => onSend("topup_request")}
-                className="group flex w-full items-center gap-3 rounded-xl border border-[var(--line)] bg-card p-4 shadow-xs transition-colors hover:border-[var(--ink)] cursor-pointer"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] transition-colors group-hover:bg-[var(--surface-3)]">
-                  <CreditCard className="h-5 w-5 text-[var(--ink)]" />
-                </div>
-                <span className="font-bold text-[var(--ink)]">{method}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const balance = Number(user?.walletBalance ?? 0);
+
+  const transactions = useQuery({
+    queryKey: ["wallet-transactions"],
+    queryFn: () => walletApi.getTransactions(),
+    enabled: Boolean(user),
+  });
+
+  const afterWalletChange = () => {
+    void queryClient.invalidateQueries({ queryKey: ["me"] });
+    void queryClient.invalidateQueries({ queryKey: ["wallet-transactions"] });
+    setIsTopUpOpen(false);
+  };
+
+  const recharge = useMutation({
+    mutationFn: (payload: any) => walletApi.recharge({ ...payload, action: "recharge" }),
+    onSuccess: () => {
+      toast.success(tr("تم إرسال طلب الشحن للمراجعة"));
+      afterWalletChange();
+    },
+    onError: (error: Error) => toast.error(error.message || tr("تعذر إرسال طلب الشحن")),
+  });
+
+  const consumeBanan = useMutation({
+    mutationFn: (code: string) => walletApi.consumeBanan(code),
+    onSuccess: (res: any) => {
+      if (res?.success) {
+        toast.success(
+          `${tr("تم تفعيل الكود وإضافة")} ${Number(res.amount).toLocaleString()} ${tr("د.ع لرصيدك")}`,
+        );
+        afterWalletChange();
+      } else {
+        toast.error(res?.error || tr("كود غير صالح"));
+      }
+    },
+    onError: (error: Error) => toast.error(error.message || tr("كود غير صالح")),
+  });
+
+  const numericAmount = Number(amount);
+  const amountIsValid = Boolean(amount) && Number.isFinite(numericAmount) && numericAmount > 0;
+  const overBalance = amountIsValid && numericAmount > balance;
+  const recent = (transactions.data?.transactions ?? []).slice(0, 4);
 
   return (
     <div
@@ -434,18 +462,13 @@ function WalletView({ balance, onSend }: { balance: number; onSend: (value: stri
 
         <div className="relative z-10 flex items-start justify-between">
           <div>
-            <p className="mb-1 text-sm font-medium opacity-80">{tr("إجمالي مشترياتك")}</p>
-            <h3 className="mb-4 text-3xl font-black">
-              {balance.toLocaleString()}{" "}
-              <span className="text-base font-medium opacity-80">
-                {activeCurrencyInfo?.symbol || "د.ع"}
-              </span>
-            </h3>
+            <p className="mb-1 text-sm font-medium opacity-80">{tr("رصيد المحفظة")}</p>
+            <h3 className="mb-4 text-3xl font-black">{formatIQDPrice(balance)}</h3>
           </div>
           <Wallet className="h-8 w-8 opacity-50" />
         </div>
         <button
-          onClick={() => setMode("topup")}
+          onClick={() => setIsTopUpOpen(true)}
           className="relative z-10 flex w-fit items-center gap-1 rounded-xl bg-card px-4 py-2 text-sm font-bold text-[var(--ink)] transition-colors hover:bg-[var(--surface)] cursor-pointer"
         >
           <Plus className="h-4 w-4" />
@@ -453,9 +476,43 @@ function WalletView({ balance, onSend }: { balance: number; onSend: (value: stri
         </button>
       </div>
 
+      {recent.length > 0 && (
+        <div className="mb-6 space-y-2">
+          <h3 className="text-sm font-bold text-[var(--ink)]/70">{tr("آخر الحركات")}</h3>
+          <div className="space-y-1.5">
+            {recent.map((entry: any) => {
+              const value = Number(entry?.amount ?? 0);
+              return (
+                <div
+                  key={String(entry?.id ?? `${entry?.createdAt}-${value}`)}
+                  className="flex items-center justify-between rounded-xl border border-[var(--line)] bg-card px-3 py-2 text-xs"
+                >
+                  <span className="truncate font-medium text-[var(--ink)]/80">
+                    {String(entry?.description || entry?.type || tr("حركة على المحفظة"))}
+                  </span>
+                  <span
+                    className={`shrink-0 font-bold ${
+                      value < 0 ? "text-rose-600" : "text-emerald-600"
+                    }`}
+                  >
+                    {value < 0 ? "−" : "+"}
+                    {formatIQDPrice(Math.abs(value))}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {!confirmStep ? (
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-[var(--ink)]/70">{tr("إرسال مبلغ بالمحادثة")}</h3>
+          <h3 className="text-sm font-bold text-[var(--ink)]/70">
+            {tr("اطلب تحويل مبلغ عبر الدعم")}
+          </h3>
+          <p className="-mt-2 text-[11px] leading-relaxed text-[var(--muted-ink)]">
+            {tr("يصل الطلب للدعم في هذه المحادثة، ولا يُخصم أي مبلغ إلا بعد موافقتك مع الفريق.")}
+          </p>
           <div className="relative">
             <input
               type="number"
@@ -468,12 +525,18 @@ function WalletView({ balance, onSend }: { balance: number; onSend: (value: stri
               {activeCurrencyInfo?.symbol || "د.ع"}
             </span>
           </div>
+          {overBalance && (
+            <p className="text-xs font-bold text-rose-600">
+              {tr("المبلغ أكبر من رصيدك الحالي")} — {formatIQDPrice(balance)}
+            </p>
+          )}
           <button
             onClick={() => {
-              if (amount && Number(amount) > 0) setConfirmStep(true);
+              if (amountIsValid && !overBalance) setConfirmStep(true);
             }}
+            disabled={!amountIsValid || overBalance}
             className={`h-[56px] w-full rounded-xl text-lg font-bold text-white transition-colors cursor-pointer ${
-              amount && Number(amount) > 0
+              amountIsValid && !overBalance
                 ? "bg-[var(--ink)] hover:bg-[var(--ink-strong)]"
                 : "cursor-not-allowed bg-[var(--line)]"
             }`}
@@ -491,13 +554,12 @@ function WalletView({ balance, onSend }: { balance: number; onSend: (value: stri
             <Send className="ml-1 h-6 w-6" />
           </div>
           <div className="text-center">
-            <h3 className="text-lg font-bold text-[var(--ink)]">{tr("تأكيد الإرسال")}</h3>
+            <h3 className="text-lg font-bold text-[var(--ink)]">{tr("تأكيد الطلب")}</h3>
             <p className="mt-2 text-[var(--ink)]/70">
-              هل أنت متأكد من إرسال مبلغ{" "}
+              {tr("سنرسل للدعم طلب تحويل بقيمة")}{" "}
               <span className="text-lg font-bold text-[var(--ink)]">
                 {amount} {activeCurrencyInfo?.symbol || "د.ع"}
-              </span>{" "}
-              في المحادثة؟
+              </span>
             </p>
           </div>
           <div className="flex gap-3 pt-2">
@@ -511,11 +573,21 @@ function WalletView({ balance, onSend }: { balance: number; onSend: (value: stri
               onClick={() => onSend(amount)}
               className="h-[50px] flex-[2] rounded-xl bg-[var(--ink)] font-bold text-white transition-colors hover:bg-[var(--ink-strong)] cursor-pointer"
             >
-              {tr("إرسال الآن")}
+              {tr("إرسال الطلب")}
             </button>
           </div>
         </motion.div>
       )}
+
+      <TopUpModal
+        open={isTopUpOpen}
+        onOpenChange={setIsTopUpOpen}
+        onSuccess={afterWalletChange}
+        settings={settings}
+        onRecharge={(payload: any) => recharge.mutate(payload)}
+        onConsumeBanan={(code: string) => consumeBanan.mutate(code)}
+        isPending={recharge.isPending || consumeBanan.isPending}
+      />
     </div>
   );
 }
@@ -606,8 +678,6 @@ export default function ChatView({
     );
     return products.filter((product) => ids.has(String(product.id)));
   }, [orders, products]);
-  const spent = orders.reduce((sum, order) => sum + order.total, 0);
-
   const isHumanChat = Boolean(threadId);
 
   const currentThread = useMemo(
@@ -2034,7 +2104,9 @@ export default function ChatView({
 
         {/* Bottom Fast Action Buttons - 5 icons evenly distributed for small & large screens */}
         <div
-          className="relative z-10 mx-auto flex h-[82px] w-full max-w-md items-end px-1 pb-1"
+          // Short phones cannot afford the full-height bar: it is what pushes the
+          // composer or the icons themselves off the screen.
+          className="relative z-10 mx-auto flex h-[82px] w-full max-w-md items-end px-1 pb-1 [@media(max-height:700px)]:h-[68px]"
           dir={isRtl ? "rtl" : "ltr"}
         >
           <AnimatePresence mode="wait">
@@ -2217,22 +2289,16 @@ export default function ChatView({
 
                   {selectedNav === "المحفظة" && (
                     <WalletView
-                      balance={spent}
+                      settings={storeQuery.data?.settings ?? {}}
                       onSend={(amount) => {
                         setSelectedNav(null);
-                        if (amount === "topup_request") {
-                          const text = "أرغب بتعبئة رصيد المحفظة";
-                          if (isHumanChat) void handleSend(text);
-                          else pushLocal({ id: Date.now().toString(), sender: "user", text });
-                          return;
-                        }
-                        const text = `تحويل رصيد بقيمة ${amount}`;
+                        const text = `طلب تحويل رصيد بقيمة ${amount}`;
                         if (isHumanChat) void handleSend(text);
                         else
                           pushLocal({
                             id: Date.now().toString(),
                             sender: "user",
-                            text: "تحويل رصيد",
+                            text: "طلب تحويل رصيد",
                             type: "wallet",
                             payload: { amount },
                           });
