@@ -160,4 +160,12 @@ export async function processAutoScheduledTasks() {
     now,
     sevenDaysAgo,
   );
+
+  // 3. Process chat queue & inactivity (5m auto-transfer to AI, 5m/7m/9m reminders, 10m snooze)
+  try {
+    const { processInactivityAndQueue } = await import("./chat-queue.server");
+    await processInactivityAndQueue();
+  } catch (err) {
+    console.error("[scheduled-jobs] processInactivityAndQueue error:", err);
+  }
 }

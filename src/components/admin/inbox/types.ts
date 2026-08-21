@@ -1,6 +1,7 @@
 import type { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
 
 export type InboxFilter =
+  | "queue"
   | "all"
   | "needs_reply"
   | "active_chats"

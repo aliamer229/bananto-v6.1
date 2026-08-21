@@ -50,6 +50,7 @@ export function CustomerList({
   // Compute filter counts
   const filterCounts = useMemo(() => {
     const counts: Record<InboxFilter, number> = {
+      queue: 0,
       all: threads.length,
       needs_reply: 0,
       active_chats: 0,
@@ -71,6 +72,11 @@ export function CustomerList({
         ? linkedOrder.status !== "completed" && linkedOrder.status !== "cancelled"
         : true;
       const orderIsCompleted = linkedOrder ? linkedOrder.status === "completed" : false;
+
+      // Queue counts open active / waiting chats
+      if (t.status === "open" && !isClosed) {
+        counts.queue++;
+      }
 
       if (t.needsAdmin || t.mode === "WAITING_FOR_ADMIN" || t.mode === "ESCALATED") {
         counts.needs_reply++;
@@ -109,7 +115,7 @@ export function CustomerList({
 
   // Filter and search threads
   const filteredThreads = useMemo(() => {
-    return threads.filter((t) => {
+    const list = threads.filter((t) => {
       const isClosed = t.status === "closed" || t.mode === "RESOLVED";
       const hasOrder = Boolean(t.orderId);
       const linkedOrder = t.orderId ? orderMap.get(t.orderId) : undefined;
@@ -121,6 +127,9 @@ export function CustomerList({
       // Filter check
       let matchesFilter = true;
       switch (activeFilter) {
+        case "queue":
+          matchesFilter = t.status === "open" && !isClosed;
+          break;
         case "needs_reply":
           matchesFilter = Boolean(
             t.needsAdmin || t.mode === "WAITING_FOR_ADMIN" || t.mode === "ESCALATED",
@@ -172,6 +181,24 @@ export function CustomerList({
 
       return matchName || matchSubject || matchPreview || matchOrderId || matchOrderCode;
     });
+
+    // If Queue filter is active, sort strictly FIFO:
+    // 1. Active / Queued items: oldest entry time first (FIFO order)
+    // 2. Snoozed items (queueStatus === "snoozed") at the very end
+    if (activeFilter === "queue") {
+      return [...list].sort((a, b) => {
+        const aSnoozed = a.queueStatus === "snoozed";
+        const bSnoozed = b.queueStatus === "snoozed";
+        if (aSnoozed && !bSnoozed) return 1;
+        if (!aSnoozed && bSnoozed) return -1;
+
+        const aTime = new Date(a.queueEnteredAt || a.escalatedAt || a.createdAt).getTime();
+        const bTime = new Date(b.queueEnteredAt || b.escalatedAt || b.createdAt).getTime();
+        return aTime - bTime; // Oldest first
+      });
+    }
+
+    return list;
   }, [threads, activeFilter, searchTerm, orderMap]);
 
   // Format relative timestamp
@@ -195,6 +222,7 @@ export function CustomerList({
   };
 
   const FILTERS: { id: InboxFilter; label: string; color?: string }[] = [
+    { id: "queue", label: "الطابور", color: "text-amber-700 bg-amber-500/10 font-bold" },
     { id: "all", label: "الكل" },
     { id: "needs_reply", label: "بحاجة إلى رد", color: "text-red-600 bg-red-500/10" },
     { id: "active_chats", label: "المحادثات الجارية" },
@@ -298,11 +326,13 @@ export function CustomerList({
             </p>
           </div>
         ) : (
-          filteredThreads.map((t) => {
+          filteredThreads.map((t, index) => {
             const isSelected = selectedThreadId === t.id;
             const needsAdmin =
               t.needsAdmin || t.mode === "WAITING_FOR_ADMIN" || t.mode === "ESCALATED";
             const linkedOrder = t.orderId ? orderMap.get(t.orderId) : undefined;
+            const isSnoozed = t.queueStatus === "snoozed";
+            const queueRank = activeFilter === "queue" && !isSnoozed ? index + 1 : null;
 
             return (
               <div
@@ -316,14 +346,32 @@ export function CustomerList({
               >
                 <div className="flex items-start justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 border border-primary/15">
-                      {t.userName ? t.userName.charAt(0).toUpperCase() : "U"}
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 border border-primary/15">
+                        {t.userName ? t.userName.charAt(0).toUpperCase() : "U"}
+                      </div>
+                      {queueRank !== null && (
+                        <span
+                          className={`absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-[10px] font-black border shadow-xs ${
+                            queueRank === 1
+                              ? "bg-amber-500 text-white border-amber-600 animate-pulse"
+                              : "bg-muted text-foreground border-border"
+                          }`}
+                        >
+                          #{queueRank}
+                        </span>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <div className="font-bold text-xs text-foreground truncate flex items-center gap-1.5">
                         <span>{t.userName || "عميل بدون اسم"}</span>
                         {needsAdmin && (
                           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                        )}
+                        {isSnoozed && (
+                          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[9px] font-bold">
+                            ⏸️ مؤجل
+                          </span>
                         )}
                       </div>
                       <div className="text-[10px] text-muted-foreground truncate">
@@ -347,6 +395,19 @@ export function CustomerList({
                 {/* Badges footer */}
                 <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-border/30">
                   <div className="flex items-center gap-1.5 overflow-hidden flex-wrap">
+                    {/* Queue rank badge if in queue */}
+                    {queueRank !== null && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                          queueRank === 1
+                            ? "bg-amber-500 text-white"
+                            : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                        }`}
+                      >
+                        {queueRank === 1 ? "🔥 دور الآن (#1)" : `طابور #${queueRank}`}
+                      </span>
+                    )}
+
                     {/* Chat Type badge */}
                     {t.chatType && (
                       <span

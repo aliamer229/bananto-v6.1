@@ -461,7 +461,6 @@ const translations: Record<string, { en: string; ku: string; tr?: string }> = {
     en: "We order the home suggestions by what you choose here.",
     ku: "Pêşniyar li gorî hilbijartina te tên rêzkirin.",
   },
-  المفضلة: { en: "Favourites", ku: "Bijarte" },
   "لا توجد منتجات في المفضلة.": { en: "No favourite products yet.", ku: "Berhemên bijarte nînin." },
   "سجّل الدخول للوصول لحسابك وطلباتك.": {
     en: "Sign in to access your account and orders.",
@@ -473,7 +472,6 @@ const translations: Record<string, { en: string; ku: string; tr?: string }> = {
   "(افتراضي)": { en: "(default)", ku: "(bingehîn)" },
 
   // Generic
-  المنتجات: { en: "Products", ku: "Berhem" },
   حذف: { en: "Delete", ku: "Jê bibe" },
   تعديل: { en: "Edit", ku: "Serrast bike" },
   إلغاء: { en: "Cancel", ku: "Betal" },
@@ -498,7 +496,6 @@ const translations: Record<string, { en: string; ku: string; tr?: string }> = {
   "الألعاب المضافة حديثاً": { en: "Recently Added Games", ku: "Lîstikên Nû Zêdekirî" },
   "قراءة المزيد": { en: "Read more", ku: "Zêdetir bixwîne" },
   "جاري تحميل الأخبار...": { en: "Loading news...", ku: "Nûçeyan tê barkirin..." },
-  "جاري التحميل...": { en: "Loading...", ku: "Tê barkirin..." },
   "جاري تحميل الملف الشخصي...": { en: "Loading profile...", ku: "Profîl tê barkirin..." },
   "جارٍ التحقق من الجلسة…": { en: "Checking your session…", ku: "Danişîn tê kontrolkirin…" },
   ثانية: { en: "second", ku: "çirke" },

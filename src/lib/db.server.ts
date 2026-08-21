@@ -1645,6 +1645,9 @@ export async function consumeBananCode(
 
 export async function createBananCode(value: number): Promise<BananCode> {
   const codes = await createBananCodesBatch(value, 1);
+  if (!codes[0]) {
+    throw new Error("Failed to create BananCode");
+  }
   return codes[0];
 }
 

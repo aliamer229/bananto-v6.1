@@ -119,16 +119,13 @@ export const Route = createFileRoute("/api/game-requests")({
             row.updatedAt,
           );
 
-          // Notify the admin Telegram chat when one is configured.
+          // Notify the admin Telegram chat
           try {
-            const adminChatId = process.env["TELEGRAM_ADMIN_CHAT_ID"];
-            if (adminChatId) {
-              const { sendTelegramMessage } = await import("@/lib/telegram.server");
-              await sendTelegramMessage(
-                adminChatId,
-                `📦 طلب منتج جديد\n\nالمنتج: ${productName}\nالنوع: ${requestType}\nملاحظات: ${row.notes || "لا يوجد"}`,
-              );
-            }
+            const { notifyAdminGameRequest } = await import("@/lib/telegram-notifications.server");
+            await notifyAdminGameRequest({
+              request: row,
+              user: { id: user.id, name: user.name, phone: user.phone },
+            });
           } catch (e) {
             console.warn("Failed to dispatch admin notification", e);
           }
@@ -182,6 +179,37 @@ export const Route = createFileRoute("/api/game-requests")({
             now,
             id,
           );
+
+          // Notify user if Telegram linked
+          if (existing.userId && newStatus !== existing.status) {
+            try {
+              const { getUserTelegramChatId } = await import("@/lib/telegram-notifications.server");
+              const userChatId = await getUserTelegramChatId(existing.userId);
+              if (userChatId) {
+                const { sendTelegramMessage, telegramMiniAppDeepLink } =
+                  await import("@/lib/telegram.server");
+                await sendTelegramMessage(
+                  userChatId,
+                  `🎯 <b>تحديث على طلب اللعبة: ${existing.productName}</b>\n\nالحالة الجديدة: <b>${newStatus}</b>\n${input.userVisibleNote ? `ملاحظة: ${input.userVisibleNote}\n` : ""}\nاضغط أدناه لمتابعة طلباتك 👇`,
+                  {
+                    parse_mode: "HTML",
+                    reply_markup: {
+                      inline_keyboard: [
+                        [
+                          {
+                            text: "🎮 تفاصيل طلب اللعبة",
+                            url: telegramMiniAppDeepLink(`gamereq_${existing.id}`),
+                          },
+                        ],
+                      ],
+                    },
+                  },
+                );
+              }
+            } catch (err) {
+              console.warn("Failed to notify user on game request update", err);
+            }
+          }
 
           return json({ success: true });
         }),

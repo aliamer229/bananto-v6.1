@@ -660,6 +660,7 @@ export interface OrderItem {
   kind: ProductKind;
   quantity: number;
   unitPrice: number;
+  edition?: string;
   meta?: {
     editionId?: string | null | undefined;
     dlcIds?: string[] | null | undefined;
@@ -712,7 +713,8 @@ export type MessageKind =
   | "shipping_update"
   | "order_completed"
   | "review_request"
-  | "discount_code";
+  | "discount_code"
+  | "digital_order_card";
 
 export interface ChatMessage {
   id: string;
@@ -773,6 +775,15 @@ export interface Thread {
   /** the automated support handed this thread over and is waiting for an admin */
   needsAdmin?: boolean;
   escalatedAt?: string;
+
+  /** Queue management properties */
+  queueStatus?: "queued" | "active" | "snoozed" | "completed";
+  queueEnteredAt?: string;
+  queueSnoozedAt?: string;
+  inactivityReminders?: string[];
+  lastAdminMessageAt?: string;
+  lastUserMessageAt?: string;
+  humanRequested?: boolean;
 
   lastMessageAt: string;
   lastMessagePreview?: string;

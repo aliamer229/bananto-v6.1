@@ -11,6 +11,12 @@ import {
 } from "./db.server";
 import { requireAdmin, requireAppAuth } from "./auth.middleware";
 import { ChatMessage, Thread, MessageKind, ThreadMode } from "./types";
+import {
+  isAdminThread,
+  processInactivityAndQueue,
+  skipQueueCustomer,
+  resumeQueueCustomer,
+} from "./chat-queue.server";
 
 export const getMyThreads = createServerFn({ method: "GET" })
   .middleware([requireAppAuth])
@@ -24,13 +30,65 @@ export const getMyThreads = createServerFn({ method: "GET" })
 export const getAdminThreads = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async () => {
+    // Process automatic inactivity checks and queue updates
+    await processInactivityAndQueue();
+
     const all = await listThreads();
-    return (all || []).map((t) => ({
+    // Exclude purely automated AI assistant threads. Only show admin / order / human requests.
+    const adminVisible = (all || []).filter(isAdminThread);
+
+    return adminVisible.map((t) => ({
       ...t,
       userName: t.userName || "عميل بدون اسم",
       subject: t.subject || (t.chatType === "AUTOMATED_SUPPORT" ? "الدعم الآلي" : "محادثة الدعم"),
       lastMessagePreview: t.lastMessagePreview || "لا توجد رسائل",
     })) as Thread[];
+  });
+
+export const skipQueueThread = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .validator(z.object({ threadId: z.string() }))
+  .handler(async ({ data }) => {
+    return await skipQueueCustomer(data.threadId);
+  });
+
+export const resumeQueueThread = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .validator(z.object({ threadId: z.string() }))
+  .handler(async ({ data }) => {
+    return await resumeQueueCustomer(data.threadId);
+  });
+
+export const sendQueueReminder = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .validator(
+    z.object({
+      threadId: z.string(),
+      text: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const thread = await getThread(data.threadId);
+    if (!thread) throw new Error("Thread not found");
+
+    const reminderText =
+      data.text?.trim() ||
+      "⏳ تنبيه من المشرف: نرجو الرد لتأكيد البيانات وإكمال تسليم طلبك في أسرع وقت.";
+
+    const msg = await appendMessage(data.threadId, {
+      senderRole: "admin",
+      senderName: "المشرف",
+      kind: "text",
+      body: { text: reminderText },
+    });
+
+    thread.lastMessageAt = msg.createdAt;
+    thread.lastMessagePreview = reminderText;
+    thread.lastAdminMessageAt = msg.createdAt;
+    thread.mode = "WAITING_FOR_USER";
+    await saveThread(thread);
+
+    return { success: true, message: msg };
   });
 
 export const getThreadMessages = createServerFn({ method: "GET" })

@@ -449,12 +449,20 @@ export const Route = createFileRoute("/api/disc-trade")({
             );
           }
 
-          const notifyText =
-            isCustom || !quote
-              ? `🎮 طلب مقايضة جديد (إضافة يدوية - السعر بعد المراجعة):\n🕹️ اللعبة: ${gameName}\n📱 المنصة: ${platform}\n👤 العميل: ${user.phone || user.id}`
-              : `🎮 طلب مقايضة جديد:\n🕹️ اللعبة: ${game?.title ?? gameName}\n💰 التقييم الأولي: ${quote.final_iqd.toLocaleString()} د.ع`;
-
-          await notify(notifyText);
+          // Notify Admin in Telegram with MiniApp Deep Link
+          try {
+            const { notifyAdminDiscTrade } = await import("@/lib/telegram-notifications.server");
+            await notifyAdminDiscTrade({
+              tradeId,
+              gameName: game?.title ?? gameName,
+              platform,
+              finalIqd: quote?.final_iqd,
+              isCustom,
+              user: { id: user.id, name: user.name, phone: user.phone },
+            });
+          } catch (err) {
+            console.warn("Failed to notify admin on disc trade", err);
+          }
 
           return json({ success: true, id: tradeId, quote, is_custom: isCustom });
         }),

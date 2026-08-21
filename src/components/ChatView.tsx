@@ -57,6 +57,7 @@ import type {
 import { cdnImage } from "@/lib/img";
 import { accountCardTypeFor } from "@/lib/account-cards";
 import AccountCard from "@/components/chat/AccountCard";
+import { DigitalOrderCard } from "@/components/chat/DigitalOrderCard";
 
 export type MessageStatus = "sending" | "sent" | "failed";
 
@@ -65,7 +66,15 @@ export type DisplayMessage = {
   clientMessageId?: string;
   sender: "ai" | "user";
   text: string;
-  type?: "text" | "product" | "location" | "wallet" | "order" | "image" | "account_card";
+  type?:
+    | "text"
+    | "product"
+    | "location"
+    | "wallet"
+    | "order"
+    | "image"
+    | "account_card"
+    | "digital_order_card";
   payload?: Record<string, unknown>;
   createdAt?: string;
   status?: MessageStatus;
@@ -513,9 +522,11 @@ function WalletView({ balance, onSend }: { balance: number; onSend: (value: stri
 export default function ChatView({
   onBack,
   initialThreadId,
+  initialOrderId,
 }: {
   onBack?: () => void;
   initialThreadId?: string;
+  initialOrderId?: string;
 }) {
   const { currency, getCurrencyInfo } = useCurrency();
   const activeCurrencyInfo = getCurrencyInfo(currency);
@@ -577,6 +588,17 @@ export default function ChatView({
   const settings = (storeQuery.data?.settings ?? {}) as Record<string, unknown>;
   const orders = ordersQuery.data?.orders ?? [];
   const threads = threadsQuery.data?.threads ?? [];
+
+  // Auto-select thread for initialOrderId if passed
+  useEffect(() => {
+    if (initialOrderId && !threadId && threads.length > 0) {
+      const matching = threads.find((t) => t.orderId === initialOrderId);
+      if (matching) {
+        setThreadId(matching.id);
+      }
+    }
+  }, [initialOrderId, threadId, threads]);
+
   const purchased = useMemo(() => {
     const ids = new Set(
       orders.flatMap((order) => order.items.map((item) => String(item.productId))),
@@ -590,6 +612,11 @@ export default function ChatView({
   const currentThread = useMemo(
     () => (threadId ? threads.find((t) => t.id === threadId) : null),
     [threads, threadId],
+  );
+
+  const currentOrder = useMemo(
+    () => (currentThread?.orderId ? orders.find((o) => o.id === currentThread.orderId) : null),
+    [currentThread, orders],
   );
 
   const createThread = useMutation({
@@ -609,6 +636,19 @@ export default function ChatView({
   const mapServerMessage = useCallback((message: ChatMessage): DisplayMessage => {
     const mine = message.senderRole === "user";
     const imageUrl = message.body?.["imageUrl"] as string | undefined;
+
+    if (message.body?.["type"] === "digital_order_card" || message.kind === "digital_order_card") {
+      return {
+        id: message.id,
+        sender: "ai",
+        text: String(message.body?.["text"] ?? ""),
+        type: "digital_order_card" as const,
+        payload: message.body,
+        createdAt: message.createdAt,
+        status: "sent",
+      };
+    }
+
     const cardType = accountCardTypeFor(message.kind);
     if (cardType) {
       return {
@@ -1493,7 +1533,22 @@ export default function ChatView({
                   isHighlighted ? "animate-pulse rounded-2xl ring-2 ring-amber-500 p-0.5" : ""
                 }`}
               >
-                {msg.type === "account_card" && msg.payload ? (
+                {msg.type === "digital_order_card" && msg.payload ? (
+                  <DigitalOrderCard
+                    orderId={String(msg.payload["orderId"] ?? "")}
+                    code={String(msg.payload["code"] ?? "")}
+                    items={(msg.payload["items"] as any) ?? []}
+                    total={
+                      typeof msg.payload["total"] === "number" ? msg.payload["total"] : undefined
+                    }
+                    currency={String(
+                      msg.payload["currency"] ?? activeCurrencyInfo?.symbol ?? "د.ع",
+                    )}
+                    paymentStatus={String(msg.payload["paymentStatus"] ?? "paid")}
+                    text={typeof msg.payload["text"] === "string" ? msg.payload["text"] : undefined}
+                    locale={lang === "en" ? "en" : "ar"}
+                  />
+                ) : msg.type === "account_card" && msg.payload ? (
                   <AccountCard
                     kind={String(msg.payload["kind"] ?? "")}
                     body={msg.payload["body"] as Record<string, unknown>}

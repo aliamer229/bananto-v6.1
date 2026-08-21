@@ -407,12 +407,42 @@ export async function createOrderForUser(
     console.error("[order:thread_message_failed]", err);
   }
 
-  // Notify Telegram (Safe)
+  // Notify Telegram Admin and User (Safe)
+  try {
+    const { notifyAdminNewOrder } = await import("./telegram-notifications.server");
+    await notifyAdminNewOrder({
+      order,
+      user: {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        username: user.username,
+      },
+    });
+  } catch (err) {
+    console.error("[order:admin_telegram_notify_failed]", err);
+  }
+
   if (user.telegramId) {
     try {
+      const { telegramMiniAppDeepLink } = await import("./telegram.server");
       await sendTelegramMessage(
         user.telegramId,
-        `✅ *تم إنشاء طلبك بنجاح*\n\nرقم الطلب: \`${code}\`\nالإجمالي: ${total.toLocaleString()} IQD\n\nيمكنك متابعة حالة الطلب من خلال الموقع.`,
+        `✅ <b>تم إنشاء طلبك بنجاح</b>\n\nرقم الطلب: <code>${code}</code>\nالإجمالي: <b>${total.toLocaleString()} د.ع</b>\n\nاضغط أدناه لمتابعة طلبك مباشرة في تليكرام 👇`,
+        {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🎮 متابعة الطلب والمحادثة",
+                  url: telegramMiniAppDeepLink(`order_${order.id}`),
+                },
+              ],
+            ],
+          },
+        },
       );
     } catch (err) {
       console.error("[order:telegram_notify_failed]", err);

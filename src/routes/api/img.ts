@@ -43,7 +43,7 @@ function detectMime(buffer: Uint8Array, fallbackUrl: string, headerMime?: string
   }
 
   // Fallback to URL extension
-  const clean = fallbackUrl.split("?")[0].toLowerCase();
+  const clean = (fallbackUrl.split("?")[0] || "").toLowerCase();
   if (clean.endsWith(".png")) return "image/png";
   if (clean.endsWith(".webp")) return "image/webp";
   if (clean.endsWith(".gif")) return "image/gif";

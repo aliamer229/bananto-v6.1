@@ -20,6 +20,12 @@ import { supportAnswer } from "@/lib/support/engine";
 import { imageAnswer } from "@/lib/support/images";
 import { understand } from "@/lib/support/understand.server";
 import { chatRealtime } from "@/lib/chat-realtime.server";
+import {
+  processInactivityAndQueue,
+  handleCustomerQueueReentry,
+  skipQueueCustomer,
+  resumeQueueCustomer,
+} from "@/lib/chat-queue.server";
 
 import type { MessageKind, ThreadMode, ChatType, AdminAvailabilityConfig } from "@/lib/types";
 import { randomId } from "@/lib/crypto.server";
@@ -193,7 +199,10 @@ export const Route = createFileRoute("/api/chat")({
               | "typing"
               | "presence"
               | "mark_read"
-              | "search";
+              | "search"
+              | "skip_queue"
+              | "resume_queue"
+              | "queue_reminder";
             threadId?: string;
             chatType?: ChatType;
             kind?: MessageKind;
@@ -330,6 +339,46 @@ export const Route = createFileRoute("/api/chat")({
             const updatedConfig = await saveAdminAvailabilityConfig(data.adminAvailabilityConfig);
             const availability = await getAdminAvailabilityStatus();
             return json({ success: true, config: updatedConfig, availability });
+          }
+
+          // Queue Actions: Skip, Resume, Reminder
+          if (data.action === "skip_queue" && data.threadId) {
+            await requireAdmin(request);
+            const updated = await skipQueueCustomer(data.threadId);
+            return json({ success: true, thread: updated });
+          }
+
+          if (data.action === "resume_queue" && data.threadId) {
+            await requireAdmin(request);
+            const updated = await resumeQueueCustomer(data.threadId);
+            return json({ success: true, thread: updated });
+          }
+
+          if (data.action === "queue_reminder" && data.threadId) {
+            await requireAdmin(request);
+            const targetThread = await getThread(data.threadId);
+            if (!targetThread) return json({ error: "not_found" }, { status: 404 });
+
+            const reminderText =
+              data.text?.trim() ||
+              "⏳ تنبيه من المشرف: نرجو الرد لتأكيد البيانات وإكمال تسليم طلبك في أسرع وقت.";
+
+            const msg = await appendMessage(data.threadId, {
+              senderRole: "admin",
+              senderName: user.name || "المشرف",
+              kind: "text",
+              body: { text: reminderText },
+            });
+
+            await saveThread({
+              ...targetThread,
+              lastMessageAt: msg.createdAt,
+              lastMessagePreview: reminderText,
+              lastAdminMessageAt: msg.createdAt,
+              mode: "WAITING_FOR_USER",
+            });
+
+            return json({ success: true, message: msg });
           }
 
           // User requesting human support from automated support
@@ -570,7 +619,24 @@ export const Route = createFileRoute("/api/chat")({
               mode: "ADMIN_ACTIVE",
               aiPaused: true,
               needsAdmin: false,
+              lastAdminMessageAt: message.createdAt,
+              inactivityReminders: [],
             });
+
+            // Notify user in Telegram (Safe)
+            try {
+              const { notifyUserAdminMessage } =
+                await import("@/lib/telegram-notifications.server");
+              await notifyUserAdminMessage({
+                userId: current.userId,
+                threadId: current.id,
+                messageText: data.text || "أرسل الدعم مرفقاً جديداً",
+                adminName: user.name || "فريق الإدارة",
+              });
+            } catch (err) {
+              console.warn("[chat:notify_user_failed]", err);
+            }
+
             return json({ message, clientMessageId: data.clientMessageId });
           }
 
@@ -586,6 +652,23 @@ export const Route = createFileRoute("/api/chat")({
           const isAutomatedThread = current.chatType === "AUTOMATED_SUPPORT" && !isOrderOrDelivery;
 
           if (!isAutomatedThread) {
+            // Customer is sending message in order or human support thread
+            current.lastUserMessageAt = message.createdAt;
+            current = await handleCustomerQueueReentry(current);
+
+            // Notify Admin in Telegram about customer message in order/human support (Safe)
+            try {
+              const { notifyAdminCustomerMessage } =
+                await import("@/lib/telegram-notifications.server");
+              await notifyAdminCustomerMessage({
+                thread: current,
+                message: { text: data.text, imageUrl: data.imageUrl, senderRole: "user" },
+                user: { id: user.id, name: user.name, phone: user.phone, username: user.username },
+              });
+            } catch (err) {
+              console.warn("[chat:notify_admin_failed]", err);
+            }
+
             // Check availability to notify user if sending to offline admin
             const availability = await getAdminAvailabilityStatus();
             if (current.chatType === "GENERAL_SUPPORT" && !availability.isAvailable) {

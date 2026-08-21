@@ -15,6 +15,9 @@ import {
   setThreadMode,
   setThreadStatus,
   markThreadAsRead,
+  skipQueueThread,
+  resumeQueueThread,
+  sendQueueReminder,
 } from "@/lib/support.functions";
 import { CustomerList } from "./CustomerList";
 import { ActiveConversation, ConversationErrorBoundary } from "./ActiveConversation";
@@ -30,7 +33,7 @@ interface AdminInboxViewProps {
 export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: AdminInboxViewProps) {
   const queryClient = useQueryClient();
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(initialThreadId);
-  const [activeFilter, setActiveFilter] = useState<InboxFilter>("all");
+  const [activeFilter, setActiveFilter] = useState<InboxFilter>("queue");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Sync initialThreadId changes from parent or URL
@@ -280,12 +283,63 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     },
   });
 
-  // 8. Status mutation
+  // 8. Status mutation with auto-advance
   const statusMutation = useMutation({
     mutationFn: (data: { threadId: string; status: "open" | "closed" }) =>
       setThreadStatus({ data }),
+    onSuccess: (updatedThread, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+      if (variables.status === "closed") {
+        // Auto-advance to next thread in queue
+        const remainingQueue = threads.filter(
+          (t) => t.id !== variables.threadId && t.status === "open" && t.mode !== "RESOLVED",
+        );
+        if (remainingQueue.length > 0) {
+          setSelectedThreadId(remainingQueue[0].id);
+        }
+      }
+    },
+  });
+
+  // 9. Skip Queue Mutation (Move to back of queue + auto-advance)
+  const skipQueueMutation = useMutation({
+    mutationFn: (threadId: string) => skipQueueThread({ data: { threadId } }),
+    onSuccess: (data, threadId) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+      toast.success("تم تأجيل العميل ونقله لآخر الطابور");
+      // Auto-advance to next active thread in queue
+      const nextActiveInQueue = threads.filter(
+        (t) =>
+          t.id !== threadId &&
+          t.status === "open" &&
+          t.mode !== "RESOLVED" &&
+          t.queueStatus !== "snoozed",
+      );
+      if (nextActiveInQueue.length > 0) {
+        setSelectedThreadId(nextActiveInQueue[0].id);
+      }
+    },
+  });
+
+  // 10. Resume Queue Mutation
+  const resumeQueueMutation = useMutation({
+    mutationFn: (threadId: string) => resumeQueueThread({ data: { threadId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+      toast.success("تمت إعادة العميل إلى مقدمة الطابور");
+    },
+  });
+
+  // 11. Send Reminder Mutation
+  const reminderMutation = useMutation({
+    mutationFn: ({ threadId, text }: { threadId: string; text?: string }) =>
+      sendQueueReminder({ data: { threadId, text } }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+      if (res?.message && selectedThreadId) {
+        setLiveMessages((prev) => [...prev, res.message as ChatMessage]);
+      }
+      toast.success("تم إرسال تنبيه عدم الرد إلى العميل");
     },
   });
 
@@ -376,6 +430,21 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
               onSetThreadStatus={(status) => {
                 if (selectedThreadId) {
                   statusMutation.mutate({ threadId: selectedThreadId, status });
+                }
+              }}
+              onSkipQueue={() => {
+                if (selectedThreadId) {
+                  skipQueueMutation.mutate(selectedThreadId);
+                }
+              }}
+              onResumeQueue={() => {
+                if (selectedThreadId) {
+                  resumeQueueMutation.mutate(selectedThreadId);
+                }
+              }}
+              onSendQueueReminder={(text) => {
+                if (selectedThreadId) {
+                  reminderMutation.mutate({ threadId: selectedThreadId, text });
                 }
               }}
               isSending={sendMutation.isPending}

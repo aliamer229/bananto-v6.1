@@ -213,6 +213,38 @@ export const Route = createFileRoute("/api/admin/orders")({
             updatedAt: now,
           };
           await saveOrder(next);
+
+          // Notify customer via Telegram (Safe)
+          try {
+            const { notifyUserOrderStatus } = await import("@/lib/telegram-notifications.server");
+            if (data.action === "send_credentials") {
+              await notifyUserOrderStatus({
+                userId: next.userId,
+                order: next,
+                credentialsDelivered: true,
+              });
+            } else if (
+              data.action === "set_status" ||
+              data.action === "complete_order" ||
+              data.action === "set_payment"
+            ) {
+              const statusMap: Record<string, string> = {
+                paid: "تم تأكيد الدفع ✅",
+                processing: "قيد التجهيز ⏳",
+                delivering: "جاري التسليم 🚀",
+                completed: "مكتمل بنجاح 🎉",
+                cancelled: "ملغى ❌",
+              };
+              await notifyUserOrderStatus({
+                userId: next.userId,
+                order: next,
+                statusText: statusMap[next.status] || next.status,
+              });
+            }
+          } catch (err) {
+            console.warn("Failed to notify user on order update", err);
+          }
+
           return json({ order: redactOrder(next) });
         }),
     },

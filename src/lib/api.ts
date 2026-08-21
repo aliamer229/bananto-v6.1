@@ -85,6 +85,8 @@ async function request<T>(url: string, init?: RequestInit, timeoutMs = 20000): P
 }
 
 export const api = {
+  fetch: <T = any>(url: string, init?: RequestInit, timeoutMs = 20000) =>
+    request<T>(url, init, timeoutMs),
   store: () => request<StoreDoc>("/api/data"),
   saveStore: (patch: Partial<StoreDoc>) =>
     request<{ success: boolean; data: StoreDoc }>("/api/data", {

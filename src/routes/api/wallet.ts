@@ -112,6 +112,22 @@ export const Route = createFileRoute("/api/wallet")({
               eshopCode: data.eshopCode,
               bananCode: data.bananCode,
             });
+
+            // Notify admin via Telegram (Safe)
+            try {
+              const { notifyAdminWalletTopUp } =
+                await import("@/lib/telegram-notifications.server");
+              await notifyAdminWalletTopUp({
+                requestId: req.id,
+                amount: req.amount,
+                method: req.method,
+                proofUrl: req.proofUrl,
+                user: { id: user.id, name: user.name, phone: user.phone },
+              });
+            } catch (err) {
+              console.warn("Failed to notify admin on wallet top up", err);
+            }
+
             return json({ success: true, request: req });
           }
 

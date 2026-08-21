@@ -6,6 +6,7 @@ import {
   getThread,
   listOrders,
   saveOrder,
+  appendMessage,
   d1Run,
   d1All,
   randomId,

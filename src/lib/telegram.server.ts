@@ -237,11 +237,15 @@ export async function pinTelegramMessage(
 
 export async function answerCallbackQuery(
   callbackQueryId: string,
-  text?: string,
+  options?: string | { text?: string; show_alert?: boolean; showAlert?: boolean },
 ): Promise<boolean> {
+  const text = typeof options === "string" ? options : options?.text;
+  const showAlert =
+    typeof options === "object" ? (options?.show_alert ?? options?.showAlert) : false;
   const res = await callTelegram("answerCallbackQuery", {
     callback_query_id: callbackQueryId,
     ...(text ? { text } : {}),
+    ...(showAlert !== undefined ? { show_alert: showAlert } : {}),
   });
   return res.ok;
 }

@@ -99,6 +99,9 @@ interface ActiveConversationProps {
   onSetThreadMode: (mode: ThreadMode) => void;
   onSetThreadStatus: (status: "open" | "closed") => void;
   onToggleAiPause?: (paused: boolean) => void;
+  onSkipQueue?: () => void;
+  onResumeQueue?: () => void;
+  onSendQueueReminder?: (text?: string) => void;
   isSending?: boolean;
 }
 
@@ -119,6 +122,9 @@ export function ActiveConversation({
   onSetThreadMode,
   onSetThreadStatus,
   onToggleAiPause,
+  onSkipQueue,
+  onResumeQueue,
+  onSendQueueReminder,
   isSending = false,
 }: ActiveConversationProps) {
   const [inputText, setInputText] = useState("");
@@ -479,6 +485,18 @@ export function ActiveConversation({
               <User className="w-4 h-4" />
             </button>
 
+            {/* Skip queue button for non-order threads */}
+            {!linkedOrder && !thread.orderId && onSkipQueue && thread.status === "open" && (
+              <button
+                type="button"
+                onClick={onSkipQueue}
+                className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl border border-border text-xs font-bold transition-colors"
+                title="تأجيل العميل ونقله لآخر الطابور"
+              >
+                <span>تخطي ⏭️</span>
+              </button>
+            )}
+
             {/* Close/Resolve Button */}
             <button
               onClick={() => {
@@ -538,6 +556,30 @@ export function ActiveConversation({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              {/* Queue actions */}
+              {onSendQueueReminder && (
+                <button
+                  type="button"
+                  onClick={() => onSendQueueReminder()}
+                  className="text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 px-2.5 py-1 rounded-lg border border-amber-500/30 transition-all flex items-center gap-1"
+                  title="إرسال تنبيه للعميل لسرعة الرد وإكمال الطلب"
+                >
+                  <Clock className="w-3 h-3" />
+                  <span>تنبيه العميل</span>
+                </button>
+              )}
+
+              {onSkipQueue && (
+                <button
+                  type="button"
+                  onClick={onSkipQueue}
+                  className="text-[11px] font-bold text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded-lg border border-border transition-all flex items-center gap-1"
+                  title="نقل العميل لآخر الطابور لعدم الرد والانتقال للتالي"
+                >
+                  <span>تخطي الدور ⏭️</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => setIsOrderDrawerOpen(true)}
@@ -557,6 +599,27 @@ export function ActiveConversation({
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* 2.1 Snooze Banner if customer was moved to back of queue */}
+        {thread.queueStatus === "snoozed" && (
+          <div className="p-3 px-4 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between gap-3 shrink-0 text-xs text-amber-900 dark:text-amber-200">
+            <div className="flex items-center gap-2">
+              <span className="text-base">⏸️</span>
+              <span className="font-bold">
+                تم تأجيل هذا العميل في نهاية الطابور نظراً لعدم الرد لأكثر من 10 دقائق.
+              </span>
+            </div>
+            {onResumeQueue && (
+              <button
+                type="button"
+                onClick={onResumeQueue}
+                className="px-3 py-1 bg-amber-600 text-white hover:bg-amber-700 rounded-lg text-xs font-bold shadow-xs transition-all shrink-0"
+              >
+                استئناف ومتابعة الآن
+              </button>
+            )}
           </div>
         )}
 
