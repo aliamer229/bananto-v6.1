@@ -11,11 +11,20 @@ import {
 import { decryptSecretValue } from "@/lib/crypto.server";
 import { body, guard, json } from "@/lib/http.server";
 import { stageCredentials } from "@/lib/orders.server";
+import {
+  claimNextAccount,
+  getBatchProgress,
+  markAccountRegistered,
+  stageAccountBatch,
+} from "@/lib/account-batch.server";
 import { requireAdmin } from "@/lib/session.server";
 import type { Order, OrderItem, OrderStatus, PaymentStatus } from "@/lib/types";
 import { redactOrder } from "./orders";
 
 type Action =
+  | "stage_account_batch"
+  | "release_next_account"
+  | "batch_status"
   | "set_payment"
   | "set_status"
   | "stage_credentials"
@@ -36,8 +45,33 @@ interface AdminOrderBody {
   password?: string;
   code?: string;
   text?: string;
+  /** Bulk-prepared accounts for one order line. */
+  accounts?: { email?: string; password?: string }[];
   status?: OrderStatus;
   paymentStatus?: PaymentStatus;
+}
+
+/**
+ * Claim the next staged account and post it to the buyer as a credentials card,
+ * exactly as a single hand-delivered account would arrive.
+ */
+async function deliverNextAccount(order: Order, itemId: string, adminName: string) {
+  const account = await claimNextAccount(order.id, itemId);
+  if (!account) return undefined;
+  const item = order.items.find((entry) => entry.id === itemId);
+  await appendMessage(order.threadId, {
+    senderRole: "admin",
+    senderName: adminName,
+    kind: "item_credentials",
+    body: {
+      itemId,
+      title: item?.title ?? "",
+      email: account.email,
+      ...(account.password ? { password: account.password } : {}),
+      sequence: account.seq,
+    },
+  });
+  return account;
 }
 
 function patchItem(order: Order, itemId: string, patch: Partial<OrderItem>): Order {
@@ -123,6 +157,54 @@ export const Route = createFileRoute("/api/admin/orders")({
               next = { ...next, status: "delivering" };
               break;
             }
+            /* ----------------------- batch account prep ----------------------- */
+            case "stage_account_batch": {
+              if (!data.itemId || !Array.isArray(data.accounts)) {
+                return json({ error: "missing_fields" }, { status: 400 });
+              }
+              if (data.accounts.length > 50) {
+                return json({ error: "too_many_accounts" }, { status: 400 });
+              }
+              const added = await stageAccountBatch(
+                order.id,
+                data.itemId,
+                data.accounts.map((entry) => ({
+                  email: String(entry?.email ?? ""),
+                  ...(entry?.password ? { password: String(entry.password) } : {}),
+                })),
+              );
+              return json({
+                added,
+                progress: await getBatchProgress(order.id, data.itemId),
+              });
+            }
+
+            case "release_next_account": {
+              if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
+              const released = await deliverNextAccount(order, data.itemId, adminName);
+              if (!released) {
+                return json(
+                  {
+                    error: "nothing_to_release",
+                    progress: await getBatchProgress(order.id, data.itemId),
+                  },
+                  { status: 409 },
+                );
+              }
+              next = { ...order, status: "delivering", updatedAt: now };
+              await saveOrder(next);
+              return json({
+                released: released.seq,
+                order: redactOrder(next),
+                progress: await getBatchProgress(order.id, data.itemId),
+              });
+            }
+
+            case "batch_status": {
+              if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
+              return json({ progress: await getBatchProgress(order.id, data.itemId) });
+            }
+
             case "send_verification_code": {
               if (!data.itemId || !data.code)
                 return json({ error: "missing_fields" }, { status: 400 });
@@ -147,6 +229,13 @@ export const Route = createFileRoute("/api/admin/orders")({
             case "mark_logged_in": {
               if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
               next = patchItem(order, data.itemId, { loggedInAt: now });
+              // The buyer finished this account, so the next one in the batch
+              // goes out automatically — that sequencing is the whole point of
+              // preparing them in bulk.
+              if (await markAccountRegistered(order.id, data.itemId)) {
+                const released = await deliverNextAccount(next, data.itemId, adminName);
+                if (released) next = { ...next, status: "delivering" };
+              }
               break;
             }
             case "mark_shipped": {
