@@ -158,9 +158,23 @@ export function AccountCard({
           : "border-border/60 bg-card/80 text-foreground"
       }`}
     >
-      <div className="flex items-center gap-2 border-b border-current/10 pb-2">
-        <Icon className="h-4 w-4 shrink-0 opacity-80" />
-        <span className="text-[13px] font-bold">{heading}</span>
+      <div className="flex items-center justify-between border-b border-current/10 pb-2">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0 opacity-80" />
+          <span className="text-[13px] font-bold">{heading}</span>
+        </div>
+        {card.type === "credentials" && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {delivery?.proofSent ? "تم إرفاق الإثبات" : "جاهز للتسجيل"}
+          </span>
+        )}
+        {card.type === "verification" && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+            <ShieldCheck className="h-3 w-3" />
+            رمز الأمان
+          </span>
+        )}
       </div>
 
       {card.title ? (
@@ -205,13 +219,18 @@ export function AccountCard({
       {/* Buyer's next steps for an account they were just handed. */}
       {card.type === "credentials" && delivery && itemId ? (
         <div className="space-y-2 border-t border-current/10 pt-2">
-          <div className="flex items-start gap-1.5 rounded-xl bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
-            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>
-              {locale === "ar"
-                ? "صوّر شاشة الحساب بعد تسجيل الدخول بحيث يظهر اسم المستخدم داخل الجهاز بوضوح، بدون قص وبدون تغطية أي جزء."
-                : "Screenshot the account after signing in, with the username clearly visible on the device — uncropped and nothing covered."}
-            </span>
+          <div className="group relative flex items-start gap-1.5 rounded-xl bg-amber-500/10 p-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300 border border-amber-500/20">
+            <div className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-bold text-[10px]" title="يجب إرفاق صورة تثبت تسجيل الدخول إلى الحساب قبل طلب كود التحقق">
+              !
+            </div>
+            <div className="flex-1">
+              <span className="font-bold">تنبيه مهم: </span>
+              <span>
+                {locale === "ar"
+                  ? "يجب إرفاق صورة تثبت تسجيل الدخول إلى الحساب قبل طلب كود التحقق. صوّر شاشة الحساب داخل الجهاز بوضوح دون قص."
+                  : "You must attach a screenshot proving sign-in before requesting the verification code."}
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -219,7 +238,7 @@ export function AccountCard({
               type="button"
               disabled={delivery.busy}
               onClick={() => void delivery.onAttachProof(itemId)}
-              className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-foreground px-3 py-2 text-[11px] font-bold text-background disabled:opacity-50"
+              className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-foreground px-3 py-2 text-[11px] font-bold text-background disabled:opacity-50 transition-transform active:scale-95"
             >
               {delivery.busy ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -228,7 +247,7 @@ export function AccountCard({
               )}
               {delivery.proofSent
                 ? locale === "ar"
-                  ? "إرسال صورة أخرى"
+                  ? "إرسال صورة إثبات أخرى"
                   : "Send another photo"
                 : locale === "ar"
                   ? "إرفاق إثبات التسجيل"
@@ -242,10 +261,10 @@ export function AccountCard({
                 delivery.proofSent
                   ? undefined
                   : locale === "ar"
-                    ? "أرفق صورة إثبات التسجيل أولاً"
+                    ? "يجب إرفاق صورة تثبت تسجيل الدخول أولاً"
                     : "Attach the sign-in proof first"
               }
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-current/20 px-3 py-2 text-[11px] font-bold disabled:opacity-40"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-current/20 px-3 py-2 text-[11px] font-bold disabled:opacity-40 transition-transform active:scale-95"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               {locale === "ar" ? "التالي" : "Next"}

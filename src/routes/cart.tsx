@@ -401,10 +401,13 @@ function CartPage() {
     onSuccess: ({ order }) => {
       setShowConfirmModal(false);
       clear();
-      setConfirmedOrder(order);
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["auth"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
       playSound("bumper_end", 0.6);
+      toast.success("تم تأكيد الطلب بنجاح، جاري تحويلك لمحادثة الطلب...");
+      void navigate({ to: "/chat", search: { initialOrderId: order.id } });
     },
     onError: (err: Error) => {
       setShowConfirmModal(false);

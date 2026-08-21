@@ -10,8 +10,11 @@ import {
   Check,
   CreditCard,
   Ticket,
+  ClipboardPaste,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { parseAccountLine } from "@/lib/account-paste";
 
 interface AccountToolsModalProps {
   isOpen: boolean;
@@ -72,6 +75,34 @@ export function AccountToolsModal({
   const [password, setPassword] = useState("");
   const [pin, setPin] = useState("");
   const [notes, setNotes] = useState("");
+  const [quickPasteInput, setQuickPasteInput] = useState("");
+  const [quickPasteFeedback, setQuickPasteFeedback] = useState<string | null>(null);
+
+  const handleQuickPaste = (raw: string) => {
+    setQuickPasteInput(raw);
+    if (!raw.trim()) {
+      setQuickPasteFeedback(null);
+      return;
+    }
+    const parsed = parseAccountLine(raw);
+    if (parsed && (parsed.username || parsed.password)) {
+      if (parsed.username) setEmail(parsed.username);
+      if (parsed.password) setPassword(parsed.password);
+      if (parsed.label) {
+        const lowered = parsed.label.toLowerCase();
+        if (lowered.includes("switch") || lowered.includes("nintendo")) setPlatform("Nintendo Switch");
+        else if (lowered.includes("ps5")) setPlatform("PlayStation 5 (PS5)");
+        else if (lowered.includes("ps4") || lowered.includes("playstation")) setPlatform("PlayStation 4 (PS4)");
+        else if (lowered.includes("xbox")) setPlatform("Xbox Series / One");
+        else if (lowered.includes("steam")) setPlatform("Steam");
+      }
+      setNotes(""); // Do not add unwanted notes
+      setQuickPasteFeedback(`تم استخراج: ${parsed.username || "—"} / ${parsed.password || "—"}`);
+      toast.success("تم استخراج بيانات الحساب بنجاح وتعبئة الحقول");
+    } else {
+      setQuickPasteFeedback("لم يتم التعرف على الصيغة، يرجى تعبئة الحقول يدوياً");
+    }
+  };
 
   // Card / Activation Key State
   const [cardType, setCardType] = useState("Nintendo eShop $50");
@@ -243,6 +274,31 @@ export function AccountToolsModal({
           {/* TAB 1: ACCOUNT CREDENTIALS */}
           {activeTab === "credentials" && (
             <form onSubmit={handleSendCredentialsSubmit} className="space-y-4">
+              {/* Quick Paste Assistant */}
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300">
+                    <ClipboardPaste className="w-3.5 h-3.5" />
+                    <span>لصق سريع للحساب (Quick Paste)</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">استخراج ذكي لليوزر والباسورد</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="الصق نص المورد هنا (مثال: FC26 账号 user@mail.com 密码 pass123)"
+                  value={quickPasteInput}
+                  onChange={(e) => handleQuickPaste(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-amber-500/30 text-foreground font-mono"
+                  dir="ltr"
+                />
+                {quickPasteFeedback && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>{quickPasteFeedback}</span>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
                   نوع المنصة / الحساب

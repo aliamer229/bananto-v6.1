@@ -214,13 +214,17 @@ function isScriptElement(target: EventTarget | null): target is HTMLScriptElemen
   return Boolean(target && (target as HTMLElement).tagName === "SCRIPT");
 }
 
-/** A script tag from this origin, i.e. part of the build we shipped. */
+/** A script tag from this origin for a built chunk, i.e. part of the build we shipped. */
 function isOwnScriptElement(target: EventTarget | null): boolean {
   if (!isScriptElement(target)) return false;
   const src = target.getAttribute("src");
   if (!src) return false;
   try {
-    return new URL(src, window.location.href).origin === window.location.origin;
+    const url = new URL(src, window.location.href);
+    return (
+      url.origin === window.location.origin &&
+      (url.pathname.includes("/assets/") || url.pathname.includes("/_build/"))
+    );
   } catch {
     return false;
   }

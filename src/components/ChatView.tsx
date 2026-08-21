@@ -673,18 +673,41 @@ export default function ChatView({
    * the primary source and the thread list is only a fallback.
    */
   const resolvedOrderThreadRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (initialThreadId && threadId !== initialThreadId) {
+      setThreadId(initialThreadId);
+    }
+  }, [initialThreadId, threadId]);
+
   useEffect(() => {
     if (!initialOrderId) return;
-    if (resolvedOrderThreadRef.current === initialOrderId) return;
+    if (resolvedOrderThreadRef.current === initialOrderId && threadId) return;
 
     const fromOrder = orders.find((order) => order.id === initialOrderId)?.threadId;
     const fromThreads = threads.find((thread) => thread.orderId === initialOrderId)?.id;
     const target = fromOrder || fromThreads;
-    if (!target) return;
+    if (target) {
+      resolvedOrderThreadRef.current = initialOrderId;
+      setThreadId(target);
+      return;
+    }
 
-    resolvedOrderThreadRef.current = initialOrderId;
-    setThreadId(target);
-  }, [initialOrderId, orders, threads]);
+    // Direct lookup fallback if query hasn't synced yet
+    let active = true;
+    api.order(initialOrderId)
+      .then((res) => {
+        if (active && res?.order?.threadId) {
+          resolvedOrderThreadRef.current = initialOrderId;
+          setThreadId(res.order.threadId);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, [initialOrderId, orders, threads, threadId]);
 
   /**
    * A signed-in member always talks in a real conversation.
@@ -1552,9 +1575,13 @@ export default function ChatView({
           </div>
         )}
 
-        {/* 3. Hero Welcome Greeting (Only visible when thread has 0 messages, collapses smoothly) */}
+        {/* 3. Hero Welcome Greeting (Only visible in default empty chat, never in order threads) */}
         <AnimatePresence>
-          {messages.length === 0 && (
+          {!initialOrderId &&
+            !initialThreadId &&
+            !threadId &&
+            !currentThread?.orderId &&
+            messages.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}

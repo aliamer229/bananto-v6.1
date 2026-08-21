@@ -60,10 +60,7 @@ function ErrorComponent({ error: rootError, reset }: { error: any; reset: () => 
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
-    if (isChunkError) {
-      handleModuleReload();
-    }
-  }, [error, isChunkError]);
+  }, [error]);
 
   const handleRetry = () => {
     if (isChunkError) {

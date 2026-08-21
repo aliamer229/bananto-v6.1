@@ -387,24 +387,15 @@ export async function createOrderForUser(
       userId: user.id,
       userName: user.name,
       orderId,
+      chatType: "ORDER_SUPPORT",
       subject: `طلب ${code}`,
       status: "open",
-      mode: "AI_ACTIVE",
+      mode: "HUMAN_ACTIVE",
       lastMessageAt: now,
       createdAt: now,
     });
 
-    const intro = store.adminPresence?.online
-      ? (store.autoReplies?.onlineIntro ?? "")
-      : (store.autoReplies?.offlineIntro ?? "");
-
-    await appendMessage(threadId, {
-      senderRole: "system",
-      kind: "system",
-      body: { text: intro || `تم إنشاء الطلب ${code}. سيتم متابعة طلبك هنا.` },
-    });
-
-    // Append system digital order card containing games / accounts details
+    // For paid digital orders, send the digital order card directly (no generic welcome message or payment prompt)
     if (needsWalletPayment) {
       await appendMessage(threadId, {
         senderRole: "system",
@@ -428,9 +419,17 @@ export async function createOrderForUser(
           text: `🎮 تم تأكيد طلبك الرقمي (${order.code}) بنجاح!\nالمبلغ المدفوع من المحفظة: ${order.total.toLocaleString()} د.ع\nيقوم فريق الدعم حالياً بتجهيز بيانات الحساب والرمز وإرسالها لك في هذه المحادثة.`,
         },
       });
-    }
+    } else {
+      const intro = store.adminPresence?.online
+        ? (store.autoReplies?.onlineIntro ?? "")
+        : (store.autoReplies?.offlineIntro ?? "");
 
-    if (!needsWalletPayment) {
+      await appendMessage(threadId, {
+        senderRole: "system",
+        kind: "system",
+        body: { text: intro || `تم إنشاء الطلب ${code}. سيتم متابعة طلبك هنا.` },
+      });
+
       await appendMessage(threadId, {
         senderRole: "system",
         kind: "payment_methods_card",

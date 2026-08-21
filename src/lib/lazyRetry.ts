@@ -1,5 +1,4 @@
-import { lazy, type ComponentType, type LazyExoticComponent, createElement } from "react";
-import { isScriptImportError, handleModuleReload } from "./polyfills";
+import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 
 /**
  * Wraps React.lazy with retry mechanisms to gracefully handle transient network errors
@@ -33,13 +32,8 @@ export function lazyWithRetry<T extends ComponentType<any>>(
                 setTimeout(() => {
                   attempt(remaining - 1);
                 }, interval);
-              } else if (isModuleScriptError && typeof window !== "undefined") {
-                handleModuleReload();
-                // Return a lightweight silent fallback component rather than crashing the whole route
-                resolve({
-                  default: (() => null) as unknown as T,
-                });
               } else {
+                // Return a lightweight silent fallback component rather than crashing the whole route
                 resolve({
                   default: (() => null) as unknown as T,
                 });
