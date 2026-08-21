@@ -1,9 +1,21 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { checkAdminAccess } from "@/lib/admin-access.functions";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { OrdersManagerView } from "@/components/admin/OrdersManagerView";
 import { ArrowRight, MessageSquare, LayoutDashboard } from "lucide-react";
 
 export const Route = createFileRoute("/admin/orders")({
+  /**
+   * Server-side gate. Runs during SSR and before a client navigation resolves,
+   * so a non-admin never receives the dashboard bundle at all — the client-side
+   * `user.isAdmin` check below is now only a second line of defence.
+   */
+  beforeLoad: async () => {
+    const { isAdmin, signedIn } = await checkAdminAccess();
+    if (!isAdmin) {
+      throw redirect({ to: signedIn ? "/" : "/auth" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "إدارة الطلبات والمبيعات — إدارة بنانا ستور" },
@@ -11,7 +23,7 @@ export const Route = createFileRoute("/admin/orders")({
         name: "description",
         content: "إدارة طلبات المتجر، تأكيد المدفوعات، ومتابعة تسليم الحسابات والمنتجات الرقمية.",
       },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "إدارة الطلبات والمبيعات" },
       { property: "og:description", content: "لوحة متكاملة لإدارة ومتابعة طلبات العملاء." },
     ],

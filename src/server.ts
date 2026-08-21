@@ -340,19 +340,19 @@ export default {
       if (typeof waitUntil === "function") waitUntil.call(ctx, repair);
     }
     const rejected = rejectCrossSiteMutation(request);
-    if (rejected) return withSecurityHeaders(rejected);
+    if (rejected) return withSecurityHeaders(rejected, url);
     const cache = request.method === "GET" && isCacheableAsset(url) ? edgeCache() : undefined;
 
     if (cache) {
       const hit = await cache.match(request).catch(() => undefined);
-      if (hit) return withSecurityHeaders(hit);
+      if (hit) return withSecurityHeaders(hit, url);
     }
 
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       const normalized = await normalizeCatastrophicSsrResponse(response);
-      const secured = withSecurityHeaders(normalized);
+      const secured = withSecurityHeaders(normalized, url);
       if (
         cache &&
         secured.status === 200 &&
@@ -371,6 +371,7 @@ export default {
           status: 500,
           headers: { "content-type": "text/html; charset=utf-8" },
         }),
+        url,
       );
     }
   },

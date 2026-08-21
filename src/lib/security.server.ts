@@ -58,7 +58,23 @@ export function rejectCrossSiteMutation(request: Request): Response | undefined 
   return Response.json({ error: "invalid_origin" }, { status: 403 });
 }
 
-export function withSecurityHeaders(response: Response): Response {
+/**
+ * The admin surface: never cached anywhere, never indexed, never framed.
+ *
+ * Framing is blocked here rather than globally because Telegram embeds the
+ * storefront as a Mini App — but no legitimate flow ever puts the dashboard in
+ * someone else's frame, so clickjacking protection belongs on these paths.
+ */
+function applyAdminHeaders(headers: Headers, pathname: string): void {
+  if (!/^\/admin(?:\/|$)/.test(pathname) && !/^\/api\/admin(?:\/|$)/.test(pathname)) return;
+  headers.set("cache-control", "private, no-store, max-age=0, must-revalidate");
+  headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+  headers.set("x-frame-options", "DENY");
+  const existing = headers.get("content-security-policy");
+  if (!existing) headers.set("content-security-policy", "frame-ancestors 'none'");
+}
+
+export function withSecurityHeaders(response: Response, url?: URL): Response {
   const headers = new Headers(response.headers);
   headers.set("x-content-type-options", "nosniff");
   headers.set("referrer-policy", "no-referrer");
@@ -72,6 +88,7 @@ export function withSecurityHeaders(response: Response): Response {
   if (env("APP_ENV") === "production") {
     headers.set("strict-transport-security", "max-age=31536000; includeSubDomains; preload");
   }
+  if (url) applyAdminHeaders(headers, url.pathname);
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

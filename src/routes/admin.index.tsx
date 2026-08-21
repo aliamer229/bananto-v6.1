@@ -1,10 +1,22 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { checkAdminAccess } from "@/lib/admin-access.functions";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import AdminDashboard from "@/components/AdminDashboard";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/")({
+  /**
+   * Server-side gate. Runs during SSR and before a client navigation resolves,
+   * so a non-admin never receives the dashboard bundle at all — the client-side
+   * `user.isAdmin` check below is now only a second line of defence.
+   */
+  beforeLoad: async () => {
+    const { isAdmin, signedIn } = await checkAdminAccess();
+    if (!isAdmin) {
+      throw redirect({ to: signedIn ? "/" : "/auth" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "لوحة الإدارة — بنانا ستور" },
@@ -13,7 +25,7 @@ export const Route = createFileRoute("/admin/")({
         content:
           "إدارة المنتجات، البانرات، الطلبات، والمحادثات مع استخراج بيانات المنتج بالذكاء الاصطناعي.",
       },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "noindex, nofollow" },
       { property: "og:title", content: "لوحة الإدارة — بنانا ستور" },
       { property: "og:description", content: "إدارة كامل المتجر من مكان واحد." },
     ],
