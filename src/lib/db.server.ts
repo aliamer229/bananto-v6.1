@@ -2155,7 +2155,10 @@ export async function listAllRechargeRequests(
   const byId = new Map(users.map((user) => [user.id, user]));
   return requests.map((request) => {
     const user = byId.get(request.userId);
-    return user ? { ...request, user: reviewerVisibleUser(user) } : request;
+    if (!user) return request;
+    // `userName` is kept alongside the full member object because the Mini App
+    // review card reads it directly.
+    return { ...request, userName: user.name, user: reviewerVisibleUser(user) };
   });
 }
 

@@ -219,8 +219,8 @@ export function DigitalOrderCard({
         <div className="flex items-center gap-2 ms-auto">
           {orderId && (
             <Link
-              to="/orders/$orderId"
-              params={{ orderId }}
+              to="/chat"
+              search={{ initialOrderId: orderId }}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all active:scale-95"
             >
               <span>{locale === "ar" ? "تفاصيل الفاتورة" : "View Invoice"}</span>

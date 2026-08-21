@@ -1,8 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-
-import AppShell from "@/components/AppShell";
-import OrderChat from "@/components/OrderChat";
-import { useAuth } from "@/hooks/useAuth";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/orders/$orderId")({
   head: () => ({
@@ -21,14 +17,9 @@ export const Route = createFileRoute("/orders/$orderId")({
 
 function OrderChatPage() {
   const { orderId } = Route.useParams();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
-  return (
-    <AppShell currentView="orders" onBack={() => void navigate({ to: "/orders" })}>
-      <div className="mx-auto max-w-3xl px-4 py-6">
-        <OrderChat orderId={orderId} isAdmin={Boolean(user?.isAdmin)} />
-      </div>
-    </AppShell>
-  );
+  
+  // Redirect to the main chat interface, which will automatically 
+  // select the thread associated with this order.
+  return <Navigate to="/chat" search={{ initialOrderId: orderId }} />;
 }
+

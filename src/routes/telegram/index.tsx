@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { resolveTelegramVerificationReference } from "@/lib/telegram-launch";
 import mascot from "@/assets/bananto_logo.webp.asset.json";
 import { User, Shield, Bell, Trophy, Users, LogOut, CheckCircle2, AlertCircle } from "lucide-react";
+import AdminWalletReview from "@/components/admin/AdminWalletReview";
 
 export const Route = createFileRoute("/telegram/")({
   component: TelegramIndex,
@@ -60,15 +61,17 @@ function TelegramIndex() {
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [logoFailed, setLogoFailed] = useState(false);
+  const [reviewMode, setReviewMode] = useState<"wallet" | null>(null);
+  const [reviewId, setReviewId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "verified") {
+    if (status === "verified" && !reviewMode) {
       api
         .me()
         .then((res) => setUser(res?.user))
         .catch(console.error);
     }
-  }, [status]);
+  }, [status, reviewMode]);
 
   useEffect(() => {
     let active = true;
@@ -77,8 +80,7 @@ function TelegramIndex() {
 
     const initialize = async () => {
       const tg = window.Telegram?.WebApp;
-      // The official SDK is loaded in <head>, but a short retry avoids a false
-      // failure on slow in-app webviews.
+
       if (!tg && attempts++ < 20) {
         retryTimer = setTimeout(() => void initialize(), 100);
         return;
@@ -96,6 +98,13 @@ function TelegramIndex() {
       tg.setBackgroundColor?.("#f4f1e8");
 
       const verificationRef = readStartParam(tg);
+
+      if (verificationRef?.startsWith("wallet_")) {
+        setReviewMode("wallet");
+        setReviewId(verificationRef.replace("wallet_", ""));
+        setStatus("ready");
+        return;
+      }
 
       if (!verificationRef) {
         setError("رمز التحقق غير موجود. ارجع إلى الموقع واضغط زر إثبات الملكية مرة أخرى.");
@@ -236,6 +245,14 @@ function TelegramIndex() {
       setStatus("ready");
     }
   };
+
+  if (reviewMode === "wallet" && reviewId) {
+    return (
+      <div className="min-h-screen bg-[var(--page)] text-[var(--ink-base)] flex flex-col font-sans rtl" dir="rtl">
+        <AdminWalletReview id={reviewId} />
+      </div>
+    );
+  }
 
   return (
     <div

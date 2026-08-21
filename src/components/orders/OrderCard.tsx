@@ -71,8 +71,8 @@ export default function OrderCard({ order }: { order: Order }) {
       whileTap={{ scale: 0.99 }}
     >
       <Link
-        to="/orders/$orderId"
-        params={{ orderId: order.id }}
+        to="/chat"
+        search={{ initialOrderId: order.id }}
         className="block bg-card border border-border/60 rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all group"
       >
         <div className="flex items-center justify-between mb-4">

@@ -227,7 +227,7 @@ export default function Header({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                placeholder={t("بحث ذكي عن الألعاب...")}
+                placeholder={t("بحث ذكي عن الألعاب...")} suppressHydrationWarning
                 className="w-full h-10 rounded-full outline-none px-4 ps-10 text-sm transition-all bg-black/20 border border-white/20 text-white backdrop-blur-md placeholder-white/70 focus:border-white focus:bg-black/40 shadow-sm"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
@@ -270,7 +270,7 @@ export default function Header({
                 navigate({ to: "/admin" });
               }}
               className="w-10 h-10 rounded-full flex items-center justify-center bg-black/20 text-white backdrop-blur-md shadow-sm border border-white/20 hover:bg-black/30 transition-colors shrink-0"
-              title={t("لوحة الإدارة")}
+              title={t("لوحة الإدارة")} suppressHydrationWarning
             >
               <Shield className="w-5 h-5" />
             </button>

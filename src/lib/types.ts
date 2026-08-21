@@ -426,6 +426,7 @@ export interface Coupon {
   minOrderAmount: number;
   maxDiscountAmount?: number;
   isActive: boolean;
+  onlyDigitalProducts?: boolean;
   createdAt: string;
 }
 
@@ -656,6 +657,8 @@ export interface WalletRechargeRequest {
  * user id.
  */
 export interface RechargeRequestWithUser extends WalletRechargeRequest {
+  /** Convenience copy of the member's name for compact review cards. */
+  userName?: string;
   user?: {
     id: string;
     name: string;
@@ -715,6 +718,8 @@ export interface Order {
   userName: string;
   items: OrderItem[];
   total: number;
+  discountAmount?: number;
+  couponCode?: string;
   currency: string;
   status: OrderStatus;
   paymentStatus: PaymentStatus;

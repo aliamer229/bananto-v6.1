@@ -150,6 +150,7 @@ export const validateCoupon = createServerFn({ method: "POST" })
         z.object({
           productId: z.string(),
           categoryId: z.string(),
+          kind: z.string().optional(),
         }),
       ),
     }),
@@ -199,18 +200,25 @@ export const validateCoupon = createServerFn({ method: "POST" })
     const eligibleUsers =
       typeof coupon.eligibleUsers === "string"
         ? JSON.parse(coupon.eligibleUsers)
-        : coupon.eligibleUsers;
+        : coupon.eligibleUsers || [];
     if (eligibleUsers.length > 0 && !eligibleUsers.includes(userId)) {
       return { valid: false, message: "هذا الكوبون غير مخصص لحسابك" };
+    }
+
+    if (coupon.only_digital_products || coupon.onlyDigitalProducts) {
+      const hasPhysical = data.items.some((item) => ["hardware", "physical", "accessory", "device", "collectible"].includes(item.kind || ""));
+      if (hasPhysical) {
+        return { valid: false, message: "هذا الكوبون صالح فقط للمنتجات الرقمية." };
+      }
     }
 
     return {
       valid: true,
       coupon: {
         id: coupon.id,
-        discountType: coupon.discountType,
-        discountValue: coupon.discountValue,
-        maxDiscountAmount: coupon.maxDiscountAmount,
+        discountType: coupon.discount_type || coupon.discountType,
+        discountValue: coupon.discount_value || coupon.discountValue,
+        maxDiscountAmount: coupon.max_discount_amount || coupon.maxDiscountAmount,
       },
     };
   });

@@ -69,6 +69,7 @@ import { Route as TelegramWalletReviewRouteImport } from './routes/telegram/wall
 import { Route as ApiAdminAssetsRouteImport } from './routes/api/admin/assets'
 import { Route as ApiAdminBananaRouteImport } from './routes/api/admin/banana'
 import { Route as ApiAdminBinanceTopupsRouteImport } from './routes/api/admin/binance-topups'
+import { Route as ApiAdminCouponsRouteImport } from './routes/api/admin/coupons'
 import { Route as ApiAdminImportGameRouteImport } from './routes/api.admin.import-game'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin.orders'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
@@ -400,6 +401,11 @@ const ApiAdminBinanceTopupsRoute = ApiAdminBinanceTopupsRouteImport.update({
   path: '/api/admin/binance-topups',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminCouponsRoute = ApiAdminCouponsRouteImport.update({
+  id: '/api/admin/coupons',
+  path: '/api/admin/coupons',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminImportGameRoute = ApiAdminImportGameRouteImport.update({
   id: '/api/admin/import-game',
   path: '/api/admin/import-game',
@@ -624,6 +630,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/assets': typeof ApiAdminAssetsRoute
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
+  '/api/admin/coupons': typeof ApiAdminCouponsRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
@@ -716,6 +723,7 @@ export interface FileRoutesByTo {
   '/api/admin/assets': typeof ApiAdminAssetsRoute
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
+  '/api/admin/coupons': typeof ApiAdminCouponsRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
@@ -809,6 +817,7 @@ export interface FileRoutesById {
   '/api/admin/assets': typeof ApiAdminAssetsRoute
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
+  '/api/admin/coupons': typeof ApiAdminCouponsRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
@@ -903,6 +912,7 @@ export interface FileRouteTypes {
     | '/api/admin/assets'
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
+    | '/api/admin/coupons'
     | '/api/admin/import-game'
     | '/api/admin/orders'
     | '/api/admin/products'
@@ -995,6 +1005,7 @@ export interface FileRouteTypes {
     | '/api/admin/assets'
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
+    | '/api/admin/coupons'
     | '/api/admin/import-game'
     | '/api/admin/orders'
     | '/api/admin/products'
@@ -1087,6 +1098,7 @@ export interface FileRouteTypes {
     | '/api/admin/assets'
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
+    | '/api/admin/coupons'
     | '/api/admin/import-game'
     | '/api/admin/orders'
     | '/api/admin/products'
@@ -1180,6 +1192,7 @@ export interface RootRouteChildren {
   ApiAdminAssetsRoute: typeof ApiAdminAssetsRoute
   ApiAdminBananaRoute: typeof ApiAdminBananaRoute
   ApiAdminBinanceTopupsRoute: typeof ApiAdminBinanceTopupsRoute
+  ApiAdminCouponsRoute: typeof ApiAdminCouponsRoute
   ApiAdminImportGameRoute: typeof ApiAdminImportGameRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRouteWithChildren
@@ -1628,6 +1641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminBinanceTopupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/coupons': {
+      id: '/api/admin/coupons'
+      path: '/api/admin/coupons'
+      fullPath: '/api/admin/coupons'
+      preLoaderRoute: typeof ApiAdminCouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/import-game': {
       id: '/api/admin/import-game'
       path: '/api/admin/import-game'
@@ -1942,6 +1962,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminAssetsRoute: ApiAdminAssetsRoute,
   ApiAdminBananaRoute: ApiAdminBananaRoute,
   ApiAdminBinanceTopupsRoute: ApiAdminBinanceTopupsRoute,
+  ApiAdminCouponsRoute: ApiAdminCouponsRoute,
   ApiAdminImportGameRoute: ApiAdminImportGameRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRouteWithChildren,

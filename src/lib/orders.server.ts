@@ -118,6 +118,7 @@ export async function createOrderForUser(
   user: User,
   lines: CheckoutLine[],
   address?: Address,
+  couponCode?: string
 ): Promise<Order> {
   const store = await getStore();
   const items: OrderItem[] = [];
@@ -134,13 +135,57 @@ export async function createOrderForUser(
     throw new Error("invalid_total");
   }
 
+  const now = new Date().toISOString();
+  let discountAmount = 0;
+  let appliedCouponId: string | null = null;
+  
+  if (couponCode) {
+    const coupon = await d1First("SELECT * FROM coupons WHERE code = ? AND is_active = 1", couponCode);
+    if (coupon) {
+      const isExpired = coupon.expiration_at && new Date(coupon.expiration_at).getTime() < Date.now();
+      const meetsMinOrder = itemsTotal >= (coupon.min_order_amount || 0);
+      
+      let isDigitalOnlyValid = true;
+      if (coupon.only_digital_products) {
+         isDigitalOnlyValid = !items.some(i => ["hardware", "physical", "accessory", "device", "collectible"].includes(i.kind));
+      }
+      
+      if (!isExpired && meetsMinOrder && isDigitalOnlyValid) {
+         const globalUsage = await d1First<{total: number}>("SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?", coupon.id);
+         const userUsage = await d1First<{total: number}>("SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?", coupon.id, user.id);
+         
+         if ((!coupon.usage_limit || (globalUsage?.total || 0) < coupon.usage_limit) && 
+             (!coupon.per_user_limit || (userUsage?.total || 0) < coupon.per_user_limit)) {
+               
+            if (coupon.discount_type === "fixed") {
+              discountAmount = coupon.discount_value || 0;
+            } else {
+              discountAmount = Math.floor(itemsTotal * ((coupon.discount_value || 0) / 100));
+            }
+            if (coupon.max_discount_amount && discountAmount > coupon.max_discount_amount) {
+              discountAmount = coupon.max_discount_amount;
+            }
+            
+            appliedCouponId = coupon.id;
+         } else {
+            throw new Error("coupon_invalid");
+         }
+      } else {
+         throw new Error("coupon_invalid");
+      }
+    } else {
+       throw new Error("coupon_invalid");
+    }
+  }
+
+  const finalItemsTotal = Math.max(0, itemsTotal - discountAmount);
   const needsWalletPayment = items.every((item) =>
     ["account", "offline_account", "online_account", "bundle", "preorder", "digital_code"].includes(
       item.kind,
     ),
   );
 
-  if (needsWalletPayment && (user.walletBalance || 0) < itemsTotal) {
+  if (needsWalletPayment && (user.walletBalance || 0) < finalItemsTotal) {
     throw new Error("insufficient_balance");
   }
 
@@ -160,14 +205,15 @@ export async function createOrderForUser(
   const needsAddress = items.some((item) =>
     ["hardware", "physical", "accessory", "device", "collectible"].includes(item.kind),
   );
-  const total = itemsTotal + (needsAddress ? deliveryPrice : 0);
+  const total = finalItemsTotal + (needsAddress ? deliveryPrice : 0);
 
-  const now = new Date().toISOString();
   const orderId = randomId("ord");
   const threadId = randomId("thr");
   const code = `BN-${Date.now().toString().slice(-6)}`;
 
   const order: Order = {
+    discountAmount: discountAmount || undefined,
+    couponCode: appliedCouponId ? couponCode : undefined,
     id: orderId,
     code,
     userId: user.id,
@@ -189,7 +235,7 @@ export async function createOrderForUser(
     const payment = await d1Batch([
       {
         sql: `UPDATE users SET wallet_balance = CASE WHEN wallet_balance >= ? THEN wallet_balance - ? ELSE NULL END WHERE id = ?`,
-        params: [itemsTotal, itemsTotal, user.id],
+        params: [finalItemsTotal, finalItemsTotal, user.id],
       },
       {
         sql: `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, created_at)
