@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { api, type AccountBatchEntry, type AccountBatchProgress } from "@/lib/api";
-import { MAX_BATCH_ACCOUNTS, parseAccountBatch } from "@/lib/account-batch-parse";
+import { parseAccountPaste } from "@/lib/account-paste";
+
+/** The server refuses anything larger, so the panel stops there too. */
+const MAX_BATCH_ACCOUNTS = 50;
 
 /**
  * Bulk account preparation for a single order line.
@@ -34,7 +37,7 @@ export function AccountBatchPanel({
   });
 
   const progress: AccountBatchProgress | undefined = status.data?.progress;
-  const parsed = useMemo(() => parseAccountBatch(paste), [paste]);
+  const parsed = useMemo(() => parseAccountPaste(paste), [paste]);
   const overLimit = parsed.accounts.length > MAX_BATCH_ACCOUNTS;
 
   const applyProgress = (next: AccountBatchProgress) => {
@@ -46,7 +49,12 @@ export function AccountBatchPanel({
       api.stageAccountBatch({
         orderId,
         itemId,
-        accounts: parsed.accounts.slice(0, MAX_BATCH_ACCOUNTS),
+        // Only the login and the password ever leave this panel: the game name
+        // and any supplier note stay behind.
+        accounts: parsed.accounts.slice(0, MAX_BATCH_ACCOUNTS).map((account) => ({
+          email: account.username,
+          password: account.password,
+        })),
       }),
     onSuccess: (result) => {
       applyProgress(result.progress);
@@ -101,6 +109,37 @@ export function AccountBatchPanel({
         className="w-full rounded-lg border border-border bg-card px-2 py-2 font-mono text-[11px] leading-relaxed text-foreground"
       />
 
+      {parsed.accounts.length > 0 && (
+        <div className="space-y-1 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-2">
+          <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+            سيُرسل للعميل هذا فقط:
+          </p>
+          <ol className="max-h-40 space-y-1 overflow-y-auto">
+            {parsed.accounts.slice(0, MAX_BATCH_ACCOUNTS).map((account, index) => (
+              <li
+                key={`${account.username}-${index}`}
+                className="flex items-center justify-between gap-2 rounded-lg bg-card px-2 py-1 text-[11px]"
+              >
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="shrink-0 font-bold text-muted-foreground">{index + 1}.</span>
+                  <span className="truncate font-mono text-foreground" dir="ltr">
+                    {account.username}
+                  </span>
+                  <span className="truncate font-mono text-muted-foreground" dir="ltr">
+                    {account.password}
+                  </span>
+                </span>
+                {account.label ? (
+                  <span className="max-w-[45%] truncate text-[10px] text-muted-foreground">
+                    {account.label}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
         <div className="text-muted-foreground">
           {parsed.accounts.length > 0 ? (
@@ -109,13 +148,13 @@ export function AccountBatchPanel({
               {overLimit ? ` (الحد ${MAX_BATCH_ACCOUNTS})` : ""}
             </span>
           ) : (
-            <span>الصق الحسابات سطراً لكل حساب — البريد ثم كلمة المرور</span>
+            <span>الصق الحسابات سطراً لكل حساب — يُستخرج اليوزر وكلمة المرور فقط</span>
           )}
           {parsed.duplicates.length > 0 ? (
             <span className="mr-2 text-amber-600">(تم تجاهل {parsed.duplicates.length} مكرر)</span>
           ) : null}
-          {parsed.errors.length > 0 ? (
-            <span className="mr-2 text-rose-600">({parsed.errors.length} سطر غير صالح)</span>
+          {parsed.skipped.length > 0 ? (
+            <span className="mr-2 text-rose-600">({parsed.skipped.length} سطر غير مقروء)</span>
           ) : null}
         </div>
 

@@ -702,6 +702,9 @@ export interface OrderItem {
   credsSentAt?: string;
   verificationCodeSentAt?: string;
   loggedInAt?: string;
+  /** The member's own screenshot proving they signed in to this account. */
+  loginProofUrl?: string;
+  loginProofAt?: string;
   completedAt?: string;
   /** hardware items only */
   shippedAt?: string;

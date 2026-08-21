@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { Check, Copy, FileText, Gamepad2, KeyRound, ShieldCheck } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Camera,
+  Check,
+  Copy,
+  FileText,
+  Gamepad2,
+  KeyRound,
+  Loader2,
+  ShieldCheck,
+} from "lucide-react";
 
 import { normalizeAccountCard, isRenderableAccountCard } from "@/lib/account-cards";
 
@@ -10,6 +21,18 @@ interface AccountCardProps {
   locale?: "ar" | "en";
   /** visual tone: light bubble (customer) or dark admin bubble */
   tone?: "default" | "admin";
+  /**
+   * The member's own delivery controls. Present only on the buyer's side of an
+   * order conversation, where the next step after receiving an account is to
+   * prove the sign-in and ask for the following one.
+   */
+  delivery?: {
+    onAttachProof: (itemId: string) => void | Promise<void>;
+    onNext: (itemId: string) => void | Promise<void>;
+    /** True once this account's proof has been sent. */
+    proofSent?: boolean;
+    busy?: boolean;
+  };
 }
 
 const LABELS = {
@@ -102,9 +125,18 @@ function CopyField({
   );
 }
 
-export function AccountCard({ kind, body, locale = "ar", tone = "default" }: AccountCardProps) {
+export function AccountCard({
+  kind,
+  body,
+  locale = "ar",
+  tone = "default",
+  delivery,
+}: AccountCardProps) {
   const card = normalizeAccountCard(kind, body);
   if (!card || !isRenderableAccountCard(card)) return null;
+
+  // Which order line this account belongs to; the delivery controls act on it.
+  const itemId = typeof body?.["itemId"] === "string" ? (body["itemId"] as string) : "";
   const t = LABELS[locale];
 
   const heading =
@@ -168,6 +200,58 @@ export function AccountCard({ kind, body, locale = "ar", tone = "default" }: Acc
 
       {card.type === "instructions" && card.text ? (
         <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{card.text}</p>
+      ) : null}
+
+      {/* Buyer's next steps for an account they were just handed. */}
+      {card.type === "credentials" && delivery && itemId ? (
+        <div className="space-y-2 border-t border-current/10 pt-2">
+          <div className="flex items-start gap-1.5 rounded-xl bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span>
+              {locale === "ar"
+                ? "صوّر شاشة الحساب بعد تسجيل الدخول بحيث يظهر اسم المستخدم داخل الجهاز بوضوح، بدون قص وبدون تغطية أي جزء."
+                : "Screenshot the account after signing in, with the username clearly visible on the device — uncropped and nothing covered."}
+            </span>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={delivery.busy}
+              onClick={() => void delivery.onAttachProof(itemId)}
+              className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-foreground px-3 py-2 text-[11px] font-bold text-background disabled:opacity-50"
+            >
+              {delivery.busy ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Camera className="h-3.5 w-3.5" />
+              )}
+              {delivery.proofSent
+                ? locale === "ar"
+                  ? "إرسال صورة أخرى"
+                  : "Send another photo"
+                : locale === "ar"
+                  ? "إرفاق إثبات التسجيل"
+                  : "Attach sign-in proof"}
+            </button>
+            <button
+              type="button"
+              disabled={delivery.busy || !delivery.proofSent}
+              onClick={() => void delivery.onNext(itemId)}
+              title={
+                delivery.proofSent
+                  ? undefined
+                  : locale === "ar"
+                    ? "أرفق صورة إثبات التسجيل أولاً"
+                    : "Attach the sign-in proof first"
+              }
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-current/20 px-3 py-2 text-[11px] font-bold disabled:opacity-40"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {locale === "ar" ? "التالي" : "Next"}
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {card.type === "instructions" && card.images.length > 0 ? (

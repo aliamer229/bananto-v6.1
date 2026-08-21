@@ -68,10 +68,19 @@ export function telegramBotStartDeepLink(startParam: string): string {
   return `https://t.me/${telegramBotUsername()}?start=${encodeURIComponent(startParam)}`;
 }
 
-/** Web App URL carrying the reference explicitly for clients that omit start_param. */
+/**
+ * Web App URL carrying the reference explicitly for clients that omit
+ * start_param.
+ *
+ * `/telegram` is the ownership-proof screen and needs a reference to do
+ * anything. Pointing the bot's plain "open the app" button at it meant every
+ * member who tapped the menu button landed on "رمز التحقق غير موجود" instead of
+ * the store, so without a reference this is the storefront.
+ */
 export function telegramWebAppUrl(startParam?: string): string {
+  if (!startParam) return telegramPublicOrigin();
   const url = new URL("/telegram", telegramPublicOrigin());
-  if (startParam) url.searchParams.set("session", startParam);
+  url.searchParams.set("session", startParam);
   return url.toString();
 }
 

@@ -18,6 +18,7 @@ import { requireUser } from "@/lib/session.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import type { Address, Order, OrderItem } from "@/lib/types";
 import { redactMessageForMember, redactOrderHistoryForMember } from "@/lib/redaction";
+import { isOwnUploadUrl } from "@/lib/uploads";
 
 function redactItems(items: OrderItem[]) {
   return items.map(({ deliveryPasswordEnc: _hidden, ...item }) => ({
@@ -115,12 +116,101 @@ export const Route = createFileRoute("/api/orders")({
             status?: string;
             note?: string;
             address?: Address;
-            action?: "claim" | "complete" | "confirm_received";
+            action?:
+              "claim" | "complete" | "confirm_received" | "submit_login_proof" | "account_next";
+            itemId?: string;
+            imageUrl?: string;
           }>(request);
 
           const order = await getOrder(data.orderId);
           if (!order || (order.userId !== user.id && !user.isAdmin))
             return json({ error: "not_found" }, { status: 404 });
+
+          /**
+           * The member attaches the screenshot proving they signed in.
+           *
+           * This is the step that unblocks the verification code, so it has to
+           * be a first-class message on the order thread rather than a loose
+           * image: staff need to see which account line it belongs to.
+           */
+          if (data.action === "submit_login_proof") {
+            if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
+            const itemId = String(data.itemId ?? "");
+            const imageUrl = String(data.imageUrl ?? "");
+            const item = order.items.find((entry) => entry.id === itemId);
+            if (!item) return json({ error: "item_not_found" }, { status: 404 });
+            // Only the member's own upload may be attached, never an arbitrary URL.
+            if (!isOwnUploadUrl(imageUrl, user.id)) {
+              return json({ error: "invalid_image" }, { status: 400 });
+            }
+
+            const now = new Date().toISOString();
+            if (order.threadId) {
+              await appendMessage(order.threadId, {
+                senderRole: "user",
+                kind: "login_proof",
+                body: {
+                  itemId,
+                  title: item.title,
+                  imageUrl,
+                  text: "📸 صورة إثبات تسجيل الدخول",
+                },
+              });
+            }
+            const next: Order = {
+              ...order,
+              items: order.items.map((entry) =>
+                entry.id === itemId
+                  ? { ...entry, loginProofUrl: imageUrl, loginProofAt: now }
+                  : entry,
+              ),
+              updatedAt: now,
+            };
+            await saveOrder(next);
+            return json({ order: redactOrder(next) });
+          }
+
+          /**
+           * The member is done with the account in hand and wants the next one.
+           *
+           * Whether one is waiting is the server's call: a staged account is
+           * released immediately, an empty queue leaves the member waiting for
+           * staff, and a finished line says so.
+           */
+          if (data.action === "account_next") {
+            if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
+            const itemId = String(data.itemId ?? "");
+            if (!order.items.some((entry) => entry.id === itemId)) {
+              return json({ error: "item_not_found" }, { status: 404 });
+            }
+
+            const { markAccountRegistered, claimNextAccount, getBatchProgress } =
+              await import("@/lib/account-batch.server");
+            await markAccountRegistered(order.id, itemId);
+            const nextAccount = await claimNextAccount(order.id, itemId);
+
+            if (nextAccount && order.threadId) {
+              await appendMessage(order.threadId, {
+                senderRole: "admin",
+                senderName: "الدعم",
+                kind: "item_credentials",
+                body: {
+                  itemId,
+                  title: order.items.find((entry) => entry.id === itemId)?.title ?? "",
+                  email: nextAccount.email,
+                  ...(nextAccount.password ? { password: nextAccount.password } : {}),
+                },
+              });
+            }
+
+            const progress = await getBatchProgress(order.id, itemId);
+            return json({
+              released: nextAccount ? nextAccount.seq : null,
+              waiting: !nextAccount && progress.staged === 0 && progress.sent === 0,
+              progress,
+              order: redactOrder((await getOrder(order.id)) ?? order),
+            });
+          }
 
           // Customer confirms receipt of order/accounts
           if (data.action === "confirm_received") {

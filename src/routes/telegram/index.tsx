@@ -107,8 +107,10 @@ function TelegramIndex() {
       }
 
       if (!verificationRef) {
-        setError("رمز التحقق غير موجود. ارجع إلى الموقع واضغط زر إثبات الملكية مرة أخرى.");
-        setStatus("failed");
+        // Opened from the bot's menu or app button rather than a proof link:
+        // this screen has nothing to prove, so show the member the store
+        // instead of an error about a code they were never given.
+        window.location.replace("/");
         return;
       }
 

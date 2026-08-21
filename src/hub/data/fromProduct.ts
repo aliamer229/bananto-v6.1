@@ -160,9 +160,19 @@ function buildGenres(p: Record<string, unknown>): string[] | undefined {
 }
 
 function buildAgeRating(p: Record<string, unknown>): Game["ageRating"] | undefined {
-  const label = str(p["ageRating"]);
-  if (!label) return undefined;
-  return { system: "ESRB", label };
+  const raw = str(p["ageRating"]);
+  if (!raw) return undefined;
+
+  // Catalogue entries usually already name the system ("ESRB E10+ ..."), and
+  // prefixing another one produced "ESRB ESRB E10+" on the page. Take the
+  // system from the value when it carries one.
+  const match = /^\s*(ESRB|PEGI|CERO|USK)\b[\s:.-]*/i.exec(raw);
+  if (match) {
+    const system = match[1]!.toUpperCase() as NonNullable<Game["ageRating"]>["system"];
+    const label = raw.slice(match[0].length).trim();
+    return { system, label: label || raw.trim() };
+  }
+  return { system: "ESRB", label: raw };
 }
 
 function buildNintendo(
