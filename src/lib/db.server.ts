@@ -283,10 +283,7 @@ export async function incrementSiteCounters(delta: {
   }
 
   const now = new Date().toISOString();
-  for (const [field, key] of Object.entries(COUNTER_KEYS) as [
-    "visits" | "views",
-    string,
-  ][]) {
+  for (const [field, key] of Object.entries(COUNTER_KEYS) as ["visits" | "views", string][]) {
     const amount = delta[field] ?? 0;
     if (!amount) continue;
     await d1Execute(
@@ -957,14 +954,41 @@ export async function getOrder(id: string): Promise<Order | undefined> {
   return readJson<Order | undefined>(orderKey(id), undefined);
 }
 
-export async function listOrders(): Promise<Order[]> {
+export async function listOrders(limit?: number): Promise<Order[]> {
   if (await d1Ready()) {
-    const rows = await d1All<{ doc: string }>(`SELECT doc FROM orders ORDER BY created_at DESC`);
+    const rows =
+      limit && limit > 0
+        ? await d1All<{ doc: string }>(
+            `SELECT doc FROM orders ORDER BY created_at DESC LIMIT ?`,
+            limit,
+          )
+        : await d1All<{ doc: string }>(`SELECT doc FROM orders ORDER BY created_at DESC`);
     return rows.map((r) => parse<Order>(r.doc, {} as Order));
   }
   const ids = await readJson<string[]>(ORDER_INDEX_KEY, []);
   const orders = await Promise.all(ids.map((id) => getOrder(id)));
-  return orders.filter((o): o is Order => !!o);
+  const all = orders.filter((o): o is Order => !!o);
+  return limit && limit > 0 ? all.slice(0, limit) : all;
+}
+
+/**
+ * A member's own orders, resolved by the `orders_user_idx` index.
+ *
+ * The member-facing screens used to call listOrders() and filter in JS, which
+ * pulled every order in the database into the isolate and JSON-parsed all of
+ * them just to show one customer their handful of purchases.
+ */
+export async function listOrdersByUser(userId: string, limit = 200): Promise<Order[]> {
+  if (await d1Ready()) {
+    const rows = await d1All<{ doc: string }>(
+      `SELECT doc FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`,
+      userId,
+      limit,
+    );
+    return rows.map((r) => parse<Order>(r.doc, {} as Order));
+  }
+  const all = await listOrders();
+  return all.filter((order) => order.userId === userId).slice(0, limit);
 }
 
 export async function saveOrder(order: Order): Promise<Order> {

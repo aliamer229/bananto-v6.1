@@ -29,12 +29,17 @@ const SECTION_META: Record<string, { description: string; image: string }> = {
  * Creates the storefront sections the app expects on first run, and only the
  * missing ones — an existing category keeps whatever title, image and ordering
  * the admin already gave it. Runs once at app start (see `src/routes/__root.tsx`).
+ *
+ * The caller passes the categories from the catalogue it already loaded. This
+ * used to issue its own full (non-slim) GET /api/data on every page load for
+ * every visitor, doubling the catalogue download alongside the slim request the
+ * root query makes.
+ *
+ * Writing categories requires an admin session; for everyone else the POST is
+ * rejected, which is why it only runs when something is genuinely missing.
  */
-export const ensureNintendoCategory = async () => {
+export const ensureNintendoCategory = async (categories?: StoreCategory[]) => {
   try {
-    const res = await fetch("/api/data");
-    if (!res.ok) return;
-    const { categories } = (await res.json()) as { categories?: StoreCategory[] };
     const existing = Array.isArray(categories) ? categories : [];
     const have = new Set(existing.map((c) => c.id));
 
