@@ -45,12 +45,11 @@ export default defineConfig(({ mode }) => {
       // Cloudflare Worker runtime cannot boot ("http.createServer is not
       // implemented"). The Worker build must use the Cloudflare module preset.
       nitro({
-        preset: "cloudflare-module",
+        preset: "node-server",
         // Cloudflare Builds runs `wrangler deploy` from the repository root.
         // Keep Wrangler on the checked-in config instead of generating a
         // dist/server config plus a .wrangler pointer that can retain stale
         // D1 resource IDs between builds.
-        cloudflare: { deployConfig: false },
         output: { dir: "dist", serverDir: "dist/server", publicDir: "dist/client" },
         // Long-lived edge/browser caching for the static media served by
         // Cloudflare; the service worker itself must always be revalidated.
@@ -80,13 +79,7 @@ export default defineConfig(({ mode }) => {
       react(),
     ],
     css: { transformer: "lightningcss" },
-    build: {
-      // Vite 8 builds with Rolldown. This is a Cloudflare runtime-provided
-      // module and must remain an external import in the emitted Worker.
-      rolldownOptions: {
-        external: ["cloudflare:workers"],
-      },
-    },
+    build: {},
     resolve: {
       alias: {
         "@": `${process.cwd()}/src`,
@@ -95,7 +88,6 @@ export default defineConfig(({ mode }) => {
       dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
     },
     optimizeDeps: {
-      exclude: ["cloudflare:workers"],
       include: [
         "react",
         "react-dom",
@@ -104,11 +96,7 @@ export default defineConfig(({ mode }) => {
         "react/jsx-dev-runtime",
       ],
     },
-    // `cloudflare:workers` is a runtime-provided module. Preserve the import in
-    // the SSR bundle instead of asking Vite/Node to resolve it during build.
-    ssr: {
-      external: ["cloudflare:workers"],
-    },
+    ssr: {},
     server: {
       host: "0.0.0.0",
       port: 3000,

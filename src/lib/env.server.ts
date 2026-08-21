@@ -4,7 +4,6 @@
  */
 
 import { AsyncLocalStorage } from "node:async_hooks";
-import { env as cloudflareRuntimeEnv } from "cloudflare:workers";
 
 export interface Env {
   [key: string]: unknown;
@@ -32,14 +31,6 @@ export function publishEnv(value: unknown): void {
  * In Node.js, it falls back to process.env.
  */
 export function getEnv(): Env {
-  // Cloudflare exposes every secret and platform binding through this built-in
-  // module. Prefer it in production so framework adapters cannot accidentally
-  // drop non-string bindings (D1/R2/Queues) while forwarding the request.
-  const runtimeEnv = cloudflareRuntimeEnv as Record<string, unknown>;
-  if (runtimeEnv && Object.keys(runtimeEnv).length > 0) {
-    return runtimeEnv as Env;
-  }
-
   const scopedEnv = requestEnv.getStore();
   if (scopedEnv) {
     return scopedEnv as Env;

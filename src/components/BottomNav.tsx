@@ -62,7 +62,7 @@ export default function BottomNav({
               onNavigate(item.id);
             }}
             className="relative flex flex-col items-center justify-center w-12 h-12"
-            title={label}
+            title={label} suppressHydrationWarning
           >
             {isActive && (
               <motion.div

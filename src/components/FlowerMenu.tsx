@@ -206,9 +206,9 @@ export default function FlowerMenu({
                     item.onClick?.();
                   }
                 }}
-                title={item.label}
+                title={item.label} suppressHydrationWarning
               >
-                <span className="sr-only">{item.label}</span>
+                <span className="sr-only" suppressHydrationWarning>{item.label}</span>
                 {item.icon}
               </button>
 
@@ -251,7 +251,7 @@ export default function FlowerMenu({
                       >
                         <button
                           role="menuitem"
-                          aria-label={subItem.label}
+                          aria-label={subItem.label} suppressHydrationWarning
                           tabIndex={isActiveSubMenu ? 0 : -1}
                           className={cn(
                             "flex size-full touch-manipulation cursor-pointer items-center justify-center rounded-full transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 active:scale-95",
@@ -269,9 +269,9 @@ export default function FlowerMenu({
                             setActiveSubMenuIndex(null);
                             subItem.onClick?.();
                           }}
-                          title={subItem.label}
+                          title={subItem.label} suppressHydrationWarning
                         >
-                          <span className="sr-only">{subItem.label}</span>
+                          <span className="sr-only" suppressHydrationWarning>{subItem.label}</span>
                           {subItem.icon}
                         </button>
                       </li>

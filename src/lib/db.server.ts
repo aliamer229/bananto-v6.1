@@ -1963,9 +1963,28 @@ export async function deleteBananCode(id: string): Promise<boolean> {
   return deleted;
 }
 
-export async function listAllRechargeRequests(): Promise<WalletRechargeRequest[]> {
+export async function listAllRechargeRequests(): Promise<(WalletRechargeRequest & { userName?: string })[]> {
   if (await d1Ready()) {
-    return d1All<WalletRechargeRequest>(`SELECT * FROM recharge_requests ORDER BY created_at DESC`);
+    const rows = await d1All<any>(`
+      SELECT r.*, u.name as user_name 
+      FROM recharge_requests r
+      LEFT JOIN users u ON r.user_id = u.id
+      ORDER BY r.created_at DESC
+    `);
+    return rows.map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      userName: r.user_name,
+      amount: r.amount,
+      method: r.method,
+      proofUrl: r.proof_url,
+      eshopCode: r.eshop_code,
+      bananCode: r.banan_code,
+      status: r.status,
+      adminNotes: r.admin_notes,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    }));
   }
   return [];
 }

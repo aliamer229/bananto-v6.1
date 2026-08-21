@@ -3,6 +3,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import ChatView from "@/components/ChatView";
 
 export const Route = createFileRoute("/chat")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      initialOrderId: search.initialOrderId as string | undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "المحادثة والدعم — بنانا ستور" },
@@ -21,9 +26,10 @@ export const Route = createFileRoute("/chat")({
 
 function ChatPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   return (
     <div className="h-screen-dynamic w-full overflow-hidden">
-      <ChatView onBack={() => void navigate({ to: "/" })} />
+      <ChatView onBack={() => void navigate({ to: "/" })} initialOrderId={search.initialOrderId} />
     </div>
   );
 }

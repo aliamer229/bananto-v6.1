@@ -3586,55 +3586,98 @@ function UsersManagementView() {
       </div>
 
       {/* Recharge Requests */}
-      {data?.rechargeRequests &&
-        data.rechargeRequests.filter((r: any) => r.status === "pending").length > 0 && (
-          <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-500" />
-              طلبات الشحن المعلقة
-            </h2>
-            <div className="space-y-4">
-              {data.rechargeRequests
-                .filter((r: any) => r.status === "pending")
-                .map((req: any) => (
-                  <div
-                    key={req.id}
-                    className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-muted rounded-2xl gap-4 border border-border/50"
-                  >
-                    <div>
-                      <p className="font-bold">
-                        {req.amount} $ - {req.method}
-                      </p>
-                      <p className="text-xs text-muted-foreground">معرف المستخدم: {req.userId}</p>
-                      {req.proofUrl && (
-                        <a
-                          href={req.proofUrl}
-                          target="_blank"
-                          className="text-blue-600 text-xs underline flex items-center gap-1 mt-1"
+      {data?.rechargeRequests && (
+        <div className="space-y-6">
+          {data.rechargeRequests.filter((r: any) => r.status === "pending").length > 0 && (
+            <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-amber-500" />
+                طلبات الشحن المعلقة
+              </h2>
+              <div className="space-y-4">
+                {data.rechargeRequests
+                  .filter((r: any) => r.status === "pending")
+                  .map((req: any) => (
+                    <div
+                      key={req.id}
+                      className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-muted rounded-2xl gap-4 border border-border/50"
+                    >
+                      <div>
+                        <p className="font-bold">
+                          {req.amount} $ - {req.method}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          المستخدم: {req.userName || req.userId}
+                        </p>
+                        {req.proofUrl && (
+                          <a
+                            href={req.proofUrl}
+                            target="_blank"
+                            className="text-blue-600 text-xs underline flex items-center gap-1 mt-1"
+                          >
+                            عرض الإثبات <ArrowUpRight className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex gap-2 w-full md:w-auto">
+                        <button
+                          onClick={() => approveRecharge.mutate(req.id)}
+                          className="flex-1 md:flex-none bg-green-600 text-white p-2 rounded-xl hover:bg-green-700 transition-colors"
                         >
-                          عرض الإثبات <ArrowUpRight className="w-3 h-3" />
-                        </a>
-                      )}
+                          <Check className="w-5 h-5 mx-auto" />
+                        </button>
+                        <button
+                          onClick={() => rejectRecharge.mutate(req.id)}
+                          className="flex-1 md:flex-none bg-rose-600 text-white p-2 rounded-xl hover:bg-rose-700 transition-colors"
+                        >
+                          <X className="w-5 h-5 mx-auto" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2 w-full md:w-auto">
-                      <button
-                        onClick={() => approveRecharge.mutate(req.id)}
-                        className="flex-1 md:flex-none bg-green-600 text-white p-2 rounded-xl hover:bg-green-700 transition-colors"
-                      >
-                        <Check className="w-5 h-5 mx-auto" />
-                      </button>
-                      <button
-                        onClick={() => rejectRecharge.mutate(req.id)}
-                        className="flex-1 md:flex-none bg-rose-600 text-white p-2 rounded-xl hover:bg-rose-700 transition-colors"
-                      >
-                        <X className="w-5 h-5 mx-auto" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {data.rechargeRequests.filter((r: any) => r.status !== "pending").length > 0 && (
+            <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Check className="w-5 h-5 text-green-500" />
+                سجل عمليات الشحن
+              </h2>
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                {data.rechargeRequests
+                  .filter((r: any) => r.status !== "pending")
+                  .map((req: any) => (
+                    <div
+                      key={req.id}
+                      className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-muted/50 rounded-2xl gap-4 border border-border/30 opacity-75"
+                    >
+                      <div>
+                        <p className="font-bold">
+                          {req.amount} $ - {req.method}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          المستخدم: {req.userName || req.userId}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          التاريخ: {new Date(req.createdAt).toLocaleString("ar-IQ")}
+                        </p>
+                      </div>
+                      <div>
+                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                          req.status === "approved" ? "bg-green-100 text-green-700" : "bg-rose-100 text-rose-700"
+                        }`}>
+                          {req.status === "approved" ? "تمت الموافقة" : "مرفوض"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Users Table */}
       <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">

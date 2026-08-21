@@ -533,7 +533,7 @@ function CartPage() {
 
               <button
                 onClick={() =>
-                  void navigate({ to: "/orders/$orderId", params: { orderId: confirmedOrder.id } })
+                  void navigate({ to: "/chat", search: { initialOrderId: confirmedOrder.id } })
                 }
                 className="w-full py-3 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm"
               >
