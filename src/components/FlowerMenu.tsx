@@ -251,7 +251,7 @@ export default function FlowerMenu({
                       >
                         <button
                           role="menuitem"
-                          aria-label={subItem.label} suppressHydrationWarning
+                          aria-label={subItem.label}
                           tabIndex={isActiveSubMenu ? 0 : -1}
                           className={cn(
                             "flex size-full touch-manipulation cursor-pointer items-center justify-center rounded-full transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 active:scale-95",

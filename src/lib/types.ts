@@ -426,6 +426,7 @@ export interface Coupon {
   minOrderAmount: number;
   maxDiscountAmount?: number;
   isActive: boolean;
+  onlyDigitalProducts?: boolean;
   createdAt: string;
 }
 
@@ -687,6 +688,8 @@ export interface Order {
   userName: string;
   items: OrderItem[];
   total: number;
+  discountAmount?: number;
+  couponCode?: string;
   currency: string;
   status: OrderStatus;
   paymentStatus: PaymentStatus;

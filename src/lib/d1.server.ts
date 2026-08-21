@@ -783,8 +783,9 @@ const SCHEMA_PATCHES: string[] = [
     per_user_limit INTEGER DEFAULT 1, eligible_products TEXT DEFAULT '[]', 
     eligible_categories TEXT DEFAULT '[]', eligible_users TEXT DEFAULT '[]',
     min_order_amount REAL DEFAULT 0, max_discount_amount REAL,
-    is_active INTEGER DEFAULT 1, created_at TEXT NOT NULL)`,
+    is_active INTEGER DEFAULT 1, only_digital_products INTEGER DEFAULT 0, created_at TEXT NOT NULL)`,
 
+  `ALTER TABLE coupons ADD COLUMN only_digital_products INTEGER DEFAULT 0`,
   `CREATE TABLE IF NOT EXISTS coupon_redemptions (
     id TEXT PRIMARY KEY, coupon_id TEXT NOT NULL, user_id TEXT NOT NULL, 
     order_id TEXT NOT NULL, created_at TEXT NOT NULL,
@@ -817,7 +818,7 @@ const SCHEMA_PATCHES: string[] = [
     id TEXT PRIMARY KEY, product_id TEXT, title TEXT NOT NULL, description TEXT,
     image_url TEXT, banana_price INTEGER NOT NULL, stock INTEGER DEFAULT -1,
     quantity_limit INTEGER DEFAULT 1, start_date TEXT, end_date TEXT,
-    is_active INTEGER DEFAULT 1, created_at TEXT NOT NULL)`,
+    is_active INTEGER DEFAULT 1, only_digital_products INTEGER DEFAULT 0, created_at TEXT NOT NULL)`,
 
   // 3. Banana Bots
   `CREATE TABLE IF NOT EXISTS banana_bots (
@@ -835,7 +836,7 @@ const SCHEMA_PATCHES: string[] = [
   `CREATE TABLE IF NOT EXISTS store_banners (
     id TEXT PRIMARY KEY, image_url TEXT NOT NULL, title TEXT, description TEXT,
     target_url TEXT, start_date TEXT, end_date TEXT, priority INTEGER DEFAULT 0,
-    is_active INTEGER DEFAULT 1, created_at TEXT NOT NULL)`,
+    is_active INTEGER DEFAULT 1, only_digital_products INTEGER DEFAULT 0, created_at TEXT NOT NULL)`,
 
   `CREATE TABLE IF NOT EXISTS store_guides (
     id TEXT PRIMARY KEY, title TEXT NOT NULL, slug TEXT NOT NULL UNIQUE,
@@ -852,7 +853,7 @@ const SCHEMA_PATCHES: string[] = [
   `CREATE TABLE IF NOT EXISTS store_assets (
     id TEXT PRIMARY KEY, kind TEXT NOT NULL, name TEXT NOT NULL,
     url TEXT NOT NULL, volume REAL DEFAULT 1.0, priority INTEGER DEFAULT 0,
-    is_active INTEGER DEFAULT 1, created_at TEXT NOT NULL)`,
+    is_active INTEGER DEFAULT 1, only_digital_products INTEGER DEFAULT 0, created_at TEXT NOT NULL)`,
 
   // 5. Game Requests
   `CREATE TABLE IF NOT EXISTS game_requests (

@@ -68,6 +68,12 @@ export default defineConfig(({ mode }) => {
             const path = await import("node:path");
             const ssrPath = path.resolve(nitro.options.output.serverDir, "_ssr/ssr.mjs");
             const indexPath = path.resolve(nitro.options.output.serverDir, "index.mjs");
+            const tslibPkg = path.resolve(nitro.options.output.serverDir, "node_modules/tslib/package.json");
+            if (fs.existsSync(tslibPkg)) {
+              let pkg = fs.readFileSync(tslibPkg, "utf8");
+              pkg = pkg.replace(/"\.\/tslib\.es6\.mjs"/g, '"./tslib.js"');
+              fs.writeFileSync(tslibPkg, pkg);
+            }
             if (fs.existsSync(ssrPath) && fs.existsSync(indexPath)) {
               fs.appendFileSync(indexPath, `\nexport { ChatRealtimeDO } from "./_ssr/ssr.mjs";\n`);
               console.log(`\n[Nitro Hook] Successfully appended ChatRealtimeDO export\n`);

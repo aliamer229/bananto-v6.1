@@ -27,6 +27,9 @@ import {
   Check,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
+
+import { validateCoupon } from "@/lib/reviews-coupons.functions";
+
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -343,6 +346,40 @@ function CartPage() {
     }
   };
 
+  
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState("");
+  const validateCouponFn = useServerFn(validateCoupon);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
+    setIsApplyingCoupon(true);
+    setCouponError("");
+    try {
+       const res = await validateCouponFn({ 
+         code: couponCode, 
+         orderAmount: itemsTotal, 
+         items: lines.map((l) => ({ productId: String(l.productId), categoryId: "", kind: String(l.kind) })) 
+       });
+       if (res.valid && res.coupon) {
+          setAppliedCoupon({...res.coupon, code: couponCode});
+       } else {
+          setCouponError(res.message || "كوبون غير صالح");
+       }
+    } catch (e) {
+       setCouponError("حدث خطأ في التحقق من الكوبون");
+    } finally {
+       setIsApplyingCoupon(false);
+    }
+  };
+
+  const discountAmount = appliedCoupon 
+    ? (appliedCoupon.discountType === "fixed" ? appliedCoupon.discountValue : Math.floor(itemsTotal * (appliedCoupon.discountValue / 100))) 
+    : 0;
+  const finalDiscount = appliedCoupon && appliedCoupon.maxDiscountAmount && discountAmount > appliedCoupon.maxDiscountAmount ? appliedCoupon.maxDiscountAmount : discountAmount;
+
   const checkout = useMutation({
     mutationFn: () =>
       api.checkout(
@@ -353,6 +390,7 @@ function CartPage() {
           dlcIds: l.meta?.dlcIds,
         })),
         needsAddress ? { id: "cart", ...address } : undefined,
+        appliedCoupon?.code
       ),
     onSuccess: ({ order }) => {
       setShowConfirmModal(false);

@@ -88,6 +88,7 @@ import OrderQueueView from "./admin/OrderQueueView";
 import ReviewsManager from "./admin/ReviewsManager";
 import BundlesManager from "./admin/BundlesManager";
 import { BananaManagementView } from "./admin/BananaManagementView";
+import CouponsManager from "./admin/CouponsManager";
 import { StoreAdvisorSection } from "./admin/StoreAdvisorSection";
 import AdminInboxView from "./admin/inbox/AdminInboxView";
 import OrdersManagerView from "./admin/OrdersManagerView";
@@ -346,6 +347,7 @@ export default function AdminDashboard() {
         { id: "wallet_mgmt", icon: Wallet, label: "إدارة المحفظة" },
         { id: "binance_mgmt", icon: Zap, label: "عمليات Binance Pay" },
         { id: "banan_codes", icon: Coins, label: "إدارة أكواد بنانتا" },
+        { id: "coupons", icon: Tag, label: "أكواد الخصم والكوبونات" },
       ],
     },
 
@@ -480,6 +482,8 @@ export default function AdminDashboard() {
         return <PricingSettingsView />;
       case "wallet_mgmt":
         return <WalletManagementView />;
+      case "coupons":
+        return <CouponsManager />;
       case "binance_mgmt":
         return <BinanceManagementView />;
       case "banan_codes":
