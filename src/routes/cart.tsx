@@ -346,7 +346,6 @@ function CartPage() {
     }
   };
 
-  
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponError, setCouponError] = useState("");
@@ -358,27 +357,34 @@ function CartPage() {
     setIsApplyingCoupon(true);
     setCouponError("");
     try {
-       const res = await validateCouponFn({ 
-         code: couponCode, 
-         orderAmount: itemsTotal, 
-         items: lines.map((l) => ({ productId: String(l.productId), categoryId: "", kind: String(l.kind) })) 
-       });
-       if (res.valid && res.coupon) {
-          setAppliedCoupon({...res.coupon, code: couponCode});
-       } else {
-          setCouponError(res.message || "كوبون غير صالح");
-       }
+      // `itemsTotal` never existed here, so applying a coupon threw a
+      // ReferenceError before it reached the server; the cart total is `total`.
+      const res = await validateCouponFn({
+        data: {
+          code: couponCode,
+          orderAmount: total,
+          items: lines.map((l) => ({
+            productId: String(l.productId),
+            categoryId: "",
+            kind: String(l.kind),
+          })),
+        },
+      });
+      if (res.valid && res.coupon) {
+        setAppliedCoupon({ ...res.coupon, code: couponCode });
+      } else {
+        setCouponError(res.message || "كوبون غير صالح");
+      }
     } catch (e) {
-       setCouponError("حدث خطأ في التحقق من الكوبون");
+      setCouponError("حدث خطأ في التحقق من الكوبون");
     } finally {
-       setIsApplyingCoupon(false);
+      setIsApplyingCoupon(false);
     }
   };
 
-  const discountAmount = appliedCoupon 
-    ? (appliedCoupon.discountType === "fixed" ? appliedCoupon.discountValue : Math.floor(itemsTotal * (appliedCoupon.discountValue / 100))) 
-    : 0;
-  const finalDiscount = appliedCoupon && appliedCoupon.maxDiscountAmount && discountAmount > appliedCoupon.maxDiscountAmount ? appliedCoupon.maxDiscountAmount : discountAmount;
+  // The server already worked out what the coupon is worth against this exact
+  // basket; recomputing it here is how the cart and the order end up disagreeing.
+  const finalDiscount = Number(appliedCoupon?.discountAmount ?? 0);
 
   const checkout = useMutation({
     mutationFn: () =>
@@ -390,7 +396,7 @@ function CartPage() {
           dlcIds: l.meta?.dlcIds,
         })),
         needsAddress ? { id: "cart", ...address } : undefined,
-        appliedCoupon?.code
+        appliedCoupon?.code,
       ),
     onSuccess: ({ order }) => {
       setShowConfirmModal(false);

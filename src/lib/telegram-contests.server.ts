@@ -7,6 +7,73 @@ import {
   escapeHtml,
 } from "./telegram.server";
 
+export interface ContestEntryResult {
+  ok: boolean;
+  reason?: "not_found" | "closed" | "already_entered";
+  title?: string;
+  prize?: string;
+  entries?: number;
+}
+
+/**
+ * Register a member's entry from the contest link.
+ *
+ * The table's UNIQUE(contest_id, telegram_user_id) is what makes a second tap
+ * harmless: the insert is attempted and a duplicate is reported as an existing
+ * entry rather than adding a second ticket.
+ */
+export async function enterContest(
+  contestId: string,
+  from: { id?: unknown; username?: string; first_name?: string } | undefined,
+): Promise<ContestEntryResult> {
+  const telegramUserId = Number(from?.id);
+  if (!contestId || !Number.isSafeInteger(telegramUserId)) {
+    return { ok: false, reason: "not_found" };
+  }
+
+  const contest = await d1First<{ title: string; prize: string; status: string }>(
+    `SELECT title, prize, status FROM telegram_contests WHERE id = ?`,
+    contestId,
+  );
+  if (!contest) return { ok: false, reason: "not_found" };
+  if (contest.status !== "active") {
+    return { ok: false, reason: "closed", title: contest.title, prize: contest.prize };
+  }
+
+  const existing = await d1First<{ id: string }>(
+    `SELECT id FROM telegram_contest_entries WHERE contest_id = ? AND telegram_user_id = ?`,
+    contestId,
+    telegramUserId,
+  );
+
+  if (!existing) {
+    await d1Run(
+      `INSERT OR IGNORE INTO telegram_contest_entries
+         (id, contest_id, telegram_user_id, telegram_username, first_name, tickets, created_at)
+       VALUES (?, ?, ?, ?, ?, 1, ?)`,
+      randomId("entry"),
+      contestId,
+      telegramUserId,
+      from?.username ?? null,
+      from?.first_name ?? null,
+      new Date().toISOString(),
+    );
+  }
+
+  const total = await d1First<{ count: number }>(
+    `SELECT COUNT(*) as count FROM telegram_contest_entries WHERE contest_id = ?`,
+    contestId,
+  );
+
+  return {
+    ok: true,
+    ...(existing ? { reason: "already_entered" as const } : {}),
+    title: contest.title,
+    prize: contest.prize,
+    entries: Number(total?.count ?? 0),
+  };
+}
+
 export async function drawContest(contestId: string) {
   const claimed = await d1RunChanges(
     `UPDATE telegram_contests SET status = 'drawing' WHERE id = ? AND status = 'active'`,

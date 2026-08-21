@@ -10,6 +10,13 @@ import {
   findUserById,
 } from "./db.server";
 import { requireAppAuth, requireAdmin } from "./auth.middleware";
+import {
+  COUPON_REFUSAL_MESSAGE,
+  checkCoupon,
+  couponDiscount,
+  rowToCoupon,
+  type CouponRow,
+} from "./coupons";
 import type { ProductReview, Coupon } from "./types";
 
 /**
@@ -159,66 +166,49 @@ export const validateCoupon = createServerFn({ method: "POST" })
     const userId = context.userId;
     const now = new Date().toISOString();
 
-    const coupon = await d1First<Coupon>(
+    const row = await d1First<CouponRow>(
       `SELECT * FROM coupons WHERE code = ? AND is_active = 1`,
       data.code,
     );
+    if (!row) return { valid: false, message: COUPON_REFUSAL_MESSAGE.inactive };
 
-    if (!coupon) return { valid: false, message: "الكوبون غير موجود أو غير فعال" };
+    // The row is snake_case; reading it as a `Coupon` made every limit below
+    // `undefined`, which is why expired and exhausted coupons still applied.
+    const coupon = rowToCoupon(row);
 
-    if (coupon.expirationAt && coupon.expirationAt < now) {
-      return { valid: false, message: "انتهت صلاحية الكوبون" };
-    }
-
-    // Per-user and global usage checks
     const globalUsage = await d1First<{ total: number }>(
       `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?`,
       coupon.id,
     );
-    if (coupon.usageLimit && (globalUsage?.total || 0) >= coupon.usageLimit) {
-      return { valid: false, message: "تم استنفاد عدد مرات استخدام الكوبون" };
-    }
-
     const userUsage = await d1First<{ total: number }>(
       `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?`,
       coupon.id,
       userId,
     );
-    if ((userUsage?.total || 0) >= coupon.perUserLimit) {
-      return { valid: false, message: "لقد استخدمت هذا الكوبون مسبقاً" };
-    }
 
-    // Min Order Amount
-    if (data.orderAmount < coupon.minOrderAmount) {
-      return {
-        valid: false,
-        message: `الحد الأدنى للطلب لاستخدام الكوبون هو ${coupon.minOrderAmount} IQD`,
-      };
-    }
-
-    // Eligibility checks (JSON parsing needed for SQLite storage)
-    const eligibleUsers =
-      typeof coupon.eligibleUsers === "string"
-        ? JSON.parse(coupon.eligibleUsers)
-        : coupon.eligibleUsers || [];
-    if (eligibleUsers.length > 0 && !eligibleUsers.includes(userId)) {
-      return { valid: false, message: "هذا الكوبون غير مخصص لحسابك" };
-    }
-
-    if (coupon.only_digital_products || coupon.onlyDigitalProducts) {
-      const hasPhysical = data.items.some((item) => ["hardware", "physical", "accessory", "device", "collectible"].includes(item.kind || ""));
-      if (hasPhysical) {
-        return { valid: false, message: "هذا الكوبون صالح فقط للمنتجات الرقمية." };
-      }
+    const verdict = checkCoupon({
+      coupon,
+      userId,
+      orderAmount: data.orderAmount,
+      items: data.items,
+      globalUses: Number(globalUsage?.total ?? 0),
+      userUses: Number(userUsage?.total ?? 0),
+    });
+    if (!verdict.ok) {
+      return { valid: false, message: COUPON_REFUSAL_MESSAGE[verdict.reason] };
     }
 
     return {
       valid: true,
       coupon: {
         id: coupon.id,
-        discountType: coupon.discount_type || coupon.discountType,
-        discountValue: coupon.discount_value || coupon.discountValue,
-        maxDiscountAmount: coupon.max_discount_amount || coupon.maxDiscountAmount,
+        code: coupon.code,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        ...(coupon.maxDiscountAmount !== undefined
+          ? { maxDiscountAmount: coupon.maxDiscountAmount }
+          : {}),
+        discountAmount: couponDiscount(coupon, data.orderAmount),
       },
     };
   });

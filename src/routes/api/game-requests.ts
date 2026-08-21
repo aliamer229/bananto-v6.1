@@ -121,13 +121,14 @@ export const Route = createFileRoute("/api/game-requests")({
 
           // Create or find a support thread
           try {
-            const { saveThread, appendMessage, listThreadsByUser } = await import("@/lib/db.server");
+            const { saveThread, appendMessage, listThreadsByUser } =
+              await import("@/lib/db.server");
             const { randomId } = await import("@/lib/crypto.server");
             const userThreads = await listThreadsByUser(user.id);
             let humanThread = userThreads.find(
               (t) => t.chatType === "GENERAL_SUPPORT" && t.status === "open" && !t.orderId,
             );
-            
+
             if (!humanThread) {
               humanThread = await saveThread({
                 id: randomId("thr"),

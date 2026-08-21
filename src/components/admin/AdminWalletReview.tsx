@@ -1,40 +1,77 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import { Check, X, Loader2, ArrowUpRight, DollarSign, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import type { RechargeRequestWithUser } from "@/lib/types";
+
+/**
+ * Top-up review inside the Telegram Mini App.
+ *
+ * It used to call the dashboard's own endpoints, which authenticate with the
+ * site session cookie — and an operator reviewing a receipt on their phone has
+ * no site session, so every call failed. It now talks to the Mini App endpoint,
+ * which authenticates the signed Telegram launch itself and checks the operator
+ * id server-side, and the receipt is fetched the same way.
+ */
+function launchInitData(): string {
+  if (typeof window === "undefined") return "";
+  const telegram = (window as any).Telegram?.WebApp;
+  return typeof telegram?.initData === "string" ? telegram.initData : "";
+}
+
+async function reviewApi<T>(payload: Record<string, unknown>): Promise<T> {
+  const response = await fetch("/api/public/telegram/wallet-review", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ initData: launchInitData(), ...payload }),
+  });
+  const data = (await response.json().catch(() => ({}))) as T & { error?: string };
+  if (!response.ok) throw new Error((data as { error?: string }).error || "request_failed");
+  return data;
+}
+
+function haptic() {
+  (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred?.("medium");
+}
+
 export default function AdminWalletReview({ id }: { id: string }) {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin_users"],
-    queryFn: () => api.getUsers(),
+    queryKey: ["tg_wallet_review", id],
+    queryFn: () =>
+      reviewApi<{ request: RechargeRequestWithUser }>({ action: "get", requestId: id }),
+    retry: false,
   });
 
   const [finished, setFinished] = useState(false);
 
-  const req = data?.rechargeRequests?.find((r: any) => r.id === id);
+  const req = data?.request;
+  const proofSrc = `/api/public/telegram/wallet-review?requestId=${encodeURIComponent(id)}&initData=${encodeURIComponent(launchInitData())}`;
 
-  const approveRecharge = useMutation({
-    mutationFn: (requestId: string) => api.approveRecharge(requestId),
-    onSuccess: () => {
-      toast.success("تمت الموافقة على طلب الشحن بنجاح");
+  const settle = (action: "approve" | "reject") => ({
+    mutationFn: (requestId: string) =>
+      reviewApi<{ creditedAmount?: number }>({ action, requestId }),
+    onSuccess: (result: { creditedAmount?: number }) => {
+      toast.success(
+        action === "approve"
+          ? `تمت الموافقة وإضافة ${Math.round(Number(result?.creditedAmount ?? 0)).toLocaleString("en-US")} د.ع`
+          : "تم رفض طلب الشحن",
+      );
       setFinished(true);
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.HapticFeedback?.impactOccurred("medium");
-      }
+      haptic();
+    },
+    onError: (error: Error) => {
+      toast.error(
+        String(error.message).includes("already_settled")
+          ? "سبق أن تمت معالجة هذا الطلب"
+          : "تعذر تنفيذ العملية",
+      );
+      setFinished(true);
     },
   });
 
-  const rejectRecharge = useMutation({
-    mutationFn: (requestId: string) => api.rejectRecharge(requestId),
-    onSuccess: () => {
-      toast.success("تم رفض طلب الشحن");
-      setFinished(true);
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.HapticFeedback?.impactOccurred("medium");
-      }
-    },
-  });
+  const approveRecharge = useMutation(settle("approve"));
+  const rejectRecharge = useMutation(settle("reject"));
 
   if (isLoading) {
     return (
@@ -80,15 +117,17 @@ export default function AdminWalletReview({ id }: { id: string }) {
           </div>
           <div>
             <h2 className="font-black text-xl text-gray-900">مراجعة طلب تعبئة</h2>
-            <p className="text-sm text-gray-500">من {req.userName || req.userId}</p>
+            <p className="text-sm text-gray-500">
+              من {req.user?.name || req.userName || req.userId}
+            </p>
           </div>
         </div>
 
         <div className="space-y-4 mb-8">
           <div className="flex justify-between items-center bg-gray-50 p-4 rounded-2xl">
             <span className="text-sm font-bold text-gray-500">المبلغ المطلوب:</span>
-            <span className="font-black text-lg text-emerald-600" dir="ltr">
-              ${req.amount}
+            <span className="font-black text-lg text-emerald-600">
+              {Math.round(Number(req.amount)).toLocaleString("en-US")} د.ع
             </span>
           </div>
 
@@ -99,13 +138,16 @@ export default function AdminWalletReview({ id }: { id: string }) {
 
           {req.proofUrl && (
             <div className="bg-gray-50 p-4 rounded-2xl">
-              <span className="text-sm font-bold text-gray-500 block mb-2">إثبات الدفع (الصورة):</span>
+              <span className="text-sm font-bold text-gray-500 block mb-2">
+                إثبات الدفع (الصورة):
+              </span>
               <a
-                href={req.proofUrl}
+                href={proofSrc}
                 target="_blank"
+                rel="noreferrer"
                 className="w-full aspect-[4/3] bg-gray-200 rounded-xl overflow-hidden block relative group"
               >
-                <img src={req.proofUrl} alt="Proof" className="w-full h-full object-cover" />
+                <img src={proofSrc} alt="Proof" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="text-white font-bold flex items-center gap-1">
                     عرض بالحجم الكامل <ArrowUpRight className="w-4 h-4" />

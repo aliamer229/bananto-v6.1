@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/admin/users")({
         }),
       POST: async ({ request }) =>
         guard(async () => {
-          await requireAdmin(request);
+          const admin = await requireAdmin(request);
           const data = await body<any>(request);
 
           if (data.action === "adjust_balance") {
@@ -58,14 +58,39 @@ export const Route = createFileRoute("/api/admin/users")({
             }
           }
 
-          if (data.action === "approve_recharge") {
-            const success = await approveRechargeRequest(data.requestId, data.adminNotes);
-            return json({ success });
-          }
+          if (data.action === "approve_recharge" || data.action === "reject_recharge") {
+            const requestId = String(data.requestId ?? "");
+            if (!requestId) return json({ error: "missing_request" }, { status: 400 });
 
-          if (data.action === "reject_recharge") {
-            const success = await rejectRechargeRequest(data.requestId, data.adminNotes);
-            return json({ success });
+            const reviewer = {
+              id: admin.id,
+              name: admin.name,
+              source: "admin_panel",
+              ...(typeof data.adminNotes === "string" && data.adminNotes.trim()
+                ? { notes: data.adminNotes.trim().slice(0, 500) }
+                : {}),
+            };
+            const result =
+              data.action === "approve_recharge"
+                ? await approveRechargeRequest(requestId, reviewer)
+                : await rejectRechargeRequest(requestId, reviewer);
+
+            if (!result.ok) {
+              // A request someone else already settled, or a credit that did
+              // not go through, is a refused action — not a silent `false` the
+              // dashboard shows as success.
+              const status = result.reason === "not_found" ? 404 : 409;
+              return json(
+                { success: false, error: result.reason ?? "failed", request: result.request },
+                { status },
+              );
+            }
+            return json({
+              success: true,
+              request: result.request,
+              creditedAmount: result.creditedAmount,
+              balance: result.balance,
+            });
           }
 
           if (data.action === "create_banan_code") {

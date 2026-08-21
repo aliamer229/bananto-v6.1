@@ -248,7 +248,10 @@ function TelegramIndex() {
 
   if (reviewMode === "wallet" && reviewId) {
     return (
-      <div className="min-h-screen bg-[var(--page)] text-[var(--ink-base)] flex flex-col font-sans rtl" dir="rtl">
+      <div
+        className="min-h-screen bg-[var(--page)] text-[var(--ink-base)] flex flex-col font-sans rtl"
+        dir="rtl"
+      >
         <AdminWalletReview id={reviewId} />
       </div>
     );

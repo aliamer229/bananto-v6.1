@@ -639,6 +639,36 @@ export interface WalletRechargeRequest {
   adminNotes?: string;
   createdAt: string;
   updatedAt: string;
+  /** Who settled the request, and when — never set while pending. */
+  reviewedBy?: string;
+  reviewedByName?: string;
+  reviewedAt?: string;
+  /** Where the decision came from, e.g. the dashboard or the Telegram bot. */
+  reviewSource?: string;
+  /** What actually reached the wallet, bonus included. Set on approval only. */
+  creditedAmount?: number;
+}
+
+/**
+ * A top-up request with the member's details attached, for review screens.
+ *
+ * Staff cannot judge a transfer receipt without knowing whose it is, so the
+ * listing carries the identity and the current balance rather than an opaque
+ * user id.
+ */
+export interface RechargeRequestWithUser extends WalletRechargeRequest {
+  /** Convenience copy of the member's name for compact review cards. */
+  userName?: string;
+  user?: {
+    id: string;
+    name: string;
+    phone?: string;
+    username?: string;
+    email?: string;
+    walletBalance: number;
+    isAdmin: boolean;
+    createdAt?: string;
+  };
 }
 
 export interface BananCode {

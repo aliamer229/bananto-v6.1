@@ -76,7 +76,11 @@ export const Route = createFileRoute("/api/orders")({
       POST: async ({ request }) =>
         guard(async () => {
           const user = await requireUser(request);
-          const data = await body<{ items?: CheckoutLine[]; address?: Address; couponCode?: string }>(request);
+          const data = await body<{
+            items?: CheckoutLine[];
+            address?: Address;
+            couponCode?: string;
+          }>(request);
           const throttle = await consumeRateLimit(request, "order-create", 10, 15 * 60, user.id);
           if (!throttle.allowed) return rateLimitResponse(throttle.retryAfter);
           if (!Array.isArray(data.items) || data.items.length > 50) {
@@ -84,12 +88,22 @@ export const Route = createFileRoute("/api/orders")({
           }
 
           try {
-            const order = await createOrderForUser(user, data.items ?? [], data.address, data.couponCode);
+            const order = await createOrderForUser(
+              user,
+              data.items ?? [],
+              data.address,
+              data.couponCode,
+            );
             return json({ order: redactOrder(order) });
           } catch (error) {
             console.error("[api:orders:create_failed]", error);
             const code = error instanceof Error ? error.message : "order_failed";
-            const safe = new Set(["cart_empty", "insufficient_balance", "invalid_total", "coupon_invalid"]);
+            const safe = new Set([
+              "cart_empty",
+              "insufficient_balance",
+              "invalid_total",
+              "coupon_invalid",
+            ]);
             return json({ error: safe.has(code) ? code : "order_failed" }, { status: 400 });
           }
         }),

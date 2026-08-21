@@ -179,6 +179,47 @@ export async function notifyAdminCustomerMessage(params: {
 /**
  * Notify Admin when a user submits a wallet recharge request.
  */
+/**
+ * The operator's controls for one top-up request.
+ *
+ * Three ways in, because the right one depends on where they are: the Mini App
+ * for a full review with the receipt on screen, the browser for the dashboard,
+ * and a direct approve that settles the request from the message itself without
+ * opening anything. Every one of them is checked against the operator's own
+ * Telegram id when it is used — these buttons carry no authority of their own.
+ */
+export function buildRechargeReviewKeyboard(requestId: string) {
+  const origin = telegramPublicOrigin();
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: "✅ موافقة فورية",
+          callback_data: `rq:ok:${requestId}`,
+        },
+        {
+          text: "❌ رفض",
+          callback_data: `rq:no:${requestId}`,
+        },
+      ],
+      [
+        {
+          text: "🔍 مراجعة في التطبيق",
+          web_app: {
+            url: `${origin}/telegram/wallet-review?request=${encodeURIComponent(requestId)}`,
+          },
+        },
+      ],
+      [
+        {
+          text: "🌐 فتح لوحة الإدارة",
+          url: `${origin}/admin`,
+        },
+      ],
+    ],
+  };
+}
+
 export async function notifyAdminWalletTopUp(params: {
   requestId: string;
   amount: number;
@@ -208,13 +249,9 @@ export async function notifyAdminWalletTopUp(params: {
     `💰 <b>المبلغ المطلوب:</b> <b>${amount.toLocaleString()} د.ع</b>\n` +
     `🏦 <b>طريقة الدفع:</b> ${escapeHtml(methodLabel)}\n` +
     (proofUrl ? `📎 <b>يوجد صورة إيصال مرفقة مع الطلب</b>\n` : "") +
-    `\nيرجى مراجعة الطلب والموافقة عليه في لوحة الإدارة أو MiniApp 👇`;
+    `\n<code>${escapeHtml(requestId)}</code>`;
 
-  const replyMarkup = buildInlineAppButton(
-    `⚡ مراجعة طلب الشحن في MiniApp`,
-    `wallet_${requestId}`,
-    `/wallet`,
-  );
+  const replyMarkup = buildRechargeReviewKeyboard(requestId);
 
   try {
     const res = await sendTelegramMessage(adminChatId, messageText, {
