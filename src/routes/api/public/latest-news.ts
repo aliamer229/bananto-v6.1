@@ -15,7 +15,19 @@ let cachedNews: NewsItemData[] = [];
 let lastFetchedAt = 0;
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+// Keyed by headline text, so an isolate that stays warm across many feed
+// refreshes would otherwise grow without bound. Oldest entries are evicted
+// first (Map preserves insertion order).
+const TRANSLATION_CACHE_LIMIT = 500;
 const translationCache = new Map<string, string>();
+
+function rememberTranslation(text: string, translated: string) {
+  if (translationCache.size >= TRANSLATION_CACHE_LIMIT) {
+    const oldest = translationCache.keys().next();
+    if (!oldest.done) translationCache.delete(oldest.value);
+  }
+  translationCache.set(text, translated);
+}
 
 async function translateToArabic(text: string): Promise<string> {
   if (!text) return "";
@@ -35,7 +47,7 @@ async function translateToArabic(text: string): Promise<string> {
         .join("")
         .trim();
       if (translated) {
-        translationCache.set(text, translated);
+        rememberTranslation(text, translated);
         return translated;
       }
     }

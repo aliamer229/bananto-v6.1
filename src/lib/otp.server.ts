@@ -75,8 +75,14 @@ export async function computeOtpHash(
   phone: string,
   purpose: string,
 ): Promise<string> {
-  const secret =
-    env("OTP_HASH_SECRET") || env("SESSION_SECRET") || "banana_secure_otp_hmac_hash_key";
+  const configured = env("OTP_HASH_SECRET") || env("SESSION_SECRET");
+  // The development fallback is a literal in public source. Deriving real OTP
+  // digests from it would make them reproducible by anyone reading the repo, so
+  // production refuses to run without a configured secret instead.
+  if (!configured && env("APP_ENV") === "production") {
+    throw new OtpError("إعداد رموز التحقق غير مكتمل على الخادم حالياً");
+  }
+  const secret = configured || "banana_secure_otp_hmac_hash_key";
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
