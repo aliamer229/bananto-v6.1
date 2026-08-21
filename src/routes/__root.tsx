@@ -14,7 +14,7 @@ import { CurrencyProvider } from "../context/CurrencyContext";
 import ThemeApplier from "../components/ThemeApplier";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { readPrefs } from "../lib/prefs";
-import { useI18n, tr } from "../i18n";
+import { ensureLanguageAssets, useI18n, tr } from "../i18n";
 import GlobalMusicPlayer from "../components/GlobalMusicPlayer";
 import { useQuery } from "@tanstack/react-query";
 import { ensureNintendoCategory } from "../lib/nintendo-setup";
@@ -146,6 +146,17 @@ function ErrorComponent({ error: rootError, reset }: { error: any; reset: () => 
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  /**
+   * Fetch the visitor's language pack before anything renders.
+   *
+   * English, Kurdish and Turkish copy is split out of the critical path, and
+   * this loader is awaited on the server and on the client, so a non-Arabic
+   * visitor has it in hand for the very first paint. Arabic resolves
+   * immediately — its keys are its copy, so there is nothing to fetch.
+   */
+  loader: async () => {
+    await ensureLanguageAssets(readPrefs().lang);
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -253,6 +264,8 @@ function RootInner() {
   const cookieLang = readPrefs().lang;
   if (useI18n.getState().lang !== cookieLang) useI18n.setState({ lang: cookieLang });
   const lang = useI18n((state) => state.lang);
+  // Re-key the tree when a language pack lands so a runtime switch re-reads it.
+  const assetsVersion = useI18n((state) => state.assetsVersion);
 
   // catalogue response: fetched in background. We no longer wait for it here.
   const catalogue = useQuery({
@@ -331,7 +344,7 @@ function RootInner() {
       <GlobalMusicPlayer musicList={store?.musicList} />
       <ThemeApplier />
       {/* key={lang} remounts the tree so every tr() call re-reads the dictionary. */}
-      <div key={lang} className="contents">
+      <div key={`${lang}:${assetsVersion}`} className="contents">
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
       </div>
