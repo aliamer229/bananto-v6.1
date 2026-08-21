@@ -377,7 +377,9 @@ export const Route = createFileRoute("/api/disc-trade")({
           /* ---------------- submit ----------------------------------------- */
           const user = await requireUser(request);
           const gameName = String(data["game_name"] || "").trim();
-          if (!gameName) throw new Error("اسم اللعبة مطلوب");
+          // A missing field is a bad request, not a server fault; throwing here
+          // reached the caller as an opaque 500 with a `server_error` body.
+          if (!gameName) return json({ error: "اسم اللعبة مطلوب" }, { status: 400 });
 
           const isCustom = data["is_custom"] === true || data["game_id"] === "custom";
           let gameId = isCustom ? "" : String(data["game_id"] || "");
