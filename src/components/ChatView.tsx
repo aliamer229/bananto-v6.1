@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, useI18n } from "@/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -144,10 +144,10 @@ function ProductSelectionView({
   const [searchQuery, setSearchQuery] = useState("");
 
   const tabs = [
-    { id: "search", label: "البحث بالموقع" },
-    { id: "fav", label: "المفضلة" },
-    { id: "purchases", label: "المشتريات" },
-    { id: "history", label: "سجل المشاهدة" },
+    { id: "search", label: tr("البحث بالموقع") },
+    { id: "fav", label: tr("المفضلة") },
+    { id: "purchases", label: tr("المشتريات") },
+    { id: "history", label: tr("سجل المشاهدة") },
   ];
 
   const history = useMemo(() => {
@@ -830,7 +830,18 @@ export default function ChatView({
       void api.sendTyping(threadId, false);
     }
 
-    if (value === "تحدث مع الدعم" || value === "تحدث مع الإدارة" || value === "الدعم البشري") {
+    const lowerVal = value.toLowerCase().trim();
+    if (
+      value === "تحدث مع الدعم" ||
+      value === "تحدث مع الإدارة" ||
+      value === "الدعم البشري" ||
+      lowerVal === "talk to support" ||
+      lowerVal === "live support" ||
+      lowerVal === "human support" ||
+      lowerVal === "talk to admin" ||
+      lowerVal === "destekle görüş" ||
+      lowerVal === "bi piştgiriyê re biaxive"
+    ) {
       void handleRequestHumanSupport();
       return;
     }
@@ -1102,14 +1113,18 @@ export default function ChatView({
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  const firstName = (user?.name ?? "بك").split(" ")[0];
+  const lang = useI18n((s) => s.lang);
+  const isAr = lang === "ar";
+  const isRtl = lang === "ar" || lang === "ku";
+
+  const firstName = (user?.name ?? (isAr ? "بك" : "there")).split(" ")[0];
 
   const isAutomatedThread = !threadId || currentThread?.chatType === "AUTOMATED_SUPPORT";
 
   return (
     <div
       className="relative flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-[#FCF9F5] via-[#F8EAE0] to-[var(--peach)] text-[var(--ink)]"
-      dir="ltr"
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* 1. Modern Compact Sticky Header */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-white/40 bg-[var(--surface-5)]/85 px-4 py-3 shadow-xs backdrop-blur-md transition-all">
@@ -1124,7 +1139,7 @@ export default function ChatView({
 
         {/* Thread Info & Live Status Badge */}
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex items-center gap-1.5" dir="rtl">
+          <div className="flex items-center gap-1.5" dir={isRtl ? "rtl" : "ltr"}>
             <span className="text-[14px] font-bold text-[var(--ink)]">
               {isAutomatedThread
                 ? tr("الدعم الآلي")
@@ -1133,7 +1148,7 @@ export default function ChatView({
             {isAutomatedThread ? (
               <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
                 <Sparkles className="h-3 w-3" />
-                رد فوري
+                {tr("رد فوري")}
               </span>
             ) : isOnline ? (
               <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
@@ -1168,7 +1183,7 @@ export default function ChatView({
                   ? "bg-[var(--ink)] text-white"
                   : "bg-card/80 hover:bg-[var(--surface-3)]"
               }`}
-              title="بحث في المحادثة"
+              title={tr("بحث في المحادثة...")}
             >
               <Search className="h-4 w-4" strokeWidth={1.75} />
             </button>
@@ -1176,7 +1191,7 @@ export default function ChatView({
           <button
             onClick={() => setShowHistory(true)}
             className="flex h-9 items-center gap-1.5 rounded-full border border-white/30 bg-card/80 px-3 text-[12px] font-bold text-[var(--ink)] shadow-xs transition-colors hover:bg-[var(--surface-3)] cursor-pointer"
-            dir="rtl"
+            dir={isRtl ? "rtl" : "ltr"}
           >
             <Clock className="h-3.5 w-3.5" strokeWidth={1.75} />
             <span className="hidden sm:inline">{tr("المحادثات السابقة")}</span>
@@ -1197,7 +1212,7 @@ export default function ChatView({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="relative z-20 border-b border-[var(--line)] bg-[var(--surface-2)]/95 px-4 py-2.5 shadow-sm backdrop-blur-md"
-            dir="rtl"
+            dir={isRtl ? "rtl" : "ltr"}
           >
             <div className="relative flex items-center">
               <input
@@ -1206,13 +1221,17 @@ export default function ChatView({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={tr("بحث في المحادثة...")}
                 autoFocus
-                className="h-10 w-full rounded-xl border border-[var(--line)] bg-card pl-9 pr-9 text-right text-xs font-medium text-[var(--ink)] focus:border-[var(--ink)] focus:outline-none"
+                className={`h-10 w-full rounded-xl border border-[var(--line)] bg-card px-9 text-xs font-medium text-[var(--ink)] focus:border-[var(--ink)] focus:outline-none ${
+                  isRtl ? "text-right" : "text-left"
+                }`}
               />
-              <Search className="absolute right-3 h-4 w-4 text-[var(--muted-ink)]" />
+              <Search
+                className={`absolute ${isRtl ? "right-3" : "left-3"} h-4 w-4 text-[var(--muted-ink)]`}
+              />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute left-3 text-[var(--muted-ink)] hover:text-[var(--ink)] cursor-pointer"
+                  className={`absolute ${isRtl ? "left-3" : "right-3"} text-[var(--muted-ink)] hover:text-[var(--ink)] cursor-pointer`}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1226,12 +1245,14 @@ export default function ChatView({
                   <button
                     key={res.id}
                     onClick={() => jumpToMessage(res.id)}
-                    className="flex w-full flex-col rounded-lg p-2 text-right transition-colors hover:bg-[var(--surface-3)] cursor-pointer"
+                    className={`flex w-full flex-col rounded-lg p-2 transition-colors hover:bg-[var(--surface-3)] cursor-pointer ${
+                      isRtl ? "text-right" : "text-left"
+                    }`}
                   >
                     <div className="flex items-center justify-between text-[10px] text-[var(--muted-ink)]">
-                      <span>{res.senderRole === "user" ? "أنت" : "الدعم"}</span>
+                      <span>{res.senderRole === "user" ? tr("أنت") : tr("الدعم")}</span>
                       <span>
-                        {new Date(res.createdAt).toLocaleTimeString("ar", {
+                        {new Date(res.createdAt).toLocaleTimeString(isAr ? "ar" : "en", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -1249,7 +1270,7 @@ export default function ChatView({
               !isSearchLoading &&
               searchResults.length === 0 && (
                 <p className="mt-2 text-center text-xs text-[var(--muted-ink)]">
-                  لا توجد نتائج مطابقة
+                  {tr("لا توجد نتائج مطابقة")}
                 </p>
               )}
           </motion.div>
@@ -1273,7 +1294,7 @@ export default function ChatView({
               {isLoadingOlder ? (
                 <>
                   <span className="h-3 w-3 animate-spin rounded-full border-2 border-[var(--ink)] border-t-transparent" />
-                  <span>جاري التحميل...</span>
+                  <span>{tr("جاري التحميل...")}</span>
                 </>
               ) : (
                 <>
@@ -1295,32 +1316,163 @@ export default function ChatView({
               transition={{ duration: 0.3 }}
               className="flex flex-col gap-4 pt-2"
             >
-              <h1
-                className="text-[32px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[38px]"
-                dir="rtl"
-              >
-                أهلاً{" "}
-                <SquigglyText stepDuration={70} scale={[2, 4]} className="text-[var(--ink)]">
-                  {firstName}
-                </SquigglyText>
-                <br />
-                {tr("كيف أقدر أساعدك اليوم؟")}
-              </h1>
+              {isAr ? (
+                <>
+                  <h1
+                    className="text-[32px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[38px] text-right"
+                    dir="rtl"
+                  >
+                    {user?.name ? (
+                      <>
+                        أهلاً{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {firstName}
+                        </SquigglyText>
+                      </>
+                    ) : (
+                      "أهلاً بك"
+                    )}
+                    <br />
+                    كيف أقدر أساعدك اليوم؟
+                  </h1>
 
-              <div
-                className="space-y-4 text-[15px] font-medium leading-[1.35] text-[var(--ink)]"
-                dir="rtl"
-              >
-                <p>{tr("مرحباً بك في عالم بنانا")}</p>
-                <div className="flex flex-wrap items-center">
-                  هل تبحث عن{" "}
-                  <FlipWords
-                    words={["لعبة", "مجسم", "جهاز", "حل لمشكلة", "إكسسوار"]}
-                    className="font-bold text-amber-600 px-1"
-                  />
-                  ؟
-                </div>
-              </div>
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
+                    dir="rtl"
+                  >
+                    <p>مرحباً بك في عالم بنانا</p>
+                    <div className="flex flex-wrap items-center">
+                      هل تبحث عن{" "}
+                      <FlipWords
+                        words={["لعبة", "مجسم", "جهاز", "حل لمشكلة", "إكسسوار"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ؟
+                    </div>
+                  </div>
+                </>
+              ) : lang === "ku" ? (
+                <>
+                  <h1
+                    className="text-[30px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[36px] text-right"
+                    dir="rtl"
+                  >
+                    {user?.name ? (
+                      <>
+                        Silav{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {firstName}
+                        </SquigglyText>
+                      </>
+                    ) : (
+                      "Bi xêr hatî"
+                    )}
+                    <br />
+                    Îro çawa dikarim alîkariya we bikim?
+                  </h1>
+
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
+                    dir="rtl"
+                  >
+                    <p>Bi xêr hatî cîhana Bananto</p>
+                    <div className="flex flex-wrap items-center">
+                      Li çi digerî{" "}
+                      <FlipWords
+                        words={["lîstikek", "fîgûrek", "konsol", "piştgirî", "aksesorek"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ؟
+                    </div>
+                  </div>
+                </>
+              ) : lang === "tr" ? (
+                <>
+                  <h1
+                    className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
+                    dir="ltr"
+                  >
+                    {user?.name ? (
+                      <>
+                        Merhaba{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {firstName}
+                        </SquigglyText>
+                      </>
+                    ) : (
+                      "Hoş Geldiniz"
+                    )}
+                    <br />
+                    Bugün size nasıl yardımcı olabiliriz?
+                  </h1>
+
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
+                    dir="ltr"
+                  >
+                    <p>Bananto dünyasına hoş geldiniz</p>
+                    <div className="flex flex-wrap items-center">
+                      Aradığınız:{" "}
+                      <FlipWords
+                        words={["bir oyun", "bir figür", "bir konsol", "bir çözüm", "bir aksesuar"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ?
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1
+                    className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
+                    dir="ltr"
+                  >
+                    {user?.name ? (
+                      <>
+                        Hello{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {firstName}
+                        </SquigglyText>
+                      </>
+                    ) : (
+                      "Welcome"
+                    )}
+                    <br />
+                    How can we help you today?
+                  </h1>
+
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
+                    dir="ltr"
+                  >
+                    <p>Welcome to the Banana world</p>
+                    <div className="flex flex-wrap items-center">
+                      Looking for{" "}
+                      <FlipWords
+                        words={["a game", "a collectible", "a console", "support", "an accessory"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ?
+                    </div>
+                  </div>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1685,16 +1837,16 @@ export default function ChatView({
                 overflow: "hidden",
                 transition: { duration: 0.2 },
               }}
-              className="relative z-10 flex flex-wrap justify-end gap-1.5"
+              className={`relative z-10 flex flex-wrap gap-1.5 ${isRtl ? "justify-end" : "justify-start"}`}
             >
               {suggestions.map((suggestion, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleSend(suggestion)}
+                  onClick={() => handleSend(tr(suggestion))}
                   className="rounded-[14px] border border-[var(--surface-4)] bg-[var(--surface-2)] px-3 py-1 text-[12px] font-medium text-[var(--ink)] shadow-xs transition-colors hover:bg-card cursor-pointer"
-                  dir="rtl"
+                  dir={isRtl ? "rtl" : "ltr"}
                 >
-                  {suggestion}
+                  {tr(suggestion)}
                 </button>
               ))}
             </motion.div>
@@ -1756,7 +1908,10 @@ export default function ChatView({
 
           <div className="relative flex h-[42px] flex-1 items-center overflow-hidden rounded-full border border-[var(--surface-4)] bg-[var(--surface-2)] shadow-xs transition-all focus-within:border-[#D4C3B3]">
             {recordingState !== "idle" ? (
-              <div className="absolute inset-0 flex items-center justify-between px-4" dir="rtl">
+              <div
+                className="absolute inset-0 flex items-center justify-between px-4"
+                dir={isRtl ? "rtl" : "ltr"}
+              >
                 <div className="z-10 flex items-center gap-2 font-medium text-red-500">
                   <motion.div
                     animate={{ opacity: [1, 0.5, 1] }}
@@ -1768,7 +1923,7 @@ export default function ChatView({
                   </span>
                 </div>
                 <span className="z-10 text-[12px] font-medium text-[var(--ink)] opacity-70">
-                  {recordingState === "paused" ? "تم الإيقاف المؤقت" : "جاري التسجيل..."}
+                  {recordingState === "paused" ? tr("تم الإيقاف المؤقت") : tr("جاري التسجيل...")}
                 </span>
               </div>
             ) : (
@@ -1782,8 +1937,10 @@ export default function ChatView({
                     void handleSend();
                   }
                 }}
-                placeholder={isHumanChat ? "اكتب رسالتك للدعم..." : "اسألني أي شيء"}
-                className="h-full w-full bg-transparent pl-4 pr-[44px] text-[13px] font-medium text-[var(--ink)] placeholder-[var(--muted-ink)] focus:outline-none"
+                placeholder={isHumanChat ? tr("اكتب رسالتك للدعم...") : tr("اسألني أي شيء")}
+                className={`h-full w-full bg-transparent ${
+                  isRtl ? "pl-4 pr-[44px]" : "pr-4 pl-[44px]"
+                } text-[13px] font-medium text-[var(--ink)] placeholder-[var(--muted-ink)] focus:outline-none`}
               />
             )}
             <button
@@ -1792,12 +1949,14 @@ export default function ChatView({
                 else if (inputText.length > 0) void handleSend();
                 else setRecordingState("recording");
               }}
-              className="absolute right-1 z-20 flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-[var(--ink)] transition-colors hover:bg-[var(--ink-strong)] cursor-pointer"
+              className={`absolute ${
+                isRtl ? "right-1" : "left-1"
+              } z-20 flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-[var(--ink)] transition-colors hover:bg-[var(--ink-strong)] cursor-pointer`}
             >
               {recordingState !== "idle" ? (
                 <X className="h-4 w-4 text-white" strokeWidth={1.5} />
               ) : inputText.length > 0 ? (
-                <Send className="ml-0.5 h-3.5 w-3.5 text-white" strokeWidth={2} />
+                <Send className="h-3.5 w-3.5 text-white" strokeWidth={2} />
               ) : (
                 <Mic className="h-4 w-4 text-white" strokeWidth={1.5} />
               )}
@@ -1805,10 +1964,10 @@ export default function ChatView({
           </div>
         </div>
 
-        {/* Bottom Fast Action Buttons */}
+        {/* Bottom Fast Action Buttons - 5 icons evenly distributed for small & large screens */}
         <div
-          className="relative z-10 mx-auto flex h-[85px] w-full max-w-md items-end justify-between px-2 pb-1"
-          dir="rtl"
+          className="relative z-10 mx-auto flex h-[82px] w-full max-w-md items-end px-1 pb-1"
+          dir={isRtl ? "rtl" : "ltr"}
         >
           <AnimatePresence mode="wait">
             {recordingState !== "idle" ? (
@@ -1835,35 +1994,35 @@ export default function ChatView({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 30, transition: { duration: 0.2 } }}
-                className="relative z-10 flex w-full items-end justify-between"
+                className="relative z-10 grid w-full grid-cols-5 items-end justify-items-center gap-1"
               >
+                {/* 1. Products */}
                 <button
                   onClick={() => setSelectedNav("المنتجات")}
-                  className="group flex w-[64px] shrink-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
                 >
                   <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
                     <ShoppingBag className="h-[17px] w-[17px]" strokeWidth={1.75} />
                   </div>
-                  <span className="text-[11px] font-bold tracking-wide opacity-90">
+                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
                     {tr("المنتجات")}
                   </span>
                 </button>
 
+                {/* 2. Orders */}
                 <button
-                  onClick={() => {
-                    setThreadId(undefined);
-                    setLocalMessages([]);
-                  }}
-                  className="group flex w-[64px] shrink-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  onClick={() => setSelectedNav("الطلب")}
+                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
                 >
                   <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                    <MessageSquarePlus className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                    <FileText className="h-[17px] w-[17px]" strokeWidth={1.75} />
                   </div>
-                  <span className="whitespace-nowrap text-[11px] font-bold tracking-wide opacity-90">
-                    {tr("جديد")}
+                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                    {tr("الطلب")}
                   </span>
                 </button>
 
+                {/* 3. Human / Automated Support Toggle (Center Elevated Button) */}
                 <button
                   onClick={() => {
                     if (isHumanChat) {
@@ -1872,7 +2031,7 @@ export default function ChatView({
                       void handleRequestHumanSupport();
                     }
                   }}
-                  className="group relative flex w-[68px] shrink-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  className="group relative flex w-full max-w-[76px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
                 >
                   <div className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-[var(--ink)] text-white shadow-md transition-colors group-hover:bg-[var(--ink-strong)]">
                     {isHumanChat ? (
@@ -1881,44 +2040,37 @@ export default function ChatView({
                       <Headset className="h-5 w-5" />
                     )}
                   </div>
-                  <span className="whitespace-nowrap text-[11px] font-bold tracking-wide">
-                    {isHumanChat ? "الرد الآلي" : "الدعم البشري"}
+                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight truncate leading-tight">
+                    {isHumanChat ? tr("الرد الآلي") : tr("الدعم البشري")}
                   </span>
                 </button>
 
-                <button
-                  onClick={() => setSelectedNav("الطلب")}
-                  className="group flex w-[64px] shrink-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
-                >
-                  <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                    <FileText className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                  </div>
-                  <span className="text-[11px] font-bold tracking-wide opacity-90">
-                    {tr("الطلب")}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => setSelectedNav("الموقع")}
-                  className="group flex w-[64px] shrink-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
-                >
-                  <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                    <MapPin className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                  </div>
-                  <span className="text-[11px] font-bold tracking-wide opacity-90">
-                    {tr("الموقع")}
-                  </span>
-                </button>
-
+                {/* 4. Wallet */}
                 <button
                   onClick={() => setSelectedNav("المحفظة")}
-                  className="group flex w-[64px] shrink-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
                 >
                   <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
                     <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />
                   </div>
-                  <span className="text-[11px] font-bold tracking-wide opacity-90">
+                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
                     {tr("المحفظة")}
+                  </span>
+                </button>
+
+                {/* 5. New Chat */}
+                <button
+                  onClick={() => {
+                    setThreadId(undefined);
+                    setLocalMessages([]);
+                  }}
+                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                >
+                  <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
+                    <MessageSquarePlus className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                  </div>
+                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                    {tr("جديد")}
                   </span>
                 </button>
               </motion.div>

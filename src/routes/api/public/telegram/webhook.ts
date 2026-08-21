@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   answerCallbackQuery,
   callTelegram,
+  checkChannelSubscription,
   escapeHtml,
   requireWebhookSecret,
   sendTelegramMessage,
@@ -111,6 +112,47 @@ async function handleUpdate(update: any) {
   const callback = update?.callback_query;
   if (callback) {
     const chatId = callback.message?.chat?.id;
+    const userId = callback.from?.id;
+
+    if (callback.data?.startsWith("verify_sub_")) {
+      const target = callback.data.replace("verify_sub_", "");
+      const { isMember } = await checkChannelSubscription(userId || chatId, "@banan_to");
+      if (!isMember) {
+        if (callback.id) {
+          await answerCallbackQuery(callback.id, {
+            text: "❌ لم يتم التحقق من اشتراكك بعد. يرجى الاشتراك في @banan_to أولاً.",
+            show_alert: true,
+          });
+        }
+        return;
+      }
+
+      if (callback.id) {
+        await answerCallbackQuery(callback.id, {
+          text: "✅ تم التحقق من اشتراكك بنجاح! شكراً لك.",
+        });
+      }
+
+      await sendTelegramMessage(
+        chatId,
+        "🎉 أهلاً بك في بنانتو! 🍌\n\nتم التحقق من اشتراكك في القناة بنجاح.\nيمكنك الآن فتح التطبيق أو ربط حسابك بالموقع.",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🍌 فتح تطبيق بنانتو",
+                  web_app: { url: telegramWebAppUrl(target !== "main" ? target : undefined) },
+                },
+                { text: "🆔 الحصول على معرّفي", callback_data: "get_id" },
+              ],
+            ],
+          },
+        },
+      );
+      return;
+    }
+
     if (chatId && callback.data === "get_id") {
       await sendTelegramMessage(
         chatId,
@@ -127,9 +169,29 @@ async function handleUpdate(update: any) {
   if (!msg || !msg.chat?.id) return;
 
   const chatId = msg.chat.id as number;
+  const fromId = msg.from?.id || chatId;
   const text = String(msg.text || "").trim();
 
   if (msg.chat.type !== "private" || String(msg.from?.id) !== String(chatId)) return;
+
+  // Verify Channel Subscription (@banan_to)
+  const subCheck = await checkChannelSubscription(fromId, "@banan_to");
+  if (!subCheck.isMember) {
+    const tokenCandidate = text.startsWith("/start") ? text.split(/\s+/)[1] || "main" : "main";
+    await sendTelegramMessage(
+      chatId,
+      "⚠️ *مرحباً بك في بوت بنانتو!*\n\nلاستخدام البوت والاستفادة من خدمات المتجر وإثبات الملكية، يجب عليك أولاً الاشتراك في قناتنا الرسمية:\n👉 @banan_to\n\nبعد الاشتراك، اضغط على زر *«تحققت من اشتراكي»* بالأسفل للمتابعة.",
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "📢 الاشتراك في قناة بنانتو", url: "https://t.me/banan_to" }],
+            [{ text: "✅ تحققت من اشتراكي", callback_data: `verify_sub_${tokenCandidate}` }],
+          ],
+        },
+      },
+    );
+    return;
+  }
 
   if (text.startsWith("/start")) {
     const tokenCandidate = text.split(/\s+/)[1] || "";

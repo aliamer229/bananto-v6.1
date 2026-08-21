@@ -68,7 +68,7 @@ async function validateLine(
     };
   }
 
-  if (!product || !product.isActive) return null;
+  if (!product || product.isActive === false || (product as any).status === "غير نشط") return null;
 
   let unitPrice = toNumber(product.price);
   let title = product.title;
@@ -206,152 +206,217 @@ export async function createOrderForUser(
       throw new Error("insufficient_balance");
     }
   }
-  if (!needsWalletPayment) await saveOrder(order);
 
-  // Snapshot Order Items
-  for (const item of items) {
-    await d1Run(
-      `INSERT INTO order_items_snapshot (
-        id, order_id, product_id, title, price_iqd, quantity, options_json, image_url, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      randomId("snap"),
-      orderId,
-      item.productId,
-      item.title,
-      item.unitPrice,
-      item.quantity,
-      JSON.stringify(item.meta || {}),
-      item.image || null,
-      now,
-    );
+  try {
+    await saveOrder(order);
+  } catch (err) {
+    console.error("[order:save_fallback]", err);
   }
 
-  // Reward Banana Calculation (if eligible)
-  const bananaEligible = items.every((item) => !["hardware", "device"].includes(item.kind));
+  // Snapshot Order Items (Safe)
+  try {
+    for (const item of items) {
+      await d1Run(
+        `INSERT INTO order_items_snapshot (
+          id, order_id, product_id, title, price_iqd, quantity, options_json, image_url, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        randomId("snap"),
+        orderId,
+        item.productId,
+        item.title,
+        item.unitPrice,
+        item.quantity,
+        JSON.stringify(item.meta || {}),
+        item.image || null,
+        now,
+      );
+    }
+  } catch (err) {
+    console.error("[order:snapshot_failed]", err);
+  }
 
-  if (bananaEligible && order.paymentStatus === "paid") {
-    const rewardRate = toNumber(store.settings?.["banana_reward_rate"] || 6.8);
-    const bananaReward = Math.floor(itemsTotal * rewardRate);
+  // Reward Banana Calculation (Safe)
+  try {
+    const bananaEligible = items.every((item) => !["hardware", "device"].includes(item.kind));
+    if (bananaEligible && order.paymentStatus === "paid") {
+      const rewardRate = toNumber(store.settings?.["banana_reward_rate"] || 6.8);
+      const bananaReward = Math.floor(itemsTotal * rewardRate);
 
-    // Check for existing ledger entry to prevent double rewards if re-run
-    const existingReward = await d1First(
-      `SELECT id FROM banana_ledger WHERE user_id = ? AND reference_id = ? AND type = 'reward'`,
-      user.id,
+      const existingReward = await d1First(
+        `SELECT id FROM banana_ledger WHERE user_id = ? AND reference_id = ? AND type = 'reward'`,
+        user.id,
+        orderId,
+      );
+
+      if (bananaReward > 0 && !existingReward) {
+        await d1Batch([
+          {
+            sql: `UPDATE users SET banana_balance = banana_balance + ? WHERE id = ?`,
+            params: [bananaReward, user.id],
+          },
+          {
+            sql: `INSERT INTO banana_ledger (id, user_id, amount, type, direction, balance_before, balance_after, reference_type, reference_id, created_at)
+                  SELECT ?, ?, ?, 'reward', 'in', ?, ?, 'order', ?, ? WHERE changes() = 1`,
+            params: [
+              randomId("blg"),
+              user.id,
+              bananaReward,
+              user.bananaBalance || 0,
+              (user.bananaBalance || 0) + bananaReward,
+              orderId,
+              now,
+            ],
+          },
+        ]);
+      }
+    }
+  } catch (err) {
+    console.error("[order:banana_ledger_failed]", err);
+  }
+
+  // Create Review Placeholder (Safe)
+  try {
+    const reviewDueAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+    for (const item of items) {
+      await d1Run(
+        `INSERT INTO product_reviews (id, product_id, user_id, order_id, status, is_auto_review, review_due_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, 'pending', 0, ?, ?, ?)`,
+        randomId("rev"),
+        item.productId,
+        user.id,
+        orderId,
+        reviewDueAt,
+        now,
+        now,
+      );
+    }
+  } catch (err) {
+    console.error("[order:review_placeholder_failed]", err);
+  }
+
+  // Initial status history (Safe)
+  try {
+    await d1Run(
+      `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+       VALUES (?, ?, null, 'pending', 'system', 'Order created', ?)`,
+      randomId("osh"),
       orderId,
+      now,
     );
 
-    if (bananaReward > 0 && !existingReward) {
-      await d1Batch([
-        {
-          sql: `UPDATE users SET banana_balance = banana_balance + ? WHERE id = ?`,
-          params: [bananaReward, user.id],
-        },
-        {
-          sql: `INSERT INTO banana_ledger (id, user_id, amount, type, direction, balance_before, balance_after, reference_type, reference_id, created_at)
-                SELECT ?, ?, ?, 'reward', 'in', ?, ?, 'order', ?, ? WHERE changes() = 1`,
-          params: [
-            randomId("blg"),
-            user.id,
-            bananaReward,
-            user.bananaBalance || 0,
-            (user.bananaBalance || 0) + bananaReward,
-            orderId,
-            now,
-          ],
-        },
-      ]);
+    await d1Run(
+      `INSERT INTO order_status_history_v2 (
+        id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
+      ) VALUES (?, ?, null, 'pending', ?, 'SYSTEM', 'Order created', ?)`,
+      randomId("oshv2"),
+      orderId,
+      user.id,
+      now,
+    );
+  } catch (err) {
+    console.error("[order:status_history_failed]", err);
+  }
+
+  // If digital, add to queue (Safe)
+  if (needsWalletPayment) {
+    try {
+      await d1Run(
+        `INSERT INTO order_queue (id, order_id, status, created_at, updated_at)
+         VALUES (?, ?, 'waiting', ?, ?)`,
+        randomId("que"),
+        orderId,
+        now,
+        now,
+      );
+    } catch (err) {
+      console.error("[order:queue_failed]", err);
     }
   }
 
-  // Create Review Placeholder
-  const reviewDueAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
-  for (const item of items) {
-    await d1Run(
-      `INSERT INTO product_reviews (id, product_id, user_id, order_id, status, is_auto_review, review_due_at, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'pending', 0, ?, ?, ?)`,
-      randomId("rev"),
-      item.productId,
-      user.id,
+  // Save Support Thread
+  try {
+    await saveThread({
+      id: threadId,
+      userId: user.id,
+      userName: user.name,
       orderId,
-      reviewDueAt,
-      now,
-      now,
-    );
-  }
+      subject: `طلب ${code}`,
+      status: "open",
+      mode: "AI_ACTIVE",
+      lastMessageAt: now,
+      createdAt: now,
+    });
 
-  // Initial status history
-  await d1Run(
-    `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-     VALUES (?, ?, null, 'pending', 'system', 'Order created', ?)`,
-    randomId("osh"),
-    orderId,
-    now,
-  );
+    const intro = store.adminPresence?.online
+      ? (store.autoReplies?.onlineIntro ?? "")
+      : (store.autoReplies?.offlineIntro ?? "");
 
-  await d1Run(
-    `INSERT INTO order_status_history_v2 (
-      id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
-    ) VALUES (?, ?, null, 'pending', ?, 'SYSTEM', 'Order created', ?)`,
-    randomId("oshv2"),
-    orderId,
-    user.id,
-    now,
-  );
-
-  // If digital, add to queue
-  if (needsWalletPayment) {
-    await d1Run(
-      `INSERT INTO order_queue (id, order_id, status, created_at, updated_at)
-       VALUES (?, ?, 'waiting', ?, ?)`,
-      randomId("que"),
-      orderId,
-      now,
-      now,
-    );
-  }
-
-  await saveThread({
-    id: threadId,
-    userId: user.id,
-    userName: user.name,
-    orderId,
-    subject: `طلب ${code}`,
-    status: "open",
-    mode: "AI_ACTIVE",
-    lastMessageAt: now,
-    createdAt: now,
-  });
-
-  const intro = store.adminPresence.online
-    ? (store.autoReplies.onlineIntro ?? "")
-    : (store.autoReplies.offlineIntro ?? "");
-
-  await appendMessage(threadId, {
-    senderRole: "system",
-    kind: "system",
-    body: { text: intro || `تم إنشاء الطلب ${code}. سيتم متابعة طلبك هنا.` },
-  });
-
-  if (!needsWalletPayment) {
     await appendMessage(threadId, {
       senderRole: "system",
-      kind: "payment_methods_card",
-      body: {
-        total,
-        currency: "IQD",
-        code,
-        methods: store.paymentMethods.length
-          ? store.paymentMethods
-          : [{ id: "zaincash", name: "ZainCash", details: "أرسل المبلغ ثم ارفع صورة الإيصال هنا" }],
-      },
+      kind: "system",
+      body: { text: intro || `تم إنشاء الطلب ${code}. سيتم متابعة طلبك هنا.` },
     });
+
+    // Append system digital order card containing games / accounts details
+    if (needsWalletPayment) {
+      await appendMessage(threadId, {
+        senderRole: "system",
+        kind: "system",
+        body: {
+          type: "digital_order_card",
+          orderId: order.id,
+          code: order.code,
+          items: order.items.map((it) => ({
+            id: it.id,
+            productId: it.productId,
+            title: it.title,
+            unitPrice: it.unitPrice,
+            quantity: it.quantity,
+            image: it.image || "",
+            kind: it.kind,
+          })),
+          total: order.total,
+          currency: order.currency,
+          paymentStatus: "paid",
+          text: `🎮 تم تأكيد طلبك الرقمي (${order.code}) بنجاح!\nالمبلغ المدفوع من المحفظة: ${order.total.toLocaleString()} د.ع\nيقوم فريق الدعم حالياً بتجهيز بيانات الحساب والرمز وإرسالها لك في هذه المحادثة.`,
+        },
+      });
+    }
+
+    if (!needsWalletPayment) {
+      await appendMessage(threadId, {
+        senderRole: "system",
+        kind: "payment_methods_card",
+        body: {
+          total,
+          currency: "IQD",
+          code,
+          methods: store.paymentMethods?.length
+            ? store.paymentMethods
+            : [
+                {
+                  id: "zaincash",
+                  name: "ZainCash",
+                  details: "أرسل المبلغ ثم ارفع صورة الإيصال هنا",
+                },
+              ],
+        },
+      });
+    }
+  } catch (err) {
+    console.error("[order:thread_message_failed]", err);
   }
 
+  // Notify Telegram (Safe)
   if (user.telegramId) {
-    await sendTelegramMessage(
-      user.telegramId,
-      `✅ *تم إنشاء طلبك بنجاح*\n\nرقم الطلب: \`${code}\`\nالإجمالي: ${total.toLocaleString()} IQD\n\nيمكنك متابعة حالة الطلب من خلال الموقع.`,
-    );
+    try {
+      await sendTelegramMessage(
+        user.telegramId,
+        `✅ *تم إنشاء طلبك بنجاح*\n\nرقم الطلب: \`${code}\`\nالإجمالي: ${total.toLocaleString()} IQD\n\nيمكنك متابعة حالة الطلب من خلال الموقع.`,
+      );
+    } catch (err) {
+      console.error("[order:telegram_notify_failed]", err);
+    }
   }
 
   return order;

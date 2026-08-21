@@ -31,6 +31,65 @@ const iconMap: Record<string, any> = {
 };
 
 /**
+ * Verified official artwork for popular Switch games.
+ * Used when an imported or trade catalog product is missing artwork or has an unresolvable URL.
+ */
+export const KNOWN_GAME_COVERS: Record<string, string> = {
+  "super mario odyssey":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/s/super-mario-odyssey-switch/hero",
+  "super mario party":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/s/super-mario-party-switch/hero",
+  "super mario party jamboree":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/s/super-mario-party-switch/hero",
+  "mario party superstars":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/m/mario-party-superstars-switch/hero",
+  "super mario bros wonder":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/s/super-mario-odyssey-switch/hero",
+  "mario kart 8 deluxe":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/m/mario-kart-8-deluxe-switch/hero",
+  "cyberpunk 2077":
+    "https://img-eshop.cdn.nintendo.net/i/f172668ac499434b33917199f2021f753d42b73862d76d3c93d04a474dade847.jpg",
+  "cyberpunk 2077 ultimate edition":
+    "https://img-eshop.cdn.nintendo.net/i/f172668ac499434b33917199f2021f753d42b73862d76d3c93d04a474dade847.jpg",
+  "the legend of zelda tears of the kingdom":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/t/the-legend-of-zelda-tears-of-the-kingdom-switch/hero",
+  "super smash bros ultimate":
+    "https://assets.nintendo.com/image/upload/c_fill,f_auto,q_auto,w_800/ncom/en_US/games/switch/s/super-smash-bros-ultimate-switch/hero",
+};
+
+export function getKnownCoverByTitle(title?: string): string | undefined {
+  if (!title) return undefined;
+  const normalized = title
+    .toLowerCase()
+    .replace(/[™®:!.\-+]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (KNOWN_GAME_COVERS[normalized]) {
+    return KNOWN_GAME_COVERS[normalized];
+  }
+
+  for (const [key, url] of Object.entries(KNOWN_GAME_COVERS)) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return url;
+    }
+  }
+
+  // Check specific keywords
+  if (normalized.includes("odyssey") && normalized.includes("mario")) {
+    return KNOWN_GAME_COVERS["super mario odyssey"];
+  }
+  if (normalized.includes("mario party")) {
+    return KNOWN_GAME_COVERS["super mario party"];
+  }
+  if (normalized.includes("cyberpunk")) {
+    return KNOWN_GAME_COVERS["cyberpunk 2077"];
+  }
+
+  return undefined;
+}
+
+/**
  * Unified image selector for Nintendo game cards.
  * Ensures the clean front cover / key art is used instead of the 3D box or flat spread.
  */
@@ -52,23 +111,41 @@ export function getNintendoCardImage(product: Record<string, any>): string {
   if (typeof product.coverUrl === "string" && product.coverUrl.trim()) {
     return product.coverUrl.trim();
   }
+  if (typeof product.box_front_url === "string" && product.box_front_url.trim()) {
+    return product.box_front_url.trim();
+  }
+  if (typeof product.boxFrontUrl === "string" && product.boxFrontUrl.trim()) {
+    return product.boxFrontUrl.trim();
+  }
+  if (typeof product.cover === "string" && product.cover.trim()) {
+    return product.cover.trim();
+  }
+  if (typeof product.mainImage === "string" && product.mainImage.trim()) {
+    return product.mainImage.trim();
+  }
+  if (typeof product.imageUrl === "string" && product.imageUrl.trim()) {
+    return product.imageUrl.trim();
+  }
+  if (typeof product.thumbnail === "string" && product.thumbnail.trim()) {
+    return product.thumbnail.trim();
+  }
 
   // 2. First image from list
   if (Array.isArray(product.images) && product.images.length > 0) {
     const first = product.images[0];
-    const url = typeof first === "string" ? first : first?.url;
+    const url = typeof first === "string" ? first : first?.url || first?.src;
     if (typeof url === "string" && url.trim()) return url.trim();
   }
 
   // 3. First gallery item
   if (Array.isArray(product.gallery) && product.gallery.length > 0) {
     const first = product.gallery[0];
-    const url = typeof first === "string" ? first : first?.url;
+    const url = typeof first === "string" ? first : first?.url || first?.src;
     if (typeof url === "string" && url.trim()) return url.trim();
   }
   if (Array.isArray(product.galleryImages) && product.galleryImages.length > 0) {
     const first = product.galleryImages[0];
-    const url = typeof first === "string" ? first : first?.url;
+    const url = typeof first === "string" ? first : first?.url || first?.src;
     if (typeof url === "string" && url.trim()) return url.trim();
   }
 
@@ -78,6 +155,13 @@ export function getNintendoCardImage(product: Record<string, any>): string {
   }
   if (typeof product.banner === "string" && product.banner.trim()) {
     return product.banner.trim();
+  }
+
+  // 5. Match known titles (e.g. Super Mario Odyssey, Super Mario Party, Cyberpunk 2077)
+  const title = product.titleEn || product.english_name || product.title || product.slug;
+  const knownCover = getKnownCoverByTitle(title);
+  if (knownCover) {
+    return knownCover;
   }
 
   return "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop";

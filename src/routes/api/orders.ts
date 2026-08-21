@@ -86,6 +86,7 @@ export const Route = createFileRoute("/api/orders")({
             const order = await createOrderForUser(user, data.items ?? [], data.address);
             return json({ order: redactOrder(order) });
           } catch (error) {
+            console.error("[api:orders:create_failed]", error);
             const code = error instanceof Error ? error.message : "order_failed";
             const safe = new Set(["cart_empty", "insufficient_balance", "invalid_total"]);
             return json({ error: safe.has(code) ? code : "order_failed" }, { status: 400 });
@@ -99,12 +100,67 @@ export const Route = createFileRoute("/api/orders")({
             status?: string;
             note?: string;
             address?: Address;
-            action?: "claim" | "complete";
+            action?: "claim" | "complete" | "confirm_received";
           }>(request);
 
           const order = await getOrder(data.orderId);
           if (!order || (order.userId !== user.id && !user.isAdmin))
             return json({ error: "not_found" }, { status: 404 });
+
+          // Customer confirms receipt of order/accounts
+          if (data.action === "confirm_received") {
+            if (order.status !== "completed") {
+              const now = new Date().toISOString();
+              try {
+                await d1Run(
+                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+                   VALUES (?, ?, ?, 'completed', ?, 'تم تأكيد الاستلام من قبل العميل', ?)`,
+                  randomId("osh"),
+                  order.id,
+                  order.status,
+                  user.id,
+                  now,
+                );
+
+                await d1Run(
+                  `INSERT INTO order_status_history_v2 (
+                    id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
+                  ) VALUES (?, ?, ?, 'completed', ?, 'USER', 'Customer confirmed order receipt', ?)`,
+                  randomId("oshv2"),
+                  order.id,
+                  order.status,
+                  user.id,
+                  now,
+                );
+
+                if (order.threadId) {
+                  await appendMessage(order.threadId, {
+                    senderRole: "user",
+                    kind: "order_completed",
+                    body: {
+                      text: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
+                      code: order.code,
+                    },
+                  });
+                }
+              } catch (err) {
+                console.error("[order:confirm_received_history_failed]", err);
+              }
+
+              const next: Order = {
+                ...order,
+                status: "completed",
+                updatedAt: now,
+                events: [
+                  ...order.events,
+                  { type: "order_completed", at: now, payload: { by: user.id } },
+                ],
+              };
+              await saveOrder(next);
+              return json({ order: redactOrder(next) });
+            }
+            return json({ order: redactOrder(order) });
+          }
 
           // Staff Actions
           if (data.action === "claim") {

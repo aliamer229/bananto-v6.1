@@ -26,12 +26,8 @@ export {
   isOwnerPhone,
   verifiedOwnerIdentity,
 } from "./owner-auth.server";
-export {
-  AdminAvailabilityConfig,
-  AdminAvailabilityStatus,
-  checkAdminAvailability,
-  DEFAULT_AVAILABILITY_CONFIG,
-};
+export type { AdminAvailabilityConfig, AdminAvailabilityStatus };
+export { checkAdminAvailability, DEFAULT_AVAILABILITY_CONFIG };
 
 import type {
   Address,

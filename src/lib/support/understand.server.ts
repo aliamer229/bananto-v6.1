@@ -1,21 +1,15 @@
 /**
- * AI understanding layer (server only).
+ * AI understanding & generation layer (server only).
  *
- * The model is used ONLY to understand the user: which intent, which game,
- * which order, which knowledge-base article, and whether a human is needed.
- * It never writes the answer — every reply is still built from real order and
- * catalogue data by `engine.ts`, so nothing can be invented.
- *
- * If the gateway is unavailable the rule engine keeps working on its own.
+ * Powered by Google Gemini (@google/genai). Provides deep store knowledge,
+ * professional customer service tone, and strict language matching
+ * (Arabic, English, Kurdish, Turkish).
  */
 
+import { GoogleGenAI } from "@google/genai";
 import { findProducts } from "./intent";
-import { contentTokens, skeleton } from "./normalize";
-import type { SupportContext, SupportIntent } from "./types";
-
-/** Google Gemini (direct) — the key is yours, so nothing depends on Lovable credits. */
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models";
-const GEMINI_MODEL = "gemini-3.6-flash";
+import { contentTokens, detectLang, skeleton } from "./normalize";
+import type { SupportCard, SupportContext, SupportIntent, SupportLang } from "./types";
 
 const INTENTS: SupportIntent[] = [
   "greeting",
@@ -43,10 +37,13 @@ const INTENTS: SupportIntent[] = [
 export interface SupportHint {
   intent?: SupportIntent;
   productId?: string;
+  matchedProductIds?: string[];
   articleId?: string;
   orderCode?: string;
   errorCode?: string;
   needsHuman?: boolean;
+  generatedResponse?: string;
+  generatedSuggestions?: string[];
 }
 
 /** Catalogue slice the model is allowed to choose from (public fields only). */
@@ -55,7 +52,7 @@ function candidateProducts(message: string, ctx: SupportContext) {
   const keys = contentTokens(message)
     .map((token) => skeleton(token))
     .filter((key) => key.length > 1);
-  // Widen a little so the model can disambiguate between same-series titles.
+
   const related = keys.length
     ? ctx.products.filter((product) =>
         [product.title, product.titleEn ?? ""].some((title) =>
@@ -63,17 +60,16 @@ function candidateProducts(message: string, ctx: SupportContext) {
         ),
       )
     : [];
-  const pool = [...found, ...related].slice(0, 25);
+
+  // Also include accessories / hardware if relevant
+  const accessories =
+    /accessories|accessory|controller|joycon|dock|case|grip|اكسسوار|يد|ملحق/i.test(message)
+      ? ctx.products.filter((p) => p.kind === "accessory" || p.kind === "hardware")
+      : [];
+
+  const pool = [...found, ...accessories, ...related].slice(0, 30);
   const seen = new Set<string>();
   return pool.filter((product) => !seen.has(product.id) && seen.add(product.id));
-}
-
-interface GatewayReply {
-  choices?: { message?: { content?: string } }[];
-}
-
-interface GeminiReply {
-  candidates?: { content?: { parts?: { text?: string }[] } }[];
 }
 
 function parseJson(raw: string): Record<string, unknown> | undefined {
@@ -88,145 +84,208 @@ function parseJson(raw: string): Record<string, unknown> | undefined {
   }
 }
 
-/**
- * Short-lived circuit breaker. When the provider is down (no credits, quota,
- * network) we stop calling it for a while so every chat message stays fast and
- * the deterministic engine simply keeps answering.
- */
 let coolDownUntil = 0;
-const COOL_DOWN_MS = 60_000;
-const TIMEOUT_MS = 12_000;
+const COOL_DOWN_MS = 30_000;
 
 function trip(reason: string) {
   coolDownUntil = Date.now() + COOL_DOWN_MS;
-  console.error(`[support/understand] disabled for 60s: ${reason}`);
-}
-
-/** POST with a timeout that never throws out of this module. */
-async function post(url: string, headers: Record<string, string>, body: unknown) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  try {
-    return await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json", ...headers },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-  } catch (error) {
-    trip(`network: ${String(error)}`);
-    return undefined;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/** Google Gemini direct (own key). */
-async function askGemini(key: string, system: string, user: string) {
-  const response = await post(
-    `${GEMINI_URL}/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`,
-    {},
-    {
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: "user", parts: [{ text: user }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0,
-        thinkingConfig: { thinkingLevel: "low" },
-      },
-    },
-  );
-  if (!response) return undefined;
-  if (!response.ok) {
-    trip(`gemini ${response.status}: ${(await response.text().catch(() => "")).slice(0, 200)}`);
-    return undefined;
-  }
-  const data = (await response.json().catch(() => null)) as GeminiReply | null;
-  return (
-    data?.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") || undefined
-  );
-}
-
-/** Try Gemini. Never throws, never blocks a reply. */
-async function askModel(system: string, user: string): Promise<string | undefined> {
-  if (Date.now() < coolDownUntil) return undefined;
-  const gemini = process.env["GEMINI_API_KEY"];
-  if (gemini) return askGemini(gemini, system, user);
-  return undefined;
+  console.error(`[support/understand] AI temporary cooldown: ${reason}`);
 }
 
 /**
- * Ask the model to resolve intent + entities. Returns `undefined` when the
- * gateway fails, so the caller falls back to the deterministic rules.
+ * Ask Gemini model for intelligent analysis & full multilingual reply generation.
+ */
+async function callGemini(
+  systemInstruction: string,
+  userPrompt: string,
+): Promise<string | undefined> {
+  if (Date.now() < coolDownUntil) return undefined;
+
+  const apiKey = process.env.GEMINI_API_KEY || process.env.LOVABLE_API_KEY;
+  if (!apiKey) return undefined;
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: "gemini-3.7-flash",
+      contents: userPrompt,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        temperature: 0.2,
+      },
+    });
+
+    return response.text || undefined;
+  } catch (err) {
+    // Fallback: direct REST API if SDK encounters any environment difference
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0.2,
+          },
+        }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          candidates?: { content?: { parts?: { text?: string }[] } }[];
+        };
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      }
+    } catch {
+      // ignore
+    }
+
+    trip(`AI error: ${String(err)}`);
+    return undefined;
+  }
+}
+
+/**
+ * Perform rich contextual understanding and generation.
  */
 export async function understand(
   message: string,
   ctx: SupportContext,
   history: { role: "user" | "assistant"; text: string }[],
 ): Promise<SupportHint | undefined> {
-  const hasKey = Boolean(process.env["GEMINI_API_KEY"] || process.env["LOVABLE_API_KEY"]);
-  if (!hasKey || !message.trim()) return undefined;
-
+  const targetLang = detectLang(message, ctx.lang);
   const products = candidateProducts(message, ctx);
+
+  const system = `You are the master customer support AI concierge for "Bananto Store" (بنانا ستور), the premier Nintendo Switch & gaming store in Iraq.
+
+CRITICAL RULES:
+1. RESPONSE LANGUAGE: You MUST respond in the EXACT SAME LANGUAGE as the user's message.
+   - If the user wrote in English (or sent English chips like "Latest Accessories"), answer completely and professionally in English.
+   - If the user wrote in Arabic, answer in polite, clear Arabic (Modern Standard / polite Iraqi context).
+   - If the user wrote in Kurdish, answer in Kurdish (Kurmancî / Soranî).
+   - If the user wrote in Turkish, answer in Turkish.
+   Target language detected: "${targetLang}".
+
+2. TONE & EXPERTISE:
+   - Be extremely polite, professional, knowledgeable, welcoming, and concise.
+   - Format answers cleanly with markdown bullet points where appropriate.
+   - Never output broken or mixed language text.
+
+3. BANANTO STORE KNOWLEDGE:
+   - Specialization: Nintendo Switch consoles, games, digital accounts, physical discs, accessories, and subscriptions.
+   - Digital Accounts: Primary accounts (play on your personal user, online/offline) and Secondary accounts (cost-effective, play on provided profile).
+   - Delivery: Instant digital delivery in chat upon payment confirmation. Fast physical shipping to all Iraq governorates (Baghdad, Erbil, Basra, Sulaymaniyah, etc.) within 24-48h.
+   - Payment Methods: ZainCash (زين كاش), FIB (First Iraqi Bank), AsiaPay (آسيا باي), Visa/Mastercard, Binance Pay (USDT Crypto), and Banana Wallet.
+   - Disc Trade / Exchange: Users can exchange physical discs for new games or store credits.
+   - Banana Wallet (محفظة الموز) & Banana Market: Reward points earned from orders; can be redeemed or traded in the live peer-to-peer Banana market.
+   - Warranty: 100% full lifetime guarantee on digital accounts. Free replacement if any technical problem occurs.
+   - Technical support: Provide step-by-step help for Nintendo Switch error codes, 2-step verification codes, account setup, offline mode, and DNS fixes (8.8.8.8 / 1.1.1.1).
+
+4. ESCALATION:
+   - If the user explicitly asks to speak with an admin / human / manager, or expresses strong frustration, set "needsHuman": true.
+
+5. OUTPUT FORMAT (JSON ONLY):
+Return a single JSON object with this schema:
+{
+  "intent": "greeting" | "product_search" | "order_status" | "payment_how" | "account_credentials" | "game_not_opening" | "banana_wallet" | "warranty" | "human_agent" | "unknown",
+  "response": "Detailed, friendly, highly professional markdown response in the user's language.",
+  "matchedProductIds": ["id1", "id2"],
+  "articleId": "kb_xxx" or null,
+  "orderCode": "BN-xxx" or null,
+  "errorCode": "xxxx-xxxx" or null,
+  "suggestions": ["Suggestion 1 in user language", "Suggestion 2", "Suggestion 3"],
+  "needsHuman": false
+}`;
+
   const payload = {
-    intents: INTENTS,
-    articles: ctx.articles.slice(0, 40).map((article) => ({
-      id: article.id,
-      title: article.title,
-      errorCodes: article.errorCodes ?? [],
-    })),
-    products: products.map((product) => ({
-      id: product.id,
-      ar: product.title,
-      en: product.titleEn ?? "",
-      kind: product.kind,
-    })),
-    orders: ctx.orders.slice(0, 6).map((order) => ({
-      code: order.code,
-      status: order.status,
-      payment: order.paymentStatus,
-      items: order.items.map((item) => item.title),
+    userMessage: message,
+    detectedLang: targetLang,
+    clientSelectedLang: ctx.lang,
+    userName: ctx.userName ?? null,
+    orders: ctx.orders.slice(0, 5).map((o) => ({
+      code: o.code,
+      status: o.status,
+      payment: o.paymentStatus,
+      total: o.total,
+      currency: o.currency,
+      items: o.items.map((i) => ({ title: i.title, kind: i.kind })),
     })),
     activeOrder: ctx.activeOrder?.code ?? null,
-    pageProduct: ctx.pageContext?.productTitle ?? null,
-    recentlyViewed: (ctx.viewHistory ?? []).map((item) => item.title).slice(0, 5),
-    conversation: history.slice(-8),
-    message,
+    matchedProductsInCatalogue: products.map((p) => ({
+      id: p.id,
+      title: p.title,
+      titleEn: p.titleEn ?? "",
+      price: p.price,
+      kind: p.kind,
+      genre: p.genre,
+    })),
+    articles: ctx.articles.slice(0, 15).map((a) => ({
+      id: a.id,
+      title: a.title,
+      steps: a.steps,
+      errorCodes: a.errorCodes,
+    })),
+    conversationHistory: history.slice(-6),
   };
 
-  const system = [
-    "أنت طبقة فهم لنظام دعم متجر ألعاب نينتندو عراقي.",
-    "مهمتك تحليل رسالة المستخدم فقط وإرجاع JSON، ولا تكتب أي رد للمستخدم.",
-    "الرسائل قد تكون بالعربية الفصحى أو اللهجة العراقية أو الكردية أو الإنجليزية أو حروف لاتينية معرّبة، وقد تحتوي أخطاء إملائية.",
-    "أسماء الألعاب قد تُكتب بالعربية (زيلدا، ماريو، بريث اوف ذا وايلد) — طابقها مع القائمة المعطاة واختر id واحداً فقط عند الوضوح.",
-    "إذا ذكر المستخدم اسم لعبة يطابق عنصراً واحداً منطقياً فاختره ولا تترك الحقل فارغاً.",
-    "إذا طلب التحدث مع الأدمن/موظف/إنسان أو عبّر عن غضب أو أن المشكلة لم تُحل، اجعل needsHuman=true.",
-    "إذا وصف مشكلة تقنية فاختر intent المناسب و articleId الأقرب من قائمة المقالات.",
-    "أرجع JSON فقط بالشكل:",
-    '{"intent":"...","productId":null,"articleId":null,"orderCode":null,"errorCode":null,"needsHuman":false}',
-  ].join("\n");
+  const rawJson = await callGemini(system, JSON.stringify(payload));
+  if (!rawJson) return undefined;
 
-  const user = `حلّل هذه البيانات وأرجع json فقط:\n${JSON.stringify(payload)}`;
-  const content = await askModel(system, user);
-  if (!content) return undefined;
-  const parsed = parseJson(content);
+  const parsed = parseJson(rawJson);
   if (!parsed) return undefined;
 
   const intent = INTENTS.includes(parsed["intent"] as SupportIntent)
     ? (parsed["intent"] as SupportIntent)
     : undefined;
-  const productId = typeof parsed["productId"] === "string" ? parsed["productId"] : undefined;
-  const articleId = typeof parsed["articleId"] === "string" ? parsed["articleId"] : undefined;
-  const orderCode = typeof parsed["orderCode"] === "string" ? parsed["orderCode"] : undefined;
-  const errorCode = typeof parsed["errorCode"] === "string" ? parsed["errorCode"] : undefined;
+
+  const matchedProductIds = Array.isArray(parsed["matchedProductIds"])
+    ? (parsed["matchedProductIds"] as string[]).filter((id) =>
+        ctx.products.some((p) => p.id === id),
+      )
+    : [];
+
+  const singleProductId =
+    typeof parsed["productId"] === "string" &&
+    ctx.products.some((p) => p.id === parsed["productId"])
+      ? (parsed["productId"] as string)
+      : matchedProductIds[0];
+
+  const articleId =
+    typeof parsed["articleId"] === "string" &&
+    ctx.articles.some((a) => a.id === parsed["articleId"])
+      ? (parsed["articleId"] as string)
+      : undefined;
+
+  const orderCode =
+    typeof parsed["orderCode"] === "string" &&
+    ctx.orders.some((o) => o.code === parsed["orderCode"])
+      ? (parsed["orderCode"] as string)
+      : undefined;
+
+  const errorCode =
+    typeof parsed["errorCode"] === "string" ? (parsed["errorCode"] as string) : undefined;
+
+  const generatedResponse =
+    typeof parsed["response"] === "string" && parsed["response"].trim().length > 0
+      ? parsed["response"].trim()
+      : undefined;
+
+  const generatedSuggestions = Array.isArray(parsed["suggestions"])
+    ? (parsed["suggestions"] as string[]).filter((s) => typeof s === "string" && s.trim())
+    : undefined;
 
   return {
     ...(intent ? { intent } : {}),
-    // Only ids that really exist may pass through.
-    ...(productId && ctx.products.some((product) => product.id === productId) ? { productId } : {}),
-    ...(articleId && ctx.articles.some((article) => article.id === articleId) ? { articleId } : {}),
-    ...(orderCode && ctx.orders.some((order) => order.code === orderCode) ? { orderCode } : {}),
+    ...(singleProductId ? { productId: singleProductId } : {}),
+    ...(matchedProductIds.length ? { matchedProductIds } : {}),
+    ...(articleId ? { articleId } : {}),
+    ...(orderCode ? { orderCode } : {}),
     ...(errorCode ? { errorCode } : {}),
     needsHuman: parsed["needsHuman"] === true,
+    generatedResponse,
+    generatedSuggestions,
   };
 }

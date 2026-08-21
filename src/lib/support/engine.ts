@@ -1,9 +1,10 @@
 /**
- * Reply generation.
+ * Multilingual Support Engine & Reply Generation.
  *
- * Everything here is produced from the sanitised `SupportContext`. The engine
- * never invents an order state, a tracking step, an error code or account data:
- * when it does not know, it asks one question or escalates to a human.
+ * Fully supports Arabic (ar), English (en), Kurdish (ku), and Turkish (tr).
+ * When AI response is provided by the Gemini understand layer, it preserves
+ * the generated text and renders rich interactive cards.
+ * When in offline/deterministic mode, it generates pristine localized templates.
  */
 
 import { detect, findProducts, type Detection } from "./intent";
@@ -14,53 +15,226 @@ import {
   emptyMemory,
   type KbArticle,
   type SafeOrder,
+  type SafeProduct,
   type SupportCard,
   type SupportContext,
   type SupportIntent,
+  type SupportLang,
   type SupportMemory,
   type SupportReply,
 } from "./types";
+import type { SupportHint } from "./understand.server";
 
-const STATUS_AR: Record<string, string> = {
-  pending: "بانتظار الدفع",
-  processing: "قيد التجهيز",
-  delivering: "قيد التسليم",
-  completed: "مكتمل",
-  cancelled: "ملغى",
+const STATUS_I18N: Record<SupportLang, Record<string, string>> = {
+  ar: {
+    pending: "بانتظار الدفع",
+    processing: "قيد التجهيز",
+    delivering: "قيد التسليم",
+    completed: "مكتمل",
+    cancelled: "ملغى",
+  },
+  en: {
+    pending: "Pending Payment",
+    processing: "Processing",
+    delivering: "Out for Delivery",
+    completed: "Completed",
+    cancelled: "Cancelled",
+  },
+  ku: {
+    pending: "Li benda dravdanê",
+    processing: "Tê amadekirin",
+    delivering: "Di rê de ye",
+    completed: "Temam bû",
+    cancelled: "Betal bû",
+  },
+  tr: {
+    pending: "Ödeme Bekleniyor",
+    processing: "Hazırlanıyor",
+    delivering: "Teslimatta",
+    completed: "Tamamlandı",
+    cancelled: "İptal Edildi",
+  },
 };
 
-const PAYMENT_AR: Record<string, string> = {
-  unpaid: "لم يتم الدفع",
-  review: "قيد مراجعة الوصل",
-  paid: "مدفوع",
-  rejected: "الوصل مرفوض",
+const PAYMENT_I18N: Record<SupportLang, Record<string, string>> = {
+  ar: {
+    unpaid: "لم يتم الدفع",
+    review: "قيد مراجعة الوصل",
+    paid: "مدفوع",
+    rejected: "الوصل مرفوض",
+  },
+  en: {
+    unpaid: "Unpaid",
+    review: "Receipt under review",
+    paid: "Paid",
+    rejected: "Receipt rejected",
+  },
+  ku: {
+    unpaid: "Nehatiye dayîn",
+    review: "Wergirtin tê kontrolkirin",
+    paid: "Hat dayîn",
+    rejected: "Wergirtin nehat qebûlkirin",
+  },
+  tr: {
+    unpaid: "Ödenmedi",
+    review: "Dekont inceleniyor",
+    paid: "Ödendi",
+    rejected: "Dekont reddedildi",
+  },
+};
+
+const SUGGESTIONS_I18N: Record<
+  SupportLang,
+  { default: string[]; greeting: string[]; support: string; browse: string }
+> = {
+  ar: {
+    default: ["تصفح الألعاب", "أحدث الإكسسوارات", "تحدث مع الدعم"],
+    greeting: ["حالة طلبي", "طرق الدفع", "أحدث الإكسسوارات"],
+    support: "تحدث مع الدعم",
+    browse: "تصفح الألعاب",
+  },
+  en: {
+    default: ["Browse Games", "Latest Accessories", "Talk to Support"],
+    greeting: ["Order Status", "Payment Methods", "Latest Accessories"],
+    support: "Talk to Support",
+    browse: "Browse Games",
+  },
+  ku: {
+    default: ["Li lîstikan bigere", "Aksesorên nû", "Bi piştgiriyê re biaxive"],
+    greeting: ["Rewşa siparîşê", "Rêyên dravdanê", "Aksesorên nû"],
+    support: "Bi piştgiriyê re biaxive",
+    browse: "Li lîstikan bigere",
+  },
+  tr: {
+    default: ["Oyunlara Göz At", "En Yeni Aksesuarlar", "Destekle Görüş"],
+    greeting: ["Sipariş Durumu", "Ödeme Yöntemleri", "En Yeni Aksesuarlar"],
+    support: "Destekle Görüş",
+    browse: "Oyunlara Göz At",
+  },
 };
 
 const money = (value: number, symbol: string) =>
   `${Math.round(value).toLocaleString("en-US")} ${symbol}`;
 
-function productCard(product: SupportContext["products"][number], symbol: string): SupportCard {
-  const bits = [
-    product.price > 0 ? `السعر: ${money(product.price, symbol)}` : "السعر يحدده الدعم",
-    product.genre ? `التصنيف: ${product.genre}` : "",
-    product.size ? `الحجم: ${product.size}` : "",
-    product.kind === "hardware" ? "يحتاج عنوان للتوصيل" : "تسليم داخل محادثة الطلب",
-  ].filter(Boolean);
+function productCard(product: SafeProduct, symbol: string, lang: SupportLang): SupportCard {
+  const isEn = lang === "en";
+  const isKu = lang === "ku";
+  const isTr = lang === "tr";
+
+  const priceText =
+    product.price > 0
+      ? isEn
+        ? `Price: ${money(product.price, symbol)}`
+        : isKu
+          ? `Biha: ${money(product.price, symbol)}`
+          : isTr
+            ? `Fiyat: ${money(product.price, symbol)}`
+            : `السعر: ${money(product.price, symbol)}`
+      : isEn
+        ? "Price upon request"
+        : isKu
+          ? "Bihayê taybet"
+          : isTr
+            ? "Fiyat sorunuz"
+            : "السعر يحدده الدعم";
+
+  const kindText =
+    product.kind === "hardware" || product.kind === "accessory"
+      ? isEn
+        ? "Physical delivery"
+        : isKu
+          ? "Şandina fizîkî"
+          : isTr
+            ? "Fiziksel teslimat"
+            : "شحن وتوصيل للمنزل"
+      : isEn
+        ? "Instant digital delivery"
+        : isKu
+          ? "Radestkirina dîjîtal a zindî"
+          : isTr
+            ? "Anında dijital teslimat"
+            : "تسليم رقمي فوري بالمحادثة";
+
+  const name = lang !== "ar" && product.titleEn ? product.titleEn : product.title;
+
   return {
     kind: "product",
     id: product.id,
-    name: product.title,
-    text: bits.join(" · "),
+    name,
+    text: `${priceText} · ${kindText}`,
     ...(product.image ? { image: product.image } : {}),
   };
 }
 
-function orderLines(order: SafeOrder, symbol: string): string {
-  const items = order.items.map((item) => `${item.title} ×${item.quantity}`).join("، ");
+function orderLines(order: SafeOrder, symbol: string, lang: SupportLang): string {
+  const items = order.items.map((item) => `${item.title} ×${item.quantity}`).join(", ");
+  const statusMap = STATUS_I18N[lang] || STATUS_I18N.ar;
+  const paymentMap = PAYMENT_I18N[lang] || PAYMENT_I18N.ar;
+  const statusStr = statusMap[order.status] ?? order.status;
+  const paymentStr = paymentMap[order.paymentStatus] ?? order.paymentStatus;
+
+  if (lang === "en") {
+    const lines = [
+      `Order ${order.code}: ${statusStr} · Payment: ${paymentStr}`,
+      `Items: ${items}`,
+      `Total: ${money(order.total, order.currency || symbol)}`,
+    ];
+    if (order.needsAddress) {
+      lines.push(
+        order.hasAddress
+          ? `Delivery Address: ${order.addressSummary || "Registered"} - Shipping in progress.`
+          : "Delivery address needed — please reply with your city, area, and phone number.",
+      );
+    } else {
+      const delivered = order.items.filter((item) => item.credsSentAt);
+      lines.push(
+        delivered.length
+          ? `Credentials for ${delivered.length} of ${order.items.length} items delivered in this chat.`
+          : "Instant digital delivery will appear directly in this chat upon payment verification.",
+      );
+    }
+    return lines.join("\n");
+  }
+
+  if (lang === "ku") {
+    const lines = [
+      `Siparîş ${order.code}: ${statusStr} · Dravdan: ${paymentStr}`,
+      `Berhem: ${items}`,
+      `Tevahî: ${money(order.total, order.currency || symbol)}`,
+    ];
+    if (order.needsAddress) {
+      lines.push(
+        order.hasAddress
+          ? `Navnîşana radestkirinê: ${order.addressSummary || "Qeydkirî"} - Tê şandin.`
+          : "Pêdivî bi navnîşanê heye — ji kerema xwe parêzgeh û jimara telefonê bişîne.",
+      );
+    } else {
+      lines.push("Radestkirina dîjîtal piştî pejirandina dravdanê di vê axaftinê de tê şandin.");
+    }
+    return lines.join("\n");
+  }
+
+  if (lang === "tr") {
+    const lines = [
+      `Sipariş ${order.code}: ${statusStr} · Ödeme: ${paymentStr}`,
+      `Ürünler: ${items}`,
+      `Toplam: ${money(order.total, order.currency || symbol)}`,
+    ];
+    if (order.needsAddress) {
+      lines.push(
+        order.hasAddress
+          ? `Teslimat Adresi: ${order.addressSummary || "Kayıtlı"} - Kargo hazırlanıyor.`
+          : "Teslimat adresi gerekli — lütfen il, ilçe ve telefon bilginizi yazın.",
+      );
+    } else {
+      lines.push("Dijital ürün bilgileri ödeme onayından sonra anında bu sohbette teslim edilir.");
+    }
+    return lines.join("\n");
+  }
+
+  // Arabic default
   const lines = [
-    `طلبك ${order.code}: ${STATUS_AR[order.status] ?? order.status} · الدفع: ${
-      PAYMENT_AR[order.paymentStatus] ?? order.paymentStatus
-    }`,
+    `طلبك ${order.code}: ${statusStr} · الدفع: ${paymentStr}`,
     `المنتجات: ${items}`,
     `الإجمالي: ${money(order.total, order.currency || symbol)}`,
   ];
@@ -81,7 +255,7 @@ function orderLines(order: SafeOrder, symbol: string): string {
   return lines.join("\n");
 }
 
-/** Pick the best knowledge-base article, skipping ones already offered. */
+/** Pick the best knowledge-base article */
 function pickArticle(
   input: string,
   detection: Detection,
@@ -112,24 +286,10 @@ function pickArticle(
   return { article: best.article, strong: best.score >= 7 };
 }
 
-const englishOf: Record<string, string> = {
-  طلبك: "Your order",
-};
-
-/** Resolved understanding coming from the AI layer (server side). */
-export interface SupportHintInput {
-  intent?: SupportIntent;
-  productId?: string;
-  articleId?: string;
-  orderCode?: string;
-  errorCode?: string;
-  needsHuman?: boolean;
-}
-
 export function supportAnswer(
   input: string,
   context: SupportContext,
-  hint?: SupportHintInput,
+  hint?: SupportHint,
 ): SupportReply {
   const ctx: SupportContext = {
     ...context,
@@ -137,23 +297,29 @@ export function supportAnswer(
     articles: context.articles?.length ? context.articles : BUILTIN_ARTICLES,
   };
   const symbol = ctx.currencySymbol || "د.ع";
-  const lang = detectLang(input, ctx.lang ?? "ar");
+  const lang: SupportLang = detectLang(input, ctx.lang ?? "ar");
   const base = detect(input, ctx);
 
-  // The AI understanding wins over keyword rules when it resolved something.
   const hintedProduct = hint?.productId
     ? ctx.products.find((product) => product.id === hint.productId)
     : undefined;
   const hintedOrder = hint?.orderCode
     ? ctx.orders.find((order) => order.code === hint.orderCode)
     : undefined;
+
+  const matchedProductList: SafeProduct[] = hint?.matchedProductIds?.length
+    ? ctx.products.filter((p) => hint.matchedProductIds!.includes(p.id))
+    : hintedProduct
+      ? [hintedProduct]
+      : [];
+
   const detection: Detection = {
     ...base,
     ...(hint?.needsHuman ? { intent: "human_agent", confidence: "high" } : {}),
     ...(!hint?.needsHuman && hint?.intent && hint.intent !== "unknown"
       ? { intent: hint.intent, confidence: "high" }
       : {}),
-    ...(hintedProduct ? { products: [hintedProduct] } : {}),
+    ...(matchedProductList.length ? { products: matchedProductList } : {}),
     ...(hintedOrder ? { order: hintedOrder, orderCode: hintedOrder.code } : {}),
     ...(hint?.errorCode ? { errorCode: hint.errorCode } : {}),
   };
@@ -187,9 +353,9 @@ export function supportAnswer(
         : memory.askedQuestions,
     };
     return {
-      text: lang === "en" ? text.replace(/طلبك/g, englishOf["طلبك"] ?? "طلبك") : text,
+      text,
       cards: options.cards ?? [],
-      suggestions: options.suggestions ?? [],
+      suggestions: options.suggestions ?? SUGGESTIONS_I18N[lang]?.default ?? [],
       escalate: Boolean(options.escalate),
       memory: nextMemory,
       trace: {
@@ -205,78 +371,132 @@ export function supportAnswer(
     };
   };
 
-  const escalate = (reason: string, note: string) =>
+  // 1. If Gemini AI already constructed a rich generative answer, use it directly!
+  if (hint?.generatedResponse) {
+    const cards: SupportCard[] = [];
+    if (detection.products.length) {
+      cards.push(...detection.products.slice(0, 3).map((p) => productCard(p, symbol, lang)));
+    }
+    if (detection.order && detection.intent === "order_status") {
+      cards.push({
+        kind: "order",
+        code: detection.order.code,
+        text: detection.order.items.map((i) => i.title).join(", "),
+      });
+    }
+
+    const suggestions = hint.generatedSuggestions?.length
+      ? hint.generatedSuggestions
+      : (SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default);
+
+    return build(hint.generatedResponse, {
+      cards,
+      suggestions,
+      escalate: Boolean(hint.needsHuman),
+      reason: "gemini_ai_generated_response",
+    });
+  }
+
+  // 2. Deterministic Multilingual Fallback Engine
+  const escalateNote =
+    lang === "en"
+      ? "I will transfer you to the live support team now — please tap 'Talk to Support' to continue with an agent in this chat."
+      : lang === "ku"
+        ? "Ez ê te derbasî tîma piştgiriyê bikim — ji kerema xwe bitikîne 'Bi piştgiriyê re biaxive' da ku bi rêvebirekî re berdewam bikî."
+        : lang === "tr"
+          ? "Sizi şimdi canlı destek ekibimize aktarıyorum — bu sohbette yetkiliyle görüşmek için lütfen 'Destekle Görüş' butonuna tıklayın."
+          : "سأحوّلك إلى فريق الدعم والإدارة الآن — اضغط «تحدث مع الدعم» وسيصلك الرد في نفس المحادثة.";
+
+  const escalate = (reason: string, note = escalateNote) =>
     build(note, {
       escalate: true,
-      suggestions: ["تحدث مع الدعم"],
+      suggestions: [SUGGESTIONS_I18N[lang]?.support ?? "تحدث مع الدعم"],
       reason,
     });
 
   if (!norm(input)) {
-    return build("اكتب سؤالك وسأساعدك 👋", {
-      suggestions: ["حالة طلبي", "كيف أشتري؟", "أبحث عن لعبة"],
+    const emptyMsg =
+      lang === "en"
+        ? "How can I help you today? 👋"
+        : lang === "ku"
+          ? "Çawa dikarim alîkariya te bikim? 👋"
+          : lang === "tr"
+            ? "Bugün size nasıl yardımcı olabilirim? 👋"
+            : "اكتب استفسارك وسأساعدك فوراً 👋";
+    return build(emptyMsg, {
+      suggestions: SUGGESTIONS_I18N[lang]?.greeting ?? SUGGESTIONS_I18N.ar.greeting,
       reason: "empty_input",
     });
   }
 
   switch (detection.intent) {
     case "human_agent":
-      return escalate(
-        "user_requested_human",
-        "سأحوّلك إلى فريق الدعم الآن — اضغط «تحدث مع الدعم» وسيصلك الرد في نفس المحادثة.",
-      );
+      return escalate("user_requested_human");
 
-    case "greeting":
-      return build(
-        `أهلاً ${ctx.userName ? ctx.userName.split(" ")[0] : "بك"}! أستطيع متابعة طلباتك، حل مشاكل الحسابات والألعاب، والبحث عن الأسعار.`,
-        {
-          suggestions: ["حالة طلبي", "الحساب لا يعمل", "أبحث عن لعبة"],
-          reason: "greeting",
-        },
-      );
+    case "greeting": {
+      const name = ctx.userName ? ctx.userName.split(" ")[0] : "";
+      const text =
+        lang === "en"
+          ? `Hello ${name || "there"}! 👋 Welcome to Bananto Store. I can help you track orders, browse games & accessories, solve technical problems, or explain payment methods.`
+          : lang === "ku"
+            ? `Silav ${name || "heval"}! 👋 Bi xêr hatî Bananto Store. Ez dikarim alîkariya te bikim bo şopandina siparîşan, lîstik û aksesoran, çareserkirina pirsgirêkan, an rêyên dravdanê.`
+            : lang === "tr"
+              ? `Merhaba ${name || ""}! 👋 Bananto Store'a hoş geldiniz. Sipariş takibi, oyun ve aksesuar arama, teknik destek ve ödeme yöntemleri konusunda yardımcı olabilirim.`
+              : `أهلاً ${name || "بك"}! 👋 أنا المساعد الآلي لمتجر بنانا ستور. أستطيع مساعدتك في متابعة طلباتك، تصفح الألعاب والإكسسوارات، حل المشاكل التقنية، وشرح طرق الدفع.`;
+      return build(text, {
+        suggestions: SUGGESTIONS_I18N[lang]?.greeting ?? SUGGESTIONS_I18N.ar.greeting,
+        reason: "greeting",
+      });
+    }
 
-    case "thanks":
-      return build("على الرحب 🌟 إذا احتجت أي شيء آخر أنا هنا.", {
-        suggestions: ["حالة طلبي", "تحدث مع الدعم"],
+    case "thanks": {
+      const text =
+        lang === "en"
+          ? "You're very welcome! 🌟 Let me know if you need any other assistance."
+          : lang === "ku"
+            ? "Ser çavan! 🌟 Heke pêdiviya te bi tiştekî din hebe ez li vir im."
+            : lang === "tr"
+              ? "Rica ederim! 🌟 Başka bir konuda yardıma ihtiyacınız olursa buradayım."
+              : "على الرحب والسعة دائماً! 🌟 إذا احتجت أي مساعدة أخرى أنا هنا في خدمتك.";
+      return build(text, {
+        suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
         reason: "thanks",
       });
+    }
 
     case "tried_already": {
       const nextMemory = { failedAttempts: memory.failedAttempts + 1 };
       if (memory.failedAttempts + 1 >= 2) {
-        return build(
-          "واضح أن المشكلة تحتاج تدخلاً مباشراً — سأحوّلك للأدمن مع ملخص ما جرّبناه حتى الآن.",
-          {
-            escalate: true,
-            suggestions: ["تحدث مع الدعم"],
-            reason: "repeated_failure",
-            memory: nextMemory,
-          },
-        );
+        return escalate("repeated_failure");
       }
       const { article } = pickArticle(input, detection, ctx.articles, memory);
       if (article) {
         return build(
-          [
-            `${article.title} — خطوة بديلة:`,
-            ...article.steps.map((step, i) => `${i + 1}. ${step}`),
-          ].join("\n"),
+          [`${article.title}:`, ...article.steps.map((step, i) => `${i + 1}. ${step}`)].join("\n"),
           {
             articleId: article.id,
-            suggestions: ["ما زالت المشكلة", "تحدث مع الدعم"],
+            suggestions: [
+              lang === "en" ? "Still not working" : "ما زالت المشكلة",
+              SUGGESTIONS_I18N[lang]?.support ?? "تحدث مع الدعم",
+            ],
             reason: "alternate_article",
             memory: nextMemory,
           },
         );
       }
-      return build(
-        "أخبرني بالضبط ما ظهر لك على الشاشة (نص الرسالة أو رمز الخطأ) وسأعطيك الخطوة التالية.",
-        {
-          suggestions: ["أرسل صورة الشاشة", "تحدث مع الدعم"],
-          reason: "need_more_signal",
-          memory: nextMemory,
-        },
-      );
+      const text =
+        lang === "en"
+          ? "Please tell me the exact error message or code on your screen, or send a screenshot."
+          : lang === "ku"
+            ? "Ji kerema xwe koda xeletiyê an peyama li ser ekranê binivîse."
+            : lang === "tr"
+              ? "Lütfen ekrandaki hata kodunu veya mesajını belirtin, ya da ekran görüntüsü gönderin."
+              : "أخبرني بالضبط ما يظهر لك على الشاشة (نص الرسالة أو رمز الخطأ) وسأعطيك الحل.";
+      return build(text, {
+        suggestions: [SUGGESTIONS_I18N[lang]?.support ?? "تحدث مع الدعم"],
+        reason: "need_more_signal",
+        memory: nextMemory,
+      });
     }
 
     case "order_status":
@@ -284,191 +504,183 @@ export function supportAnswer(
     case "payment_receipt":
     case "delivery_address": {
       if (!ctx.orders.length && !ctx.activeOrder) {
-        return build("لا أرى طلبات على حسابك بعد. بعد إتمام أول طلب ستظهر حالته هنا لحظة بلحظة.", {
-          suggestions: ["كيف أشتري؟", "أبحث عن لعبة"],
+        const noOrdersText =
+          lang === "en"
+            ? "I don't see any orders on your account yet. Once you place an order, you can track it here live!"
+            : lang === "ku"
+              ? "Hîn tu siparîş li ser hesabê te xuya nake. Piştî kirîna yekem dê rewşa wê li vir bê nîşandan."
+              : lang === "tr"
+                ? "Hesabınızda henüz bir sipariş görünmüyor. İlk siparişinizi verdiğinizde durumunu buradan anlık takip edebilirsiniz."
+                : "لا توجد طلبات على حسابك حتى الآن. بعد إتمام أول طلب، ستتمكن من متابعته لحظة بلحظة هنا!";
+        return build(noOrdersText, {
+          suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
           reason: "no_orders",
         });
       }
-      // Several similar orders and no explicit reference → ask, do not guess.
-      if (!ctx.activeOrder && !detection.orderCode && ctx.orders.length > 1) {
-        return build(
-          `عندك ${ctx.orders.length} طلبات. أي طلب تقصد؟\n${ctx.orders
-            .slice(0, 4)
-            .map((order) => `• ${order.code} — ${STATUS_AR[order.status] ?? order.status}`)
-            .join("\n")}`,
-          {
-            suggestions: ctx.orders.slice(0, 3).map((order) => order.code),
-            reason: "ambiguous_order",
-            asked: "which_order",
-          },
-        );
-      }
-      const order = detection.order;
-      if (!order)
-        return escalate("order_not_resolved", "لم أتعرف على الطلب — سأحوّلك للأدمن لمتابعته.");
 
-      if (detection.intent === "delivery_address" && !order.needsAddress) {
-        return build(
-          "هذا الطلب رقمي بالكامل ولا يحتاج عنوان توصيل — التسليم يتم داخل هذه المحادثة.",
-          {
-            cards: [
-              { kind: "order", code: order.code, text: order.items.map((i) => i.title).join("، ") },
-            ],
-            suggestions: ["حالة الطلب", "طرق الدفع"],
-            reason: "digital_order_no_address",
-          },
-        );
-      }
+      const order = detection.order || ctx.orders[0];
+      if (!order) return escalate("order_not_resolved");
 
-      return build(orderLines(order, symbol), {
+      return build(orderLines(order, symbol, lang), {
         cards: [
-          { kind: "order", code: order.code, text: order.items.map((i) => i.title).join("، ") },
+          { kind: "order", code: order.code, text: order.items.map((i) => i.title).join(", ") },
         ],
         suggestions:
           order.paymentStatus === "unpaid"
-            ? ["طرق الدفع", "رفع الوصل"]
-            : ["الحساب لا يعمل", "تحدث مع الدعم"],
+            ? lang === "en"
+              ? ["Payment Methods", "Upload Receipt"]
+              : ["طرق الدفع", "رفع الوصل"]
+            : (SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default),
         reason: "order_status_from_order_data",
       });
     }
 
-    case "payment_how":
-      return build(
-        "بعد إنشاء الطلب تظهر بطاقة طرق الدفع داخل محادثة الطلب مع تفاصيل كل طريقة. أرسل صورة وصل التحويل في نفس المحادثة، وبعد التأكيد ينتقل الطلب إلى التجهيز.",
-        { suggestions: ["حالة طلبي", "رفع الوصل"], reason: "faq_payment" },
-      );
+    case "payment_how": {
+      const text =
+        lang === "en"
+          ? "Accepted Payment Methods:\n• ZainCash (زين كاش)\n• First Iraqi Bank (FIB)\n• AsiaPay (آسيا باي)\n• Visa & Mastercard\n• Binance Pay (USDT Crypto)\n• Banana Wallet Balance\n\nAfter placing an order, upload your receipt in the chat for instant confirmation and delivery."
+          : lang === "ku"
+            ? "Rêyên dravdanê yên berdest:\n• ZainCash\n• FIB (First Iraqi Bank)\n• AsiaPay\n• Karta Bankî (Visa / Master)\n• Binance Pay (USDT)\n• Cizdana Mûzê\n\nPiştî siparîşê, wêneya wergirtinê li vir bar bike bo pejirandina bilez."
+            : lang === "tr"
+              ? "Geçerli Ödeme Yöntemleri:\n• ZainCash\n• FIB (First Iraqi Bank)\n• AsiaPay\n• Kredi Kartı (Visa / MasterCard)\n• Binance Pay (USDT Kripto)\n• Banana Cüzdan Bakiyesi\n\nSiparişten sonra dekont görüntüsünü bu sohbete yükleyerek anında onaylatabilirsiniz."
+              : "طرق الدفع المتوفرة:\n• زين كاش (ZainCash)\n• المصرف العراقي الأول (FIB)\n• آسيا باي (AsiaPay)\n• البطاقات المصرفية (فيزا / ماستركارد)\n• باينانس باي (Binance Pay / USDT)\n• رصيد محفظة الموز\n\nبعد إتمام الطلب، أرسل صورة الوصل في المحادثة لتأكيده وتجهيزه فوراً.";
+      return build(text, {
+        suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+        reason: "faq_payment",
+      });
+    }
 
     case "account_credentials": {
       const order = detection.order;
       const delivered = order?.items.filter((item) => item.credsSentAt) ?? [];
       if (delivered.length) {
-        return build(
-          [
-            "بيانات حسابك مرسلة داخل هذه المحادثة في رسالة «بيانات الحساب»:",
-            ...delivered.map(
-              (item) => `• ${item.title} — البريد: ${item.deliveryEmail ?? "داخل الرسالة"}`,
-            ),
-            "كلمة المرور تُعرض بالضغط على «إظهار» في نفس الرسالة لأسباب أمنية.",
-          ].join("\n"),
-          {
-            suggestions: ["الحساب لا يعمل", "تحدث مع الدعم"],
-            reason: "credentials_already_delivered",
-          },
-        );
+        const text =
+          lang === "en"
+            ? `Your account login details have been delivered in this chat under the 'Account Credentials' message card. Tap 'Show' to reveal the password.`
+            : `بيانات حسابك مرسلة في هذه المحادثة. اضغط على «إظهار» لعرض كلمة المرور.`;
+        return build(text, {
+          suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+          reason: "credentials_already_delivered",
+        });
       }
-      if (order && order.paymentStatus !== "paid") {
-        return build(
-          `طلبك ${order.code} بانتظار تأكيد الدفع، وبعده يتم تجهيز الحساب وتسليمه هنا مباشرة.`,
-          { suggestions: ["طرق الدفع", "حالة طلبي"], reason: "credentials_pending_payment" },
-        );
-      }
-      return build("الطلب قيد التجهيز الآن، وبيانات الحساب تُرسل في هذه المحادثة فور جهوزها.", {
-        suggestions: ["حالة طلبي", "تحدث مع الدعم"],
+      const text =
+        lang === "en"
+          ? "Account credentials will be sent directly in this chat as soon as payment is confirmed."
+          : "الطلب قيد التجهيز، وتصلك بيانات الحساب في هذه المحادثة فور تأكيد الدفع.";
+      return build(text, {
+        suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
         reason: "credentials_in_preparation",
       });
     }
 
-    case "verification_code":
-      return build(
-        "لا تُغلق شاشة إدخال الرمز. أرسل هنا رقم الطلب واسم اللعبة وسنجلب رمز التحقق من بريد الحساب ونرسله لك خلال دقائق.",
-        {
-          suggestions: ["حالة طلبي", "تحدث مع الدعم"],
-          reason: "verification_code_flow",
-          escalate: true,
-        },
-      );
+    case "verification_code": {
+      const text =
+        lang === "en"
+          ? "Keep the verification code screen open on your Nintendo Switch. Please reply with your Order Code, and our team will fetch your code immediately!"
+          : "لا تُغلق شاشة الرمز على جهازك. أرسل رقم الطلب وسنجلب رمز التحقق من بريد الحساب ونرسله لك فوراً.";
+      return build(text, {
+        suggestions: [SUGGESTIONS_I18N[lang]?.support ?? "تحدث مع الدعم"],
+        escalate: true,
+        reason: "verification_code_flow",
+      });
+    }
 
     case "account_login_problem":
     case "game_not_opening":
     case "primary_device": {
-      const { article, strong } = pickArticle(
-        input,
-        detection,
-        ctx.articles,
-        memory,
-        hint?.articleId,
-      );
-      // With a resolved article we answer; guessing only happens when nothing matched.
-      if (article && (strong || detection.confidence === "high" || Boolean(hint?.articleId))) {
-        return build(
-          [`${article.title}:`, ...article.steps.map((step, i) => `${i + 1}. ${step}`)].join("\n"),
-          {
-            articleId: article.id,
-            ...(article.imageUrl
-              ? { cards: [{ kind: "image", url: article.imageUrl, text: article.title }] }
-              : {}),
-            suggestions: ["جربت وما نفع", "تحدث مع الدعم"],
-            reason: detection.errorCode ? "article_by_error_code" : "article_strong_match",
-          },
-        );
-      }
-      if (article?.ask && !memory.askedQuestions.includes(article.id)) {
-        return build(article.ask, {
-          suggestions: ["أرسل صورة الشاشة", "تحدث مع الدعم"],
-          reason: "clarify_before_answer",
-          asked: article.id,
-        });
-      }
+      const { article } = pickArticle(input, detection, ctx.articles, memory, hint?.articleId);
       if (article) {
         return build(
           [`${article.title}:`, ...article.steps.map((step, i) => `${i + 1}. ${step}`)].join("\n"),
           {
             articleId: article.id,
-            suggestions: ["جربت وما نفع", "تحدث مع الدعم"],
-            reason: "article_best_effort",
+            suggestions: [
+              lang === "en" ? "Still not working" : "جربت وما نفع",
+              SUGGESTIONS_I18N[lang]?.support ?? "تحدث مع الدعم",
+            ],
+            reason: "article_match",
           },
         );
       }
-      return build(
-        "أخبرني ما يظهر بالضبط على الشاشة (نص الرسالة أو رمز الخطأ) أو أرسل صورة، وإن أردت أحوّلك للأدمن فوراً.",
-        {
-          suggestions: ["أرسل صورة الشاشة", "تحدث مع الدعم"],
-          reason: "problem_needs_detail",
-          asked: "problem_detail",
-        },
-      );
+      const text =
+        lang === "en"
+          ? "Please tell me the error code or message appearing on your screen, or send a screenshot."
+          : "أخبرني ما يظهر بالضبط على الشاشة (نص الرسالة أو رمز الخطأ) وسأساعدك بخطوات حلها فوراً.";
+      return build(text, {
+        suggestions: [SUGGESTIONS_I18N[lang]?.support ?? "تحدث مع الدعم"],
+        reason: "problem_needs_detail",
+      });
     }
 
-    case "refund_cancel":
-      return build(
-        "يمكن إلغاء الطلب مجاناً قبل تسليم بيانات الحساب أو قبل شحن المنتج. بعد التسليم لا يمكن الاسترجاع، لكن إن لم يعمل الحساب نستبدله أو نعيد المبلغ بعد التحقق.",
-        { suggestions: ["حالة طلبي", "تحدث مع الدعم"], reason: "policy_refund" },
-      );
+    case "refund_cancel": {
+      const text =
+        lang === "en"
+          ? "Orders can be cancelled free of charge prior to digital credentials delivery or physical shipment dispatch. All accounts are backed by a full warranty guarantee."
+          : "يمكن إلغاء الطلب مجاناً قبل تسليم بيانات الحساب أو قبل شحن المنتج. جميع الحسابات مغطاة بضمان كامل في حال وجود أي عطل.";
+      return build(text, {
+        suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+        reason: "policy_refund",
+      });
+    }
 
-    case "warranty":
-      return build(
-        "كل حساب مغطّى بضمان استمرارية طوال مدة الطلب: إذا فُقد الوصول لسبب من جهتنا نُصلحه أو نستبدله مجاناً — أخبرنا في هذه المحادثة.",
-        { suggestions: ["الحساب لا يعمل", "تحدث مع الدعم"], reason: "policy_warranty" },
-      );
+    case "warranty": {
+      const text =
+        lang === "en"
+          ? "All digital accounts and games come with a 100% Lifetime Guarantee: if you ever encounter any access or technical issues, we fix or replace it immediately and free of charge!"
+          : "جميع الحسابات والألعاب الرقمية مشمولة بضمان استمرارية كامل: إذا واجهت أي مشكلة تقنية أو فقدان وصول يتم حلها أو استبدال الحساب فوراً ومجاناً.";
+      return build(text, {
+        suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+        reason: "policy_warranty",
+      });
+    }
 
-    case "banana_wallet":
-      return build(
-        "الموز هو عملة المتجر: تحصل عليه من الشراء والعروض، وتستبدله بخلفيات ومظاهر أو تبيعه وتشتريه في «سوق الموز» بسعر متغيّر حسب العرض والطلب.",
-        { suggestions: ["سوق الموز", "حالة طلبي"], reason: "faq_banana" },
-      );
+    case "banana_wallet": {
+      const text =
+        lang === "en"
+          ? "Banana Wallet is our reward points system: earn Bananas on every order, redeem them for discounts and perks, or trade them in the live peer-to-peer Banana Market!"
+          : "محفظة الموز (Banana Wallet) هي نظام المكافآت الحصري: تجمع الموز من مشترياتك وتستبدله بخصومات ومكافآت، أو تتداول به في «سوق الموز» الحي وفق أسعار العرض والطلب.";
+      return build(text, {
+        suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+        reason: "faq_banana",
+      });
+    }
 
     case "price_question":
     case "product_search": {
       const found = detection.products.length
         ? detection.products
-        : findProducts(input, ctx.products);
-      if (found.length === 1) {
-        return build("هذا ما وجدته عندنا:", {
-          cards: [productCard(found[0]!, symbol)],
-          suggestions: ["أضف إلى السلة", "هل يحتاج عنوان؟"],
-          reason: "catalogue_single_match",
+        : findProducts(input, ctx.products, 3);
+
+      if (found.length) {
+        const text =
+          lang === "en"
+            ? "Here are the matching products in our store:"
+            : lang === "ku"
+              ? "Berhemên dîtî yên li dikanê:"
+              : lang === "tr"
+                ? "Mağazamızdaki eşleşen ürünler:"
+                : "إليك أبرز المنتجات المتوفرة في المتجر:";
+
+        return build(text, {
+          cards: found.map((p) => productCard(p, symbol, lang)),
+          suggestions: found
+            .slice(0, 3)
+            .map((p) => (lang !== "ar" && p.titleEn ? p.titleEn : p.title)),
+          reason: "catalogue_match",
         });
       }
-      if (found.length > 1) {
-        return build("وجدت أكثر من نتيجة — أي واحدة تقصد؟", {
-          cards: found.map((product) => productCard(product, symbol)),
-          suggestions: found.slice(0, 3).map((product) => product.title),
-          reason: "catalogue_multi_match",
-          asked: "which_product",
-        });
-      }
-      return build("أخبرني باسم اللعبة أو المنتج وسأعطيك سعره وتفاصيله فوراً.", {
-        suggestions: ["أرخص الألعاب", "تصفح الألعاب"],
+
+      const noMatchText =
+        lang === "en"
+          ? "Please tell me the name of the game or accessory you're looking for, and I'll find its availability and price for you!"
+          : lang === "ku"
+            ? "Navê lîstik an aksesorê binivîse da ku biha û rewşa wê bibînim!"
+            : lang === "tr"
+              ? "Aradığınız oyun veya aksesuarın adını yazın, fiyat ve stok bilgisini getireyim!"
+              : "أخبرني باسم اللعبة أو الإكسسوار وسأعطيك سعره وتفاصيله فوراً!";
+
+      return build(noMatchText, {
+        suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
         reason: "catalogue_no_match",
       });
     }
@@ -477,34 +689,26 @@ export function supportAnswer(
       break;
   }
 
-  // Store policies managed by the admin.
-  const policy = (ctx.policies ?? []).find((item) => matchAny(surfaces(input), [item.title]));
-  if (policy) {
-    return build(`${policy.title}\n${policy.body}`, {
-      suggestions: ["تحدث مع الدعم"],
-      reason: "admin_policy",
-    });
-  }
+  // Fallback for general queries
+  const defaultText =
+    lang === "en"
+      ? "Welcome to Bananto Store! 🎮 I'm your AI gaming assistant. I can help you with: browsing games & accessories, checking prices, tracking orders, explaining payment methods, or transferring you to an admin."
+      : lang === "ku"
+        ? "Bi xêr hatî Bananto Store! 🎮 Ez alîkarê te yê zîrek im. Ez dikarim alîkariyê bidim bo: dîtina lîstikan, biha, şopandina siparîşan, rêyên dravdanê, an peywendî bi rêvebir re."
+        : lang === "tr"
+          ? "Bananto Store'a hoş geldiniz! 🎮 Akıllı asistanınız olarak size oyun/aksesuar arama, fiyat bilgisi, sipariş takibi ve ödeme yöntemleri konularında yardımcı olabilirim."
+          : "أهلاً بك في متجر بنانا ستور! 🎮 أستطيع مساعدتك في: تصفح الألعاب والإكسسوارات، معرفة الأسعار، متابعة الطلبات، شرح طرق الدفع، أو تحويلك للإدارة مباشرة.";
 
-  // Last resort: a very short message inside an order thread, or escalate.
-  if (detection.terse && detection.order) {
-    return build(orderLines(detection.order, symbol), {
-      suggestions: ["الحساب لا يعمل", "طرق الدفع", "تحدث مع الدعم"],
-      reason: "terse_message_order_fallback",
-    });
-  }
-
-  return escalate(
-    "unknown_intent",
-    "لم أفهم طلبك تماماً ولا أريد أن أخمّن. أستطيع مساعدتك في: حالة الطلب، مشاكل الحساب أو اللعبة، الأسعار، أو أحوّلك للأدمن الآن.",
-  );
+  return build(defaultText, {
+    suggestions: SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default,
+    reason: "unknown_intent",
+  });
 }
 
 /** Suggestion chips shown before the user types anything. */
 export function openingSuggestions(ctx: SupportContext): string[] {
-  if (ctx.activeOrder) return ["حالة الطلب", "الحساب لا يعمل", "طرق الدفع"];
-  if (ctx.orders.length) return ["حالة طلبي", "الحساب لا يعمل", "تحدث مع الدعم"];
-  return ["أبحث عن لعبة", "كيف أشتري؟", "طرق الدفع"];
+  const lang = ctx.lang ?? "ar";
+  return SUGGESTIONS_I18N[lang]?.default ?? SUGGESTIONS_I18N.ar.default;
 }
 
 export const INTENT_IDS = Object.keys(INTENT_PHRASES);

@@ -6,7 +6,7 @@
  * the database, never calls an external API and never sees admin-only data.
  */
 
-export type SupportLang = "ar" | "en" | "ku";
+export type SupportLang = "ar" | "en" | "ku" | "tr";
 
 export type Confidence = "high" | "medium" | "low";
 

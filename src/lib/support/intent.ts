@@ -58,6 +58,46 @@ function scoreIntents(input: string): { intent: SupportIntent; score: number }[]
  * ask "which one?" when the answer is obvious.
  */
 export function findProducts(input: string, products: SafeProduct[], limit = 3): SafeProduct[] {
+  const normalizedInput = norm(input).toLowerCase();
+
+  // 1. General category matches: Accessories
+  const isAccessoryQuery =
+    /(\b(accessories|accessory|latest accessories|controller|joycon|joy-con|dock|case|grip|charger|aksesuar|aksesuarlar)\b)|(اكسسوار|إكسسوار|ملحقات|يد تحكم|جوي كون|كفر|قاعدة|شاحن|جراب)/i.test(
+      normalizedInput,
+    );
+
+  if (isAccessoryQuery) {
+    const accessories = products.filter(
+      (p) =>
+        p.kind === "accessory" ||
+        p.kind === "hardware" ||
+        /accessory|hardware|controller|joycon|dock|case|grip/i.test(
+          `${p.title} ${p.titleEn || ""} ${p.genre || ""} ${(p.tags || []).join(" ")}`,
+        ) ||
+        /اكسسوار|ملحق|يد|تحكم|كفر|قاعدة|شاحن/i.test(
+          `${p.title} ${p.titleEn || ""} ${p.genre || ""} ${(p.tags || []).join(" ")}`,
+        ),
+    );
+    if (accessories.length) return accessories.slice(0, limit);
+  }
+
+  // 2. General category matches: Games / Browse
+  const isGeneralGameQuery =
+    /(\b(browse games|games|all games|latest games|lîstik|oyunlar)\b)|(تصفح الالعاب|تصفح الألعاب|العاب|ألعاب|جديد الالعاب)/i.test(
+      normalizedInput,
+    );
+
+  if (isGeneralGameQuery) {
+    const games = products.filter(
+      (p) =>
+        p.kind === "account" ||
+        p.kind === "offline_account" ||
+        p.kind === "online_account" ||
+        p.kind === "physical",
+    );
+    if (games.length) return games.slice(0, limit);
+  }
+
   const terms = contentTokens(input);
   const termKeys = terms
     .map((term) => ({ term, key: skeleton(term) }))

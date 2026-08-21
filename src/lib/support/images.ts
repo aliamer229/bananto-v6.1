@@ -1,18 +1,10 @@
 /**
- * Screenshot handling — fully local, no external vision API.
- *
- * The user sends a photo of the console screen. We cannot read pixels here, so
- * instead of guessing we do three deterministic things:
- *  1. Read any error code the user typed in the caption (or a previous turn).
- *  2. If the caption is empty, ask one precise question (the error code / the
- *     exact line on screen) and offer the most likely article for this order.
- *  3. After two screenshots without a usable signal, hand off to the admin with
- *     an internal note, because a human can simply look at the image.
+ * Screenshot handling — multilingual and robust.
  */
 
 import { pickArticleForCode } from "./kb";
-import { findErrorCode } from "./normalize";
-import type { SupportContext, SupportReply, SupportMemory, KbArticle } from "./types";
+import { detectLang, findErrorCode } from "./normalize";
+import type { SupportContext, SupportReply, SupportMemory, KbArticle, SupportLang } from "./types";
 import { emptyMemory } from "./types";
 
 export function imageAnswer(
@@ -27,6 +19,7 @@ export function imageAnswer(
   const caption = input.caption ?? "";
   const code = findErrorCode(caption) ?? memory.lastErrorCode;
   const articles: KbArticle[] = context.articles ?? [];
+  const lang: SupportLang = detectLang(caption, context.lang ?? "ar");
 
   const reply = (
     text: string,
@@ -40,7 +33,15 @@ export function imageAnswer(
   ): SupportReply => ({
     text,
     cards: [],
-    suggestions: options.suggestions ?? [],
+    suggestions:
+      options.suggestions ??
+      (lang === "en"
+        ? ["Talk to Support"]
+        : lang === "ku"
+          ? ["Bi piştgiriyê re biaxive"]
+          : lang === "tr"
+            ? ["Destekle Görüş"]
+            : ["تحدث مع الدعم"]),
     escalate: Boolean(options.escalate),
     memory: {
       ...memory,
@@ -63,48 +64,62 @@ export function imageAnswer(
   if (code) {
     const article = pickArticleForCode(code, articles);
     if (article) {
+      const header =
+        lang === "en"
+          ? `Error Code ${code} — ${article.title}:`
+          : `رمز الخطأ ${code} — ${article.title}:`;
       return reply(
         [
-          `رمز الخطأ ${code} — ${article.title}:`,
+          header,
           ...article.steps.map((step: string, index: number) => `${index + 1}. ${step}`),
         ].join("\n"),
         {
           articleId: article.id,
           code,
-          suggestions: ["جربت وما نفع", "تحدث مع الدعم"],
+          suggestions: [
+            lang === "en" ? "Still not working" : "جربت وما نفع",
+            lang === "en" ? "Talk to Support" : "تحدث مع الدعم",
+          ],
           reason: "image_error_code_article",
         },
       );
     }
-    return reply(
-      `وصلني رمز الخطأ ${code} وهو غير مسجّل عندي بحل جاهز — سأحوّل الصورة والرمز للأدمن الآن ليحلّها لك مباشرة.`,
-      { code, escalate: true, suggestions: ["تحدث مع الدعم"], reason: "image_unknown_error_code" },
-    );
+
+    const unknownText =
+      lang === "en"
+        ? `I received error code ${code}. I am forwarding your screenshot and error code to our support admin now for immediate manual resolution.`
+        : `وصلني رمز الخطأ ${code} وهو غير مسجّل عندي بحل جاهز — سأحوّل الصورة والرمز للإدارة الآن لمساعدتك مباشرة.`;
+
+    return reply(unknownText, {
+      code,
+      escalate: true,
+      suggestions: [lang === "en" ? "Talk to Support" : "تحدث مع الدعم"],
+      reason: "image_unknown_error_code",
+    });
   }
 
-  // 3) Second screenshot with no signal → a human should just look at it.
+  // 2) Second screenshot with no signal → hand off to a human
   if (input.imageCount >= 2) {
-    return reply(
-      "وصلتني الصور. لأسرّع الحل سأحوّلك للأدمن ليطّلع على الصورة بنفسه ويجيبك هنا في نفس المحادثة.",
-      { escalate: true, suggestions: ["تحدث مع الدعم"], reason: "image_repeated_no_signal" },
-    );
+    const handoffText =
+      lang === "en"
+        ? "Images received! I am escalating this conversation to our support team so an admin can view the screenshots directly and reply here."
+        : "وصلتني الصور ✅ سأحوّلك للإدارة ليطّلع المشرف على الصورة بنفسه ويجيبك هنا في نفس المحادثة.";
+
+    return reply(handoffText, {
+      escalate: true,
+      suggestions: [lang === "en" ? "Talk to Support" : "تحدث مع الدعم"],
+      reason: "image_repeated_no_signal",
+    });
   }
 
-  // 2) First screenshot → ask one precise question, plus the likeliest guide.
-  const likely = context.activeOrder?.needsAddress
-    ? articles.find((article) => article.id === "kb_download_stuck")
-    : articles.find((article) => article.id === "kb_login_failed");
+  // 3) First screenshot without code → prompt for code or details
+  const msg =
+    lang === "en"
+      ? "Image received! ✅ To provide the exact fix, please type the error code shown on your screen (e.g. 2124-4508) or describe the error message."
+      : "وصلتني الصورة ✅ لأعطيك الحل الصحيح، اكتب لي رمز الخطأ الظاهر في الصورة (مثال 2124-4508) أو نص الرسالة.";
 
-  const lines = [
-    "وصلتني الصورة ✅ لأعطيك الحل الصحيح بدون تخمين، اكتب لي رمز الخطأ الظاهر في الصورة (مثال 2124-4508) أو انسخ لي نص الرسالة كما هو.",
-  ];
-  if (likely) {
-    lines.push("", `وإن كانت المشكلة «${likely.title}» جرّب الآن:`, `1. ${likely.steps[0]}`);
-  }
-
-  return reply(lines.join("\n"), {
-    ...(likely ? { articleId: likely.id } : {}),
-    suggestions: ["رمز الخطأ", "الحساب لا يعمل", "تحدث مع الدعم"],
-    reason: "image_needs_error_code",
+  return reply(msg, {
+    suggestions: [lang === "en" ? "Talk to Support" : "تحدث مع الدعم"],
+    reason: "image_first_screenshot_ask_code",
   });
 }

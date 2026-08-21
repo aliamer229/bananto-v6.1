@@ -153,6 +153,30 @@ function looksLikeHtml(text: string): boolean {
 }
 
 /**
+ * Checks if a Telegram user is subscribed to a required channel (e.g. @banan_to).
+ */
+export async function checkChannelSubscription(
+  userId: string | number,
+  channel: string = "@banan_to",
+): Promise<{ isMember: boolean; error?: string }> {
+  try {
+    const formattedChannel = channel.startsWith("@") ? channel : `@${channel}`;
+    const res = await callTelegram<{ status: string }>("getChatMember", {
+      chat_id: formattedChannel,
+      user_id: Number(userId),
+    });
+    if (!res.ok || !res.result) {
+      return { isMember: false, error: res.description };
+    }
+    const status = res.result.status;
+    const isMember = ["creator", "administrator", "member", "restricted"].includes(status);
+    return { isMember };
+  } catch (err: any) {
+    return { isMember: false, error: err?.message };
+  }
+}
+
+/**
  * Sends a plain message. `parse_mode` is only added when the caller asks for
  * it or the text actually contains supported HTML tags — an unparsable body
  * must never be the reason a message fails.

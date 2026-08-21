@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import AppShell from "@/components/AppShell";
 import Cartridge, { type CartridgeGame } from "@/components/Cartridge";
+import { getNintendoCardImage } from "@/components/HomeView";
 import StaggerItem from "@/components/StaggerItem";
 import { useBatches } from "@/hooks/useBatches";
 import { useStoreData } from "@/hooks/useStoreData";
@@ -55,12 +56,7 @@ function GamesPage() {
           id: p["id"],
           title: p["titleEn"] || p["english_name"] || p["title"],
           subtitle: p["developer"] || p["publisher"] || "Nintendo Switch",
-          image:
-            p["cartridgeImage"] ||
-            p["image"] ||
-            p["coverImage"] ||
-            (Array.isArray(p["images"]) ? p["images"][0] : undefined) ||
-            (Array.isArray(p["gallery"]) ? p["gallery"][0] : undefined),
+          image: getNintendoCardImage(p),
           rating: p["metacriticRating"] ?? null,
           platform: p["platform"],
           genres: Array.isArray(p["genres"]) ? (p["genres"] as string[]) : [],

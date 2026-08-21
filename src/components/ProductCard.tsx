@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 
 import { cdnImage } from "@/lib/img";
+import { getNintendoCardImage } from "./HomeView";
 
 export function ProductCard({
   product,
@@ -11,10 +12,7 @@ export function ProductCard({
   product: any;
   forceStandardImage?: boolean;
 }) {
-  // If forceStandardImage is true, we ignore cartridgeImage and use the standard product image
-  const displayImage = forceStandardImage
-    ? product.image || product.coverImage || product.coverUrl
-    : product.cartridgeImage || product.image || product.coverImage || product.coverUrl;
+  const displayImage = getNintendoCardImage(product);
 
   return (
     <Link

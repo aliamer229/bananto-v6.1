@@ -1,9 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, ImagePlus, Send, ShieldCheck, Ticket } from "lucide-react";
+import {
+  Check,
+  CheckCircle2,
+  Copy,
+  Gamepad2,
+  ImagePlus,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { api, fileToDataUrl } from "@/lib/api";
 import { isAccountKind, type ChatMessage, type Order, type OrderItem } from "@/lib/types";
+import OrderReviewModal from "@/components/OrderReviewModal";
 
 function Bubble({ message, children }: { message: ChatMessage; children: React.ReactNode }) {
   const mine = message.senderRole === "user";
@@ -11,9 +23,9 @@ function Bubble({ message, children }: { message: ChatMessage; children: React.R
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs ${
           system
-            ? "border border-amber-200 bg-amber-50 text-amber-900"
+            ? "border border-amber-200 bg-amber-50 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-900/50"
             : mine
               ? "bg-[var(--brand-red)] text-white"
               : "border border-border bg-card text-foreground"
@@ -38,6 +50,65 @@ function cleanCredentialValue(val: unknown): string {
     return "";
   }
   return s;
+}
+
+function DigitalOrderCard({ body }: { body: Record<string, any> }) {
+  const items = Array.isArray(body?.items) ? body.items : [];
+  const total = Number(body?.total || 0);
+  const currency = body?.currency || "IQD";
+
+  return (
+    <div className="space-y-3 min-w-[240px] max-w-sm rounded-2xl border border-amber-300 dark:border-amber-700/50 bg-linear-to-b from-amber-500/10 to-amber-500/5 p-3.5 text-right">
+      <div className="flex items-center justify-between border-b border-amber-300/40 dark:border-amber-700/40 pb-2">
+        <div className="flex items-center gap-1.5 font-black text-xs text-amber-700 dark:text-amber-400">
+          <Gamepad2 className="h-4 w-4" />
+          <span>طلب ألعاب رقمية</span>
+        </div>
+        <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-black text-emerald-600 dark:text-emerald-400">
+          مدفوع من المحفظة ✅
+        </span>
+      </div>
+
+      <div className="space-y-2">
+        {items.map((item: any, idx: number) => (
+          <div
+            key={idx}
+            className="flex items-center gap-2.5 rounded-xl bg-card/60 p-2 border border-border/40"
+          >
+            {item.image ? (
+              <img
+                src={item.image}
+                alt=""
+                className="h-10 w-10 shrink-0 rounded-lg object-cover border border-border/50"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <Gamepad2 className="h-5 w-5" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {Number(item.unitPrice || 0).toLocaleString()} {currency} × {item.quantity || 1}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="border-t border-amber-300/40 dark:border-amber-700/40 pt-2 space-y-1">
+        <div className="flex justify-between items-center text-xs font-bold">
+          <span className="text-muted-foreground">إجمالي المبلغ:</span>
+          <span className="text-foreground font-black">
+            {total.toLocaleString()} {currency}
+          </span>
+        </div>
+        <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+          ⏳ سيتم إرسال بيانات الدخول والتعليمات في هذه المحادثة مباشرة من قبل فريق الدعم.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 function CredentialsCard({ message }: { message: ChatMessage; order: Order }) {
@@ -156,6 +227,10 @@ function MessageBody({ message, order }: { message: ChatMessage; order: Order })
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
+  if (message.body?.type === "digital_order_card") {
+    return <DigitalOrderCard body={message.body} />;
+  }
+
   switch (message.kind) {
     case "image":
     case "payment_receipt":
@@ -243,7 +318,11 @@ function MessageBody({ message, order }: { message: ChatMessage; order: Order })
       );
     }
     case "order_completed":
-      return <p className="font-bold">تم إكمال الطلب {String(message.body["code"] ?? "")} 🎉</p>;
+      return (
+        <div className="space-y-1 text-center font-bold">
+          <p>✅ تم إكمال الطلب {String(message.body["code"] ?? "")} بنجاح!</p>
+        </div>
+      );
     default:
       return <p className="whitespace-pre-wrap">{String(message.body["text"] ?? "")}</p>;
   }
@@ -375,6 +454,7 @@ export default function OrderChat({
 }) {
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading } = useQuery({
@@ -391,6 +471,22 @@ export default function OrderChat({
     onSuccess: () => {
       setText("");
       refresh();
+    },
+  });
+
+  const confirmReceived = useMutation({
+    mutationFn: () =>
+      api.fetch("/api/orders", {
+        method: "PATCH",
+        body: JSON.stringify({ orderId, action: "confirm_received" }),
+      }),
+    onSuccess: () => {
+      toast.success("تم تأكيد استلام الطلب والحساب بنجاح! 🎉");
+      refresh();
+      setShowReviewModal(true);
+    },
+    onError: () => {
+      toast.error("فشل تأكيد الاستلام");
     },
   });
 
@@ -413,26 +509,40 @@ export default function OrderChat({
   }
 
   const { order } = data;
+  const isCompleted = order.status === "completed";
 
   return (
-    <div className="flex min-h-[70vh] flex-col overflow-hidden rounded-3xl border border-border bg-[#faf8f2]">
+    <div className="flex min-h-[70vh] flex-col overflow-hidden rounded-3xl border border-border bg-[#faf8f2] dark:bg-card/40">
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3">
         <div>
           <p className="text-sm font-bold text-foreground">طلب {order.code}</p>
           <p className="text-xs text-muted-foreground">
             {order.status === "completed"
-              ? "مكتمل"
+              ? "مكتمل ✅"
               : order.status === "delivering"
-                ? "قيد التسليم"
-                : "قيد المعالجة"}{" "}
-            · {order.paymentStatus === "paid" ? "مدفوع" : "بانتظار الدفع"}
+                ? "قيد التسليم 📦"
+                : "قيد المعالجة ⏳"}{" "}
+            · {order.paymentStatus === "paid" ? "مدفوع من المحفظة" : "بانتظار الدفع"}
           </p>
         </div>
-        <p className="text-sm font-bold text-[var(--brand-red)]">
-          {order.total.toLocaleString()} {order.currency}
-        </p>
+        <div className="text-left">
+          <p className="text-sm font-bold text-[var(--brand-red)]">
+            {order.total.toLocaleString()} {order.currency}
+          </p>
+          {isCompleted && (
+            <button
+              onClick={() => setShowReviewModal(true)}
+              className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              <Star className="h-3 w-3 fill-current" />
+              <span>تقييم الطلب</span>
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* Messages */}
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {messages.map((message) => (
           <Bubble key={message.id} message={message}>
@@ -442,10 +552,46 @@ export default function OrderChat({
         <div ref={bottomRef} />
       </div>
 
+      {/* Customer Action Bar: Confirm Received */}
+      {!isAdmin && (
+        <div className="border-t border-border/80 bg-muted/40 px-4 py-2.5 flex items-center justify-between gap-3">
+          {!isCompleted ? (
+            <div className="flex items-center justify-between w-full gap-2">
+              <span className="text-xs text-muted-foreground font-medium">
+                هل استلمت الحساب وبيانات اللعبة؟
+              </span>
+              <button
+                onClick={() => confirmReceived.mutate()}
+                disabled={confirmReceived.isPending}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs active:scale-95 transition-all disabled:opacity-50"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span>{confirmReceived.isPending ? "جاري التأكيد..." : "تم استلام الطلب"}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between w-full">
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                تم استلام الطلب وتأكيده بنجاح
+              </span>
+              <button
+                onClick={() => setShowReviewModal(true)}
+                className="inline-flex items-center gap-1 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 px-3 py-1 text-xs font-bold transition-colors"
+              >
+                <Sparkles className="h-3 w-3" />
+                <span>تقييم وكود الخصم</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {isAdmin && <AdminPanel order={order} onDone={refresh} />}
 
+      {/* Input bar */}
       <div className="flex items-center gap-2 border-t border-border bg-card p-3">
-        <label className="cursor-pointer rounded-xl bg-muted p-2.5 text-muted-foreground">
+        <label className="cursor-pointer rounded-xl bg-muted p-2.5 text-muted-foreground hover:bg-muted/80 transition-colors">
           <ImagePlus className="h-5 w-5" />
           <input
             type="file"
@@ -464,16 +610,28 @@ export default function OrderChat({
             if (event.key === "Enter" && text.trim()) send.mutate({ text: text.trim() });
           }}
           placeholder="اكتب رسالتك للدعم..."
-          className="flex-1 rounded-xl border border-border bg-muted px-4 py-2.5 text-sm outline-none focus:border-[var(--brand-red)]"
+          className="flex-1 rounded-xl border border-border bg-muted px-4 py-2.5 text-sm outline-hidden focus:border-[var(--brand-red)]"
         />
         <button
           disabled={!text.trim() || send.isPending}
           onClick={() => send.mutate({ text: text.trim() })}
-          className="rounded-xl bg-[var(--brand-red)] p-2.5 text-white disabled:opacity-40"
+          className="rounded-xl bg-[var(--brand-red)] p-2.5 text-white disabled:opacity-40 hover:opacity-90 active:scale-95 transition-all"
         >
           <Send className="h-5 w-5" />
         </button>
       </div>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <OrderReviewModal
+          order={order}
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          onSubmitted={() => {
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
 }

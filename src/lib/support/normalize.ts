@@ -248,14 +248,40 @@ export function matchAny(inputSurfaces: string[], phrases: string[]): string | u
 }
 
 /** Detect the language the answer should be written in. */
-export function detectLang(input: string, fallback: "ar" | "en" | "ku"): "ar" | "en" | "ku" {
-  const raw = String(input ?? "");
+export function detectLang(
+  input: string,
+  fallback: "ar" | "en" | "ku" | "tr" = "ar",
+): "ar" | "en" | "ku" | "tr" {
+  const raw = String(input ?? "").trim();
+  if (!raw) return fallback;
+
   const arabicChars = (raw.match(/[\u0600-\u06ff]/g) ?? []).length;
-  const latinChars = (raw.match(/[a-z]/gi) ?? []).length;
-  // A single foreign word must not flip the conversation language.
-  if (arabicChars === 0 && latinChars >= 6) return "en";
-  if (arabicChars > 0 && /[\u06a9\u06af\u06cc\u06ce\u0695]/.test(raw)) return "ku";
-  if (arabicChars > 0) return fallback === "ku" ? "ku" : "ar";
+  const latinChars = (raw.match(/[a-zA-Z]/g) ?? []).length;
+
+  const turkishSpecific = /[ğüşıöçĞÜŞİÖÇ]/.test(raw);
+  const kurdishSpecific =
+    /[\u06a9\u06af\u06cc\u06ce\u0695\u06b5\u067e\u0686]/.test(raw) ||
+    /\b(ez|tu|em|hûn|dixwazim|bipirse|spas|silav|heye|nîne|chawa|bashi|çawa|erê|na)\b/i.test(raw);
+
+  if (turkishSpecific) return "tr";
+  if (kurdishSpecific) return "ku";
+
+  if (arabicChars === 0 && latinChars > 0) {
+    if (
+      /\b(merhaba|nasılsın|fiyat|fiyatı|sipariş|oyun|odeme|destek|nasil|alabilirim|evet|hayir)\b/i.test(
+        raw,
+      )
+    ) {
+      return "tr";
+    }
+    return "en";
+  }
+
+  if (arabicChars > 0) {
+    if (kurdishSpecific) return "ku";
+    return fallback === "ku" ? "ku" : "ar";
+  }
+
   return fallback;
 }
 

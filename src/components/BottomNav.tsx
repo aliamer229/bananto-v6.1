@@ -16,7 +16,7 @@ preloadSound("turn_on");
 const navItems = [
   { id: "home", icon: BananaIcon, label: "الرئيسية", sound: "home" },
   { id: "market", icon: CandlestickChart, label: "سوق الموز", sound: "bumper_end" },
-  { id: "orders", icon: MessageCircle, label: "طلباتي", sound: "bumper_end" },
+  { id: "chat", icon: MessageCircle, label: "المحادثة", sound: "bumper_end" },
   { id: "cart", icon: ShoppingCart, label: "السلة", sound: "bumper_end" },
   { id: "profile", icon: User, label: "حسابي", sound: "user" },
 ];

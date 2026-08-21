@@ -3,6 +3,7 @@ import { useRef } from "react";
 
 import { playSound } from "../utils/audio";
 import { cdnImage } from "@/lib/img";
+import { getKnownCoverByTitle } from "./HomeView";
 
 export interface CartridgeGame {
   id: string | number;
@@ -182,7 +183,15 @@ export default function Cartridge({
             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              if (!target.src.includes("unsplash")) {
+              const title = game.titleEn || game.english_name || game.title || "";
+              const known = getKnownCoverByTitle(title);
+              if (
+                known &&
+                !target.src.includes(encodeURIComponent(known)) &&
+                !target.src.endsWith(known)
+              ) {
+                target.src = known;
+              } else if (!target.src.includes("unsplash")) {
                 target.src =
                   "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop";
               }

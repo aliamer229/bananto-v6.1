@@ -108,7 +108,13 @@ export async function memoryFromThread(threadId: string): Promise<SupportMemory>
 export async function buildSupportContext(input: {
   user: User;
   thread: Thread;
-  pageContext?: { path?: string; productId?: string; productTitle?: string };
+  lang?: SupportContext["lang"];
+  pageContext?: {
+    path?: string;
+    productId?: string;
+    productTitle?: string;
+    lang?: SupportContext["lang"];
+  };
   viewHistory?: { productId: string; title: string }[];
 }): Promise<SupportContext> {
   const { user, thread } = input;
@@ -131,8 +137,10 @@ export async function buildSupportContext(input: {
     ),
   ];
 
+  const clientLang = input.lang || input.pageContext?.lang;
+
   return {
-    lang: (profile.settings?.language as SupportContext["lang"]) ?? "ar",
+    lang: clientLang ?? (profile.settings?.language as SupportContext["lang"]) ?? "ar",
     ...(profile.name ? { userName: profile.name } : {}),
     ...(activeOrder ? { activeOrder: safeOrder(activeOrder) } : {}),
     orders: orders.map(safeOrder),

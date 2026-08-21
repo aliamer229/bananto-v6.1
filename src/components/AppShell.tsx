@@ -68,6 +68,7 @@ const viewToPath: Record<string, string> = {
   home: "/",
   store: "/",
   market: "/banana_market",
+  chat: "/chat",
   orders: "/orders",
   cart: "/cart",
   profile: "/profile",

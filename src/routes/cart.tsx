@@ -21,6 +21,10 @@ import {
   Clock,
   Utensils,
   AlertCircle,
+  Gamepad2,
+  Copy,
+  MessageCircle,
+  Check,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
@@ -30,7 +34,7 @@ import { useQuery } from "@tanstack/react-query";
 import AppShell from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import type { Address, Product, ProductKind } from "@/lib/types";
+import type { Address, Product, ProductKind, Order } from "@/lib/types";
 import { cartNeedsAddress, cartTotal, useCartStore } from "@/store/useCartStore";
 import type { CartLine } from "@/store/useCartStore";
 import { cdnImage } from "@/lib/img";
@@ -224,6 +228,8 @@ function CartPage() {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
+  const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const fetchCartFn = useServerFn(getCart);
   const updateItemFn = useServerFn(updateCartItem);
@@ -351,8 +357,10 @@ function CartPage() {
     onSuccess: ({ order }) => {
       setShowConfirmModal(false);
       clear();
+      setConfirmedOrder(order);
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ["auth"] });
       playSound("bumper_end", 0.6);
-      void navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
     },
     onError: (err: Error) => {
       setShowConfirmModal(false);
@@ -386,6 +394,164 @@ function CartPage() {
     playSound("loading", 0.6);
     checkout.mutate();
   };
+
+  // Render: Animated Order Confirmed Screen
+  if (confirmedOrder) {
+    const hasDigital = confirmedOrder.items?.some(
+      (item: any) => !["hardware", "physical", "accessory", "device"].includes(item.kind),
+    );
+
+    return (
+      <AppShell currentView="cart">
+        <header className="shrink-0 bg-white dark:bg-card px-4 py-4 flex items-center justify-between z-20 border-b border-border/50">
+          <div className="w-10 h-10"></div>
+          <h1 className="text-[17px] font-bold text-foreground">{tr("تأكيد الطلب")}</h1>
+          <div className="w-10 h-10"></div>
+        </header>
+
+        <main
+          className="flex-1 overflow-y-auto px-4 py-6 max-w-lg mx-auto w-full pb-28 text-center"
+          dir="rtl"
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="space-y-6"
+          >
+            {/* Animated Success Icon */}
+            <div className="relative mx-auto w-20 h-20">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+                className="absolute inset-0 rounded-full bg-emerald-500/20"
+              />
+              <div className="relative w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/10">
+                <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-foreground mb-1.5">
+                تم تأكيد واستقطاع المبلغ بنجاح! 🎉
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                تم خصم قيمة الطلب من محفظتك وبدء تجهيز طلبك فوراً
+              </p>
+            </div>
+
+            {/* Order Code Card */}
+            <div className="bg-card border border-border rounded-3xl p-5 shadow-sm text-right space-y-4">
+              <div className="flex items-center justify-between border-b border-border/70 pb-3">
+                <span className="text-xs font-bold text-muted-foreground">رمز الطلب:</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm font-black text-foreground" dir="ltr">
+                    {confirmedOrder.code}
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(confirmedOrder.code);
+                      setCopiedCode(true);
+                      setTimeout(() => setCopiedCode(false), 2000);
+                      toast.success("تم نسخ رمز الطلب");
+                    }}
+                    className="p-1 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
+                    title="نسخ رمز الطلب"
+                  >
+                    {copiedCode ? (
+                      <Check className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Items Summary */}
+              <div className="space-y-2.5">
+                <span className="text-xs font-bold text-muted-foreground block">
+                  المنتجات المشمولة:
+                </span>
+                {confirmedOrder.items?.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 bg-muted/40 rounded-2xl p-2.5 border border-border/50"
+                  >
+                    {item.image ? (
+                      <img
+                        src={cdnImage(item.image)}
+                        alt=""
+                        className="w-11 h-11 rounded-xl object-cover border border-border/60 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                        <Gamepad2 className="w-5 h-5" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {formatIQDPrice(item.unitPrice || item.price || 0)} × {item.quantity || 1}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-border/70 flex justify-between items-center text-xs sm:text-sm">
+                <span className="font-bold text-muted-foreground">المبلغ المستقطع:</span>
+                <span className="font-black text-emerald-600 dark:text-emerald-400 text-base">
+                  {formatIQDPrice(confirmedOrder.total)}
+                </span>
+              </div>
+            </div>
+
+            {/* Digital Account Banner & Direct Transition */}
+            {hasDigital && (
+              <div className="rounded-3xl border border-amber-400/40 bg-amber-500/10 p-4 text-right space-y-2">
+                <div className="flex items-center gap-2 text-xs font-black text-amber-700 dark:text-amber-300">
+                  <Sparkles className="h-4 w-4" />
+                  <span>تم إرسال بطاقة طلبك إلى محادثة الدعم</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  تواصل مع الدعم الفني مباشرة في صفحة المحادثة لتسليم بيانات الحساب وأكواد التفعيل
+                  فوراً.
+                </p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2.5 pt-2">
+              <button
+                onClick={() => void navigate({ to: "/chat" })}
+                className="w-full py-3.5 bg-[var(--brand-red)] hover:opacity-90 text-white font-black rounded-2xl shadow-md shadow-rose-500/20 active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>الانتقال للمحادثة مع الدعم لاستلام الحساب</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  void navigate({ to: "/orders/$orderId", params: { orderId: confirmedOrder.id } })
+                }
+                className="w-full py-3 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm"
+              >
+                عرض تفاصيل الطلب الكاملة
+              </button>
+
+              <button
+                onClick={() => void navigate({ to: "/" })}
+                className="w-full py-2.5 text-muted-foreground hover:text-foreground font-medium text-xs transition-colors"
+              >
+                العودة للصفحة الرئيسية
+              </button>
+            </div>
+          </motion.div>
+        </main>
+      </AppShell>
+    );
+  }
 
   if (lines.length === 0) {
     return (

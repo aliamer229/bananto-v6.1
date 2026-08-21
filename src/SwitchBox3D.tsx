@@ -2,32 +2,35 @@ import React, { useRef, useEffect, useState } from "react";
 import { useGLTF, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { readPrefs } from "@/lib/prefs";
-import glbAsset from "@/assets/3d/SwitchCase.glb.asset.json";
-import textureAsset from "@/assets/3d/GZAfvAF3.jpg.asset.json";
+
+export const SWITCH_GLB_URL = "https://assets.banan.to/Pages/Glb/SwitchCase.glb";
+
+export interface SwitchBox3DProps {
+  coverImage: string | null;
+  platform?: string;
+  gameName?: string;
+  onReady?: () => void;
+}
 
 /**
- * Rebuilt SwitchBox3D component using authentic 3D assets from the provided reference project.
- * Implements full wrap-around texture mapping and calibrated materials.
+ * Authentic 3D Nintendo Switch Game Box using the official Sketchfab GLB model
+ * hosted on Cloudflare at https://assets.banan.to/Pages/Glb/SwitchCase.glb
+ *
+ * Renders the real 3D GLB mesh with full wrap-around insert (Back + Spine + Front)
+ * and calibrated realistic plastic / foil materials.
  */
 export function SwitchBox3D({
   coverImage,
-  platform,
-  gameName,
+  platform = "ns1",
+  gameName = "",
   onReady,
-}: {
-  coverImage: string | null;
-  platform: string;
-  gameName: string;
-  onReady?: () => void;
-}) {
-  const { nodes, materials } = useGLTF(glbAsset.url) as any;
+}: SwitchBox3DProps) {
+  const { nodes, materials } = useGLTF(SWITCH_GLB_URL) as any;
   const group = useRef<THREE.Group>(null);
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useEffect(() => {
     if (nodes && materials) {
-      console.log("[SwitchBox3D] Geometry loaded, nodes:", Object.keys(nodes));
-      // Notify parent that we are ready to be displayed even if textures are pending
       onReady?.();
     }
   }, [nodes, materials, onReady]);
@@ -35,49 +38,180 @@ export function SwitchBox3D({
   useEffect(() => {
     let isMounted = true;
     const canvas = document.createElement("canvas");
+    // Standard Nintendo Switch Case sleeve template resolution
     canvas.width = 1236;
     canvas.height = 951;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
+    const backWidth = 588;
+    const spineWidth = 60;
+    const frontWidth = 588;
+    const spineX = backWidth;
+    const frontX = backWidth + spineWidth;
+
+    const isSwitch2 = platform === "ns2";
+    const brandColor = isSwitch2 ? "#d60012" : "#e60012";
+
     const drawTexture = async () => {
       try {
-        // 1. Draw authentic base texture
-        const baseImg = new Image();
-        baseImg.crossOrigin = "anonymous";
-        baseImg.src = textureAsset.url;
-
-        await new Promise((resolve) => {
-          baseImg.onload = resolve;
-          baseImg.onerror = () => {
-            console.error("Base texture failed to load");
-            resolve(null);
-          };
-        });
-
-        if (!isMounted) return;
-        ctx.fillStyle = "#ffffff";
+        // Base fill
+        ctx.fillStyle = "#111317";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
 
-        // 2. Overlay game-specific cover image
         if (coverImage) {
           const img = new Image();
-          img.crossOrigin = "anonymous";
+          if (!coverImage.startsWith("data:") && !coverImage.startsWith("blob:")) {
+            img.crossOrigin = "anonymous";
+          }
 
           await new Promise((resolve) => {
             img.onload = resolve;
-            img.onerror = (e) => {
-              console.warn("[SwitchBox3D] Cover image load failed", coverImage, e);
+            img.onerror = () => {
+              console.warn("[SwitchBox3D] Cover image load error:", coverImage);
               resolve(null);
             };
             img.src = coverImage;
           });
 
           if (isMounted && img.complete && img.naturalWidth > 0) {
-            // Re-draw authentic template to ensure it wraps correctly even with custom image
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const aspect = img.naturalWidth / img.naturalHeight;
+
+            // If image is a full retail box sleeve wrap (aspect ratio > 1.15)
+            if (aspect > 1.15) {
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            } else {
+              // Image is a front-only cover art -> construct the authentic physical box art wrap:
+
+              // 1. Front Cover Section (x = 648 to 1236)
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(frontX, 0, frontWidth, canvas.height);
+              ctx.clip();
+              // Cover background / art
+              ctx.drawImage(img, frontX, 0, frontWidth, canvas.height);
+              ctx.restore();
+
+              // 2. Spine Section (x = 588 to 648)
+              ctx.save();
+              ctx.fillStyle = brandColor;
+              ctx.fillRect(spineX, 0, spineWidth, canvas.height);
+
+              // Spine top Nintendo Switch mark
+              ctx.fillStyle = "#ffffff";
+              ctx.textAlign = "center";
+              ctx.font = "900 13px system-ui, -apple-system, sans-serif";
+              ctx.fillText("NINTENDO", spineX + spineWidth / 2, 48);
+              ctx.font = "900 15px system-ui, -apple-system, sans-serif";
+              ctx.fillText(isSwitch2 ? "SWITCH 2" : "SWITCH", spineX + spineWidth / 2, 66);
+
+              // Red / White subtle separator line
+              ctx.strokeStyle = "rgba(255,255,255,0.4)";
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(spineX + 8, 80);
+              ctx.lineTo(spineX + spineWidth - 8, 80);
+              ctx.stroke();
+
+              // Spine Title (Rotated 90 degrees)
+              const titleText = (gameName || "NINTENDO SWITCH GAME").toUpperCase();
+              ctx.save();
+              ctx.translate(spineX + spineWidth / 2, 110);
+              ctx.rotate(Math.PI / 2);
+              ctx.fillStyle = "#ffffff";
+              ctx.textAlign = "left";
+              ctx.font = "bold 22px system-ui, -apple-system, sans-serif";
+              // Truncate title if too long for spine
+              const maxSpineLength = canvas.height - 240;
+              let renderedTitle = titleText;
+              if (ctx.measureText(renderedTitle).width > maxSpineLength) {
+                while (
+                  ctx.measureText(renderedTitle + "...").width > maxSpineLength &&
+                  renderedTitle.length > 5
+                ) {
+                  renderedTitle = renderedTitle.slice(0, -1);
+                }
+                renderedTitle += "...";
+              }
+              ctx.fillText(renderedTitle, 0, 7);
+              ctx.restore();
+
+              // Spine bottom Nintendo mark
+              ctx.fillStyle = "#ffffff";
+              ctx.textAlign = "center";
+              ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
+              ctx.fillText("Nintendo", spineX + spineWidth / 2, canvas.height - 40);
+              ctx.restore();
+
+              // 3. Back Cover Section (x = 0 to 588)
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(0, 0, backWidth, canvas.height);
+              ctx.clip();
+
+              // Atmospheric blurred artwork backdrop on the back
+              ctx.filter = "blur(18px) brightness(0.55)";
+              ctx.drawImage(img, -40, -40, backWidth + 80, canvas.height + 80);
+              ctx.filter = "none";
+
+              // Subtle overlay gradient on back cover
+              const backGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+              backGrad.addColorStop(0, "rgba(10, 12, 16, 0.65)");
+              backGrad.addColorStop(0.5, "rgba(10, 12, 16, 0.45)");
+              backGrad.addColorStop(1, "rgba(10, 12, 16, 0.95)");
+              ctx.fillStyle = backGrad;
+              ctx.fillRect(0, 0, backWidth, canvas.height);
+
+              // Back top bar with Switch branding
+              ctx.fillStyle = brandColor;
+              ctx.fillRect(24, 28, backWidth - 48, 4);
+
+              // Back screenshot / card preview
+              ctx.strokeStyle = "rgba(255,255,255,0.2)";
+              ctx.lineWidth = 2;
+              ctx.strokeRect(36, 70, backWidth - 72, 340);
+              ctx.drawImage(img, 38, 72, backWidth - 76, 336);
+
+              // Back game title
+              ctx.fillStyle = "#ffffff";
+              ctx.font = "bold 26px system-ui, -apple-system, sans-serif";
+              ctx.textAlign = "right";
+              ctx.fillText(gameName || "Nintendo Switch", backWidth - 36, 460);
+
+              // Technical / Rating spec footer
+              ctx.fillStyle = "rgba(255,255,255,0.7)";
+              ctx.font = "12px system-ui, -apple-system, sans-serif";
+              ctx.fillText("TV Mode • Tabletop Mode • Handheld Mode", backWidth - 36, 490);
+              ctx.fillText("1-4 Players • Pro Controller Compatible", backWidth - 36, 510);
+
+              // Footer legal & official seal
+              ctx.fillStyle = "rgba(255,255,255,0.4)";
+              ctx.font = "10px monospace";
+              ctx.fillText(
+                "Official Nintendo Licensed Product",
+                backWidth - 36,
+                canvas.height - 45,
+              );
+              ctx.restore();
+            }
           }
+        } else {
+          // Fallback if no cover image
+          ctx.fillStyle = brandColor;
+          ctx.fillRect(spineX, 0, spineWidth, canvas.height);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.font = "bold 15px sans-serif";
+          ctx.fillText("SWITCH", spineX + spineWidth / 2, 60);
+
+          ctx.save();
+          ctx.translate(spineX + spineWidth / 2, 120);
+          ctx.rotate(Math.PI / 2);
+          ctx.font = "bold 22px sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText(gameName || "Nintendo Switch", 0, 7);
+          ctx.restore();
         }
 
         const tex = new THREE.CanvasTexture(canvas);
@@ -95,7 +229,7 @@ export function SwitchBox3D({
           });
         }
       } catch (err) {
-        console.error("Error drawing texture:", err);
+        console.error("[SwitchBox3D] Error drawing canvas texture:", err);
       }
     };
 
@@ -106,28 +240,28 @@ export function SwitchBox3D({
     };
   }, [coverImage, platform, gameName]);
 
-  // Configure materials for realistic transparency and reflections
-  if (materials.foil) {
+  // Calibrate realistic materials for the GLB
+  if (materials?.foil) {
     materials.foil.transparent = true;
-    materials.foil.opacity = 0.4;
+    materials.foil.opacity = 0.42;
     materials.foil.depthWrite = false;
     materials.foil.depthTest = true;
+    materials.foil.roughness = 0.08;
+    materials.foil.metalness = 0.1;
   }
 
-  if (materials.plastic) {
+  if (materials?.plastic) {
     materials.plastic.transparent = true;
-    materials.plastic.opacity = 0.8;
+    materials.plastic.opacity = platform === "ns2" ? 0.85 : 0.78;
     materials.plastic.depthWrite = true;
     materials.plastic.depthTest = true;
-    materials.plastic.color.set(platform === "ns2" ? "#e60012" : "#ffffff");
-    materials.plastic.roughness = 0.05;
-    materials.plastic.metalness = 0.15;
-    materials.plastic.envMapIntensity = 1.0;
+    materials.plastic.color.set(platform === "ns2" ? "#d60012" : "#f5f5f5");
+    materials.plastic.roughness = 0.08;
+    materials.plastic.metalness = 0.12;
   }
 
-  // Ensure the nodes exist before rendering to avoid "empty" space
-  if (!nodes.placeholder || !nodes.box || !nodes.foil) {
-    console.warn("[SwitchBox3D] Missing required geometry nodes", Object.keys(nodes));
+  if (!nodes?.placeholder || !nodes?.box || !nodes?.foil) {
+    return null;
   }
 
   return (
@@ -137,23 +271,25 @@ export function SwitchBox3D({
         enablePan={false}
         enableRotate={true}
         autoRotate={!readPrefs().motion || readPrefs().motion === "full"}
-        autoRotateSpeed={1.5}
+        autoRotateSpeed={1.4}
+        minPolarAngle={Math.PI / 4}
+        maxPolarAngle={Math.PI / 1.6}
         makeDefault
       />
 
       <group
         ref={group}
         dispose={null}
-        scale={0.5}
-        position={[0, -0.1, 0]}
-        rotation={[0, -Math.PI / 6, 0]}
+        scale={0.52}
+        position={[0, -0.15, 0]}
+        rotation={[0, -Math.PI / 5.5, 0]}
       >
-        {/* 1. Printed sleeve (artwork) - Bottom layer of the sandwich */}
+        {/* 1. Printed sleeve insert (artwork placeholder) */}
         <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
           <meshStandardMaterial
             map={texture}
-            color={texture ? "#ffffff" : "#cccccc"}
-            roughness={0.8}
+            color={texture ? "#ffffff" : "#eeeeee"}
+            roughness={0.65}
             metalness={0.0}
             side={THREE.DoubleSide}
             transparent={false}
@@ -161,20 +297,17 @@ export function SwitchBox3D({
           />
         </mesh>
 
-        {/* 2. Plastic outer case - Middle layer */}
+        {/* 2. Plastic outer case */}
         <mesh geometry={nodes.box.geometry} material={materials.plastic} renderOrder={2} />
 
-        {/* 3. Foil overlay - Top layer */}
+        {/* 3. Foil protective outer sleeve */}
         <mesh geometry={nodes.foil.geometry} material={materials.foil} renderOrder={3} />
       </group>
     </>
   );
 }
 
-// Preload both assets to ensure they are cached
-useGLTF.preload(glbAsset.url);
-if (typeof window !== "undefined") {
-  const img = new Image();
-  img.src = textureAsset.url;
-}
+// Preload the GLB model from Cloudflare CDN
+useGLTF.preload(SWITCH_GLB_URL);
+
 export default SwitchBox3D;
