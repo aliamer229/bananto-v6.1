@@ -22,14 +22,29 @@ export default defineMiddleware((event) => {
   const request = event.req as unknown as CloudflareRuntimeRequest;
 
   // 1. Check request runtime (standard Nitro/Cloudflare)
-  let env = request.runtime?.cloudflare?.env;
+  let env = request?.runtime?.cloudflare?.env;
 
-  // 2. Nitro v2 compatibility for local/older previews only.
+  // 2. Check event.context
   if (!env || typeof env !== "object" || Object.keys(env).length === 0) {
-    env = (event.context as any).cloudflare?.env;
+    env = (event.context as any)?.cloudflare?.env;
   }
 
-  // 3. Fallback to process.env in development or if bindings are missing
+  // 3. Check web request runtime
+  if (!env || typeof env !== "object" || Object.keys(env).length === 0) {
+    env = (event as any)?.web?.request?.runtime?.cloudflare?.env;
+  }
+
+  // 4. Check globalThis.__env__ set by Nitro cloudflare-module preset
+  if (!env || typeof env !== "object" || Object.keys(env).length === 0) {
+    env = (globalThis as any).__env__;
+  }
+
+  // 5. Check globalThis.__CF_ENV__
+  if (!env || typeof env !== "object" || Object.keys(env).length === 0) {
+    env = (globalThis as any).__CF_ENV__;
+  }
+
+  // 6. Fallback to process.env in development or if bindings are missing
   if (!env || typeof env !== "object" || Object.keys(env).length === 0) {
     if (typeof process !== "undefined" && process.env) {
       env = process.env as Record<string, unknown>;

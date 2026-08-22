@@ -252,7 +252,6 @@ function RootShell({ children }: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <head>
-        <script src="https://telegram.org/js/telegram-web-app.js?63" async></script>
         <HeadContent />
       </head>
       <body>
@@ -311,16 +310,38 @@ function RootInner() {
   }, [store]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ((window as any).Telegram?.WebApp) return;
+    const isTg =
+      window.location.pathname.startsWith("/telegram") ||
+      window.location.search.includes("tgWebAppData") ||
+      window.location.hash.includes("tgWebAppData") ||
+      (window as any).TelegramWebviewProxy !== undefined;
+
+    if (isTg) {
+      const script = document.createElement("script");
+      script.src = "https://telegram.org/js/telegram-web-app.js?63";
+      script.async = true;
+      script.onerror = () => {
+        console.warn("[Telegram] Failed to load Telegram WebApp SDK");
+      };
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  useEffect(() => {
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
 
     const isDevOrPreview =
       import.meta.env.DEV ||
       (typeof window !== "undefined" &&
-        (window.location.hostname.includes("run.app") ||
+        (window.self !== window.top ||
+          window.location.hostname.includes("run.app") ||
           window.location.hostname.includes("localhost") ||
           window.location.hostname === "127.0.0.1" ||
           window.location.hostname.includes("ais-") ||
           window.location.hostname.includes("googleusercontent.com") ||
+          window.location.hostname.includes("webcontainer") ||
           window.location.port !== ""));
 
     if (isDevOrPreview) {
@@ -336,9 +357,7 @@ function RootInner() {
     const register = () => {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
-        .catch(() =>
-          navigator.serviceWorker.register("/sw", { scope: "/" }).catch(() => undefined),
-        );
+        .catch(() => undefined);
     };
     if (document.readyState === "complete") register();
     else window.addEventListener("load", register, { once: true });

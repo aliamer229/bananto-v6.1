@@ -47,11 +47,11 @@ export function getEnv(): Env {
     return runtimeEnv as Env;
   }
 
-  const cloudflareEnv = (
-    globalThis as {
-      __CF_ENV__?: Record<string, unknown>;
-    }
-  ).__CF_ENV__;
+  const globalScope = globalThis as {
+    __CF_ENV__?: Record<string, unknown>;
+    __env__?: Record<string, unknown>;
+  };
+  const cloudflareEnv = globalScope.__CF_ENV__ || globalScope.__env__;
 
   if (cloudflareEnv && typeof cloudflareEnv === "object") {
     return cloudflareEnv as unknown as Env;
