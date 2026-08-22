@@ -34,6 +34,8 @@ import {
   AlertCircle,
   RotateCcw,
   ChevronDown,
+  Receipt,
+  Printer,
 } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
@@ -739,10 +741,56 @@ export default function ChatView({
     [threads, threadId],
   );
 
+  const activeOrderId = currentThread?.orderId || initialOrderId;
+
   const currentOrder = useMemo(
-    () => (currentThread?.orderId ? orders.find((o) => o.id === currentThread.orderId) : null),
-    [currentThread, orders],
+    () => (activeOrderId ? orders.find((o) => o.id === activeOrderId) : null),
+    [activeOrderId, orders],
   );
+
+  const isOrderMode = Boolean(
+    activeOrderId ||
+      currentThread?.chatType === "ORDER_SUPPORT" ||
+      currentThread?.chatType === "DELIVERY" ||
+      currentThread?.mode === "ORDER_PREPARATION",
+  );
+
+  const orderThreads = useMemo(() => {
+    return threads
+      .filter(
+        (t) =>
+          t.status === "open" &&
+          (Boolean(t.orderId) ||
+            t.chatType === "ORDER_SUPPORT" ||
+            t.mode === "ORDER_PREPARATION"),
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.queueEnteredAt || a.createdAt).getTime() -
+          new Date(b.queueEnteredAt || b.createdAt).getTime(),
+      );
+  }, [threads]);
+
+  const currentQueueIndex = useMemo(() => {
+    if (!threadId && !activeOrderId) return 1;
+    const idx = orderThreads.findIndex(
+      (t) =>
+        t.id === threadId ||
+        (activeOrderId && t.orderId === activeOrderId),
+    );
+    return idx >= 0 ? idx + 1 : 1;
+  }, [orderThreads, threadId, activeOrderId]);
+
+  const adminAvailability = (threadsQuery.data as any)?.adminAvailability;
+  const adminPresenceOnline = (storeQuery.data as any)?.adminPresence?.online ?? true;
+  const adminStatus: "available" | "busy" | "offline" = useMemo(() => {
+    if (adminAvailability && !adminAvailability.isAvailable) return "offline";
+    if (!adminPresenceOnline) return "offline";
+    if (orderThreads.length > 3) return "busy";
+    return "available";
+  }, [adminAvailability, adminPresenceOnline, orderThreads.length]);
+
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | null>(null);
 
   /* ------------------------- order delivery steps ------------------------- */
   const proofInputRef = useRef<HTMLInputElement | null>(null);
@@ -1039,10 +1087,59 @@ export default function ChatView({
 
   const pushLocal = (message: DisplayMessage) => setLocalMessages((prev) => [...prev, message]);
 
+  const hasAccountCards = useMemo(
+    () => messages.some((m) => m.type === "account_card"),
+    [messages],
+  );
+
+  useEffect(() => {
+    if (isOrderMode) {
+      if (currentOrder?.status === "completed") {
+        setSuggestions([
+          "شكراً لكم، تم الاستلام بنجاح ✨",
+          "تقييم الخدمة",
+          "تفاصيل الفاتورة",
+          "طلب لعبة جديدة",
+        ]);
+      } else if (hasAccountCards) {
+        setSuggestions([
+          "تم تسجيل الدخول بنجاح 👍",
+          "واجهت مشكلة في كلمة المرور",
+          "كيف أفعل الحساب كجهاز رئيسي؟",
+          "طلب رمز التحقق 2FA",
+          "تفاصيل الفاتورة",
+        ]);
+      } else {
+        setSuggestions([
+          "كم الوقت المتبقي للتسليم؟",
+          "أنا جاهز لاستلام الحساب",
+          "تفاصيل الفاتورة",
+          "هل يمكن تعديل بيانات الطلب؟",
+        ]);
+      }
+    } else {
+      setSuggestions([
+        "تصفح الألعاب",
+        "أحدث الإكسسوارات",
+        "تحدث مع الدعم",
+      ]);
+    }
+  }, [isOrderMode, currentOrder?.status, hasAccountCards]);
+
   // Send message handler with optimistic UI
   const handleSend = async (customText?: string) => {
     const value = (customText !== undefined ? customText : inputText).trim();
     if (!value) return;
+
+    if (
+      value === "تفاصيل الفاتورة" ||
+      value.toLowerCase() === "invoice details" ||
+      value === "الفاتورة"
+    ) {
+      if (currentOrder) {
+        setSelectedInvoiceOrder(currentOrder);
+      }
+    }
 
     setInputText("");
     if (threadId && isSelfTyping) {
@@ -1410,11 +1507,18 @@ export default function ChatView({
         <div className="flex flex-col items-center justify-center text-center">
           <div className="flex items-center gap-1.5" dir={isRtl ? "rtl" : "ltr"}>
             <span className="text-[14px] font-bold text-[var(--ink)]">
-              {isAutomatedThread
-                ? tr("الدعم الآلي")
-                : currentThread?.subject || tr("محادثة الإدارة")}
+              {isOrderMode
+                ? `${tr("محادثة تجهيز الطلب")} ${currentOrder?.code ? `(${currentOrder.code})` : ""}`
+                : isAutomatedThread
+                  ? tr("الدعم الآلي")
+                  : currentThread?.subject || tr("محادثة الإدارة")}
             </span>
-            {isAutomatedThread ? (
+            {isOrderMode ? (
+              <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                {currentOrder?.status === "completed" ? tr("مكتمل") : tr("طابور التجهيز")}
+              </span>
+            ) : isAutomatedThread ? (
               <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
                 <Sparkles className="h-3 w-3" />
                 {tr("رد فوري")}
@@ -1768,18 +1872,41 @@ export default function ChatView({
               >
                 {msg.type === "digital_order_card" && msg.payload ? (
                   <DigitalOrderCard
-                    orderId={String(msg.payload["orderId"] ?? "")}
-                    code={String(msg.payload["code"] ?? "")}
-                    items={(msg.payload["items"] as any) ?? []}
+                    orderId={String(msg.payload["orderId"] ?? currentOrder?.id ?? "")}
+                    code={String(msg.payload["code"] ?? currentOrder?.code ?? "BN-ORDER")}
+                    items={
+                      (msg.payload["items"] as any) ??
+                      currentOrder?.items?.map((it) => ({
+                        id: it.id,
+                        productId: it.productId,
+                        title: it.title,
+                        unitPrice: it.unitPrice,
+                        quantity: it.quantity,
+                        image: it.image || "",
+                        kind: it.kind,
+                      })) ??
+                      []
+                    }
                     total={
-                      typeof msg.payload["total"] === "number" ? msg.payload["total"] : undefined
+                      typeof msg.payload["total"] === "number"
+                        ? msg.payload["total"]
+                        : currentOrder?.total
                     }
                     currency={String(
-                      msg.payload["currency"] ?? activeCurrencyInfo?.symbol ?? "د.ع",
+                      msg.payload["currency"] ?? currentOrder?.currency ?? activeCurrencyInfo?.symbol ?? "د.ع",
                     )}
-                    paymentStatus={String(msg.payload["paymentStatus"] ?? "paid")}
+                    paymentStatus={String(msg.payload["paymentStatus"] ?? currentOrder?.paymentStatus ?? "paid")}
+                    paymentMethod="محفظة بنانا"
+                    status={currentOrder?.status ?? "processing"}
+                    createdAt={currentOrder?.createdAt ?? msg.createdAt}
                     text={typeof msg.payload["text"] === "string" ? msg.payload["text"] : undefined}
                     locale={lang === "en" ? "en" : "ar"}
+                    queuePosition={currentQueueIndex > 0 ? currentQueueIndex : 1}
+                    adminStatus={adminStatus}
+                    workingHoursText={adminAvailability?.workingHoursText}
+                    onOpenInvoice={() => {
+                      if (currentOrder) setSelectedInvoiceOrder(currentOrder);
+                    }}
                   />
                 ) : msg.type === "account_card" && msg.payload ? (
                   <AccountCard
@@ -2271,7 +2398,13 @@ export default function ChatView({
                     void handleSend();
                   }
                 }}
-                placeholder={isHumanChat ? tr("اكتب رسالتك للدعم...") : tr("اسألني أي شيء")}
+                placeholder={
+                  isOrderMode
+                    ? tr("اكتب رسالتك للمشرف بخصوص الطلب...")
+                    : isHumanChat
+                      ? tr("اكتب رسالتك للدعم...")
+                      : tr("اسألني أي شيء")
+                }
                 className={`h-full w-full bg-transparent ${
                   isRtl ? "pl-4 pr-[44px]" : "pr-4 pl-[44px]"
                 } text-[13px] font-medium text-[var(--ink)] placeholder-[var(--muted-ink)] focus:outline-none`}
@@ -2298,121 +2431,123 @@ export default function ChatView({
           </div>
         </div>
 
-        {/* Bottom Fast Action Buttons - 5 icons evenly distributed for small & large screens */}
-        <div
-          // Short phones cannot afford the full-height bar: it is what pushes the
-          // composer or the icons themselves off the screen.
-          className="relative z-10 mx-auto flex h-[82px] w-full max-w-md items-end px-1 pb-1 [@media(max-height:700px)]:h-[68px]"
-          dir={isRtl ? "rtl" : "ltr"}
-        >
-          <AnimatePresence mode="wait">
-            {recordingState !== "idle" ? (
-              <motion.div
-                key="recording-strands"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 30, transition: { duration: 0.2 } }}
-                className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-80"
-              >
-                <Strands
-                  colors={["var(--ink)", "var(--peach)", "var(--line)"]}
-                  count={3}
-                  speed={recordingState === "recording" ? 1.5 : 0}
-                  amplitude={recordingState === "recording" ? 1.5 : 0.2}
-                  waviness={1}
-                  thickness={1.5}
-                  opacity={1}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="nav-icons"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 30, transition: { duration: 0.2 } }}
-                className="relative z-10 grid w-full grid-cols-5 items-end justify-items-center gap-1"
-              >
-                {/* 1. Products */}
-                <button
-                  onClick={() => setSelectedNav("المنتجات")}
-                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+        {/* Bottom Fast Action Buttons - only show in general support mode, HIDE in Order Mode! */}
+        {!isOrderMode && (
+          <div
+            // Short phones cannot afford the full-height bar: it is what pushes the
+            // composer or the icons themselves off the screen.
+            className="relative z-10 mx-auto flex h-[82px] w-full max-w-md items-end px-1 pb-1 [@media(max-height:700px)]:h-[68px]"
+            dir={isRtl ? "rtl" : "ltr"}
+          >
+            <AnimatePresence mode="wait">
+              {recordingState !== "idle" ? (
+                <motion.div
+                  key="recording-strands"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 30, transition: { duration: 0.2 } }}
+                  className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-80"
                 >
-                  <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                    <ShoppingBag className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                  </div>
-                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
-                    {tr("المنتجات")}
-                  </span>
-                </button>
+                  <Strands
+                    colors={["var(--ink)", "var(--peach)", "var(--line)"]}
+                    count={3}
+                    speed={recordingState === "recording" ? 1.5 : 0}
+                    amplitude={recordingState === "recording" ? 1.5 : 0.2}
+                    waviness={1}
+                    thickness={1.5}
+                    opacity={1}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="nav-icons"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 30, transition: { duration: 0.2 } }}
+                  className="relative z-10 grid w-full grid-cols-5 items-end justify-items-center gap-1"
+                >
+                  {/* 1. Products */}
+                  <button
+                    onClick={() => setSelectedNav("المنتجات")}
+                    className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  >
+                    <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
+                      <ShoppingBag className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                    </div>
+                    <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                      {tr("المنتجات")}
+                    </span>
+                  </button>
 
-                {/* 2. Orders */}
-                <button
-                  onClick={() => setSelectedNav("الطلب")}
-                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
-                >
-                  <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                    <FileText className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                  </div>
-                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
-                    {tr("الطلب")}
-                  </span>
-                </button>
+                  {/* 2. Orders */}
+                  <button
+                    onClick={() => setSelectedNav("الطلب")}
+                    className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  >
+                    <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
+                      <FileText className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                    </div>
+                    <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                      {tr("الطلب")}
+                    </span>
+                  </button>
 
-                {/* 3. Human / Automated Support Toggle (Center Elevated Button) */}
-                <button
-                  onClick={() => {
-                    if (isHumanChat) {
-                      void handleSwitchToAutomatedSupport();
-                    } else {
-                      void handleRequestHumanSupport();
-                    }
-                  }}
-                  className="group relative flex w-full max-w-[76px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
-                >
-                  <div className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-[var(--ink)] text-white shadow-md transition-colors group-hover:bg-[var(--ink-strong)]">
-                    {isHumanChat ? (
-                      <Sparkles className="h-5 w-5" />
-                    ) : (
-                      <Headset className="h-5 w-5" />
-                    )}
-                  </div>
-                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight truncate leading-tight">
-                    {isHumanChat ? tr("الرد الآلي") : tr("الدعم البشري")}
-                  </span>
-                </button>
+                  {/* 3. Human / Automated Support Toggle (Center Elevated Button) */}
+                  <button
+                    onClick={() => {
+                      if (isHumanChat) {
+                        void handleSwitchToAutomatedSupport();
+                      } else {
+                        void handleRequestHumanSupport();
+                      }
+                    }}
+                    className="group relative flex w-full max-w-[76px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  >
+                    <div className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-[var(--ink)] text-white shadow-md transition-colors group-hover:bg-[var(--ink-strong)]">
+                      {isHumanChat ? (
+                        <Sparkles className="h-5 w-5" />
+                      ) : (
+                        <Headset className="h-5 w-5" />
+                      )}
+                    </div>
+                    <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight truncate leading-tight">
+                      {isHumanChat ? tr("الرد الآلي") : tr("الدعم البشري")}
+                    </span>
+                  </button>
 
-                {/* 4. Wallet */}
-                <button
-                  onClick={() => setSelectedNav("المحفظة")}
-                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
-                >
-                  <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                    <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                  </div>
-                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
-                    {tr("المحفظة")}
-                  </span>
-                </button>
+                  {/* 4. Wallet */}
+                  <button
+                    onClick={() => setSelectedNav("المحفظة")}
+                    className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  >
+                    <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
+                      <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                    </div>
+                    <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                      {tr("المحفظة")}
+                    </span>
+                  </button>
 
-                {/* 5. New Chat */}
-                <button
-                  onClick={() => {
-                    setThreadId(undefined);
-                    setLocalMessages([]);
-                  }}
-                  className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
-                >
-                  <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                    <MessageSquarePlus className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                  </div>
-                  <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
-                    {tr("جديد")}
-                  </span>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  {/* 5. New Chat */}
+                  <button
+                    onClick={() => {
+                      setThreadId(undefined);
+                      setLocalMessages([]);
+                    }}
+                    className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                  >
+                    <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
+                      <MessageSquarePlus className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                    </div>
+                    <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                      {tr("جديد")}
+                    </span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* 5. Drawers / Modals */}
@@ -2659,6 +2794,173 @@ export default function ChatView({
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Invoice Modal for selected order */}
+      <AnimatePresence>
+        {selectedInvoiceOrder && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+            dir={isRtl ? "rtl" : "ltr"}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md rounded-2xl bg-card border border-[var(--line)] p-5 shadow-2xl text-[var(--ink)] max-h-[90vh] flex flex-col overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--line)] shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center">
+                    <Receipt className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[var(--ink)]">
+                      {isAr ? "فاتورة الطلب الرقمي" : "Digital Order Invoice"}
+                    </h3>
+                    <p className="text-[11px] font-mono text-[var(--muted-ink)]">
+                      {selectedInvoiceOrder.code}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedInvoiceOrder(null)}
+                  className="h-8 w-8 rounded-full bg-[var(--surface-3)] hover:bg-[var(--line)] flex items-center justify-center text-[var(--ink)] transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto py-4 space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--line)]">
+                  <div>
+                    <span className="text-[10px] text-[var(--muted-ink)] block">
+                      {isAr ? "تاريخ الطلب" : "Order Date"}
+                    </span>
+                    <span className="font-bold text-[var(--ink)] text-[11px]">
+                      {new Date(selectedInvoiceOrder.createdAt).toLocaleDateString(
+                        isAr ? "ar-IQ" : "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[var(--muted-ink)] block">
+                      {isAr ? "حالة الدفع" : "Payment Status"}
+                    </span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      {isAr ? "مدفوع من المحفظة" : "Paid via Wallet"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[var(--muted-ink)] block">
+                      {isAr ? "طريقة التسليم" : "Delivery Method"}
+                    </span>
+                    <span className="font-bold text-[var(--ink)] text-[11px]">
+                      {isAr ? "تسليم رقمي في المحادثة" : "Digital Chat Delivery"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[var(--muted-ink)] block">
+                      {isAr ? "حالة الطلب" : "Order Status"}
+                    </span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 text-[11px]">
+                      {selectedInvoiceOrder.status === "completed"
+                        ? isAr
+                          ? "مكتمل"
+                          : "Completed"
+                        : isAr
+                          ? "قيد التجهيز"
+                          : "Processing"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Items */}
+                <div>
+                  <div className="text-[11px] font-bold text-[var(--muted-ink)] mb-2 uppercase tracking-wider">
+                    {isAr ? "تفاصيل المنتجات" : "Items Summary"}
+                  </div>
+                  <div className="border border-[var(--line)] rounded-xl overflow-hidden divide-y divide-[var(--line)]">
+                    {selectedInvoiceOrder.items.map((item, i) => (
+                      <div key={i} className="p-2.5 flex items-center justify-between gap-2 bg-card">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-[var(--ink)] truncate text-xs">
+                            {item.title}
+                          </div>
+                          <div className="text-[10px] text-[var(--muted-ink)]">
+                            {item.quantity || 1} × {(item.unitPrice || 0).toLocaleString()}{" "}
+                            {selectedInvoiceOrder.currency || "IQD"}
+                          </div>
+                        </div>
+                        <div className="font-bold text-[var(--ink)] font-mono text-xs">
+                          {((item.unitPrice || 0) * (item.quantity || 1)).toLocaleString()}{" "}
+                          {selectedInvoiceOrder.currency || "IQD"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Totals */}
+                <div className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--line)] space-y-1.5">
+                  <div className="flex justify-between text-[var(--muted-ink)] text-[11px]">
+                    <span>{isAr ? "المجموع الفرعي:" : "Subtotal:"}</span>
+                    <span className="font-mono font-medium">
+                      {selectedInvoiceOrder.total.toLocaleString()}{" "}
+                      {selectedInvoiceOrder.currency || "IQD"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[var(--muted-ink)] text-[11px]">
+                    <span>{isAr ? "رسوم التجهيز والتسليم:" : "Fulfillment Fee:"}</span>
+                    <span className="font-mono text-emerald-600 font-bold">
+                      {isAr ? "مجاناً" : "Free"}
+                    </span>
+                  </div>
+                  <div className="pt-2 border-t border-[var(--line)] flex justify-between items-baseline font-bold text-[var(--ink)] text-sm">
+                    <span>{isAr ? "المجموع النهائي المدفوع:" : "Total Paid:"}</span>
+                    <span className="text-base font-black font-mono text-amber-600 dark:text-amber-400">
+                      {selectedInvoiceOrder.total.toLocaleString()}{" "}
+                      {selectedInvoiceOrder.currency || "IQD"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-3 border-t border-[var(--line)] flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.print();
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--surface-3)] hover:bg-[var(--line)] text-xs font-bold text-[var(--ink)] transition-colors cursor-pointer"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>{isAr ? "طباعة الفاتورة" : "Print Invoice"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedInvoiceOrder(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-[var(--ink)] text-white text-xs font-bold hover:bg-[var(--ink-strong)] transition-colors cursor-pointer"
+                >
+                  {isAr ? "إغلاق" : "Close"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
