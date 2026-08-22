@@ -31,6 +31,8 @@ function WalletPage() {
   const transactions = useQuery({
     queryKey: ["wallet-transactions"],
     queryFn: () => walletApi.getTransactions(),
+    refetchInterval: 5000, // Polls every 5s so status updates automatically (قيد المراجعة -> مكتمل / مرفوض)
+    refetchOnWindowFocus: true,
   });
 
   const consumeBanan = useMutation({
@@ -48,16 +50,22 @@ function WalletPage() {
         toast.error(res.error || "كود غير صالح");
       }
     },
+    onError: (err: any) => {
+      toast.error(err?.message || "فشل تفعيل الكود");
+    },
   });
 
   const recharge = useMutation({
     mutationFn: (payload: any) => walletApi.recharge({ ...payload, action: "recharge" }),
     onSuccess: () => {
-      toast.success("تم إرسال طلب الشحن للمراجعة");
+      toast.success("تم إرسال طلب الشحن للمراجعة بنجاح");
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions"] });
       transactions.refetch();
       setIsTopUpOpen(false);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "فشل إرسال طلب الشحن");
     },
   });
 
@@ -74,7 +82,7 @@ function WalletPage() {
           </div>
 
           <button
-            className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
+            className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground cursor-pointer"
             onClick={() => window.open("/support", "_self")}
           >
             <HelpCircle className="w-5 h-5" />
@@ -83,14 +91,11 @@ function WalletPage() {
 
         {/* Balance Card Section */}
         <div className="space-y-4">
-          <BalanceCard
-            balance={user?.walletBalance || 0}
-            reserved={0} // Logic for reserved balance could be added here if needed
-          />
+          <BalanceCard balance={user?.walletBalance || 0} reserved={0} />
 
           <button
             onClick={() => setIsTopUpOpen(true)}
-            className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white font-black py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all"
+            className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white font-black py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             {tr("Add Balance")}
@@ -107,7 +112,10 @@ function WalletPage() {
               ))}
             </div>
           ) : (
-            <TransactionList transactions={transactions.data?.transactions || []} />
+            <TransactionList
+              transactions={transactions.data?.transactions || []}
+              rechargeRequests={transactions.data?.rechargeRequests || []}
+            />
           )}
         </div>
 
@@ -115,10 +123,13 @@ function WalletPage() {
         <TopUpModal
           open={isTopUpOpen}
           onOpenChange={setIsTopUpOpen}
-          onSuccess={() => transactions.refetch()}
+          onSuccess={() => {
+            transactions.refetch();
+            queryClient.invalidateQueries({ queryKey: ["me"] });
+          }}
           settings={settings}
-          onRecharge={(payload) => recharge.mutate(payload)}
-          onConsumeBanan={(code) => consumeBanan.mutate(code)}
+          onRecharge={(payload) => recharge.mutateAsync(payload)}
+          onConsumeBanan={(code) => consumeBanan.mutateAsync(code)}
           isPending={recharge.isPending || consumeBanan.isPending}
         />
       </div>

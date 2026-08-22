@@ -12,6 +12,7 @@ import {
   consumeBananCode,
   createRechargeRequest,
   getWalletTransactions,
+  listRechargeRequestsByUser,
 } from "@/lib/db.server";
 import { body, guard, json } from "@/lib/http.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
@@ -37,11 +38,13 @@ export const Route = createFileRoute("/api/wallet")({
         guard(async () => {
           const user = await requireUser(request);
           const transactions = await getWalletTransactions(user.id);
+          const rechargeRequests = await listRechargeRequestsByUser(user.id);
           const activeBinanceIntent = await getActiveTopUpIntent(user.id);
           const binanceConfig = getPublicBinanceConfig(await getUsdIqdRate());
 
           return json({
             transactions,
+            rechargeRequests,
             activeBinanceIntent,
             binanceConfig,
           });

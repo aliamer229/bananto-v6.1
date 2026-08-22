@@ -147,6 +147,7 @@ export async function createOrderForUser(
   couponCode?: string,
   acceptedTerms?: boolean,
   idempotencyKey?: string,
+  targetProductId?: string | number,
 ): Promise<Order> {
   if (acceptedTerms === false) {
     throw new Error("terms_required");
@@ -174,19 +175,20 @@ export async function createOrderForUser(
 
   const now = new Date().toISOString();
   let discountAmount = 0;
-  let appliedCouponId: string | null = null;
+  let appliedCoupon: Coupon | null = null;
+  let appliedTargetProductId: string | null = null;
 
   if (couponCode) {
     const row = await d1First<CouponRow>(
       "SELECT * FROM coupons WHERE code = ? AND is_active = 1",
-      couponCode,
+      couponCode.trim().toUpperCase(),
     );
     if (!row) throw new Error("coupon_invalid");
 
     // Mapped through the same reader the validator uses, so what the member was
     // told at the cart is exactly what checkout applies.
     const coupon = rowToCoupon(row);
-    const [globalUsage, userUsage] = await Promise.all([
+    const [globalUsage, userUsage, lifetimeSingleItem] = await Promise.all([
       d1First<{ total: number }>(
         "SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?",
         coupon.id,
@@ -194,6 +196,10 @@ export async function createOrderForUser(
       d1First<{ total: number }>(
         "SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?",
         coupon.id,
+        user.id,
+      ),
+      d1First<{ total: number }>(
+        "SELECT COUNT(*) as total FROM coupon_redemptions WHERE user_id = ? AND (coupon_type = 'single_item_percent' OR coupon_type = 'single_game_50')",
         user.id,
       ),
     ]);
@@ -205,11 +211,17 @@ export async function createOrderForUser(
       items,
       globalUses: Number(globalUsage?.total ?? 0),
       userUses: Number(userUsage?.total ?? 0),
+      lifetimeSingleItemUses: Number(lifetimeSingleItem?.total ?? 0),
+      targetProductId,
     });
     if (!verdict.ok) throw new Error("coupon_invalid");
 
-    discountAmount = couponDiscount(coupon, itemsTotal);
-    appliedCouponId = coupon.id;
+    const discountRes = couponDiscount(coupon, itemsTotal, items, targetProductId);
+    discountAmount = discountRes.discount;
+    appliedCoupon = coupon;
+    appliedTargetProductId = discountRes.targetProductId
+      ? String(discountRes.targetProductId)
+      : null;
   }
 
   const finalItemsTotal = Math.max(0, itemsTotal - discountAmount);
@@ -247,7 +259,7 @@ export async function createOrderForUser(
 
   const order: Order = {
     discountAmount: discountAmount || undefined,
-    couponCode: appliedCouponId ? couponCode : undefined,
+    couponCode: appliedCoupon ? couponCode.trim().toUpperCase() : undefined,
     id: orderId,
     code,
     userId: user.id,
@@ -255,9 +267,6 @@ export async function createOrderForUser(
     items,
     total,
     currency: "IQD",
-    // A wallet purchase is paid the moment it is created, so it goes straight to
-    // preparation. Leaving it "pending" is what made a paid order read back to
-    // the member as "awaiting payment" while also saying "paid".
     status: needsWalletPayment ? "processing" : "pending",
     paymentStatus: needsWalletPayment ? "paid" : "unpaid",
     needsAddress,
@@ -277,7 +286,7 @@ export async function createOrderForUser(
       {
         sql: `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, created_at)
                SELECT ?, ?, 'payment', ?, ?, ?, ? WHERE changes() = 1`,
-        params: [randomId("wlt"), user.id, -itemsTotal, `شراء طلب ${code}`, orderId, now],
+        params: [randomId("wlt"), user.id, -finalItemsTotal, `شراء طلب ${code}`, orderId, now],
       },
       {
         sql: `INSERT INTO orders (id, code, user_id, doc, created_at, updated_at)
@@ -287,6 +296,26 @@ export async function createOrderForUser(
     ]);
     if (Number(payment[0]?.meta?.changes ?? 0) !== 1) {
       throw new Error("insufficient_balance");
+    }
+  }
+
+  // Record Coupon Redemption in D1
+  if (appliedCoupon) {
+    try {
+      await d1Run(
+        `INSERT INTO coupon_redemptions (id, coupon_id, coupon_type, user_id, order_id, discount_amount, target_product_id, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        randomId("cpr"),
+        appliedCoupon.id,
+        appliedCoupon.discountType,
+        user.id,
+        orderId,
+        discountAmount,
+        appliedTargetProductId,
+        now,
+      );
+    } catch (err) {
+      console.error("[order:coupon_redemption_failed]", err);
     }
   }
 

@@ -28,6 +28,14 @@ export class MeshStandardMaterial extends Empty {}
 export class Color extends Empty {}
 export class CanvasTexture extends Empty {}
 export class Texture extends Empty {}
+export class TextureLoader extends Empty {
+  load(_url: string, onLoad?: (texture: any) => void) {
+    return new Texture();
+  }
+  setCrossOrigin(_crossOrigin: string) {
+    return this;
+  }
+}
 export class LoadingManager extends Empty {}
 export class Vector2 extends Empty {}
 export class Vector3 extends Empty {}

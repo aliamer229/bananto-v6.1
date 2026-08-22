@@ -122,7 +122,7 @@ describe("approveRechargeRequest", () => {
   it("claims the request with a guard and records who approved it", async () => {
     const stub = stubD1();
     mockSchemaBootstrap();
-    publishEnv({ bananto: stub.db });
+    publishEnv({ DB: stub.db, bananto: stub.db });
     const { approveRechargeRequest } = await import("./db.server");
 
     const result = await approveRechargeRequest("rrq_1", reviewer);
@@ -147,7 +147,7 @@ describe("approveRechargeRequest", () => {
   it("refuses a request another reviewer already claimed, and credits nothing", async () => {
     const stub = stubD1({ claimChanges: 0 });
     mockSchemaBootstrap();
-    publishEnv({ bananto: stub.db });
+    publishEnv({ DB: stub.db, bananto: stub.db });
     const { approveRechargeRequest } = await import("./db.server");
 
     const result = await approveRechargeRequest("rrq_1", reviewer);
@@ -160,7 +160,7 @@ describe("approveRechargeRequest", () => {
   it("refuses outright when the request is no longer pending", async () => {
     const stub = stubD1({ status: "approved" });
     mockSchemaBootstrap();
-    publishEnv({ bananto: stub.db });
+    publishEnv({ DB: stub.db, bananto: stub.db });
     const { approveRechargeRequest } = await import("./db.server");
 
     const result = await approveRechargeRequest("rrq_1", reviewer);
@@ -173,7 +173,7 @@ describe("approveRechargeRequest", () => {
   it("puts the request back to pending when the credit fails", async () => {
     const stub = stubD1({ failCredit: true });
     mockSchemaBootstrap();
-    publishEnv({ bananto: stub.db });
+    publishEnv({ DB: stub.db, bananto: stub.db });
     const { approveRechargeRequest } = await import("./db.server");
 
     const result = await approveRechargeRequest("rrq_1", reviewer);
@@ -192,7 +192,7 @@ describe("rejectRechargeRequest", () => {
   it("only rejects a pending request", async () => {
     const stub = stubD1({ status: "approved" });
     mockSchemaBootstrap();
-    publishEnv({ bananto: stub.db });
+    publishEnv({ DB: stub.db, bananto: stub.db });
     const { rejectRechargeRequest } = await import("./db.server");
 
     const result = await rejectRechargeRequest("rrq_1", reviewer);
@@ -207,7 +207,7 @@ describe("rejectRechargeRequest", () => {
   it("claims with the same pending guard as approval", async () => {
     const stub = stubD1();
     mockSchemaBootstrap();
-    publishEnv({ bananto: stub.db });
+    publishEnv({ DB: stub.db, bananto: stub.db });
     const { rejectRechargeRequest } = await import("./db.server");
 
     const result = await rejectRechargeRequest("rrq_1", reviewer);
@@ -222,7 +222,7 @@ describe("recharge listing", () => {
   it("returns the camelCase shape the review screens read", async () => {
     const stub = stubD1();
     mockSchemaBootstrap();
-    publishEnv({ bananto: stub.db });
+    publishEnv({ DB: stub.db, bananto: stub.db });
     const { listAllRechargeRequests } = await import("./db.server");
 
     const [request] = await listAllRechargeRequests();

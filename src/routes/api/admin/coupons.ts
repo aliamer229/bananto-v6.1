@@ -20,17 +20,43 @@ export const Route = createFileRoute("/api/admin/coupons")({
           const id = uuidv4();
           const createdAt = new Date().toISOString();
 
+          const code = String(data.code || "")
+            .trim()
+            .toUpperCase();
+          if (!code) {
+            return json({ error: "code_required" }, { status: 400 });
+          }
+
+          const discountType = String(data.discountType || data.discount_type || "percentage");
+          const discountValue = Number(
+            data.discountValue ||
+              data.discount_value ||
+              (discountType === "single_item_percent" ? 50 : 0),
+          );
+          const oncePerUserLifetime =
+            data.oncePerUserLifetime !== undefined
+              ? data.oncePerUserLifetime
+                ? 1
+                : 0
+              : data.once_per_user_lifetime !== undefined
+                ? Number(data.once_per_user_lifetime)
+                : discountType === "single_item_percent"
+                  ? 1
+                  : 0;
+
           await d1Execute(
             `INSERT INTO coupons (
-              id, code, discount_type, discount_value, expiration_at, 
+              id, code, discount_type, discount_value, start_at, expiration_at, 
               usage_limit, per_user_limit, eligible_products, 
               eligible_categories, eligible_users, min_order_amount, 
-              max_discount_amount, is_active, only_digital_products, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              max_discount_amount, is_active, only_digital_products,
+              is_stackable, once_per_user_lifetime, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             id,
-            data.code,
-            data.discountType || data.discount_type,
-            data.discountValue || data.discount_value,
+            code,
+            discountType,
+            discountValue,
+            data.startAt || data.start_at || null,
             data.expirationAt || data.expiration_at || null,
             data.usageLimit || data.usage_limit || null,
             data.perUserLimit || data.per_user_limit || 1,
@@ -41,6 +67,8 @@ export const Route = createFileRoute("/api/admin/coupons")({
             data.maxDiscountAmount || data.max_discount_amount || null,
             data.isActive === false || data.is_active === 0 ? 0 : 1,
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0,
+            data.isStackable || data.is_stackable ? 1 : 0,
+            oncePerUserLifetime,
             createdAt,
           );
 
@@ -51,16 +79,38 @@ export const Route = createFileRoute("/api/admin/coupons")({
           await requireAdmin(request);
           const data = await body(request);
 
+          const code = String(data.code || "")
+            .trim()
+            .toUpperCase();
+          const discountType = String(data.discountType || data.discount_type || "percentage");
+          const discountValue = Number(
+            data.discountValue ||
+              data.discount_value ||
+              (discountType === "single_item_percent" ? 50 : 0),
+          );
+          const oncePerUserLifetime =
+            data.oncePerUserLifetime !== undefined
+              ? data.oncePerUserLifetime
+                ? 1
+                : 0
+              : data.once_per_user_lifetime !== undefined
+                ? Number(data.once_per_user_lifetime)
+                : discountType === "single_item_percent"
+                  ? 1
+                  : 0;
+
           await d1Execute(
             `UPDATE coupons SET 
-              code = ?, discount_type = ?, discount_value = ?, expiration_at = ?, 
+              code = ?, discount_type = ?, discount_value = ?, start_at = ?, expiration_at = ?, 
               usage_limit = ?, per_user_limit = ?, eligible_products = ?, 
               eligible_categories = ?, eligible_users = ?, min_order_amount = ?, 
-              max_discount_amount = ?, is_active = ?, only_digital_products = ?
+              max_discount_amount = ?, is_active = ?, only_digital_products = ?,
+              is_stackable = ?, once_per_user_lifetime = ?
             WHERE id = ?`,
-            data.code,
-            data.discountType || data.discount_type,
-            data.discountValue || data.discount_value,
+            code,
+            discountType,
+            discountValue,
+            data.startAt || data.start_at || null,
             data.expirationAt || data.expiration_at || null,
             data.usageLimit || data.usage_limit || null,
             data.perUserLimit || data.per_user_limit || 1,
@@ -71,6 +121,8 @@ export const Route = createFileRoute("/api/admin/coupons")({
             data.maxDiscountAmount || data.max_discount_amount || null,
             data.isActive === false || data.is_active === 0 ? 0 : 1,
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0,
+            data.isStackable || data.is_stackable ? 1 : 0,
+            oncePerUserLifetime,
             data.id,
           );
 

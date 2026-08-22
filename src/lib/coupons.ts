@@ -13,6 +13,7 @@ export interface CouponRow {
   code?: unknown;
   discount_type?: unknown;
   discount_value?: unknown;
+  start_at?: unknown;
   expiration_at?: unknown;
   usage_limit?: unknown;
   per_user_limit?: unknown;
@@ -23,6 +24,8 @@ export interface CouponRow {
   max_discount_amount?: unknown;
   is_active?: unknown;
   only_digital_products?: unknown;
+  is_stackable?: unknown;
+  once_per_user_lifetime?: unknown;
   created_at?: unknown;
 }
 
@@ -44,20 +47,38 @@ function jsonList(value: unknown): string[] {
 }
 
 export function rowToCoupon(row: CouponRow): Coupon {
-  const discountType = String(row.discount_type ?? "fixed") as DiscountType;
+  const rawType = String(row.discount_type ?? "fixed").toLowerCase();
+  let discountType: DiscountType = "fixed";
+  if (rawType === "percentage") discountType = "percentage";
+  else if (
+    rawType === "single_item_percent" ||
+    rawType === "single_item" ||
+    rawType === "single_game_50"
+  ) {
+    discountType = "single_item_percent";
+  }
+
+  const startAt = row.start_at ? String(row.start_at) : undefined;
   const expiration = row.expiration_at ? String(row.expiration_at) : undefined;
   const usageLimit = optionalNumber(row.usage_limit);
   const maxDiscount = optionalNumber(row.max_discount_amount);
+  const perUserLimit = optionalNumber(row.per_user_limit) ?? 1;
+  const oncePerUserLifetime =
+    discountType === "single_item_percent" ||
+    (row.once_per_user_lifetime !== undefined && row.once_per_user_lifetime !== null
+      ? Boolean(Number(row.once_per_user_lifetime))
+      : perUserLimit === 1);
 
   return {
     id: String(row.id ?? ""),
     code: String(row.code ?? ""),
     discountType,
-    discountValue: optionalNumber(row.discount_value) ?? 0,
+    discountValue:
+      optionalNumber(row.discount_value) ?? (discountType === "single_item_percent" ? 50 : 0),
+    ...(startAt ? { startAt } : {}),
     ...(expiration ? { expirationAt: expiration } : {}),
     ...(usageLimit !== undefined ? { usageLimit } : {}),
-    // A missing per-member limit means one use, never unlimited.
-    perUserLimit: optionalNumber(row.per_user_limit) ?? 1,
+    perUserLimit,
     eligibleProducts: jsonList(row.eligible_products),
     eligibleCategories: jsonList(row.eligible_categories),
     eligibleUsers: jsonList(row.eligible_users),
@@ -65,6 +86,8 @@ export function rowToCoupon(row: CouponRow): Coupon {
     ...(maxDiscount !== undefined ? { maxDiscountAmount: maxDiscount } : {}),
     isActive: row.is_active === undefined ? true : Boolean(Number(row.is_active)),
     onlyDigitalProducts: Boolean(Number(row.only_digital_products ?? 0)),
+    isStackable: Boolean(Number(row.is_stackable ?? 0)),
+    oncePerUserLifetime,
     createdAt: String(row.created_at ?? ""),
   };
 }
@@ -76,24 +99,57 @@ export function isPhysicalKind(kind: string | undefined): boolean {
   return PHYSICAL_KINDS.includes(String(kind ?? "").toLowerCase());
 }
 
+export interface CouponCheckItem {
+  productId: string | number;
+  categoryId?: string | number;
+  kind?: string;
+  unitPrice?: number;
+  quantity?: number;
+  title?: string;
+}
+
 export interface CouponCheckInput {
   coupon: Coupon;
   userId: string;
   orderAmount: number;
-  items: { kind?: string }[];
+  items: CouponCheckItem[];
   globalUses: number;
   userUses: number;
+  lifetimeSingleItemUses?: number;
+  targetProductId?: string | number;
   now?: Date;
 }
 
 export type CouponRefusal =
   | "inactive"
+  | "not_started"
   | "expired"
   | "usage_limit"
   | "per_user_limit"
+  | "lifetime_single_item_used"
   | "min_order"
   | "not_eligible"
+  | "no_eligible_products"
   | "digital_only";
+
+/**
+ * Filter items in the cart that match the coupon eligibility constraints.
+ */
+export function getEligibleItems(coupon: Coupon, items: CouponCheckItem[]): CouponCheckItem[] {
+  let list = items;
+  if (coupon.onlyDigitalProducts) {
+    list = list.filter((it) => !isPhysicalKind(it.kind));
+  }
+  if (coupon.eligibleProducts && coupon.eligibleProducts.length > 0) {
+    const allowed = new Set(coupon.eligibleProducts.map(String));
+    list = list.filter((it) => allowed.has(String(it.productId)));
+  }
+  if (coupon.eligibleCategories && coupon.eligibleCategories.length > 0) {
+    const allowedCats = new Set(coupon.eligibleCategories.map(String));
+    list = list.filter((it) => it.categoryId && allowedCats.has(String(it.categoryId)));
+  }
+  return list;
+}
 
 /**
  * The single set of rules a coupon has to pass, shared by the checkout path and
@@ -102,50 +158,146 @@ export type CouponRefusal =
  */
 export function checkCoupon(
   input: CouponCheckInput,
-): { ok: true } | { ok: false; reason: CouponRefusal } {
+): { ok: true; targetProduct?: CouponCheckItem } | { ok: false; reason: CouponRefusal } {
   const { coupon } = input;
   const now = input.now ?? new Date();
 
   if (!coupon.isActive) return { ok: false, reason: "inactive" };
+
+  if (coupon.startAt && new Date(coupon.startAt).getTime() > now.getTime()) {
+    return { ok: false, reason: "not_started" };
+  }
+
   if (coupon.expirationAt && new Date(coupon.expirationAt).getTime() <= now.getTime()) {
     return { ok: false, reason: "expired" };
   }
+
   if (coupon.usageLimit !== undefined && input.globalUses >= coupon.usageLimit) {
     return { ok: false, reason: "usage_limit" };
   }
+
+  // Lifetime single-item / once per user lifetime restriction
+  if (coupon.discountType === "single_item_percent" || coupon.oncePerUserLifetime) {
+    if ((input.lifetimeSingleItemUses ?? 0) > 0 || input.userUses >= 1) {
+      return { ok: false, reason: "lifetime_single_item_used" };
+    }
+  }
+
   if (input.userUses >= coupon.perUserLimit) {
     return { ok: false, reason: "per_user_limit" };
   }
+
   if (input.orderAmount < coupon.minOrderAmount) {
     return { ok: false, reason: "min_order" };
   }
+
   if (coupon.eligibleUsers.length > 0 && !coupon.eligibleUsers.includes(input.userId)) {
     return { ok: false, reason: "not_eligible" };
   }
+
   if (coupon.onlyDigitalProducts && input.items.some((item) => isPhysicalKind(item.kind))) {
     return { ok: false, reason: "digital_only" };
   }
+
+  // Check eligible products for single_item_percent or specific product restriction
+  if (
+    coupon.discountType === "single_item_percent" ||
+    (coupon.eligibleProducts && coupon.eligibleProducts.length > 0)
+  ) {
+    const eligible = getEligibleItems(coupon, input.items);
+    if (eligible.length === 0) {
+      return { ok: false, reason: "no_eligible_products" };
+    }
+
+    // Determine target item: if user selected a specific productId, verify it's eligible
+    let targetItem: CouponCheckItem | undefined;
+    if (input.targetProductId) {
+      targetItem = eligible.find((it) => String(it.productId) === String(input.targetProductId));
+    }
+    if (!targetItem) {
+      // Default to highest priced eligible item
+      targetItem = [...eligible].sort((a, b) => (b.unitPrice || 0) - (a.unitPrice || 0))[0];
+    }
+
+    return { ok: true, targetProduct: targetItem };
+  }
+
   return { ok: true };
 }
 
-/** The discount a passing coupon is worth, capped and never larger than the order. */
-export function couponDiscount(coupon: Coupon, orderAmount: number): number {
+/**
+ * The discount a passing coupon is worth, capped and never larger than the order.
+ * For `single_item_percent`: applies strictly to 1 single unit of the chosen/highest-price eligible game.
+ */
+export function couponDiscount(
+  coupon: Coupon,
+  orderAmount: number,
+  items: CouponCheckItem[] = [],
+  targetProductId?: string | number,
+): {
+  discount: number;
+  targetProductId?: string | number;
+  targetTitle?: string;
+  singleUnitPrice?: number;
+} {
+  if (coupon.discountType === "single_item_percent") {
+    const eligible = getEligibleItems(coupon, items);
+    if (eligible.length === 0) {
+      return { discount: 0 };
+    }
+
+    let targetItem: CouponCheckItem | undefined;
+    if (targetProductId) {
+      targetItem = eligible.find((it) => String(it.productId) === String(targetProductId));
+    }
+    if (!targetItem) {
+      // Sort by unit price descending so the user gets the best discount on 1 unit by default
+      targetItem = [...eligible].sort((a, b) => (b.unitPrice || 0) - (a.unitPrice || 0))[0];
+    }
+
+    if (!targetItem) return { discount: 0 };
+
+    const unitPrice = Math.max(0, targetItem.unitPrice || 0);
+    const percent = coupon.discountValue > 0 ? coupon.discountValue : 50;
+
+    // Strict 1-unit discount calculation:
+    const baseDiscount = Math.floor(unitPrice * (percent / 100));
+    const capped =
+      coupon.maxDiscountAmount !== undefined
+        ? Math.min(baseDiscount, coupon.maxDiscountAmount)
+        : baseDiscount;
+
+    const discount = Math.min(Math.max(0, Math.floor(capped)), Math.floor(orderAmount));
+    return {
+      discount,
+      targetProductId: targetItem.productId,
+      targetTitle: targetItem.title,
+      singleUnitPrice: unitPrice,
+    };
+  }
+
   const base =
     coupon.discountType === "percentage"
       ? Math.floor(orderAmount * (coupon.discountValue / 100))
       : coupon.discountValue;
   const capped =
     coupon.maxDiscountAmount !== undefined ? Math.min(base, coupon.maxDiscountAmount) : base;
-  if (!Number.isFinite(capped) || capped <= 0) return 0;
-  return Math.min(Math.floor(capped), Math.floor(orderAmount));
+
+  if (!Number.isFinite(capped) || capped <= 0) return { discount: 0 };
+  const discount = Math.min(Math.floor(capped), Math.floor(orderAmount));
+  return { discount };
 }
 
 export const COUPON_REFUSAL_MESSAGE: Record<CouponRefusal, string> = {
   inactive: "الكوبون غير موجود أو غير فعال",
+  not_started: "الكوبون غير متاح للاستخدام بعد",
   expired: "انتهت صلاحية الكوبون",
   usage_limit: "تم استنفاد عدد مرات استخدام الكوبون",
   per_user_limit: "لقد استخدمت هذا الكوبون مسبقاً",
+  lifetime_single_item_used:
+    "لقد استفدت مسبقاً من عرض الخصم 50% على لعبة واحدة (متاح مرة واحدة فقط لكل حساب)",
   min_order: "قيمة الطلب أقل من الحد الأدنى لاستخدام الكوبون",
   not_eligible: "هذا الكوبون غير مخصص لحسابك",
+  no_eligible_products: "السلة لا تحتوي على أي لعبة مؤهلة لهذا الكوبون",
   digital_only: "هذا الكوبون صالح فقط للمنتجات الرقمية.",
 };

@@ -128,8 +128,35 @@ export function showRecoveryScreen(): void {
   document.body.appendChild(overlay);
 }
 
+function isDevelopmentOrPreview(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return (
+      Boolean(import.meta.env?.DEV) ||
+      window.self !== window.top ||
+      window.location.hostname.includes("run.app") ||
+      window.location.hostname.includes("localhost") ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.includes("ais-") ||
+      window.location.hostname.includes("googleusercontent.com")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const handleModuleReload = (force = false) => {
   if (typeof window === "undefined") return;
+
+  // In development, preview iframes, or non-production sandboxes, avoid aggressive reloading
+  // or blocking recovery overlays which disrupt live inspection.
+  if (isDevelopmentOrPreview() && !force) {
+    console.warn(
+      "[ModuleLoader] Caught script/module import failure in preview/dev environment. Suppressing forced page reload.",
+    );
+    return;
+  }
+
   let previousReload = 0;
   try {
     previousReload = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
@@ -137,8 +164,6 @@ export const handleModuleReload = (force = false) => {
     /* sessionStorage can throw in private mode; treat it as never reloaded */
   }
   if (!force && Date.now() - previousReload < 15_000) {
-    // Reloading again would loop on the same broken build. Show the member a
-    // way out rather than leaving them on a blank page.
     showRecoveryScreen();
     return;
   }
@@ -150,8 +175,6 @@ export const handleModuleReload = (force = false) => {
     /* ignore */
   }
   if (attempts >= MAX_AUTOMATIC_RELOADS) {
-    // Even a forced reload stops here: whatever is broken is not going to be
-    // fixed by loading the same thing a third time.
     showRecoveryScreen();
     return;
   }
@@ -318,6 +341,7 @@ export function installPolyfills() {
  */
 function installBlankScreenWatchdog() {
   if (typeof window === "undefined" || typeof document === "undefined") return;
+  if (isDevelopmentOrPreview()) return;
   if ((window as any).__bananto_blank_watchdog_installed) return;
   (window as any).__bananto_blank_watchdog_installed = true;
 

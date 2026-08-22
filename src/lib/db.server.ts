@@ -2308,6 +2308,20 @@ export async function listUserTransactions(userId: string): Promise<WalletTransa
   return getWalletTransactions(userId);
 }
 
+export async function listRechargeRequestsByUser(
+  userId: string,
+  options: { limit?: number } = {},
+): Promise<WalletRechargeRequest[]> {
+  if (!(await d1Ready())) return [];
+  const limit = Math.min(Math.max(Number(options.limit ?? 100), 1), 500);
+  const rows = await d1All<Record<string, unknown>>(
+    `SELECT * FROM recharge_requests WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`,
+    userId,
+    limit,
+  );
+  return rows.map(rowToRechargeRequest);
+}
+
 /* -------------------------------- preferences ------------------------------ */
 
 export async function getUserPreferences(userId: string): Promise<any> {

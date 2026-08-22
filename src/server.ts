@@ -1,7 +1,4 @@
-class DurableObject {
-  constructor(ctx: any, env: any) {}
-}
-// Removed import { DurableObject } from "cloudflare:workers";
+import { DurableObject } from "cloudflare:workers";
 import { processAutoScheduledTasks, processBotTrading } from "./lib/scheduled-jobs.server";
 import "./lib/error-capture";
 

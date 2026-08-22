@@ -410,13 +410,14 @@ export interface ProductReview {
   updatedAt: string;
 }
 
-export type DiscountType = "percentage" | "fixed";
+export type DiscountType = "percentage" | "fixed" | "single_item_percent";
 
 export interface Coupon {
   id: string;
   code: string;
   discountType: DiscountType;
   discountValue: number;
+  startAt?: string;
   expirationAt?: string;
   usageLimit?: number;
   perUserLimit: number;
@@ -427,6 +428,8 @@ export interface Coupon {
   maxDiscountAmount?: number;
   isActive: boolean;
   onlyDigitalProducts?: boolean;
+  isStackable?: boolean;
+  oncePerUserLifetime?: boolean;
   createdAt: string;
 }
 

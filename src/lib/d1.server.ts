@@ -132,7 +132,7 @@ export function getD1(): D1Like | undefined {
   // In local dev / preview the platform hands us an *empty local* D1 binding.
   // Writes there vanish and the admin sees "nothing was saved", so whenever
   // REST credentials for the real database are configured we prefer them.
-  const preferRest = restConfigAvailable;
+  const preferRest = restConfigAvailable && process.env.NODE_ENV !== "test";
 
   if (!preferRest && db && typeof db.prepare === "function") return db;
 
@@ -820,17 +820,27 @@ const SCHEMA_PATCHES: string[] = [
 
   `CREATE TABLE IF NOT EXISTS coupons (
     id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE, discount_type TEXT NOT NULL, 
-    discount_value REAL NOT NULL, expiration_at TEXT, usage_limit INTEGER, 
+    discount_value REAL NOT NULL, start_at TEXT, expiration_at TEXT, usage_limit INTEGER, 
     per_user_limit INTEGER DEFAULT 1, eligible_products TEXT DEFAULT '[]', 
     eligible_categories TEXT DEFAULT '[]', eligible_users TEXT DEFAULT '[]',
     min_order_amount REAL DEFAULT 0, max_discount_amount REAL,
-    is_active INTEGER DEFAULT 1, only_digital_products INTEGER DEFAULT 0, created_at TEXT NOT NULL)`,
+    is_active INTEGER DEFAULT 1, only_digital_products INTEGER DEFAULT 0,
+    is_stackable INTEGER DEFAULT 0, once_per_user_lifetime INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL)`,
 
   `ALTER TABLE coupons ADD COLUMN only_digital_products INTEGER DEFAULT 0`,
+  `ALTER TABLE coupons ADD COLUMN start_at TEXT`,
+  `ALTER TABLE coupons ADD COLUMN is_stackable INTEGER DEFAULT 0`,
+  `ALTER TABLE coupons ADD COLUMN once_per_user_lifetime INTEGER DEFAULT 0`,
+
   `CREATE TABLE IF NOT EXISTS coupon_redemptions (
-    id TEXT PRIMARY KEY, coupon_id TEXT NOT NULL, user_id TEXT NOT NULL, 
-    order_id TEXT NOT NULL, created_at TEXT NOT NULL,
+    id TEXT PRIMARY KEY, coupon_id TEXT NOT NULL, coupon_type TEXT, user_id TEXT NOT NULL, 
+    order_id TEXT NOT NULL, discount_amount REAL, target_product_id TEXT, created_at TEXT NOT NULL,
     UNIQUE(coupon_id, user_id, order_id))`,
+  `ALTER TABLE coupon_redemptions ADD COLUMN coupon_type TEXT`,
+  `ALTER TABLE coupon_redemptions ADD COLUMN discount_amount REAL`,
+  `ALTER TABLE coupon_redemptions ADD COLUMN target_product_id TEXT`,
+  `CREATE INDEX IF NOT EXISTS coupon_redemptions_user_idx ON coupon_redemptions(user_id, coupon_type)`,
 
   `CREATE TABLE IF NOT EXISTS review_cooldowns (
     user_id TEXT PRIMARY KEY, last_rewarded_at TEXT NOT NULL)`,

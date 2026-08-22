@@ -347,31 +347,44 @@ function CartPage() {
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [selectedTargetProductId, setSelectedTargetProductId] = useState<string | undefined>(
+    undefined,
+  );
   const [couponError, setCouponError] = useState("");
   const validateCouponFn = useServerFn(validateCoupon);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+  const handleApplyCoupon = async (targetId?: string) => {
+    const code = couponCode.trim();
+    if (!code) return;
     setIsApplyingCoupon(true);
     setCouponError("");
+    const target = targetId !== undefined ? targetId : selectedTargetProductId;
     try {
       const res = await validateCouponFn({
         data: {
-          code: couponCode.trim(),
+          code,
           orderAmount: subtotal,
+          targetProductId: target,
           items: lines.map((l) => ({
             productId: String(l.productId),
             categoryId: "",
             kind: String(l.kind),
+            unitPrice: Number(l.price),
+            quantity: Number(l.quantity),
+            title: String(l.title),
           })),
         },
       });
       if (res.valid && res.coupon) {
-        setAppliedCoupon({ ...res.coupon, code: couponCode.trim() });
+        setAppliedCoupon({ ...res.coupon, code });
+        if (res.coupon.targetProductId) {
+          setSelectedTargetProductId(String(res.coupon.targetProductId));
+        }
         playSound("turn_on", 0.5);
         toast.success("تم تطبيق كود الخصم بنجاح!");
       } else {
+        setAppliedCoupon(null);
         setCouponError(res.message || "كود الخصم غير صالح أو منتهي الصلاحية");
         playSound("Error", 0.5);
       }
@@ -382,6 +395,50 @@ function CartPage() {
       setIsApplyingCoupon(false);
     }
   };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setSelectedTargetProductId(undefined);
+    setCouponError("");
+    toast.info("تم إلغاء كود الخصم");
+  };
+
+  // Revalidate coupon when cart contents change
+  React.useEffect(() => {
+    if (appliedCoupon && appliedCoupon.code) {
+      void (async () => {
+        try {
+          const res = await validateCouponFn({
+            data: {
+              code: appliedCoupon.code,
+              orderAmount: subtotal,
+              targetProductId: selectedTargetProductId,
+              items: lines.map((l) => ({
+                productId: String(l.productId),
+                categoryId: "",
+                kind: String(l.kind),
+                unitPrice: Number(l.price),
+                quantity: Number(l.quantity),
+                title: String(l.title),
+              })),
+            },
+          });
+          if (res.valid && res.coupon) {
+            setAppliedCoupon({ ...res.coupon, code: appliedCoupon.code });
+            if (res.coupon.targetProductId) {
+              setSelectedTargetProductId(String(res.coupon.targetProductId));
+            }
+          } else {
+            setAppliedCoupon(null);
+            setCouponError(res.message || "لم يعد الكوبون صالحاً لمحتويات السلة الحالية");
+          }
+        } catch {
+          // ignore background reval failure
+        }
+      })();
+    }
+  }, [subtotal, lines.length]);
 
   const finalDiscount = Number(appliedCoupon?.discountAmount ?? 0);
   const totalPayable = Math.max(0, subtotal - finalDiscount + deliveryPrice);
@@ -443,6 +500,7 @@ function CartPage() {
         appliedCoupon?.code,
         true, // acceptedTerms: explicitly confirmed
         idempotencyKeyRef.current,
+        selectedTargetProductId,
       );
     },
     onSuccess: ({ order }) => {
@@ -678,42 +736,125 @@ function CartPage() {
         )}
 
         {/* Coupon Code Section */}
-        <section className="bg-[var(--card)] p-3.5 rounded-3xl border border-border space-y-2 shadow-xs">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Ticket className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                id="coupon-code-input"
-                type="text"
-                value={couponCode}
-                onChange={(e) => {
-                  setCouponCode(e.target.value.toUpperCase());
-                  setCouponError("");
-                }}
-                placeholder={tr("أدخل كود الخصم (إن وجد)")}
-                className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 uppercase font-mono tracking-wider transition-all placeholder:text-muted-foreground placeholder:normal-case placeholder:font-sans"
-              />
-            </div>
-            <button
-              id="apply-coupon-btn"
-              onClick={handleApplyCoupon}
-              disabled={isApplyingCoupon || !couponCode.trim()}
-              className="px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl text-xs active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0 shadow-xs"
-            >
-              {isApplyingCoupon && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-              <span>{tr("تطبيق")}</span>
-            </button>
+        <section className="bg-[var(--card)] p-4 rounded-3xl border border-border space-y-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Ticket className="w-4 h-4 text-primary" />
+              <span>{tr("كوبون الخصم")}</span>
+            </span>
+            {appliedCoupon && (
+              <button
+                onClick={handleRemoveCoupon}
+                className="text-[11px] font-bold text-destructive hover:underline flex items-center gap-1 active:scale-95 transition-transform"
+              >
+                <X className="w-3 h-3" />
+                <span>{tr("إلغاء الكوبون")}</span>
+              </button>
+            )}
           </div>
 
-          {appliedCoupon && (
-            <div className="flex items-center justify-between px-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-              <span>تم تطبيق الكود ({appliedCoupon.code})</span>
-              <span>- {formatIQDPrice(finalDiscount)}</span>
+          {!appliedCoupon ? (
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Ticket className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  id="coupon-code-input"
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => {
+                    setCouponCode(e.target.value.toUpperCase());
+                    setCouponError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleApplyCoupon();
+                    }
+                  }}
+                  placeholder={tr("أدخل كود الخصم (مثال: GAME50)")}
+                  className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 uppercase font-mono tracking-wider transition-all placeholder:text-muted-foreground placeholder:normal-case placeholder:font-sans"
+                />
+              </div>
+              <button
+                id="apply-coupon-btn"
+                onClick={() => handleApplyCoupon()}
+                disabled={isApplyingCoupon || !couponCode.trim()}
+                className="px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl text-xs active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0 shadow-xs"
+              >
+                {isApplyingCoupon && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                <span>{tr("تطبيق")}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md uppercase font-mono">
+                    {appliedCoupon.code}
+                  </span>
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    {appliedCoupon.discountType === "single_item_percent"
+                      ? `خصم ${appliedCoupon.discountValue}% على لعبة واحدة (1x)`
+                      : appliedCoupon.discountType === "percentage"
+                        ? `خصم ${appliedCoupon.discountValue}% على الطلب`
+                        : `خصم ${formatIQDPrice(appliedCoupon.discountValue)}`}
+                  </span>
+                </div>
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                  - {formatIQDPrice(finalDiscount)}
+                </span>
+              </div>
+
+              {/* Single item discount game selector if multiple eligible products exist */}
+              {appliedCoupon.discountType === "single_item_percent" && (
+                <div className="pt-2 border-t border-emerald-500/20 space-y-1.5">
+                  <div className="text-[11px] text-muted-foreground flex items-center justify-between">
+                    <span>{tr("اللعبة المستفيدة من الخصم (نسخة 1 فقط):")}</span>
+                    {appliedCoupon.singleUnitPrice && (
+                      <span className="font-mono text-foreground font-bold">
+                        {formatIQDPrice(appliedCoupon.singleUnitPrice)} ÷ 2 = -
+                        {formatIQDPrice(finalDiscount)}
+                      </span>
+                    )}
+                  </div>
+
+                  {lines.length > 1 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {lines.map((item) => {
+                        const isSelected =
+                          String(item.productId) ===
+                          String(selectedTargetProductId || appliedCoupon.targetProductId);
+                        return (
+                          <button
+                            key={item.productId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTargetProductId(String(item.productId));
+                              handleApplyCoupon(String(item.productId));
+                            }}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 border ${
+                              isSelected
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                                : "bg-background/80 hover:bg-background border-border text-foreground"
+                            }`}
+                          >
+                            <Gamepad2 className="w-3 h-3" />
+                            <span className="truncate max-w-[140px]">{item.title}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           {couponError && (
-            <p className="text-xs text-destructive font-medium px-2">{couponError}</p>
+            <p className="text-xs text-destructive font-medium px-1 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{couponError}</span>
+            </p>
           )}
         </section>
 

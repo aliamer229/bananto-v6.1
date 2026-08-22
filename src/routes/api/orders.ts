@@ -88,6 +88,7 @@ export const Route = createFileRoute("/api/orders")({
             couponCode?: string;
             acceptedTerms?: boolean;
             idempotencyKey?: string;
+            targetProductId?: string | number;
           }>(request);
           const throttle = await consumeRateLimit(request, "order-create", 15, 15 * 60, user.id);
           if (!throttle.allowed) return rateLimitResponse(throttle.retryAfter);
@@ -107,6 +108,7 @@ export const Route = createFileRoute("/api/orders")({
               data.couponCode,
               data.acceptedTerms !== false,
               data.idempotencyKey,
+              data.targetProductId,
             );
             return json({ order: redactOrder(order) });
           } catch (error) {

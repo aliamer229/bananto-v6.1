@@ -11,8 +11,11 @@ import react from "@vitejs/plugin-react";
 // 3D case only ever renders in the browser, so the server build gets a
 // side-effect free stub instead. Without this, every published request 500s.
 const threeStub = fileURLToPath(new URL("./src/hub/gamehub/three-ssr-stub.ts", import.meta.url));
+const cloudflareStub = fileURLToPath(
+  new URL("./src/lib/cloudflare-workers-shim.ts", import.meta.url),
+);
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const define: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
@@ -26,14 +29,17 @@ export default defineConfig(({ mode }) => {
         name: "three-ssr-stub",
         enforce: "pre" as const,
         resolveId(this: { environment?: { name?: string } }, source: string) {
-          if (this.environment?.name === "client") return null;
           if (
             source === "three" ||
             source === "@react-three/fiber" ||
             source === "@react-three/drei" ||
             source.startsWith("three/examples/")
           ) {
+            if (this.environment?.name === "client") return null;
             return threeStub;
+          }
+          if (source === "cloudflare:workers") {
+            return cloudflareStub;
           }
           return null;
         },
@@ -41,45 +47,57 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       viteTsconfigPaths({ projects: ["./tsconfig.json"] }),
       tanstackStart(),
-      // Without an explicit preset Nitro builds a Node HTTP server, which the
-      // Cloudflare Worker runtime cannot boot ("http.createServer is not
-      // implemented"). The Worker build must use the Cloudflare module preset.
-      nitro({
-        preset: "node-server",
-        output: { dir: "dist", serverDir: "dist/server", publicDir: "dist/client" },
-        // Long-lived edge/browser caching for the static media served by
-        // Cloudflare; the service worker itself must always be revalidated.
-        routeRules: {
-          "/img/**": { headers: { "cache-control": "public, max-age=31536000, immutable" } },
-          "/media/**": { headers: { "cache-control": "public, max-age=31536000, immutable" } },
-          "/models/**": { headers: { "cache-control": "public, max-age=31536000, immutable" } },
-          "/textures/**": { headers: { "cache-control": "public, max-age=31536000, immutable" } },
-          "/source/**": { headers: { "cache-control": "public, max-age=31536000, immutable" } },
-          "/illustrations/**": { headers: { "cache-control": "public, max-age=604800" } },
-          "/sw.js": { headers: { "cache-control": "no-cache" } },
-        },
-        hooks: {
-          compiled: async (nitro) => {
-            const fs = await import("node:fs");
-            const path = await import("node:path");
-            const ssrPath = path.resolve(nitro.options.output.serverDir, "_ssr/ssr.mjs");
-            const indexPath = path.resolve(nitro.options.output.serverDir, "index.mjs");
-            const tslibPkg = path.resolve(
-              nitro.options.output.serverDir,
-              "node_modules/tslib/package.json",
-            );
-            if (fs.existsSync(tslibPkg)) {
-              let pkg = fs.readFileSync(tslibPkg, "utf8");
-              pkg = pkg.replace(/"\.\/tslib\.es6\.mjs"/g, '"./tslib.js"');
-              fs.writeFileSync(tslibPkg, pkg);
-            }
-            if (fs.existsSync(ssrPath) && fs.existsSync(indexPath)) {
-              fs.appendFileSync(indexPath, `\nexport { ChatRealtimeDO } from "./_ssr/ssr.mjs";\n`);
-              console.log(`\n[Nitro Hook] Successfully appended ChatRealtimeDO export\n`);
-            }
-          },
-        },
-      }),
+      ...(command === "build"
+        ? [
+            nitro({
+              preset: "cloudflare-module",
+              output: { dir: "dist", serverDir: "dist/server", publicDir: "dist/client" },
+              // Long-lived edge/browser caching for the static media served by
+              // Cloudflare; the service worker itself must always be revalidated.
+              routeRules: {
+                "/img/**": { headers: { "cache-control": "public, max-age=31536000, immutable" } },
+                "/media/**": {
+                  headers: { "cache-control": "public, max-age=31536000, immutable" },
+                },
+                "/models/**": {
+                  headers: { "cache-control": "public, max-age=31536000, immutable" },
+                },
+                "/textures/**": {
+                  headers: { "cache-control": "public, max-age=31536000, immutable" },
+                },
+                "/source/**": {
+                  headers: { "cache-control": "public, max-age=31536000, immutable" },
+                },
+                "/illustrations/**": { headers: { "cache-control": "public, max-age=604800" } },
+                "/sw.js": { headers: { "cache-control": "no-cache" } },
+              },
+              hooks: {
+                compiled: async (nitro) => {
+                  const fs = await import("node:fs");
+                  const path = await import("node:path");
+                  const ssrPath = path.resolve(nitro.options.output.serverDir, "_ssr/ssr.mjs");
+                  const indexPath = path.resolve(nitro.options.output.serverDir, "index.mjs");
+                  const tslibPkg = path.resolve(
+                    nitro.options.output.serverDir,
+                    "node_modules/tslib/package.json",
+                  );
+                  if (fs.existsSync(tslibPkg)) {
+                    let pkg = fs.readFileSync(tslibPkg, "utf8");
+                    pkg = pkg.replace(/"\.\/tslib\.es6\.mjs"/g, '"./tslib.js"');
+                    fs.writeFileSync(tslibPkg, pkg);
+                  }
+                  if (fs.existsSync(ssrPath) && fs.existsSync(indexPath)) {
+                    fs.appendFileSync(
+                      indexPath,
+                      `\nexport { ChatRealtimeDO } from "./_ssr/ssr.mjs";\n`,
+                    );
+                    console.log(`\n[Nitro Hook] Successfully appended ChatRealtimeDO export\n`);
+                  }
+                },
+              },
+            }),
+          ]
+        : []),
 
       react(),
     ],

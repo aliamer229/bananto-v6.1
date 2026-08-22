@@ -153,38 +153,46 @@ export const validateCoupon = createServerFn({ method: "POST" })
     z.object({
       code: z.string(),
       orderAmount: z.number(),
+      targetProductId: z.string().optional(),
       items: z.array(
         z.object({
           productId: z.string(),
-          categoryId: z.string(),
+          categoryId: z.string().optional().default(""),
           kind: z.string().optional(),
+          unitPrice: z.number().optional(),
+          quantity: z.number().optional(),
+          title: z.string().optional(),
         }),
       ),
     }),
   )
   .handler(async ({ data, context }) => {
     const userId = context.userId;
-    const now = new Date().toISOString();
 
     const row = await d1First<CouponRow>(
       `SELECT * FROM coupons WHERE code = ? AND is_active = 1`,
-      data.code,
+      data.code.trim().toUpperCase(),
     );
     if (!row) return { valid: false, message: COUPON_REFUSAL_MESSAGE.inactive };
 
-    // The row is snake_case; reading it as a `Coupon` made every limit below
-    // `undefined`, which is why expired and exhausted coupons still applied.
+    // The row is snake_case; reading it as a `Coupon` shape
     const coupon = rowToCoupon(row);
 
-    const globalUsage = await d1First<{ total: number }>(
-      `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?`,
-      coupon.id,
-    );
-    const userUsage = await d1First<{ total: number }>(
-      `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?`,
-      coupon.id,
-      userId,
-    );
+    const [globalUsage, userUsage, lifetimeSingleItem] = await Promise.all([
+      d1First<{ total: number }>(
+        `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?`,
+        coupon.id,
+      ),
+      d1First<{ total: number }>(
+        `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?`,
+        coupon.id,
+        userId,
+      ),
+      d1First<{ total: number }>(
+        `SELECT COUNT(*) as total FROM coupon_redemptions WHERE user_id = ? AND (coupon_type = 'single_item_percent' OR coupon_type = 'single_game_50')`,
+        userId,
+      ),
+    ]);
 
     const verdict = checkCoupon({
       coupon,
@@ -193,10 +201,14 @@ export const validateCoupon = createServerFn({ method: "POST" })
       items: data.items,
       globalUses: Number(globalUsage?.total ?? 0),
       userUses: Number(userUsage?.total ?? 0),
+      lifetimeSingleItemUses: Number(lifetimeSingleItem?.total ?? 0),
+      targetProductId: data.targetProductId,
     });
     if (!verdict.ok) {
       return { valid: false, message: COUPON_REFUSAL_MESSAGE[verdict.reason] };
     }
+
+    const discountRes = couponDiscount(coupon, data.orderAmount, data.items, data.targetProductId);
 
     return {
       valid: true,
@@ -205,10 +217,19 @@ export const validateCoupon = createServerFn({ method: "POST" })
         code: coupon.code,
         discountType: coupon.discountType,
         discountValue: coupon.discountValue,
+        eligibleProducts: coupon.eligibleProducts,
+        onlyDigitalProducts: coupon.onlyDigitalProducts,
+        isStackable: coupon.isStackable,
+        oncePerUserLifetime: coupon.oncePerUserLifetime,
         ...(coupon.maxDiscountAmount !== undefined
           ? { maxDiscountAmount: coupon.maxDiscountAmount }
           : {}),
-        discountAmount: couponDiscount(coupon, data.orderAmount),
+        discountAmount: discountRes.discount,
+        targetProductId: discountRes.targetProductId
+          ? String(discountRes.targetProductId)
+          : undefined,
+        targetTitle: discountRes.targetTitle,
+        singleUnitPrice: discountRes.singleUnitPrice,
       },
     };
   });

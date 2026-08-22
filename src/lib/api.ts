@@ -240,10 +240,18 @@ export const api = {
     couponCode?: string,
     acceptedTerms?: boolean,
     idempotencyKey?: string,
+    targetProductId?: string | number,
   ) =>
     request<{ order: Order }>("/api/orders", {
       method: "POST",
-      body: JSON.stringify({ items, address, couponCode, acceptedTerms, idempotencyKey }),
+      body: JSON.stringify({
+        items,
+        address,
+        couponCode,
+        acceptedTerms,
+        idempotencyKey,
+        targetProductId,
+      }),
     }),
   setOrderAddress: (orderId: string, address: unknown) =>
     request<{ order: Order }>("/api/orders", {
@@ -516,7 +524,12 @@ export const api = {
 
 export const walletApi = {
   getTransactions: () =>
-    request<{ transactions: any[]; activeBinanceIntent?: any; binanceConfig?: any }>("/api/wallet"),
+    request<{
+      transactions: any[];
+      rechargeRequests?: any[];
+      activeBinanceIntent?: any;
+      binanceConfig?: any;
+    }>("/api/wallet"),
   recharge: (payload: {
     amount: number;
     method: string;

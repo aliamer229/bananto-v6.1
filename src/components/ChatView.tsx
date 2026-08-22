@@ -586,8 +586,8 @@ function WalletView({
         onOpenChange={setIsTopUpOpen}
         onSuccess={afterWalletChange}
         settings={settings}
-        onRecharge={(payload: any) => recharge.mutate(payload)}
-        onConsumeBanan={(code: string) => consumeBanan.mutate(code)}
+        onRecharge={(payload: any) => recharge.mutateAsync(payload)}
+        onConsumeBanan={(code: string) => consumeBanan.mutateAsync(code)}
         isPending={recharge.isPending || consumeBanan.isPending}
       />
     </div>
