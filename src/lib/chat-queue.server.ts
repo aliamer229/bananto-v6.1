@@ -362,10 +362,10 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
     if (t.queueStatus === "snoozed") return false;
     return Boolean(
       t.orderId ||
-        t.chatType === "ORDER_SUPPORT" ||
-        t.chatType === "DELIVERY" ||
-        t.chatType === "GENERAL_SUPPORT" ||
-        t.needsAdmin,
+      t.chatType === "ORDER_SUPPORT" ||
+      t.chatType === "DELIVERY" ||
+      t.chatType === "GENERAL_SUPPORT" ||
+      t.needsAdmin,
     );
   });
 

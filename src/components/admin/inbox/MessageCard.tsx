@@ -326,7 +326,9 @@ export function MessageCard({
                     <span>إرسال كود التحقق (OTP) مباشرة:</span>
                   </div>
                   {body.itemId ? (
-                    <span className="text-[10px] font-mono opacity-80">عنصر #{String(body.itemId).slice(-4)}</span>
+                    <span className="text-[10px] font-mono opacity-80">
+                      عنصر #{String(body.itemId).slice(-4)}
+                    </span>
                   ) : null}
                 </div>
                 <form
@@ -342,12 +344,16 @@ export function MessageCard({
                       order?.items?.[0]?.id;
                     setIsSubmittingOtp(true);
                     try {
-                      await onSendOtp({ itemId: targetItemId, code: otpInput.trim() });
+                      await onSendOtp({
+                        itemId: targetItemId,
+                        code: otpInput.trim(),
+                        title: typeof body.title === "string" ? body.title : undefined,
+                      });
                       setOtpSent(true);
                       setOtpInput("");
                       toast.success("تم إرسال كود OTP بنجاح إلى المحادثة");
-                    } catch {
-                      toast.error("فشل إرسال كود OTP");
+                    } catch (err: any) {
+                      toast.error(err?.message || "فشل إرسال كود OTP");
                     } finally {
                       setIsSubmittingOtp(false);
                     }

@@ -168,7 +168,7 @@ export function writeManualLanguage(lang: Lang) {
 }
 
 export function isLang(value: unknown): value is Lang {
-  return value === "ar" || value === "en" || value === "tr";
+  return value === "ar" || value === "en" || value === "tr" || value === "ku";
 }
 
 /** Arabic and Kurdish are written right-to-left; English and Turkish are not. */
@@ -180,14 +180,15 @@ export function dirOf(lang: Lang): "rtl" | "ltr" {
 export function readPrefs() {
   const header = cookieHeader();
   const rawLang = readCookie(LANG_COOKIE, header);
-  // Priority: an explicit saved choice, then the browser's preference on a
-  // first visit, then Arabic. A stored choice is never overridden by the
-  // browser afterwards.
-  // Priority when nothing was chosen yet: the visitor's country (IP), then the
-  // browser's language list. An Arab country gets Arabic, everyone else English.
+  // Priority: an explicit saved choice, then the server-rendered document language
+  // on hydration, then the visitor's country (IP), then the browser's language list.
+  const docLang =
+    typeof document !== "undefined" && isLang(document.documentElement?.lang)
+      ? document.documentElement.lang
+      : undefined;
   const lang: Lang = isLang(rawLang)
     ? rawLang
-    : (langFromCountry(requestCountry()) ?? guessLang(acceptLanguages()));
+    : (docLang ?? langFromCountry(requestCountry()) ?? guessLang(acceptLanguages()));
   const pack = findTheme(readCookie(THEME_COOKIE, header) ?? DEFAULT_THEME);
   const motion: Motion = readCookie(MOTION_COOKIE, header) === "lite" ? "lite" : "full";
   return { lang, dir: dirOf(lang), theme: pack.id, dark: pack.dark, motion };

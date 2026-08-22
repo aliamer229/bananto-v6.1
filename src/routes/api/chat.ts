@@ -612,7 +612,9 @@ export const Route = createFileRoute("/api/chat")({
             });
           }
 
-          if (!data.text && !data.imageUrl) return json({ success: true, thread: current });
+          if (!data.text && !data.imageUrl && !data.body && !data.kind) {
+            return json({ success: true, thread: current });
+          }
 
           // Reset user typing on send
           await chatRealtime.setTyping(

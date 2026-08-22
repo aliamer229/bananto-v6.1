@@ -156,7 +156,9 @@ export function ActiveConversation({
     }
   };
 
-  const linkedOrder = thread?.orderId ? orders.find((o) => o && o.id === thread.orderId) : null;
+  const linkedOrder = thread?.orderId
+    ? orders.find((o) => o && (o.id === thread.orderId || o.code === thread.orderId))
+    : null;
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -698,12 +700,14 @@ export function ActiveConversation({
                   message={msg}
                   order={linkedOrder}
                   onSendOtp={async (payload) => {
-                    if (linkedOrder) {
+                    const targetOrderId = linkedOrder?.id || thread?.orderId;
+                    if (targetOrderId) {
                       const res = await fetch("/api/admin/orders", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          orderId: linkedOrder.id,
+                          orderId: targetOrderId,
+                          threadId: thread?.id,
                           action: "send_verification_code",
                           itemId: payload.itemId,
                           code: payload.code,
@@ -711,8 +715,8 @@ export function ActiveConversation({
                         }),
                       });
                       if (!res.ok) {
-                        const err = (await res.json().catch(() => ({}))) as { error?: string };
-                        throw new Error(err.error || "فشل إرسال كود OTP");
+                        const err = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+                        throw new Error(err.error || err.message || "فشل إرسال كود OTP");
                       }
                       await onRefreshMessages();
                       return;
@@ -887,42 +891,61 @@ export function ActiveConversation({
             order={linkedOrder}
             defaultTab={accountToolsDefaultTab}
             onSendCredentials={async (payload) => {
-              if (linkedOrder && payload.itemId) {
+              const targetOrderId = linkedOrder?.id || thread?.orderId;
+              if (targetOrderId && payload.itemId) {
                 try {
-                  await fetch("/api/admin/orders", {
+                  const res = await fetch("/api/admin/orders", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                      orderId: linkedOrder.id,
+                      orderId: targetOrderId,
+                      threadId: thread?.id,
                       action: "direct_send_credentials",
                       itemId: payload.itemId,
                       email: payload.email,
                       password: payload.password,
                     }),
                   });
+                  if (!res.ok) {
+                    const err = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+                    throw new Error(err.error || err.message || "فشل إرسال بيانات الحساب");
+                  }
+                  toast.success("تم إرسال بيانات الحساب بنجاح");
+                  await onRefreshMessages();
                   return; // Server automatically appends the chat message
-                } catch (e) {
-                  console.error(e);
+                } catch (e: any) {
+                  toast.error(e?.message || "فشل إرسال بيانات الحساب");
+                  return;
                 }
               }
               onSendMessage({ kind: "credentials", body: payload });
             }}
             onSendVerificationCode={async (payload) => {
-              if (linkedOrder && payload.itemId) {
+              const targetOrderId = linkedOrder?.id || thread?.orderId;
+              if (targetOrderId) {
                 try {
-                  await fetch("/api/admin/orders", {
+                  const res = await fetch("/api/admin/orders", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                      orderId: linkedOrder.id,
+                      orderId: targetOrderId,
+                      threadId: thread?.id,
                       action: "send_verification_code",
                       itemId: payload.itemId,
                       code: payload.code,
+                      title: payload.title,
                     }),
                   });
+                  if (!res.ok) {
+                    const err = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+                    throw new Error(err.error || err.message || "فشل إرسال كود OTP");
+                  }
+                  toast.success("تم إرسال كود التحقق بنجاح");
+                  await onRefreshMessages();
                   return;
-                } catch (e) {
-                  console.error(e);
+                } catch (e: any) {
+                  toast.error(e?.message || "فشل إرسال كود OTP");
+                  return;
                 }
               }
               onSendMessage({ kind: "otp", body: payload });

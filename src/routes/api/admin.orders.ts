@@ -7,6 +7,7 @@ import {
   saveOrder,
   saveThread,
   getThread,
+  deleteOrder,
 } from "@/lib/db.server";
 import { decryptSecretValue } from "@/lib/crypto.server";
 import { body, guard, json } from "@/lib/http.server";
@@ -27,6 +28,9 @@ type Action =
   | "batch_status"
   | "set_payment"
   | "set_status"
+  | "cancel_order"
+  | "delete_order"
+  | "direct_send_credentials"
   | "stage_credentials"
   | "send_credentials"
   | "send_verification_code"
@@ -39,16 +43,31 @@ type Action =
 
 interface AdminOrderBody {
   orderId?: string;
+  threadId?: string;
   action?: Action;
   itemId?: string;
   email?: string;
   password?: string;
   code?: string;
   text?: string;
+  title?: string;
   /** Bulk-prepared accounts for one order line. */
   accounts?: { email?: string; password?: string }[];
   status?: OrderStatus;
   paymentStatus?: PaymentStatus;
+}
+
+async function resolveThreadId(order: Order, explicitThreadId?: string): Promise<string> {
+  if (explicitThreadId) return explicitThreadId;
+  if (order.threadId) return order.threadId;
+  try {
+    const { listThreadsByUser } = await import("@/lib/db.server");
+    const threads = await listThreadsByUser(order.userId);
+    const found = threads.find((t) => t.orderId === order.id || t.orderId === order.code);
+    return found?.id || "";
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -91,17 +110,98 @@ export const Route = createFileRoute("/api/admin/orders")({
           const orders = await listOrders();
           return json({ orders: orders.map(redactOrder) });
         }),
+      DELETE: async ({ request }) =>
+        guard(async () => {
+          const admin = await requireAdmin(request);
+          const url = new URL(request.url);
+          let orderId = url.searchParams.get("orderId") || url.searchParams.get("id");
+          if (!orderId) {
+            const bodyData = await body<{ orderId?: string; id?: string }>(request).catch(
+              () => ({}),
+            );
+            orderId = bodyData.orderId || bodyData.id || "";
+          }
+          if (!orderId) return json({ error: "معرّف الطلب مطلوب" }, { status: 400 });
+
+          const order = await getOrder(orderId);
+          if (!order) return json({ error: "الطلب غير موجود" }, { status: 404 });
+
+          // Reject deletion if active and paid (must be cancelled/refunded first)
+          if (order.paymentStatus === "paid" && order.status !== "cancelled") {
+            return json(
+              { error: "لا يمكن حذف طلب مدفوع ونشط. يجب إلغاء الطلب واسترجاع الرصيد أولاً." },
+              { status: 400 },
+            );
+          }
+
+          await deleteOrder(orderId);
+
+          // Record audit log
+          try {
+            const { d1Run, randomId } = await import("@/lib/db.server");
+            await d1Run(
+              `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              randomId("aud"),
+              admin.id,
+              "delete_order",
+              "order",
+              orderId,
+              JSON.stringify({ code: order.code, status: order.status, total: order.total }),
+              new Date().toISOString(),
+            );
+          } catch {
+            // Ignore if schema mismatch
+          }
+
+          return json({ success: true, message: "تم حذف الطلب بنجاح" });
+        }),
       POST: async ({ request }) =>
         guard(async () => {
           const admin = await requireAdmin(request);
           const adminName = admin.name || "الإدارة";
           const data = await body<AdminOrderBody>(request);
-          const order = data.orderId ? await getOrder(data.orderId) : undefined;
-          if (!order) return json({ error: "not_found" }, { status: 404 });
+          let order = data.orderId ? await getOrder(data.orderId) : undefined;
+          if (!order && data.threadId) {
+            const thread = await getThread(data.threadId);
+            if (thread?.orderId) {
+              order = await getOrder(thread.orderId);
+            }
+          }
+          if (!order) return json({ error: "الطلب غير موجود" }, { status: 404 });
           const now = new Date().toISOString();
           let next: Order = order;
 
           switch (data.action) {
+            case "delete_order": {
+              if (order.paymentStatus === "paid" && order.status !== "cancelled") {
+                return json(
+                  { error: "لا يمكن حذف طلب مدفوع ونشط. يجب إلغاء الطلب واسترجاع الرصيد أولاً." },
+                  { status: 400 },
+                );
+              }
+
+              await deleteOrder(order.id);
+
+              try {
+                const { d1Run, randomId } = await import("@/lib/db.server");
+                await d1Run(
+                  `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                  randomId("aud"),
+                  admin.id,
+                  "delete_order",
+                  "order",
+                  order.id,
+                  JSON.stringify({ code: order.code, status: order.status, total: order.total }),
+                  now,
+                );
+              } catch {
+                // Ignore if schema mismatch
+              }
+
+              return json({ success: true, message: "تم حذف الطلب بنجاح" });
+            }
             case "set_payment": {
               next = { ...order, paymentStatus: data.paymentStatus ?? "paid", updatedAt: now };
               await appendMessage(order.threadId, {
@@ -125,7 +225,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             }
             case "cancel_order": {
               if (order.status === "cancelled")
-                return json({ error: "already_cancelled" }, { status: 400 });
+                return json({ error: "الطلب ملغي بالفعل" }, { status: 400 });
 
               const { d1All, d1Batch, randomId } = await import("@/lib/db.server");
 
@@ -138,15 +238,15 @@ export const Route = createFileRoute("/api/admin/orders")({
               const wasPaidByWallet = payments.length > 0;
               const refundAmount = Math.abs(payments[0]?.amount || 0);
 
-              if (wasPaidByWallet) {
-                // Check if already refunded
+              if (wasPaidByWallet && refundAmount > 0) {
+                // Check if already refunded (Idempotency check)
                 const refunds = await d1All(
                   `SELECT id FROM wallet_transactions WHERE order_id = ? AND kind = 'order_refund' LIMIT 1`,
                   order.id,
                 );
 
                 if (refunds.length === 0) {
-                  // Perform safe idempotent refund
+                  // Perform safe idempotent atomic refund
                   await d1Batch([
                     {
                       sql: `UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?`,
@@ -171,7 +271,8 @@ export const Route = createFileRoute("/api/admin/orders")({
                   ]);
                 }
               } else {
-                // Not paid by wallet, just cancel
+                // Not paid by wallet, update status
+                const { d1Run } = await import("@/lib/db.server");
                 await d1Run(
                   `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ?`,
                   now,
@@ -198,24 +299,44 @@ export const Route = createFileRoute("/api/admin/orders")({
                 },
               });
 
-              // Log history
-              await d1Run(
-                `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                randomId("osh"),
-                order.id,
-                order.status,
-                "cancelled",
-                admin.id,
-                "إلغاء الطلب من قبل المشرف" + (wasPaidByWallet ? " مع استرجاع الرصيد" : ""),
-                now,
-              );
+              // Log history and audit log
+              try {
+                const { d1Run, randomId } = await import("@/lib/db.server");
+                await d1Run(
+                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                  randomId("osh"),
+                  order.id,
+                  order.status,
+                  "cancelled",
+                  admin.id,
+                  "إلغاء الطلب من قبل المشرف" + (wasPaidByWallet ? " مع استرجاع الرصيد" : ""),
+                  now,
+                );
+                await d1Run(
+                  `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                  randomId("aud"),
+                  admin.id,
+                  "cancel_order",
+                  "order",
+                  order.id,
+                  JSON.stringify({
+                    code: order.code,
+                    refunded: wasPaidByWallet ? refundAmount : 0,
+                  }),
+                  now,
+                );
+              } catch {
+                // Ignore if schema mismatch
+              }
 
+              await saveOrder(next);
               return json({ order: redactOrder(next) });
             }
             case "direct_send_credentials": {
               if (!data.itemId || !data.email) {
-                return json({ error: "missing_fields" }, { status: 400 });
+                return json({ error: "البريد الإلكتروني ومعرف العنصر مطلوبان" }, { status: 400 });
               }
               const { stageCredentials } = await import("@/lib/orders.server");
               // 1. Save delivery info (staging)
@@ -224,17 +345,20 @@ export const Route = createFileRoute("/api/admin/orders")({
               // 2. Send the message immediately
               const item = next.items.find((i) => i.id === data.itemId);
               if (item) {
-                await appendMessage(order.threadId, {
-                  senderRole: "admin",
-                  senderName: adminName,
-                  kind: "item_credentials", // explicit type the frontend knows
-                  body: {
-                    itemId: item.id,
-                    title: item.title,
-                    email: data.email,
-                    ...(data.password ? { password: data.password } : {}),
-                  },
-                });
+                const targetThreadId = await resolveThreadId(order, data.threadId);
+                if (targetThreadId) {
+                  await appendMessage(targetThreadId, {
+                    senderRole: "admin",
+                    senderName: adminName,
+                    kind: "item_credentials",
+                    body: {
+                      itemId: item.id,
+                      title: item.title,
+                      email: data.email,
+                      ...(data.password ? { password: data.password } : {}),
+                    },
+                  });
+                }
                 next = patchItem(next, item.id, { credsSentAt: now });
                 if (next.status === "processing") {
                   next = { ...next, status: "delivering" };
@@ -246,15 +370,16 @@ export const Route = createFileRoute("/api/admin/orders")({
             }
             case "stage_credentials": {
               if (!data.itemId || !data.email)
-                return json({ error: "missing_fields" }, { status: 400 });
+                return json({ error: "البريد الإلكتروني ومعرف العنصر مطلوبان" }, { status: 400 });
               next = await stageCredentials(order, data.itemId, data.email, data.password);
               return json({ order: redactOrder(next) });
             }
             case "send_credentials": {
               const item = order.items.find((i) => i.id === data.itemId);
               if (!item || !item.deliveryEmail)
-                return json({ error: "not_staged" }, { status: 400 });
-              if (item.credsSentAt) return json({ error: "already_sent" }, { status: 409 });
+                return json({ error: "لم يتم تجهيز بيانات هذا العنصر بعد" }, { status: 400 });
+              if (item.credsSentAt)
+                return json({ error: "تم إرسال البيانات مسبقاً" }, { status: 409 });
               let password: string | undefined;
               if (item.deliveryPasswordEnc) {
                 try {
@@ -263,17 +388,20 @@ export const Route = createFileRoute("/api/admin/orders")({
                   password = undefined;
                 }
               }
-              await appendMessage(order.threadId, {
-                senderRole: "admin",
-                senderName: adminName,
-                kind: "item_credentials",
-                body: {
-                  itemId: item.id,
-                  title: item.title,
-                  email: item.deliveryEmail,
-                  ...(password ? { password } : {}),
-                },
-              });
+              const targetThreadId = await resolveThreadId(order, data.threadId);
+              if (targetThreadId) {
+                await appendMessage(targetThreadId, {
+                  senderRole: "admin",
+                  senderName: adminName,
+                  kind: "item_credentials",
+                  body: {
+                    itemId: item.id,
+                    title: item.title,
+                    email: item.deliveryEmail,
+                    ...(password ? { password: password } : {}),
+                  },
+                });
+              }
               next = patchItem(order, item.id, { credsSentAt: now });
               next = { ...next, status: "delivering" };
               break;
@@ -281,10 +409,10 @@ export const Route = createFileRoute("/api/admin/orders")({
             /* ----------------------- batch account prep ----------------------- */
             case "stage_account_batch": {
               if (!data.itemId || !Array.isArray(data.accounts)) {
-                return json({ error: "missing_fields" }, { status: 400 });
+                return json({ error: "الحسابات المجهزة ومعرف العنصر مطلوبان" }, { status: 400 });
               }
               if (data.accounts.length > 50) {
-                return json({ error: "too_many_accounts" }, { status: 400 });
+                return json({ error: "الحد الأقصى للتجهيز الدفعي هو 50 حساباً" }, { status: 400 });
               }
               const added = await stageAccountBatch(
                 order.id,
@@ -301,21 +429,17 @@ export const Route = createFileRoute("/api/admin/orders")({
             }
 
             case "release_next_account": {
-              if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
+              if (!data.itemId) return json({ error: "معرف العنصر مطلوب" }, { status: 400 });
               const released = await deliverNextAccount(order, data.itemId, adminName);
               if (!released) {
                 return json(
                   {
-                    error: "nothing_to_release",
+                    error: "لا توجد حسابات مجهزة للتسليم في هذه الدفعة",
                     progress: await getBatchProgress(order.id, data.itemId),
                   },
                   { status: 409 },
                 );
               }
-              // Mark the line as delivered exactly as the single-account path
-              // does: credsSentAt is what the support engine, the order screens
-              // and the password reveal all read to decide whether anything has
-              // reached the buyer yet.
               next = patchItem(order, data.itemId, {
                 deliveryEmail: released.email,
                 ...(order.items.find((i) => i.id === data.itemId)?.credsSentAt
@@ -332,29 +456,129 @@ export const Route = createFileRoute("/api/admin/orders")({
             }
 
             case "batch_status": {
-              if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
+              if (!data.itemId) return json({ error: "معرف العنصر مطلوب" }, { status: 400 });
               return json({ progress: await getBatchProgress(order.id, data.itemId) });
             }
 
             case "send_verification_code": {
-              const targetItemId =
-                data.itemId ||
-                order.items.find((i) => i.credsSentAt && !i.loggedInAt)?.id ||
-                order.items[0]?.id;
-              if (!targetItemId || !data.code)
-                return json({ error: "missing_fields" }, { status: 400 });
-              await appendMessage(order.threadId, {
-                senderRole: "admin",
-                senderName: adminName,
-                kind: "item_verification_code",
-                body: {
-                  itemId: targetItemId,
-                  code: data.code,
-                  verificationCode: data.code,
-                  title: data.title || order.items.find((i) => i.id === targetItemId)?.title,
-                },
+              const code = String(data.code ?? "").trim();
+              if (!code) {
+                return json({ error: "يرجى إدخال كود التحقق (OTP)" }, { status: 400 });
+              }
+
+              let item = order.items.find((i) => i.id === data.itemId);
+              if (!item && data.itemId) {
+                item = order.items.find(
+                  (i) =>
+                    i.id.endsWith(data.itemId!) ||
+                    i.id.includes(data.itemId!) ||
+                    data.itemId!.includes(i.id),
+                );
+              }
+              if (!item) {
+                item = order.items.find((i) => i.credsSentAt && !i.loggedInAt) || order.items[0];
+              }
+              const targetItemId = item?.id;
+              if (!targetItemId) {
+                return json({ error: "تعذر تحديد عنصر الطلب المستهدف" }, { status: 400 });
+              }
+
+              const itemTitle = data.title || item?.title || "الحساب";
+
+              // Cooldown prevention: Check if OTP was sent in the last 4 seconds for this item
+              if (item?.verificationCodeSentAt) {
+                const diff = Date.now() - new Date(item.verificationCodeSentAt).getTime();
+                if (diff < 4000) {
+                  return json(
+                    {
+                      error:
+                        "تم إرسال كود التحقق للتو، يرجى الانتظار بضع ثوانٍ قبل إعادة المحاولة",
+                    },
+                    { status: 429 },
+                  );
+                }
+              }
+
+              const targetThreadId = await resolveThreadId(order, data.threadId);
+              if (targetThreadId) {
+                await appendMessage(targetThreadId, {
+                  senderRole: "admin",
+                  senderName: adminName,
+                  kind: "item_verification_code",
+                  body: {
+                    itemId: targetItemId,
+                    code,
+                    verificationCode: code,
+                    title: itemTitle,
+                    expiresInMinutes: 10,
+                    sentAt: now,
+                    text: `🔐 كود التحقق الخاص بـ ${itemTitle}:\n${code}\n\nصالح لمدة 10 دقائق. استخدمه لإكمال تسجيل الدخول.`,
+                  },
+                });
+
+                const thread = await getThread(targetThreadId);
+                if (thread) {
+                  await saveThread({
+                    ...thread,
+                    lastMessageAt: now,
+                    lastMessagePreview: `كود التحقق: ${code}`,
+                    lastAdminMessageAt: now,
+                    mode: "WAITING_FOR_USER",
+                    needsAdmin: false,
+                  });
+                }
+              }
+
+              next = patchItem(order, targetItemId, {
+                verificationCodeSentAt: now,
+                verificationCode: code,
               });
-              next = patchItem(order, targetItemId, { verificationCodeSentAt: now });
+
+              // Safe audit log & status history in D1
+              try {
+                const { d1Run, randomId } = await import("@/lib/db.server");
+                await d1Run(
+                  `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                  randomId("aud"),
+                  admin.id,
+                  "send_verification_code",
+                  "order",
+                  order.id,
+                  JSON.stringify({ itemId: targetItemId, itemTitle, sentAt: now }),
+                  now,
+                );
+                await d1Run(
+                  `INSERT INTO order_status_history (id, order_id, status, comment, created_at)
+                   VALUES (?, ?, ?, ?, ?)`,
+                  randomId("osh"),
+                  order.id,
+                  order.status,
+                  `تم إرسال كود التحقق (OTP) للمنتج: ${itemTitle}`,
+                  now,
+                );
+              } catch {
+                // Safe fallback
+              }
+
+              // Safe forward to customer Telegram if linked
+              try {
+                const { d1First } = await import("@/lib/d1.server");
+                const link = await d1First<{ telegram_chat_id: number }>(
+                  `SELECT telegram_chat_id FROM telegram_links
+                   WHERE user_id = ? AND telegram_chat_id IS NOT NULL AND verified = 1
+                   ORDER BY linked_at DESC LIMIT 1`,
+                  order.userId,
+                );
+                if (link?.telegram_chat_id) {
+                  const { sendTelegramMessage } = await import("@/lib/telegram.server");
+                  const otpText = `🔐 *كود التحقق الخاص بطلبك #${order.code}*\n\nالخدمة: ${itemTitle}\nالكود: \`${code}\`\n\nصالح لمدة 10 دقائق. استخدمه لإكمال تسجيل الدخول.`;
+                  await sendTelegramMessage(String(link.telegram_chat_id), otpText);
+                }
+              } catch {
+                // Telegram notification failure should not block chat OTP
+              }
+
               break;
             }
             case "send_instructions": {
@@ -369,14 +593,9 @@ export const Route = createFileRoute("/api/admin/orders")({
             case "mark_logged_in": {
               if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
               next = patchItem(order, data.itemId, { loggedInAt: now });
-              // The buyer finished this account, so the next one in the batch
-              // goes out automatically — that sequencing is the whole point of
-              // preparing them in bulk.
               if (await markAccountRegistered(order.id, data.itemId)) {
                 const released = await deliverNextAccount(next, data.itemId, adminName);
                 if (released) {
-                  // A fresh account is now with the buyer, so the line is back
-                  // to awaiting their registration rather than finished.
                   next = patchItem(next, data.itemId, {
                     deliveryEmail: released.email,
                     credsSentAt: now,
@@ -437,12 +656,12 @@ export const Route = createFileRoute("/api/admin/orders")({
               break;
             }
             default:
-              return json({ error: "unknown_action" }, { status: 400 });
+              return json({ error: "الإجراء المطلوب غير معروف" }, { status: 400 });
           }
 
           next = {
             ...next,
-            events: [...next.events, { type: data.action ?? "update", at: now }],
+            events: [...(next.events || []), { type: data.action ?? "update", at: now }],
             updatedAt: now,
           };
           await saveOrder(next);
@@ -478,7 +697,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             console.warn("Failed to notify user on order update", err);
           }
 
-          return json({ order: redactOrder(next) });
+          return json({ success: true, message: "تمت العملية بنجاح", order: redactOrder(next) });
         }),
     },
   },

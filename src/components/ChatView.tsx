@@ -610,6 +610,7 @@ export default function ChatView({
   const isAdmin = Boolean(user?.isAdmin);
 
   const [inputText, setInputText] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
   const [localMessages, setLocalMessages] = useState<DisplayMessage[]>([]);
   const [serverMessages, setServerMessages] = useState<DisplayMessage[]>([]);
@@ -1545,7 +1546,8 @@ export default function ChatView({
   const isAr = lang === "ar";
   const isRtl = lang === "ar" || lang === "ku";
 
-  const firstName = (user?.name ?? (isAr ? "بك" : "there")).split(" ")[0];
+  const displayName = user?.name?.trim() || "";
+  const firstName = displayName ? displayName.split(" ")[0] : (isAr ? "بك" : "there");
 
   const isAutomatedThread = !threadId || currentThread?.chatType === "AUTOMATED_SUPPORT";
 
@@ -1822,11 +1824,9 @@ export default function ChatView({
           </div>
         )}
 
-        {/* 3. Hero Welcome Greeting (Only visible in default empty chat, never in order threads) */}
+        {/* 3. Hero Welcome Greeting (Visible in empty chat when there are no messages, never in order threads) */}
         <AnimatePresence>
-          {!initialOrderId &&
-            !initialThreadId &&
-            !threadId &&
+          {!isOrderMode &&
             !currentThread?.orderId &&
             messages.length === 0 && (
               <motion.div
@@ -1842,7 +1842,7 @@ export default function ChatView({
                       className="text-[32px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[38px] text-right"
                       dir="rtl"
                     >
-                      {user?.name ? (
+                      {displayName ? (
                         <>
                           أهلاً{" "}
                           <SquigglyText
@@ -1850,14 +1850,15 @@ export default function ChatView({
                             scale={[2, 4]}
                             className="text-[var(--ink)]"
                           >
-                            {firstName}
-                          </SquigglyText>
+                            {displayName}
+                          </SquigglyText>{" "}
+                          👋
                         </>
                       ) : (
-                        "أهلاً بك"
+                        "أهلاً بك 👋"
                       )}
                       <br />
-                      كيف أقدر أساعدك اليوم؟
+                      كيف أساعدك اليوم؟
                     </h1>
 
                     <div
@@ -2483,7 +2484,7 @@ export default function ChatView({
                 <Send className="ml-0.5 h-3.5 w-3.5" />
               </button>
             </motion.div>
-          ) : inputText.length === 0 ? (
+          ) : inputText.length === 0 && !isInputFocused ? (
             <motion.div
               key="suggestions"
               initial={{ opacity: 0, y: 10, height: 0, overflow: "hidden" }}
@@ -2588,6 +2589,8 @@ export default function ChatView({
               <input
                 type="text"
                 value={inputText}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
                 onChange={(event) => handleInputChange(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {
@@ -2628,8 +2631,8 @@ export default function ChatView({
           </div>
         </div>
 
-        {/* Bottom Fast Action Buttons - only show in general support mode, HIDE in Order Mode! */}
-        {!isOrderMode && (
+        {/* Bottom Fast Action Buttons - only show in general support mode, HIDE in Order Mode or when Input is Focused! */}
+        {!isOrderMode && !isInputFocused && (
           <div
             // Short phones cannot afford the full-height bar: it is what pushes the
             // composer or the icons themselves off the screen.
@@ -2689,26 +2692,18 @@ export default function ChatView({
                     </span>
                   </button>
 
-                  {/* 3. Human / Automated Support Toggle (Center Elevated Button) */}
+                  {/* 3. Human Support (Center Elevated Button) */}
                   <button
                     onClick={() => {
-                      if (isHumanChat) {
-                        void handleSwitchToAutomatedSupport();
-                      } else {
-                        void handleRequestHumanSupport();
-                      }
+                      void handleRequestHumanSupport();
                     }}
                     className="group relative flex w-full max-w-[76px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
                   >
                     <div className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-[var(--ink)] text-white shadow-md transition-colors group-hover:bg-[var(--ink-strong)]">
-                      {isHumanChat ? (
-                        <Sparkles className="h-5 w-5" />
-                      ) : (
-                        <Headset className="h-5 w-5" />
-                      )}
+                      <Headset className="h-5 w-5" />
                     </div>
                     <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight truncate leading-tight">
-                      {isHumanChat ? tr("الرد الآلي") : tr("الدعم البشري")}
+                      {tr("خدمة الدعم البشري")}
                     </span>
                   </button>
 

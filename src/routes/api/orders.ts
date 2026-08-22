@@ -325,6 +325,52 @@ export const Route = createFileRoute("/api/orders")({
           await saveOrder(next);
           return json({ order: redactOrder(next) });
         }),
+      DELETE: async ({ request }) =>
+        guard(async () => {
+          const user = await requireUser(request);
+          if (!user.isAdmin) return json({ error: "forbidden" }, { status: 403 });
+
+          const url = new URL(request.url);
+          let orderId = url.searchParams.get("orderId") || url.searchParams.get("id");
+          if (!orderId) {
+            const bodyData = await body<{ orderId?: string; id?: string }>(request).catch(
+              () => ({}),
+            );
+            orderId = bodyData.orderId || bodyData.id || "";
+          }
+          if (!orderId) return json({ error: "معرّف الطلب مطلوب" }, { status: 400 });
+
+          const order = await getOrder(orderId);
+          if (!order) return json({ error: "الطلب غير موجود" }, { status: 404 });
+
+          if (order.paymentStatus === "paid" && order.status !== "cancelled") {
+            return json(
+              { error: "لا يمكن حذف طلب مدفوع ونشط. يجب إلغاء الطلب واسترجاع الرصيد أولاً." },
+              { status: 400 },
+            );
+          }
+
+          const { deleteOrder } = await import("@/lib/db.server");
+          await deleteOrder(orderId);
+
+          try {
+            await d1Run(
+              `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              randomId("aud"),
+              user.id,
+              "delete_order",
+              "order",
+              orderId,
+              JSON.stringify({ code: order.code, status: order.status, total: order.total }),
+              new Date().toISOString(),
+            );
+          } catch {
+            // Ignore if schema mismatch
+          }
+
+          return json({ success: true, message: "تم حذف الطلب بنجاح" });
+        }),
     },
   },
 });

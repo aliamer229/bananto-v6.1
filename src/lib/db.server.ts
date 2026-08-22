@@ -950,11 +950,19 @@ export function orderKey(id: string) {
 }
 
 export async function getOrder(id: string): Promise<Order | undefined> {
+  if (!id) return undefined;
   if (await d1Ready()) {
-    const row = await d1First<{ doc: string }>(`SELECT doc FROM orders WHERE id = ?`, id);
+    const row = await d1First<{ doc: string }>(
+      `SELECT doc FROM orders WHERE id = ? OR code = ? LIMIT 1`,
+      id,
+      id,
+    );
     return row ? parse<Order | undefined>(row.doc, undefined) : undefined;
   }
-  return readJson<Order | undefined>(orderKey(id), undefined);
+  const direct = await readJson<Order | undefined>(orderKey(id), undefined);
+  if (direct) return direct;
+  const all = await listOrders();
+  return all.find((o) => o.id === id || o.code === id);
 }
 
 export async function listOrders(limit?: number): Promise<Order[]> {
@@ -1015,6 +1023,24 @@ export async function saveOrder(order: Order): Promise<Order> {
     ids.includes(order.id) ? ids : [order.id, ...ids],
   );
   return order;
+}
+
+export async function deleteOrder(id: string): Promise<boolean> {
+  if (await d1Ready()) {
+    await d1Execute(`DELETE FROM orders WHERE id = ?`, id);
+    // Also clean up any pending queues or snapshots safely
+    try {
+      await d1Execute(`DELETE FROM order_queue WHERE order_id = ?`, id);
+      await d1Execute(`DELETE FROM account_batch_entries WHERE order_id = ?`, id);
+    } catch {
+      // Ignore if table schema variations exist
+    }
+    return true;
+  }
+  const { deleteStoreKey } = await import("./storage.server");
+  await deleteStoreKey(orderKey(id));
+  await mutateJson<string[]>(ORDER_INDEX_KEY, [], (ids) => ids.filter((i) => i !== id));
+  return true;
 }
 
 /* --------------------------------- threads -------------------------------- */
