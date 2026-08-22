@@ -190,9 +190,7 @@ export function VerificationOtpCard({
           onClick={onCopy}
           aria-label={isAr ? "نسخ كود التحقق" : "Copy code"}
           className={`shrink-0 inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-all active:scale-95 cursor-pointer ${
-            copied
-              ? "bg-emerald-600 text-white"
-              : "bg-foreground text-background hover:opacity-90"
+            copied ? "bg-emerald-600 text-white" : "bg-foreground text-background hover:opacity-90"
           }`}
         >
           {copied ? (
@@ -213,9 +211,7 @@ export function VerificationOtpCard({
       <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 font-medium">
         <Clock className="h-3 w-3 shrink-0 opacity-70" />
         <span>
-          {isAr
-            ? `صالح لمدة ${expiresInMinutes} دقائق`
-            : `Valid for ${expiresInMinutes} minutes`}
+          {isAr ? `صالح لمدة ${expiresInMinutes} دقائق` : `Valid for ${expiresInMinutes} minutes`}
         </span>
       </div>
     </div>
@@ -234,7 +230,8 @@ export function AccountCard({
 
   // DEDICATED CLEAN OTP CARD
   if (card.type === "verification" && card.verificationCode) {
-    const rawExpires = typeof body?.["expiresInMinutes"] === "number" ? body["expiresInMinutes"] : 10;
+    const rawExpires =
+      typeof body?.["expiresInMinutes"] === "number" ? body["expiresInMinutes"] : 10;
     return (
       <VerificationOtpCard
         code={card.verificationCode}
@@ -311,7 +308,9 @@ export function AccountCard({
             className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/20 py-2 px-3 text-[11px] font-bold transition-colors cursor-pointer"
           >
             <BookOpen className="h-3.5 w-3.5" />
-            <span>{locale === "ar" ? "تعليمات تسجيل الدخول والشرح" : "Login Guides & Instructions"}</span>
+            <span>
+              {locale === "ar" ? "تعليمات تسجيل الدخول والشرح" : "Login Guides & Instructions"}
+            </span>
           </a>
 
           <div className="group relative flex items-start gap-1.5 rounded-xl bg-amber-500/10 p-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300 border border-amber-500/20">

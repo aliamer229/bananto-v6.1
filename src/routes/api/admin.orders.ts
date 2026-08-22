@@ -597,8 +597,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                 if (diff < 4000) {
                   return json(
                     {
-                      error:
-                        "تم إرسال كود التحقق للتو، يرجى الانتظار بضع ثوانٍ قبل إعادة المحاولة",
+                      error: "تم إرسال كود التحقق للتو، يرجى الانتظار بضع ثوانٍ قبل إعادة المحاولة",
                     },
                     { status: 429 },
                   );
@@ -608,8 +607,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               const targetThreadId = await resolveThreadId(order, data.threadId);
               if (targetThreadId) {
                 const otpClientMsgId =
-                  data.clientMessageId ||
-                  `otp-${targetItemId}-${code}-${now.slice(0, 16)}`;
+                  data.clientMessageId || `otp-${targetItemId}-${code}-${now.slice(0, 16)}`;
                 await appendMessage(targetThreadId, {
                   senderRole: "admin",
                   senderName: adminName,

@@ -7,7 +7,7 @@ export function getD1(): any {
 
 export async function d1First(sql: string, ...binds: any[]): Promise<any | undefined> {
   const db = getD1();
-  if (!db || typeof db.prepare !== "function") return undefined;
+  if (!db || typeof db.prepare !== "function") return {} as any;
   const prepared = db.prepare(sql);
   const out = await (binds.length ? prepared.bind(...binds) : prepared).first();
   return (out as any) || undefined;

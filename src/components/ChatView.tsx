@@ -1636,7 +1636,7 @@ export default function ChatView({
   const isRtl = lang === "ar" || lang === "ku";
 
   const displayName = user?.name?.trim() || "";
-  const firstName = displayName ? displayName.split(" ")[0] : (isAr ? "بك" : "there");
+  const firstName = displayName ? displayName.split(" ")[0] : isAr ? "بك" : "there";
 
   const isAutomatedThread = !threadId || currentThread?.chatType === "AUTOMATED_SUPPORT";
 
@@ -1915,189 +1915,174 @@ export default function ChatView({
 
         {/* 3. Hero Welcome Greeting (Visible in empty chat when there are no messages, never in order threads) */}
         <AnimatePresence>
-          {!isThreadLoading &&
-            !isOrderMode &&
-            !currentThread?.orderId &&
-            messages.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20, height: 0, marginBottom: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col gap-4 pt-2"
-              >
-                {isAr ? (
-                  <>
-                    <h1
-                      className="text-[32px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[38px] text-right"
-                      dir="rtl"
-                    >
-                      {displayName ? (
-                        <>
-                          أهلاً{" "}
-                          <SquigglyText
-                            stepDuration={70}
-                            scale={[2, 4]}
-                            className="text-[var(--ink)]"
-                          >
-                            {displayName}
-                          </SquigglyText>{" "}
-                          👋
-                        </>
-                      ) : (
-                        "أهلاً بك 👋"
-                      )}
-                      <br />
-                      كيف أساعدك اليوم؟
-                    </h1>
+          {!isThreadLoading && !isOrderMode && !currentThread?.orderId && messages.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, height: 0, marginBottom: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-4 pt-2"
+            >
+              {isAr ? (
+                <>
+                  <h1
+                    className="text-[32px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[38px] text-right"
+                    dir="rtl"
+                  >
+                    {displayName ? (
+                      <>
+                        أهلاً{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {displayName}
+                        </SquigglyText>{" "}
+                        👋
+                      </>
+                    ) : (
+                      "أهلاً بك 👋"
+                    )}
+                    <br />
+                    كيف أساعدك اليوم؟
+                  </h1>
 
-                    <div
-                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
-                      dir="rtl"
-                    >
-                      <p>مرحباً بك في عالم بنانا</p>
-                      <div className="flex flex-wrap items-center">
-                        هل تبحث عن{" "}
-                        <FlipWords
-                          words={["لعبة", "مجسم", "جهاز", "حل لمشكلة", "إكسسوار"]}
-                          className="font-bold text-amber-600 px-1"
-                        />
-                        ؟
-                      </div>
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
+                    dir="rtl"
+                  >
+                    <p>مرحباً بك في عالم بنانا</p>
+                    <div className="flex flex-wrap items-center">
+                      هل تبحث عن{" "}
+                      <FlipWords
+                        words={["لعبة", "مجسم", "جهاز", "حل لمشكلة", "إكسسوار"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ؟
                     </div>
-                  </>
-                ) : lang === "ku" ? (
-                  <>
-                    <h1
-                      className="text-[30px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[36px] text-right"
-                      dir="rtl"
-                    >
-                      {user?.name ? (
-                        <>
-                          Silav{" "}
-                          <SquigglyText
-                            stepDuration={70}
-                            scale={[2, 4]}
-                            className="text-[var(--ink)]"
-                          >
-                            {firstName}
-                          </SquigglyText>
-                        </>
-                      ) : (
-                        "Bi xêr hatî"
-                      )}
-                      <br />
-                      Îro çawa dikarim alîkariya we bikim?
-                    </h1>
+                  </div>
+                </>
+              ) : lang === "ku" ? (
+                <>
+                  <h1
+                    className="text-[30px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[36px] text-right"
+                    dir="rtl"
+                  >
+                    {user?.name ? (
+                      <>
+                        Silav{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {firstName}
+                        </SquigglyText>
+                      </>
+                    ) : (
+                      "Bi xêr hatî"
+                    )}
+                    <br />
+                    Îro çawa dikarim alîkariya we bikim?
+                  </h1>
 
-                    <div
-                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
-                      dir="rtl"
-                    >
-                      <p>Bi xêr hatî cîhana Bananto</p>
-                      <div className="flex flex-wrap items-center">
-                        Li çi digerî{" "}
-                        <FlipWords
-                          words={["lîstikek", "fîgûrek", "konsol", "piştgirî", "aksesorek"]}
-                          className="font-bold text-amber-600 px-1"
-                        />
-                        ؟
-                      </div>
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
+                    dir="rtl"
+                  >
+                    <p>Bi xêr hatî cîhana Bananto</p>
+                    <div className="flex flex-wrap items-center">
+                      Li çi digerî{" "}
+                      <FlipWords
+                        words={["lîstikek", "fîgûrek", "konsol", "piştgirî", "aksesorek"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ؟
                     </div>
-                  </>
-                ) : lang === "tr" ? (
-                  <>
-                    <h1
-                      className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
-                      dir="ltr"
-                    >
-                      {user?.name ? (
-                        <>
-                          Merhaba{" "}
-                          <SquigglyText
-                            stepDuration={70}
-                            scale={[2, 4]}
-                            className="text-[var(--ink)]"
-                          >
-                            {firstName}
-                          </SquigglyText>
-                        </>
-                      ) : (
-                        "Hoş Geldiniz"
-                      )}
-                      <br />
-                      Bugün size nasıl yardımcı olabiliriz?
-                    </h1>
+                  </div>
+                </>
+              ) : lang === "tr" ? (
+                <>
+                  <h1
+                    className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
+                    dir="ltr"
+                  >
+                    {user?.name ? (
+                      <>
+                        Merhaba{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {firstName}
+                        </SquigglyText>
+                      </>
+                    ) : (
+                      "Hoş Geldiniz"
+                    )}
+                    <br />
+                    Bugün size nasıl yardımcı olabiliriz?
+                  </h1>
 
-                    <div
-                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
-                      dir="ltr"
-                    >
-                      <p>Bananto dünyasına hoş geldiniz</p>
-                      <div className="flex flex-wrap items-center">
-                        Aradığınız:{" "}
-                        <FlipWords
-                          words={[
-                            "bir oyun",
-                            "bir figür",
-                            "bir konsol",
-                            "bir çözüm",
-                            "bir aksesuar",
-                          ]}
-                          className="font-bold text-amber-600 px-1"
-                        />
-                        ?
-                      </div>
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
+                    dir="ltr"
+                  >
+                    <p>Bananto dünyasına hoş geldiniz</p>
+                    <div className="flex flex-wrap items-center">
+                      Aradığınız:{" "}
+                      <FlipWords
+                        words={["bir oyun", "bir figür", "bir konsol", "bir çözüm", "bir aksesuar"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ?
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <h1
-                      className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
-                      dir="ltr"
-                    >
-                      {user?.name ? (
-                        <>
-                          Hello{" "}
-                          <SquigglyText
-                            stepDuration={70}
-                            scale={[2, 4]}
-                            className="text-[var(--ink)]"
-                          >
-                            {firstName}
-                          </SquigglyText>
-                        </>
-                      ) : (
-                        "Welcome"
-                      )}
-                      <br />
-                      How can we help you today?
-                    </h1>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1
+                    className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
+                    dir="ltr"
+                  >
+                    {user?.name ? (
+                      <>
+                        Hello{" "}
+                        <SquigglyText
+                          stepDuration={70}
+                          scale={[2, 4]}
+                          className="text-[var(--ink)]"
+                        >
+                          {firstName}
+                        </SquigglyText>
+                      </>
+                    ) : (
+                      "Welcome"
+                    )}
+                    <br />
+                    How can we help you today?
+                  </h1>
 
-                    <div
-                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
-                      dir="ltr"
-                    >
-                      <p>Welcome to the Banana world</p>
-                      <div className="flex flex-wrap items-center">
-                        Looking for{" "}
-                        <FlipWords
-                          words={[
-                            "a game",
-                            "a collectible",
-                            "a console",
-                            "support",
-                            "an accessory",
-                          ]}
-                          className="font-bold text-amber-600 px-1"
-                        />
-                        ?
-                      </div>
+                  <div
+                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
+                    dir="ltr"
+                  >
+                    <p>Welcome to the Banana world</p>
+                    <div className="flex flex-wrap items-center">
+                      Looking for{" "}
+                      <FlipWords
+                        words={["a game", "a collectible", "a console", "support", "an accessory"]}
+                        className="font-bold text-amber-600 px-1"
+                      />
+                      ?
                     </div>
-                  </>
-                )}
-              </motion.div>
-            )}
+                  </div>
+                </>
+              )}
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* Dynamic Chat Messages */}
@@ -2114,318 +2099,321 @@ export default function ChatView({
             </div>
           ) : (
             messages.map((msg) => {
-            const isMine = msg.sender === "user";
-            const isHighlighted = highlightedMessageId === msg.id;
+              const isMine = msg.sender === "user";
+              const isHighlighted = highlightedMessageId === msg.id;
 
-            return (
-              <motion.div
-                id={`msg-${msg.id}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                key={msg.id}
-                className={`flex w-fit max-w-full ${
-                  isMine ? "ml-auto mr-0" : "mr-auto ml-0"
-                } ${isHighlighted ? "animate-pulse rounded-2xl ring-2 ring-amber-500 p-0.5" : ""}`}
-              >
-                {msg.type === "digital_order_card" && msg.payload ? (
-                  <DigitalOrderCard
-                    orderId={String(msg.payload["orderId"] ?? currentOrder?.id ?? "")}
-                    code={String(msg.payload["code"] ?? currentOrder?.code ?? "BN-ORDER")}
-                    items={
-                      (msg.payload["items"] as any) ??
-                      currentOrder?.items?.map((it) => ({
-                        id: it.id,
-                        productId: it.productId,
-                        title: it.title,
-                        unitPrice: it.unitPrice,
-                        quantity: it.quantity,
-                        image: it.image || "",
-                        kind: it.kind,
-                      })) ??
-                      []
-                    }
-                    total={
-                      typeof msg.payload["total"] === "number"
-                        ? msg.payload["total"]
-                        : currentOrder?.total
-                    }
-                    currency={String(
-                      msg.payload["currency"] ??
-                        currentOrder?.currency ??
-                        activeCurrencyInfo?.symbol ??
-                        "د.ع",
-                    )}
-                    paymentStatus={String(
-                      msg.payload["paymentStatus"] ?? currentOrder?.paymentStatus ?? "paid",
-                    )}
-                    paymentMethod="محفظة بنانا"
-                    status={currentOrder?.status ?? "processing"}
-                    createdAt={currentOrder?.createdAt ?? msg.createdAt}
-                    text={typeof msg.payload["text"] === "string" ? msg.payload["text"] : undefined}
-                    locale={lang === "en" ? "en" : "ar"}
-                    queuePosition={
-                      liveQueueMetrics?.position || (currentQueueIndex > 0 ? currentQueueIndex : 1)
-                    }
-                    aheadCount={liveQueueMetrics?.aheadCount}
-                    adminStatus={liveQueueMetrics?.adminStatus || adminStatus}
-                    workingHoursText={adminAvailability?.workingHoursText}
-                    onOpenInvoice={() => {
-                      if (currentOrder) setSelectedInvoiceOrder(currentOrder);
-                    }}
-                  />
-                ) : msg.type === "account_card" && msg.payload ? (
-                  <AccountCard
-                    kind={String(msg.payload["kind"] ?? "")}
-                    body={msg.payload["body"] as Record<string, unknown>}
-                    locale={lang === "en" ? "en" : "ar"}
-                    {...(currentOrder && String(msg.payload["kind"] ?? "") === "item_credentials"
-                      ? {
-                          delivery: {
-                            onAttachProof: (itemId: string) => {
-                              proofItemRef.current = itemId;
-                              proofInputRef.current?.click();
+              return (
+                <motion.div
+                  id={`msg-${msg.id}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={msg.id}
+                  className={`flex w-fit max-w-full ${
+                    isMine ? "ml-auto mr-0" : "mr-auto ml-0"
+                  } ${isHighlighted ? "animate-pulse rounded-2xl ring-2 ring-amber-500 p-0.5" : ""}`}
+                >
+                  {msg.type === "digital_order_card" && msg.payload ? (
+                    <DigitalOrderCard
+                      orderId={String(msg.payload["orderId"] ?? currentOrder?.id ?? "")}
+                      code={String(msg.payload["code"] ?? currentOrder?.code ?? "BN-ORDER")}
+                      items={
+                        (msg.payload["items"] as any) ??
+                        currentOrder?.items?.map((it) => ({
+                          id: it.id,
+                          productId: it.productId,
+                          title: it.title,
+                          unitPrice: it.unitPrice,
+                          quantity: it.quantity,
+                          image: it.image || "",
+                          kind: it.kind,
+                        })) ??
+                        []
+                      }
+                      total={
+                        typeof msg.payload["total"] === "number"
+                          ? msg.payload["total"]
+                          : currentOrder?.total
+                      }
+                      currency={String(
+                        msg.payload["currency"] ??
+                          currentOrder?.currency ??
+                          activeCurrencyInfo?.symbol ??
+                          "د.ع",
+                      )}
+                      paymentStatus={String(
+                        msg.payload["paymentStatus"] ?? currentOrder?.paymentStatus ?? "paid",
+                      )}
+                      paymentMethod="محفظة بنانا"
+                      status={currentOrder?.status ?? "processing"}
+                      createdAt={currentOrder?.createdAt ?? msg.createdAt}
+                      text={
+                        typeof msg.payload["text"] === "string" ? msg.payload["text"] : undefined
+                      }
+                      locale={lang === "en" ? "en" : "ar"}
+                      queuePosition={
+                        liveQueueMetrics?.position ||
+                        (currentQueueIndex > 0 ? currentQueueIndex : 1)
+                      }
+                      aheadCount={liveQueueMetrics?.aheadCount}
+                      adminStatus={liveQueueMetrics?.adminStatus || adminStatus}
+                      workingHoursText={adminAvailability?.workingHoursText}
+                      onOpenInvoice={() => {
+                        if (currentOrder) setSelectedInvoiceOrder(currentOrder);
+                      }}
+                    />
+                  ) : msg.type === "account_card" && msg.payload ? (
+                    <AccountCard
+                      kind={String(msg.payload["kind"] ?? "")}
+                      body={msg.payload["body"] as Record<string, unknown>}
+                      locale={lang === "en" ? "en" : "ar"}
+                      {...(currentOrder && String(msg.payload["kind"] ?? "") === "item_credentials"
+                        ? {
+                            delivery: {
+                              onAttachProof: (itemId: string) => {
+                                proofItemRef.current = itemId;
+                                proofInputRef.current?.click();
+                              },
+                              onNext: requestNextAccount,
+                              proofSent: Boolean(
+                                proofSentItems[
+                                  String(
+                                    (msg.payload["body"] as Record<string, unknown>)?.["itemId"] ??
+                                      "",
+                                  )
+                                ],
+                              ),
+                              busy: deliveryBusy,
                             },
-                            onNext: requestNextAccount,
-                            proofSent: Boolean(
-                              proofSentItems[
-                                String(
-                                  (msg.payload["body"] as Record<string, unknown>)?.["itemId"] ??
-                                    "",
-                                )
-                              ],
-                            ),
-                            busy: deliveryBusy,
-                          },
-                        }
-                      : {})}
-                  />
-                ) : msg.type === "image" && msg.payload ? (
-                  <div className="relative w-64 max-w-[85%] overflow-hidden rounded-2xl border border-[var(--surface-4)] bg-card p-1.5 shadow-xs">
-                    {isVideoUrl(String(msg.payload["imageUrl"] ?? "")) ? (
-                      <video
-                        src={String(msg.payload["imageUrl"] ?? "")}
-                        controls
-                        preload="metadata"
-                        playsInline
-                        className={`max-h-64 w-full rounded-[12px] bg-black ${
-                          msg.status === "sending" ? "blur-[2px]" : ""
-                        }`}
-                      />
-                    ) : (
-                      <img
-                        src={String(msg.payload["imageUrl"] ?? "")}
-                        alt="مرفق"
-                        className={`max-h-64 w-full rounded-[12px] object-cover ${
-                          msg.status === "sending" ? "blur-[2px]" : ""
-                        }`}
-                      />
-                    )}
-                    {msg.status === "sending" && typeof msg.uploadProgress === "number" && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white backdrop-blur-xs">
-                        <div className="relative h-12 w-12 flex items-center justify-center">
-                          <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
-                            <circle
-                              cx="18"
-                              cy="18"
-                              r="15"
-                              fill="none"
-                              stroke="rgba(255,255,255,0.3)"
-                              strokeWidth="3"
-                            />
-                            <circle
-                              cx="18"
-                              cy="18"
-                              r="15"
-                              fill="none"
-                              stroke="white"
-                              strokeWidth="3"
-                              strokeDasharray="94.2"
-                              strokeDashoffset={94.2 - (94.2 * (msg.uploadProgress || 0)) / 100}
-                              strokeLinecap="round"
-                              className="transition-all duration-200"
-                            />
-                          </svg>
-                          <span className="absolute text-[11px] font-black">
-                            {msg.uploadProgress}%
-                          </span>
-                        </div>
-                        <span className="mt-1 text-[10px] font-bold">جاري الرفع...</span>
-                      </div>
-                    )}
-                    {msg.status === "failed" && (
-                      <button
-                        onClick={() => handleRetry(msg)}
-                        className="absolute inset-0 flex flex-col items-center justify-center bg-red-950/70 text-white cursor-pointer"
-                      >
-                        <RotateCcw className="h-6 w-6 mb-1" />
-                        <span className="text-xs font-bold">{tr("إعادة المحاولة")}</span>
-                      </button>
-                    )}
-                  </div>
-                ) : msg.type === "product" && msg.payload ? (
-                  <div className="group flex w-72 max-w-[85%] flex-col gap-3 rounded-2xl border border-[var(--surface-4)] bg-card p-4 shadow-xs transition-shadow hover:shadow-md">
-                    <div className="flex items-center gap-3" dir="rtl">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[var(--surface-4)] bg-[var(--surface)]">
-                        {msg.payload["image"] ? (
-                          <img
-                            src={String(msg.payload["image"])}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <ShoppingBag className="h-7 w-7 text-[var(--ink)]" />
-                        )}
-                      </div>
-                      <div className="flex flex-1 flex-col justify-center text-right">
-                        <span className="mb-0.5 line-clamp-1 text-[15px] font-bold leading-tight text-[var(--ink)]">
-                          {String(msg.payload["name"] ?? "")}
-                        </span>
-                        <span className="inline-block w-max rounded-md bg-[var(--surface)] px-2 py-0.5 text-[12px] text-[var(--muted-ink)]">
-                          {tr("منتج مقترح")}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="border-t border-[var(--surface-4)]/50 pt-2 text-right text-[13px] leading-relaxed text-[var(--ink)]/80">
-                      {msg.text}
-                    </div>
-                    <a
-                      href={`/product/${String(msg.payload["id"] ?? "")}`}
-                      className="mt-1 w-full rounded-xl bg-[var(--ink)] py-2 text-center text-[13px] font-bold text-white transition-colors hover:bg-[var(--ink-strong)]"
-                    >
-                      {tr("عرض التفاصيل")}
-                    </a>
-                  </div>
-                ) : msg.type === "location" && msg.payload ? (
-                  <div className="group w-72 max-w-[85%] rounded-2xl border border-[var(--surface-4)] bg-card p-1.5 shadow-xs transition-shadow hover:shadow-md">
-                    <div className="relative mb-2 flex h-32 w-full items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface)] transition-colors group-hover:bg-[#F0EBE1]">
-                      <motion.div
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                      >
-                        <MapPin className="relative z-10 h-10 w-10 text-blue-500 drop-shadow-md" />
-                      </motion.div>
-                    </div>
-                    <div className="px-3 pb-3">
-                      <div className="mb-0.5 text-right text-[15px] font-bold text-[var(--ink)]">
-                        {String(msg.payload["name"] ?? "")}
-                      </div>
-                      <div className="mb-2 text-right text-[12px] leading-relaxed text-[var(--muted-ink)]">
-                        {msg.text}
-                      </div>
-                    </div>
-                  </div>
-                ) : msg.type === "wallet" && msg.payload ? (
-                  <div
-                    className="relative w-64 max-w-[85%] overflow-hidden rounded-3xl p-5 shadow-lg"
-                    style={{
-                      background: "linear-gradient(135deg, #4A2B25 0%, var(--ink-strong) 100%)",
-                    }}
-                  >
-                    <div className="pointer-events-none absolute right-0 top-0 h-32 w-32 -translate-y-1/2 translate-x-1/4 rounded-full bg-card/5 blur-xl" />
-                    <div className="relative z-10 mb-5 flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-card/10 shadow-inner backdrop-blur-md">
-                        <Wallet className="h-5 w-5 text-[var(--peach)]" />
-                      </div>
-                      <span className="rounded-lg border border-white/5 bg-card/10 px-2.5 py-1 text-[11px] font-bold tracking-wide text-[var(--peach)] shadow-xs backdrop-blur-xs">
-                        {tr("تحويل رصيد")}
-                      </span>
-                    </div>
-                    <div className="relative z-10 flex flex-col items-end gap-1">
-                      <span className="text-[12px] font-medium tracking-wide text-white/70">
-                        {tr("المبلغ المحول")}
-                      </span>
-                      <div className="flex flex-row-reverse items-baseline gap-1.5" dir="ltr">
-                        <span className="text-3xl font-bold tracking-tight text-white drop-shadow-md">
-                          {String(msg.payload["amount"] ?? "")}
-                        </span>
-                        <span className="text-sm font-bold tracking-wide text-[var(--peach)]">
-                          {activeCurrencyInfo?.symbol || "د.ع"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="relative z-10 mt-4 flex items-center justify-between border-t border-white/10 pt-3">
-                      <span className="font-mono text-[10px] tracking-wider text-white/50">
-                        REF: #{msg.id.slice(-5)}
-                      </span>
-                      <Check className="h-4 w-4 text-green-400 drop-shadow-xs" />
-                    </div>
-                  </div>
-                ) : msg.payload?.isOfflineNotice ||
-                  msg.payload?.action === "switch_to_automated_support" ? (
-                  <div
-                    dir="auto"
-                    className="max-w-[85%] rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/30 p-4 text-[14px] text-[var(--ink)] shadow-xs space-y-3"
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                      <div className="leading-relaxed whitespace-pre-wrap font-medium">
-                        {msg.text}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleSwitchToAutomatedSupport}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[var(--ink)] text-white font-bold text-xs hover:bg-[var(--ink-strong)] transition-all shadow-xs cursor-pointer"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>الانتقال إلى الرد الآلي</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-end gap-1 max-w-[85%]">
-                    <div
-                      dir="auto"
-                      className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-[14.5px] font-medium leading-[1.4] shadow-xs ${
-                        isMine
-                          ? "rounded-tr-[4px] bg-[var(--ink)] text-[var(--surface-2)]"
-                          : "rounded-tl-[4px] border border-white/50 bg-card/85 text-[var(--ink)] backdrop-blur-xs"
-                      }`}
-                    >
-                      {msg.sender === "ai" ? (
-                        <TextGenerateEffect
-                          words={msg.text}
-                          className="text-[var(--ink)]"
-                          duration={0.3}
+                          }
+                        : {})}
+                    />
+                  ) : msg.type === "image" && msg.payload ? (
+                    <div className="relative w-64 max-w-[85%] overflow-hidden rounded-2xl border border-[var(--surface-4)] bg-card p-1.5 shadow-xs">
+                      {isVideoUrl(String(msg.payload["imageUrl"] ?? "")) ? (
+                        <video
+                          src={String(msg.payload["imageUrl"] ?? "")}
+                          controls
+                          preload="metadata"
+                          playsInline
+                          className={`max-h-64 w-full rounded-[12px] bg-black ${
+                            msg.status === "sending" ? "blur-[2px]" : ""
+                          }`}
                         />
                       ) : (
-                        msg.text
+                        <img
+                          src={String(msg.payload["imageUrl"] ?? "")}
+                          alt="مرفق"
+                          className={`max-h-64 w-full rounded-[12px] object-cover ${
+                            msg.status === "sending" ? "blur-[2px]" : ""
+                          }`}
+                        />
+                      )}
+                      {msg.status === "sending" && typeof msg.uploadProgress === "number" && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white backdrop-blur-xs">
+                          <div className="relative h-12 w-12 flex items-center justify-center">
+                            <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
+                              <circle
+                                cx="18"
+                                cy="18"
+                                r="15"
+                                fill="none"
+                                stroke="rgba(255,255,255,0.3)"
+                                strokeWidth="3"
+                              />
+                              <circle
+                                cx="18"
+                                cy="18"
+                                r="15"
+                                fill="none"
+                                stroke="white"
+                                strokeWidth="3"
+                                strokeDasharray="94.2"
+                                strokeDashoffset={94.2 - (94.2 * (msg.uploadProgress || 0)) / 100}
+                                strokeLinecap="round"
+                                className="transition-all duration-200"
+                              />
+                            </svg>
+                            <span className="absolute text-[11px] font-black">
+                              {msg.uploadProgress}%
+                            </span>
+                          </div>
+                          <span className="mt-1 text-[10px] font-bold">جاري الرفع...</span>
+                        </div>
+                      )}
+                      {msg.status === "failed" && (
+                        <button
+                          onClick={() => handleRetry(msg)}
+                          className="absolute inset-0 flex flex-col items-center justify-center bg-red-950/70 text-white cursor-pointer"
+                        >
+                          <RotateCcw className="h-6 w-6 mb-1" />
+                          <span className="text-xs font-bold">{tr("إعادة المحاولة")}</span>
+                        </button>
                       )}
                     </div>
-
-                    {/* Timestamp & Status Checkmark */}
-                    {isMine && (
-                      <div className="flex items-center gap-1 text-[10px] text-[var(--muted-ink)] px-1">
-                        {msg.createdAt && (
-                          <span>
-                            {new Date(msg.createdAt).toLocaleTimeString("ar", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                  ) : msg.type === "product" && msg.payload ? (
+                    <div className="group flex w-72 max-w-[85%] flex-col gap-3 rounded-2xl border border-[var(--surface-4)] bg-card p-4 shadow-xs transition-shadow hover:shadow-md">
+                      <div className="flex items-center gap-3" dir="rtl">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[var(--surface-4)] bg-[var(--surface)]">
+                          {msg.payload["image"] ? (
+                            <img
+                              src={String(msg.payload["image"])}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <ShoppingBag className="h-7 w-7 text-[var(--ink)]" />
+                          )}
+                        </div>
+                        <div className="flex flex-1 flex-col justify-center text-right">
+                          <span className="mb-0.5 line-clamp-1 text-[15px] font-bold leading-tight text-[var(--ink)]">
+                            {String(msg.payload["name"] ?? "")}
                           </span>
-                        )}
-                        {msg.status === "sending" && (
-                          <Clock className="h-3 w-3 animate-spin text-[var(--muted-ink)]" />
-                        )}
-                        {msg.status === "sent" && (
-                          <CheckCheck className="h-3.5 w-3.5 text-emerald-600" />
-                        )}
-                        {msg.status === "failed" && (
-                          <button
-                            onClick={() => handleRetry(msg)}
-                            className="flex items-center gap-0.5 text-red-500 font-bold hover:underline cursor-pointer"
-                          >
-                            <AlertCircle className="h-3 w-3" />
-                            <span>{tr("إعادة المحاولة")}</span>
-                          </button>
+                          <span className="inline-block w-max rounded-md bg-[var(--surface)] px-2 py-0.5 text-[12px] text-[var(--muted-ink)]">
+                            {tr("منتج مقترح")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="border-t border-[var(--surface-4)]/50 pt-2 text-right text-[13px] leading-relaxed text-[var(--ink)]/80">
+                        {msg.text}
+                      </div>
+                      <a
+                        href={`/product/${String(msg.payload["id"] ?? "")}`}
+                        className="mt-1 w-full rounded-xl bg-[var(--ink)] py-2 text-center text-[13px] font-bold text-white transition-colors hover:bg-[var(--ink-strong)]"
+                      >
+                        {tr("عرض التفاصيل")}
+                      </a>
+                    </div>
+                  ) : msg.type === "location" && msg.payload ? (
+                    <div className="group w-72 max-w-[85%] rounded-2xl border border-[var(--surface-4)] bg-card p-1.5 shadow-xs transition-shadow hover:shadow-md">
+                      <div className="relative mb-2 flex h-32 w-full items-center justify-center overflow-hidden rounded-[12px] bg-[var(--surface)] transition-colors group-hover:bg-[#F0EBE1]">
+                        <motion.div
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        >
+                          <MapPin className="relative z-10 h-10 w-10 text-blue-500 drop-shadow-md" />
+                        </motion.div>
+                      </div>
+                      <div className="px-3 pb-3">
+                        <div className="mb-0.5 text-right text-[15px] font-bold text-[var(--ink)]">
+                          {String(msg.payload["name"] ?? "")}
+                        </div>
+                        <div className="mb-2 text-right text-[12px] leading-relaxed text-[var(--muted-ink)]">
+                          {msg.text}
+                        </div>
+                      </div>
+                    </div>
+                  ) : msg.type === "wallet" && msg.payload ? (
+                    <div
+                      className="relative w-64 max-w-[85%] overflow-hidden rounded-3xl p-5 shadow-lg"
+                      style={{
+                        background: "linear-gradient(135deg, #4A2B25 0%, var(--ink-strong) 100%)",
+                      }}
+                    >
+                      <div className="pointer-events-none absolute right-0 top-0 h-32 w-32 -translate-y-1/2 translate-x-1/4 rounded-full bg-card/5 blur-xl" />
+                      <div className="relative z-10 mb-5 flex items-center justify-between">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-card/10 shadow-inner backdrop-blur-md">
+                          <Wallet className="h-5 w-5 text-[var(--peach)]" />
+                        </div>
+                        <span className="rounded-lg border border-white/5 bg-card/10 px-2.5 py-1 text-[11px] font-bold tracking-wide text-[var(--peach)] shadow-xs backdrop-blur-xs">
+                          {tr("تحويل رصيد")}
+                        </span>
+                      </div>
+                      <div className="relative z-10 flex flex-col items-end gap-1">
+                        <span className="text-[12px] font-medium tracking-wide text-white/70">
+                          {tr("المبلغ المحول")}
+                        </span>
+                        <div className="flex flex-row-reverse items-baseline gap-1.5" dir="ltr">
+                          <span className="text-3xl font-bold tracking-tight text-white drop-shadow-md">
+                            {String(msg.payload["amount"] ?? "")}
+                          </span>
+                          <span className="text-sm font-bold tracking-wide text-[var(--peach)]">
+                            {activeCurrencyInfo?.symbol || "د.ع"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="relative z-10 mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                        <span className="font-mono text-[10px] tracking-wider text-white/50">
+                          REF: #{msg.id.slice(-5)}
+                        </span>
+                        <Check className="h-4 w-4 text-green-400 drop-shadow-xs" />
+                      </div>
+                    </div>
+                  ) : msg.payload?.isOfflineNotice ||
+                    msg.payload?.action === "switch_to_automated_support" ? (
+                    <div
+                      dir="auto"
+                      className="max-w-[85%] rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/30 p-4 text-[14px] text-[var(--ink)] shadow-xs space-y-3"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div className="leading-relaxed whitespace-pre-wrap font-medium">
+                          {msg.text}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSwitchToAutomatedSupport}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[var(--ink)] text-white font-bold text-xs hover:bg-[var(--ink-strong)] transition-all shadow-xs cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>الانتقال إلى الرد الآلي</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-end gap-1 max-w-[85%]">
+                      <div
+                        dir="auto"
+                        className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-[14.5px] font-medium leading-[1.4] shadow-xs ${
+                          isMine
+                            ? "rounded-tr-[4px] bg-[var(--ink)] text-[var(--surface-2)]"
+                            : "rounded-tl-[4px] border border-white/50 bg-card/85 text-[var(--ink)] backdrop-blur-xs"
+                        }`}
+                      >
+                        {msg.sender === "ai" ? (
+                          <TextGenerateEffect
+                            words={msg.text}
+                            className="text-[var(--ink)]"
+                            duration={0.3}
+                          />
+                        ) : (
+                          msg.text
                         )}
                       </div>
-                    )}
-                  </div>
-                )}
-              </motion.div>
-            );
-          })
-        )}
+
+                      {/* Timestamp & Status Checkmark */}
+                      {isMine && (
+                        <div className="flex items-center gap-1 text-[10px] text-[var(--muted-ink)] px-1">
+                          {msg.createdAt && (
+                            <span>
+                              {new Date(msg.createdAt).toLocaleTimeString("ar", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          )}
+                          {msg.status === "sending" && (
+                            <Clock className="h-3 w-3 animate-spin text-[var(--muted-ink)]" />
+                          )}
+                          {msg.status === "sent" && (
+                            <CheckCheck className="h-3.5 w-3.5 text-emerald-600" />
+                          )}
+                          {msg.status === "failed" && (
+                            <button
+                              onClick={() => handleRetry(msg)}
+                              className="flex items-center gap-0.5 text-red-500 font-bold hover:underline cursor-pointer"
+                            >
+                              <AlertCircle className="h-3 w-3" />
+                              <span>{tr("إعادة المحاولة")}</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })
+          )}
 
           {/* Animated Typing Indicator */}
           {isPeerTyping && (

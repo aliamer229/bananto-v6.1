@@ -19,7 +19,8 @@
     "legacy:link:dry": "node scripts/link-legacy-cloudflare.mjs",
     "legacy:link:local": "node scripts/link-legacy-cloudflare.mjs --ensure-schema --apply",
     "legacy:link:remote": "node scripts/link-legacy-cloudflare.mjs --remote --ensure-schema --apply",
-    "legacy:verify:remote": "node scripts/link-legacy-cloudflare.mjs --remote --verify-only"
+    "legacy:verify:remote": "node scripts/link-legacy-cloudflare.mjs --remote --verify-only",
+    "start": "node dist/server/index.mjs"
   },
   "dependencies": {
     "@fontsource-variable/cairo": "^5.3.0",
@@ -70,7 +71,6 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
     "motion": "^12.43.0",
-    "puppeteer": "^25.8.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
@@ -109,6 +109,7 @@
     "jsdom": "^30.0.1",
     "nitro": "^3.0.260610-beta",
     "prettier": "^3.7.3",
+    "puppeteer": "^25.8.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vblob": "^1.1.0",

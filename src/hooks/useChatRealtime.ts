@@ -137,7 +137,10 @@ export function useChatRealtime({
         if (isDisposed) return;
         try {
           const data = JSON.parse(event.data);
-          if (data.payload?.typers && (!data.payload?.threadId || data.payload.threadId === threadId)) {
+          if (
+            data.payload?.typers &&
+            (!data.payload?.threadId || data.payload.threadId === threadId)
+          ) {
             callbacksRef.current.onTypingUpdate?.(data.payload.typers);
           }
         } catch {
@@ -149,7 +152,10 @@ export function useChatRealtime({
         if (isDisposed) return;
         try {
           const data = JSON.parse(event.data);
-          if (data.payload?.participants && (!data.payload?.threadId || data.payload.threadId === threadId)) {
+          if (
+            data.payload?.participants &&
+            (!data.payload?.threadId || data.payload.threadId === threadId)
+          ) {
             callbacksRef.current.onPresenceUpdate?.(data.payload.participants);
           }
         } catch {

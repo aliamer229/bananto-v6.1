@@ -748,7 +748,10 @@ export function ActiveConversation({
                         }),
                       });
                       if (!res.ok) {
-                        const err = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+                        const err = (await res.json().catch(() => ({}))) as {
+                          error?: string;
+                          message?: string;
+                        };
                         throw new Error(err.error || err.message || "فشل إرسال كود OTP");
                       }
                       return;
@@ -939,7 +942,10 @@ export function ActiveConversation({
                     }),
                   });
                   if (!res.ok) {
-                    const err = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+                    const err = (await res.json().catch(() => ({}))) as {
+                      error?: string;
+                      message?: string;
+                    };
                     throw new Error(err.error || err.message || "فشل إرسال بيانات الحساب");
                   }
                   toast.success("تم إرسال بيانات الحساب بنجاح");
@@ -969,7 +975,10 @@ export function ActiveConversation({
                     }),
                   });
                   if (!res.ok) {
-                    const err = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+                    const err = (await res.json().catch(() => ({}))) as {
+                      error?: string;
+                      message?: string;
+                    };
                     throw new Error(err.error || err.message || "فشل إرسال كود OTP");
                   }
                   toast.success("تم إرسال كود التحقق بنجاح");

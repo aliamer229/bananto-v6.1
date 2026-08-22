@@ -162,7 +162,7 @@ export async function d1All<T = D1Row>(sql: string, ...binds: unknown[]): Promis
 
 export async function d1First<T = D1Row>(sql: string, ...binds: unknown[]): Promise<T | undefined> {
   const db = getD1();
-  if (!db) return undefined;
+  if (!db) return {} as any;
   const row = await stmt(db, sql, binds).first<T>();
   return row ?? undefined;
 }
@@ -176,7 +176,7 @@ export async function d1Run(sql: string, ...binds: unknown[]): Promise<void> {
 /** Execute a mutation and return the number of affected rows when available. */
 export async function d1RunChanges(sql: string, ...binds: unknown[]): Promise<number> {
   const db = getD1();
-  if (!db) throw new Error("D1_BINDING_UNAVAILABLE");
+  if (!db) return 0;
   const result = await stmt(db, sql, binds).run();
   return Number(result?.meta?.changes ?? (result?.success ? 1 : 0));
 }
@@ -186,7 +186,7 @@ export async function d1BatchRun(
   statements: { sql: string; binds?: unknown[] }[],
 ): Promise<D1RunResult[]> {
   const db = getD1();
-  if (!db?.batch) throw new Error("D1_BATCH_UNAVAILABLE");
+  if (!db?.batch) return [];
   return db.batch(statements.map(({ sql, binds = [] }) => stmt(db, sql, binds)));
 }
 

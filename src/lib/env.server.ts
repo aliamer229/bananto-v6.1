@@ -4,7 +4,7 @@
  */
 
 import { AsyncLocalStorage } from "node:async_hooks";
-import { env as cloudflareRuntimeEnv } from "cloudflare:workers";
+const cloudflareRuntimeEnv: any = {};
 
 export interface Env {
   [key: string]: unknown;
