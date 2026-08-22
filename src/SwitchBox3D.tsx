@@ -37,7 +37,7 @@ export function SwitchBox3D({
 
   useEffect(() => {
     let isMounted = true;
-    
+
     if (!coverImage) {
       setTexture(null);
       return;
@@ -61,7 +61,7 @@ export function SwitchBox3D({
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.flipY = false;
         tex.needsUpdate = true;
-        
+
         setTexture((prev) => {
           if (prev) prev.dispose();
           return tex;
@@ -71,7 +71,7 @@ export function SwitchBox3D({
       (err) => {
         console.warn("[SwitchBox3D] Cover image load error:", err);
         if (isMounted) setTexture(null);
-      }
+      },
     );
 
     return () => {

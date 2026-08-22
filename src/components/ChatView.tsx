@@ -811,6 +811,46 @@ export default function ChatView({
   const [deliveryBusy, setDeliveryBusy] = useState(false);
   const [proofSentItems, setProofSentItems] = useState<Record<string, boolean>>({});
 
+  // Map raw ChatMessage to DisplayMessage
+  const mapServerMessage = useCallback((message: ChatMessage): DisplayMessage => {
+    const mine = message.senderRole === "user";
+    const imageUrl = message.body?.["imageUrl"] as string | undefined;
+
+    if (message.body?.["type"] === "digital_order_card" || message.kind === "digital_order_card") {
+      return {
+        id: message.id,
+        sender: "ai",
+        text: String(message.body?.["text"] ?? ""),
+        type: "digital_order_card" as const,
+        payload: message.body,
+        createdAt: message.createdAt,
+        status: "sent",
+      };
+    }
+
+    const cardType = accountCardTypeFor(message.kind);
+    if (cardType) {
+      return {
+        id: message.id,
+        sender: mine ? "user" : "ai",
+        text: String(message.body?.["text"] ?? ""),
+        type: "account_card" as const,
+        payload: { kind: message.kind, body: message.body },
+        createdAt: message.createdAt,
+        status: "sent",
+      };
+    }
+    return {
+      id: message.id,
+      sender: mine ? "user" : "ai",
+      text: String(message.body?.["text"] ?? (imageUrl ? "مرفق" : "")),
+      payload: message.body,
+      createdAt: message.createdAt,
+      status: "sent",
+      ...(imageUrl ? { type: "image" as const, payload: { ...message.body, imageUrl } } : {}),
+    };
+  }, []);
+
   const reloadThread = useCallback(async () => {
     if (!threadId) return;
     const res = await api.threadMessages(threadId, { limit: 30 });
@@ -875,46 +915,6 @@ export default function ChatView({
       void queryClient.invalidateQueries({ queryKey: ["threads"] });
     },
   });
-
-  // Map raw ChatMessage to DisplayMessage
-  const mapServerMessage = useCallback((message: ChatMessage): DisplayMessage => {
-    const mine = message.senderRole === "user";
-    const imageUrl = message.body?.["imageUrl"] as string | undefined;
-
-    if (message.body?.["type"] === "digital_order_card" || message.kind === "digital_order_card") {
-      return {
-        id: message.id,
-        sender: "ai",
-        text: String(message.body?.["text"] ?? ""),
-        type: "digital_order_card" as const,
-        payload: message.body,
-        createdAt: message.createdAt,
-        status: "sent",
-      };
-    }
-
-    const cardType = accountCardTypeFor(message.kind);
-    if (cardType) {
-      return {
-        id: message.id,
-        sender: mine ? "user" : "ai",
-        text: String(message.body?.["text"] ?? ""),
-        type: "account_card" as const,
-        payload: { kind: message.kind, body: message.body },
-        createdAt: message.createdAt,
-        status: "sent",
-      };
-    }
-    return {
-      id: message.id,
-      sender: mine ? "user" : "ai",
-      text: String(message.body?.["text"] ?? (imageUrl ? "مرفق" : "")),
-      payload: message.body,
-      createdAt: message.createdAt,
-      status: "sent",
-      ...(imageUrl ? { type: "image" as const, payload: { ...message.body, imageUrl } } : {}),
-    };
-  }, []);
 
   // Fetch initial paginated messages when threadId changes
   useEffect(() => {
@@ -1211,9 +1211,7 @@ export default function ChatView({
         // Update optimistic item with confirmed message
         setServerMessages((prev) =>
           prev.map((m) =>
-            m.clientMessageId === clientMessageId
-              ? { ...mapServerMessage(res.message), status: "sent" }
-              : m,
+            m.clientMessageId === clientMessageId ? ({ ...res.message, status: "sent" } as any) : m,
           ),
         );
 
@@ -1348,9 +1346,7 @@ export default function ChatView({
         clientMessageId: msg.clientMessageId || msg.id,
       });
       setServerMessages((prev) =>
-        prev.map((m) =>
-          m.id === msg.id ? { ...mapServerMessage(res.message), status: "sent" } : m,
-        ),
+        prev.map((m) => (m.id === msg.id ? ({ ...res.message, status: "sent" } as any) : m)),
       );
     } catch {
       setServerMessages((prev) =>
@@ -1398,9 +1394,7 @@ export default function ChatView({
 
         setServerMessages((prev) =>
           prev.map((m) =>
-            m.id === tempId
-              ? { ...mapServerMessage(res.message), status: "sent", uploadProgress: 100 }
-              : m,
+            m.id === tempId ? ({ ...res.message, status: "sent", uploadProgress: 100 } as any) : m,
           ),
         );
       } catch (err) {
@@ -1602,7 +1596,10 @@ export default function ChatView({
           aria-label={tr("رجوع")}
           className="flex h-9 items-center gap-1.5 rounded-full border border-white/40 bg-card/90 px-3 text-[13px] font-bold text-[var(--ink)] shadow-xs transition-all hover:bg-[var(--surface-3)] active:scale-95 cursor-pointer"
         >
-          <ArrowRight className="h-4 w-4 rtl:rotate-0 ltr:rotate-180 text-[var(--ink)]" strokeWidth={2.2} />
+          <ArrowRight
+            className="h-4 w-4 rtl:rotate-0 ltr:rotate-180 text-[var(--ink)]"
+            strokeWidth={2.2}
+          />
           <span className="text-[12px] font-bold">{tr("رجوع")}</span>
         </button>
 
@@ -1701,11 +1698,11 @@ export default function ChatView({
                   ? tr("⚡ دورك الآن — قيد التجهيز المباشر من المشرف")
                   : `${tr("طابور التجهيز المباشر: الدور")} #${liveQueueMetrics?.position || currentQueueIndex}`}
               </span>
-              {(liveQueueMetrics?.aheadCount ?? (currentQueueIndex - 1)) > 0 && (
+              {(liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1) > 0 && (
                 <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300">
                   {isAr
-                    ? `(أمامك ${liveQueueMetrics?.aheadCount ?? (currentQueueIndex - 1)} طلبات)`
-                    : `(${liveQueueMetrics?.aheadCount ?? (currentQueueIndex - 1)} orders ahead)`}
+                    ? `(أمامك ${liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1} طلبات)`
+                    : `(${liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1} orders ahead)`}
                 </span>
               )}
             </div>
@@ -1713,11 +1710,10 @@ export default function ChatView({
             <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-ink)] font-medium">
               <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
               <span>
-                {liveQueueMetrics?.estimatedWaitTime || (
-                  (liveQueueMetrics?.position || currentQueueIndex) <= 1
+                {liveQueueMetrics?.estimatedWaitTime ||
+                  ((liveQueueMetrics?.position || currentQueueIndex) <= 1
                     ? tr("خلال دقائق معدودة")
-                    : `${Math.max(5, ((liveQueueMetrics?.position || currentQueueIndex) - 1) * 5)} - ${Math.max(10, (liveQueueMetrics?.position || currentQueueIndex) * 7)} ${tr("دقيقة")}`
-                )}
+                    : `${Math.max(5, ((liveQueueMetrics?.position || currentQueueIndex) - 1) * 5)} - ${Math.max(10, (liveQueueMetrics?.position || currentQueueIndex) * 7)} ${tr("دقيقة")}`)}
               </span>
             </div>
           </div>
@@ -2065,7 +2061,9 @@ export default function ChatView({
                     createdAt={currentOrder?.createdAt ?? msg.createdAt}
                     text={typeof msg.payload["text"] === "string" ? msg.payload["text"] : undefined}
                     locale={lang === "en" ? "en" : "ar"}
-                    queuePosition={liveQueueMetrics?.position || (currentQueueIndex > 0 ? currentQueueIndex : 1)}
+                    queuePosition={
+                      liveQueueMetrics?.position || (currentQueueIndex > 0 ? currentQueueIndex : 1)
+                    }
                     aheadCount={liveQueueMetrics?.aheadCount}
                     adminStatus={liveQueueMetrics?.adminStatus || adminStatus}
                     workingHoursText={adminAvailability?.workingHoursText}
@@ -2839,7 +2837,9 @@ export default function ChatView({
                       onSend={(amount) => {
                         setSelectedNav(null);
                         if (isAutomatedThread) {
-                          toast.error(tr("تحويل الرصيد متاح فقط في محادثة الدعم البشري مع الإدارة"));
+                          toast.error(
+                            tr("تحويل الرصيد متاح فقط في محادثة الدعم البشري مع الإدارة"),
+                          );
                           return;
                         }
                         const text = `طلب تحويل رصيد بقيمة ${amount}`;

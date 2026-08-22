@@ -101,6 +101,7 @@ const decodePromises = new Map<string, Promise<AudioBuffer | null>>();
 const activeSources = new Map<string, AudioBufferSourceNode>();
 const lastPlayed = new Map<string, number>();
 const lastStarted = new Map<string, number>();
+let globalLastPlayTime = 0;
 
 const HOVER_COOLDOWN_MS = 35;
 const GENERAL_DEDUPE_MS = 35;
@@ -419,31 +420,32 @@ if (typeof window !== "undefined") {
     window.addEventListener(evt, handleFirstGesture, { passive: true, capture: true });
   }
 
-  // Global delegation for data-sfx elements
+  // Global delegation for data-ui-sound elements
   document.addEventListener(
     "pointerdown",
     (event) => {
       const target = event.target as Element | null;
-      const el = target?.closest?.("[data-sfx]") as HTMLElement | null;
+      const el = target?.closest?.("[data-ui-sound]") as HTMLElement | null;
       if (!el) return;
-      const name = el.dataset["sfx"];
+      const name = el.dataset["uiSound"];
       if (!name) return;
-      const volume = Number(el.dataset["sfxVolume"] ?? "0.8");
-      const channel = el.dataset["sfxChannel"];
-      playSound(name, Number.isFinite(volume) ? volume : 0.8, false, channel);
+
+      const volume = Number(el.dataset["uiVolume"] ?? "0.8");
+      const channel = el.dataset["uiChannel"];
+      playSound(name as SoundName, Number.isFinite(volume) ? volume : 0.8, false, channel);
     },
     { capture: true, passive: true },
   );
 
-  // Global delegation for data-sfx-hover elements
+  // Global delegation for data-ui-sound-hover elements
   document.addEventListener(
     "pointerenter",
     (event) => {
       const target = event.target as Element | null;
-      const el = target?.closest?.("[data-sfx-hover]") as HTMLElement | null;
+      const el = target?.closest?.("[data-ui-sound-hover]") as HTMLElement | null;
       if (!el) return;
-      const name = el.dataset["sfxHover"] || "hover_s";
-      const volume = Number(el.dataset["sfxVolume"] ?? "0.5");
+      const name = el.dataset["uiSoundHover"] || "hover_s";
+      const volume = Number(el.dataset["uiVolume"] ?? "0.5");
       playSound(name, Number.isFinite(volume) ? volume : 0.5, false);
     },
     { capture: true, passive: true },
@@ -560,14 +562,21 @@ export function playSound(
   const now = performance.now();
 
   // Deduplication / Cooldown
+  // Global cooldown: prevent any two sounds from playing within 40ms of each other
+  // to avoid double-playing on identical events
+  if (now - globalLastPlayTime < 40) {
+    return;
+  }
+
   const isHover = soundName === "hover" || soundName === "hover_s";
   const cooldown = isHover ? HOVER_COOLDOWN_MS : GENERAL_DEDUPE_MS;
-  const lastPlayTime = lastPlayed.get(soundName);
+  const lastSoundTime = lastPlayed.get(soundName);
 
-  if (lastPlayTime !== undefined && now - lastPlayTime < cooldown) {
+  if (lastSoundTime !== undefined && now - lastSoundTime < cooldown) {
     return;
   }
   lastPlayed.set(soundName, now);
+  globalLastPlayTime = now;
 
   // Check if buffer is ready in RAM
   const cachedBuffer = audioBufferCache.get(soundName);

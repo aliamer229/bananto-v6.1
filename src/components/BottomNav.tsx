@@ -10,15 +10,15 @@ preloadSound("bumper_end");
 preloadSound("home");
 preloadSound("hover");
 preloadSound("hover_s");
-preloadSound("user");
+preloadSound("select");
 preloadSound("turn_on");
 
 const navItems = [
-  { id: "home", icon: BananaIcon, label: "الرئيسية", sound: "home" },
-  { id: "market", icon: CandlestickChart, label: "سوق الموز", sound: "bumper_end" },
-  { id: "chat", icon: MessageCircle, label: "المحادثة", sound: "bumper_end" },
-  { id: "cart", icon: ShoppingCart, label: "السلة", sound: "bumper_end" },
-  { id: "profile", icon: User, label: "حسابي", sound: "user" },
+  { id: "home", icon: BananaIcon, label: "الرئيسية", sound: "select" },
+  { id: "market", icon: CandlestickChart, label: "سوق الموز", sound: "select" },
+  { id: "chat", icon: MessageCircle, label: "المحادثة", sound: "select" },
+  { id: "cart", icon: ShoppingCart, label: "السلة", sound: "select" },
+  { id: "profile", icon: User, label: "حسابي", sound: "select" },
 ];
 
 /** Taps arriving this soon after a view change are leftovers from the previous
@@ -55,8 +55,8 @@ export default function BottomNav({
         return (
           <button
             key={item.id}
-            {...(isActive ? {} : { "data-sfx": item.sound, "data-sfx-channel": "bottom_nav" })}
-            onPointerDown={() => {
+            {...(isActive ? {} : { "data-ui-sound": item.sound, "data-ui-channel": "bottom_nav" })}
+            onClick={(e) => {
               if (isActive) return;
               if (Date.now() < settledAt.current) return;
               onNavigate(item.id);
