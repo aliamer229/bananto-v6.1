@@ -28,6 +28,7 @@ import type {
   BananCode,
   Thread,
   ChatMessage,
+  Coupon,
 } from "./types";
 
 export interface CheckoutLine {
@@ -310,7 +311,7 @@ export async function createOrderForUser(
 
   const order: Order = {
     discountAmount: discountAmount || undefined,
-    couponCode: appliedCoupon ? couponCode.trim().toUpperCase() : undefined,
+    couponCode: appliedCoupon && couponCode ? couponCode.trim().toUpperCase() : undefined,
     id: orderId,
     code,
     userId: user.id,
@@ -552,7 +553,7 @@ export async function createOrderForUser(
       chatType: "ORDER_SUPPORT",
       subject: `طلب ${code}`,
       status: "open",
-      mode: "HUMAN_ACTIVE",
+      mode: "ADMIN_ACTIVE",
       lastMessageAt: now,
       createdAt: now,
     });
@@ -802,22 +803,3 @@ export async function updateOrderStatus(params: {
   return next;
 }
 
-export async function createAuditLog(
-  userId: string,
-  action: string,
-  entityType?: string,
-  entityId?: string,
-  details?: any,
-) {
-  await d1Run(
-    `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    randomId("aud"),
-    userId,
-    action,
-    entityType || null,
-    entityId || null,
-    details ? JSON.stringify(details) : null,
-    new Date().toISOString(),
-  );
-}

@@ -108,7 +108,7 @@ export const Route = createFileRoute("/api/orders")({
               data.items ?? [],
               data.address,
               data.couponCode,
-              data.acceptedTerms !== false,
+              data.acceptedTerms ?? true,
               data.idempotencyKey,
               data.targetProductId,
               data.source || "checkout_web",
@@ -344,9 +344,9 @@ export const Route = createFileRoute("/api/orders")({
           const url = new URL(request.url);
           let orderId = url.searchParams.get("orderId") || url.searchParams.get("id");
           if (!orderId) {
-            const bodyData = await body<{ orderId?: string; id?: string }>(request).catch(
+            const bodyData = (await body<{ orderId?: string; id?: string }>(request).catch(
               () => ({}),
-            );
+            )) as { orderId?: string; id?: string };
             orderId = bodyData.orderId || bodyData.id || "";
           }
           if (!orderId) return json({ error: "معرّف الطلب مطلوب" }, { status: 400 });

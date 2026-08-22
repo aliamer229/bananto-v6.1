@@ -222,7 +222,7 @@ function InnerMessageCard({
 
       {/* Bubble / Card container */}
       {kind === "item_verification_code" ||
-      kind === "otp" ||
+      (kind as string) === "otp" ||
       (legacyCardType === "verification" && body.code) ? (
         <div dir="auto" className="relative transition-all">
           <VerificationOtpCard
@@ -232,7 +232,7 @@ function InnerMessageCard({
             locale="ar"
           />
         </div>
-      ) : legacyCardType || kind === "item_credentials" || kind === "credentials" ? (
+      ) : legacyCardType || kind === "item_credentials" || (kind as string) === "credentials" ? (
         <div dir="auto" className="relative transition-all">
           <AccountCard kind={kind} body={body} tone="default" />
         </div>

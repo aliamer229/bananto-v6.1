@@ -58,6 +58,7 @@ interface AdminOrderBody {
   code?: string;
   text?: string;
   title?: string;
+  clientMessageId?: string;
   /** Bulk-prepared accounts for one order line. */
   accounts?: { email?: string; password?: string }[];
   status?: OrderStatus;
@@ -127,9 +128,9 @@ export const Route = createFileRoute("/api/admin/orders")({
           const url = new URL(request.url);
           let orderId = url.searchParams.get("orderId") || url.searchParams.get("id");
           if (!orderId) {
-            const bodyData = await body<{ orderId?: string; id?: string }>(request).catch(
+            const bodyData = (await body<{ orderId?: string; id?: string }>(request).catch(
               () => ({}),
-            );
+            )) as { orderId?: string; id?: string };
             orderId = bodyData.orderId || bodyData.id || "";
           }
           if (!orderId) return json({ error: "معرّف الطلب مطلوب" }, { status: 400 });

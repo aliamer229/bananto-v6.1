@@ -719,6 +719,7 @@ export interface OrderItem {
   deliveryPasswordEnc?: string;
   credsSentAt?: string;
   verificationCodeSentAt?: string;
+  verificationCode?: string;
   loggedInAt?: string;
   /** The member's own screenshot proving they signed in to this account. */
   loginProofUrl?: string;

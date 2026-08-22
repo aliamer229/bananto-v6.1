@@ -61,7 +61,7 @@ export default function CouponsManager() {
 
   const { data: storeData } = useQuery({
     queryKey: ["store-products-list"],
-    queryFn: () => api.getStore(),
+    queryFn: () => api.store(),
   });
 
   const productsList = useMemo(() => {

@@ -27,8 +27,9 @@ import {
   Layers,
   ArrowUpRight,
   RefreshCw,
+  X,
 } from "lucide-react";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -405,7 +406,7 @@ function CartPage() {
   };
 
   // Revalidate coupon when cart contents change
-  React.useEffect(() => {
+  useEffect(() => {
     if (appliedCoupon && appliedCoupon.code) {
       void (async () => {
         try {

@@ -138,7 +138,9 @@ function isDevelopmentOrPreview(): boolean {
       window.location.hostname.includes("localhost") ||
       window.location.hostname === "127.0.0.1" ||
       window.location.hostname.includes("ais-") ||
-      window.location.hostname.includes("googleusercontent.com")
+      window.location.hostname.includes("googleusercontent.com") ||
+      window.location.hostname.includes("lovable") ||
+      window.location.port !== ""
     );
   } catch {
     return false;

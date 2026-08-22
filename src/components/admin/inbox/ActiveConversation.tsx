@@ -209,7 +209,7 @@ export function ActiveConversation({
       const kind = msg.kind;
       const body = msg.body || {};
 
-      if (kind === "item_verification_code" || kind === "otp") {
+      if ((kind as string) === "item_verification_code" || (kind as string) === "otp") {
         const itemId = String(body.itemId ?? "");
         const code = String(body.code ?? body.verificationCode ?? "");
         const otpKey = `${itemId}:${code}`;
@@ -284,7 +284,7 @@ export function ActiveConversation({
   // Calculate elapsed waiting time
   const getElapsedWait = () => {
     const lastMsg = messages[messages.length - 1];
-    const timestamp = lastMsg?.createdAt || thread.updatedAt || thread.createdAt;
+    const timestamp = lastMsg?.createdAt || thread.lastMessageAt || thread.createdAt;
     if (!timestamp) return { text: "الآن", level: "green" };
     try {
       const diffMs = Date.now() - new Date(timestamp).getTime();
@@ -304,13 +304,13 @@ export function ActiveConversation({
     setInputText(e.target.value);
     if (!threadId) return;
     if (!typingTimeoutRef.current) {
-      void api.sendTyping(threadId, "admin", true);
+      void api.sendTyping(threadId, true, "admin");
     } else {
       clearTimeout(typingTimeoutRef.current);
     }
     typingTimeoutRef.current = setTimeout(() => {
       if (threadId) {
-        void api.sendTyping(threadId, "admin", false);
+        void api.sendTyping(threadId, false, "admin");
       }
       typingTimeoutRef.current = null;
     }, 2500);
@@ -323,7 +323,7 @@ export function ActiveConversation({
     if (typingTimeoutRef.current && threadId) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
-      void api.sendTyping(threadId, "admin", false);
+      void api.sendTyping(threadId, false, "admin");
     }
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -379,7 +379,7 @@ export function ActiveConversation({
 
   const THREAD_MODES: { mode: ThreadMode; label: string; desc: string; color: string }[] = [
     {
-      mode: "HUMAN_ACTIVE",
+      mode: "ADMIN_ACTIVE",
       label: "تحكم بشري مباشر",
       desc: "أنت تتولى المحادثة بالكامل حالياً",
       color: "text-blue-700 bg-blue-500/10",
@@ -878,11 +878,27 @@ export function ActiveConversation({
           <AccountToolsModal
             isOpen={isAccountToolsOpen}
             onClose={() => setIsAccountToolsOpen(false)}
-            thread={thread}
             order={linkedOrder}
             defaultTab={accountToolsDefaultTab}
-            onSend={(payload) => {
-              onSendMessage(payload);
+            onSendCredentials={(payload) => {
+              onSendMessage({
+                kind: "item_credentials",
+                body: payload,
+              });
+              setIsAccountToolsOpen(false);
+            }}
+            onSendVerificationCode={(payload) => {
+              onSendMessage({
+                kind: "item_verification_code",
+                body: payload,
+              });
+              setIsAccountToolsOpen(false);
+            }}
+            onSendCardCode={(payload) => {
+              onSendMessage({
+                kind: "item_credentials",
+                body: payload,
+              });
               setIsAccountToolsOpen(false);
             }}
           />
@@ -891,7 +907,7 @@ export function ActiveConversation({
         <QuickRepliesModal
           isOpen={isQuickRepliesOpen}
           onClose={() => setIsQuickRepliesOpen(false)}
-          onSelect={(replyText) => {
+          onSelectReply={(replyText) => {
             setInputText(replyText);
             setIsQuickRepliesOpen(false);
             textareaRef.current?.focus();

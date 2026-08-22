@@ -25,7 +25,7 @@ const LOCALE_META: Record<Locale, { dir: "rtl" | "ltr"; intlLocale: string; ogLo
   // `-u-nu-latn` keeps prices and sizes in Latin digits, which is what Gulf
   // storefronts use, while dates and relative times stay Arabic.
   ar: { dir: "rtl", intlLocale: "ar-u-nu-latn", ogLocale: "ar_SA" },
-  en: { dir: "rtl", intlLocale: "en-US", ogLocale: "en_US" },
+  en: { dir: "ltr", intlLocale: "en-US", ogLocale: "en_US" },
 };
 
 const STORAGE_KEY = "banam:locale";

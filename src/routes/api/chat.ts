@@ -436,7 +436,7 @@ export const Route = createFileRoute("/api/chat")({
             const userThreads = await listThreadsByUser(user.id);
             let humanThread = userThreads.find(
               (t) =>
-                (t.chatType === "GENERAL_SUPPORT" || t.chatType === "SUPPORT") &&
+                (t.chatType === "GENERAL_SUPPORT" || (t.chatType as string) === "SUPPORT") &&
                 t.status === "open" &&
                 !t.orderId,
             );

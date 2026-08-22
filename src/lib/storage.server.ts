@@ -318,3 +318,5 @@ export async function deleteObject(key: string): Promise<boolean> {
   }
   return true;
 }
+
+export const deleteStoreKey = deleteObject;
