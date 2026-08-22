@@ -53,9 +53,25 @@ const statusConfig: Record<string, StatusInfo> = {
   },
 };
 
+function getAutoDeleteNotice(order: Order): string | null {
+  if (order.status !== "cancelled") return null;
+  const cancelledTimeStr = order.cancelledAt || order.updatedAt || order.createdAt;
+  const cancelledTime = new Date(cancelledTimeStr).getTime();
+  const elapsedDays = (Date.now() - cancelledTime) / (1000 * 60 * 60 * 24);
+  const remainingDays = Math.max(0, Math.ceil(7 - elapsedDays));
+  if (remainingDays > 1) {
+    return `حذف نهائي بعد ${remainingDays} أيام`;
+  } else if (remainingDays === 1) {
+    return `حذف نهائي خلال 24 ساعة`;
+  } else {
+    return `حذف نهائي قريباً`;
+  }
+}
+
 export default function OrderCard({ order }: { order: Order }) {
   const status: StatusInfo = statusConfig[order.status] ?? statusConfig["pending"]!;
   const StatusIcon = status.icon;
+  const autoDeleteNotice = getAutoDeleteNotice(order);
 
   const isDigital = order.items.every((item) =>
     ["account", "offline_account", "online_account", "bundle", "preorder", "digital_code"].includes(
@@ -84,7 +100,15 @@ export default function OrderCard({ order }: { order: Order }) {
               <p className="text-xs font-bold text-muted-foreground mb-0.5 uppercase tracking-wider">
                 {order.code}
               </p>
-              <p className={`text-sm font-black ${status.color}`}>{tr(status.label)}</p>
+              <div className="flex items-center gap-2">
+                <p className={`text-sm font-black ${status.color}`}>{tr(status.label)}</p>
+                {autoDeleteNotice && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    <Clock className="w-2.5 h-2.5" />
+                    <span>{autoDeleteNotice}</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="text-left">

@@ -157,121 +157,121 @@ export function MessageCard({
       </div>
 
       {/* Bubble / Card container */}
-      <div
-        dir="auto"
-        className={`relative max-w-[88%] sm:max-w-[78%] rounded-2xl p-3.5 shadow-2xs text-xs leading-relaxed transition-all ${
-          isAdmin
-            ? "bg-[var(--admin-ink)] text-white rounded-tr-xs border border-black/10"
-            : isAssistant
-              ? "bg-amber-500/10 text-foreground border border-amber-500/20 rounded-tr-xs"
-              : "bg-muted/30 text-foreground border border-border rounded-tl-xs"
-        }`}
-      >
-        {/* 1. Legacy account delivery cards (credentials / verification / instructions) */}
-        {legacyCardType ? <AccountCard kind={kind} body={rawBody} tone="admin" /> : null}
-
-        {/* 2. Activation Code / Card Code / OTP Card */}
-        {kind === "discount_code" ||
-        (body.code && !body.email) ||
-        body.activationCode ||
-        body.cardCode ? (
-          <div className="space-y-2.5 min-w-[240px] sm:min-w-[260px]">
-            <div className="flex items-center justify-between gap-1.5 font-bold text-xs border-b border-current/20 pb-2">
-              <div className="flex items-center gap-1.5">
-                {kind === "item_verification_code" ? (
-                  <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0" />
-                ) : (
+      {legacyCardType === "verification" || kind === "item_verification_code" ? (
+        <div dir="auto" className="relative transition-all">
+          <AccountCard kind={kind} body={rawBody} tone="default" />
+        </div>
+      ) : legacyCardType ? (
+        <div dir="auto" className="relative transition-all">
+          <AccountCard kind={kind} body={rawBody} tone="default" />
+        </div>
+      ) : (
+        <div
+          dir="auto"
+          className={`relative max-w-[88%] sm:max-w-[78%] rounded-2xl p-3.5 shadow-2xs text-xs leading-relaxed transition-all ${
+            isAdmin
+              ? "bg-[var(--admin-ink)] text-white rounded-tr-xs border border-black/10"
+              : isAssistant
+                ? "bg-amber-500/10 text-foreground border border-amber-500/20 rounded-tr-xs"
+                : "bg-muted/30 text-foreground border border-border rounded-tl-xs"
+          }`}
+        >
+          {/* 2. Activation Code / Card Code / Discount Code */}
+          {kind === "discount_code" ||
+          (body.code && !body.email) ||
+          body.activationCode ||
+          body.cardCode ? (
+            <div className="space-y-2.5 min-w-[240px] sm:min-w-[260px]">
+              <div className="flex items-center justify-between gap-1.5 font-bold text-xs border-b border-current/20 pb-2">
+                <div className="flex items-center gap-1.5">
                   <Ticket className="w-4 h-4 text-emerald-400 shrink-0" />
-                )}
-                <span>
-                  {kind === "item_verification_code"
-                    ? "كود التحقق (OTP)"
-                    : kind === "discount_code"
+                  <span>
+                    {kind === "discount_code"
                       ? "كود الخصم"
                       : "كود البطاقة / التفعيل"}
-                </span>
+                  </span>
+                </div>
+                {body.cardType && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 font-bold shrink-0">
+                    {body.cardType}
+                  </span>
+                )}
               </div>
-              {body.cardType && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 font-bold shrink-0">
-                  {body.cardType}
-                </span>
+
+              {body.title && <div className="text-[11px] font-bold opacity-90">{body.title}</div>}
+
+              {/* Code Row */}
+              {(body.code || body.activationCode || body.cardCode) && (
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-black/15 gap-2">
+                  <span className="opacity-75 text-[11px] whitespace-nowrap font-medium">الكود:</span>
+                  <div
+                    className="flex items-center gap-2 font-mono text-sm font-bold tracking-widest overflow-hidden"
+                    dir="ltr"
+                  >
+                    <span className="select-all truncate">
+                      {body.code || body.activationCode || body.cardCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyText(
+                          String(body.code || body.activationCode || body.cardCode),
+                          "كود التفعيل",
+                        )
+                      }
+                      className="p-1 hover:bg-white/20 rounded-md transition-colors shrink-0"
+                      title="نسخ الكود"
+                    >
+                      {copiedKey === "كود التفعيل" ? (
+                        <Check className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* PIN or serial if exists */}
+              {body.pin && (
+                <div className="flex items-center justify-between p-2 rounded-xl bg-black/15 gap-2">
+                  <span className="opacity-75 text-[11px] whitespace-nowrap font-medium">
+                    الرقم السري (PIN):
+                  </span>
+                  <div
+                    className="flex items-center gap-2 font-mono text-xs font-bold overflow-hidden"
+                    dir="ltr"
+                  >
+                    <span className="select-all">{body.pin}</span>
+                    <button
+                      type="button"
+                      onClick={() => copyText(String(body.pin), "الرقم السري PIN")}
+                      className="p-1 hover:bg-white/20 rounded-md transition-colors shrink-0"
+                      title="نسخ PIN"
+                    >
+                      {copiedKey === "الرقم السري PIN" ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {body.expiresInMinutes && (
+                <div className="text-[10px] opacity-80 text-center">
+                  صالح لمدة {body.expiresInMinutes} دقيقة
+                </div>
+              )}
+
+              {body.instructions && (
+                <div className="text-[11px] opacity-90 p-2 rounded-xl bg-black/10 mt-1 whitespace-pre-wrap">
+                  {body.instructions}
+                </div>
               )}
             </div>
-
-            {body.title && <div className="text-[11px] font-bold opacity-90">{body.title}</div>}
-
-            {/* Code Row */}
-            {(body.code || body.activationCode || body.cardCode) && (
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-black/15 gap-2">
-                <span className="opacity-75 text-[11px] whitespace-nowrap font-medium">الكود:</span>
-                <div
-                  className="flex items-center gap-2 font-mono text-sm font-bold tracking-widest overflow-hidden"
-                  dir="ltr"
-                >
-                  <span className="select-all truncate">
-                    {body.code || body.activationCode || body.cardCode}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      copyText(
-                        String(body.code || body.activationCode || body.cardCode),
-                        "كود التفعيل",
-                      )
-                    }
-                    className="p-1 hover:bg-white/20 rounded-md transition-colors shrink-0"
-                    title="نسخ الكود"
-                  >
-                    {copiedKey === "كود التفعيل" ? (
-                      <Check className="w-4 h-4 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* PIN or serial if exists */}
-            {body.pin && (
-              <div className="flex items-center justify-between p-2 rounded-xl bg-black/15 gap-2">
-                <span className="opacity-75 text-[11px] whitespace-nowrap font-medium">
-                  الرقم السري (PIN):
-                </span>
-                <div
-                  className="flex items-center gap-2 font-mono text-xs font-bold overflow-hidden"
-                  dir="ltr"
-                >
-                  <span className="select-all">{body.pin}</span>
-                  <button
-                    type="button"
-                    onClick={() => copyText(String(body.pin), "الرقم السري PIN")}
-                    className="p-1 hover:bg-white/20 rounded-md transition-colors shrink-0"
-                    title="نسخ PIN"
-                  >
-                    {copiedKey === "الرقم السري PIN" ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {body.expiresInMinutes && (
-              <div className="text-[10px] opacity-80 text-center">
-                صالح لمدة {body.expiresInMinutes} دقيقة
-              </div>
-            )}
-
-            {body.instructions && (
-              <div className="text-[11px] opacity-90 p-2 rounded-xl bg-black/10 mt-1 whitespace-pre-wrap">
-                {body.instructions}
-              </div>
-            )}
-          </div>
-        ) : null}
+          ) : null}
 
         {/* 4. Image Attachment & Login Proof with Direct OTP */}
         {body.imageUrl && !legacyCardType ? (
@@ -418,6 +418,7 @@ export function MessageCard({
           </div>
         )}
       </div>
+      )}
 
       {/* Lightbox Image Zoom Modal */}
       {showImageZoom && body.imageUrl && (

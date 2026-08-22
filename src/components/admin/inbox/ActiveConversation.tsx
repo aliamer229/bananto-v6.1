@@ -165,6 +165,39 @@ export function ActiveConversation({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
+  // Deduplicate messages & OTP cards for admin view
+  const displayedMessages = useMemo(() => {
+    const seenIds = new Set<string>();
+    const seenOtpKeys = new Set<string>();
+    const filtered: ChatMessage[] = [];
+
+    for (const msg of messages) {
+      if (!msg || !msg.id) continue;
+      if (seenIds.has(msg.id)) continue;
+      const clientMsgId = (msg.body as any)?.clientMessageId;
+      if (clientMsgId && seenIds.has(clientMsgId)) continue;
+
+      const kind = msg.kind;
+      const body = (msg.body as Record<string, unknown> | undefined) ?? {};
+      if (kind === "item_verification_code" || kind === "otp" || kind === "verification") {
+        const itemId = String(body["itemId"] ?? "");
+        const code = String(body["code"] ?? body["verificationCode"] ?? "");
+        const otpKey = `${itemId}:${code}`;
+        if (code && seenOtpKeys.has(otpKey)) {
+          continue;
+        }
+        if (code) {
+          seenOtpKeys.add(otpKey);
+        }
+      }
+
+      seenIds.add(msg.id);
+      if (clientMsgId) seenIds.add(clientMsgId);
+      filtered.push(msg);
+    }
+    return filtered;
+  }, [messages]);
+
   // Ranked reply suggestions, derived on the server from how the customer
   // phrased things and from where their order actually stands. They refresh
   // whenever the customer says something new, so the strip always answers the
@@ -694,7 +727,7 @@ export function ActiveConversation({
                   <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
                 </div>
               )}
-              {messages.map((msg) => (
+              {displayedMessages.map((msg) => (
                 <MessageCard
                   key={msg.id}
                   message={msg}
@@ -718,7 +751,6 @@ export function ActiveConversation({
                         const err = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
                         throw new Error(err.error || err.message || "فشل إرسال كود OTP");
                       }
-                      await onRefreshMessages();
                       return;
                     }
                     onSendMessage({ kind: "otp", body: payload });

@@ -8,6 +8,7 @@ import {
   listOrdersByUser,
   saveOrder,
   appendMessage,
+  cleanupExpiredCancelledOrders,
   d1Run,
   d1All,
   randomId,
@@ -66,6 +67,10 @@ export const Route = createFileRoute("/api/orders")({
               messages: user.isAdmin ? messages : messages.map(redactMessageForMember),
               history: user.isAdmin ? history : history.map(redactOrderHistoryForMember),
             });
+          }
+
+          if (user.isAdmin && url.searchParams.get("all")) {
+            void cleanupExpiredCancelledOrders().catch(() => {});
           }
 
           const orders =

@@ -55,45 +55,50 @@ function restD1(): D1Like | undefined {
 
   const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
 
-  const executeBatch = async (
-    statements: { sql: string; params: unknown[] }[],
-  ): Promise<D1RunResult[]> => {
+  const executeSingle = async (sql: string, params: unknown[] = []): Promise<D1RunResult> => {
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        batch: statements.map(({ sql, params }) => ({
-          sql,
-          params: params.map((p) => (p === undefined ? null : p)),
-        })),
+        sql,
+        params: params.map((p) => (p === undefined ? null : p)),
       }),
     });
     const payload = (await res.json()) as {
       success?: boolean;
-      errors?: { message?: string }[];
+      errors?: { message?: string; code?: number }[];
       result?: D1RunResult[];
     };
     if (!res.ok || payload.success === false) {
       const msg = payload.errors?.[0]?.message ?? `D1 REST error ${res.status}`;
-      console.error(`[d1:rest:error] status=${res.status}`);
+      console.error(`[d1:rest:error] status=${res.status} error=${msg}`);
       throw new Error(res.status === 401 || res.status === 403 ? "D1_AUTHENTICATION_FAILED" : msg);
     }
-    return payload.result ?? [];
+    return payload.result?.[0] ?? { success: true, results: [] };
   };
 
-  const execute = async (sql: string, params: unknown[]): Promise<D1RunResult> =>
-    (await executeBatch([{ sql, params }]))[0] ?? { success: true, results: [] };
+  const executeBatch = async (
+    statements: { sql: string; params: unknown[] }[],
+  ): Promise<D1RunResult[]> => {
+    if (!statements.length) return [];
+    const results: D1RunResult[] = [];
+    for (const statement of statements) {
+      const res = await executeSingle(statement.sql, statement.params);
+      results.push(res);
+    }
+    return results;
+  };
 
   const make = (sql: string, params: unknown[]): D1PreparedStatement => ({
     _sql: sql,
     _params: params,
     bind: (...values: unknown[]) => make(sql, values),
     all: async <T = D1Row>() => ({
-      results: ((await execute(sql, params)).results as T[] | undefined) ?? [],
+      results: ((await executeSingle(sql, params)).results as T[] | undefined) ?? [],
     }),
     first: async <T = D1Row>() =>
-      ((await execute(sql, params)).results?.[0] as T | undefined) ?? null,
-    run: async () => execute(sql, params),
+      ((await executeSingle(sql, params)).results?.[0] as T | undefined) ?? null,
+    run: async () => executeSingle(sql, params),
   });
 
   return {
@@ -1052,6 +1057,8 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE game_records ADD COLUMN game_is_offline INTEGER`,
   `ALTER TABLE game_records ADD COLUMN game_is_online INTEGER`,
   `ALTER TABLE game_records ADD COLUMN game_language_locked INTEGER`,
+  `ALTER TABLE orders ADD COLUMN cancelled_at TEXT`,
+  `CREATE INDEX IF NOT EXISTS orders_cancelled_idx ON orders (status, cancelled_at)`,
 ];
 
 /**
@@ -1367,7 +1374,7 @@ export function ensureUsersSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 10;
+const RUNTIME_SCHEMA_VERSION = 11;
 
 async function runSchemaStatements(
   db: D1Like,

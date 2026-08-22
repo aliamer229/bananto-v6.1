@@ -730,6 +730,7 @@ export interface Order {
   address?: Address;
   needsAddress: boolean;
   threadId: string;
+  cancelledAt?: string;
   createdAt: string;
   updatedAt: string;
   events: { type: string; at: string; payload?: unknown }[];

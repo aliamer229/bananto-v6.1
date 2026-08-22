@@ -67,6 +67,21 @@ const paymentLabels: Record<PaymentStatus, { label: string; color: string }> = {
   rejected: { label: "مرفوض", color: "bg-red-500/10 text-red-700 border-red-500/20" },
 };
 
+function getAutoDeleteNotice(order: Order): string | null {
+  if (order.status !== "cancelled") return null;
+  const cancelledTimeStr = order.cancelledAt || order.updatedAt || order.createdAt;
+  const cancelledTime = new Date(cancelledTimeStr).getTime();
+  const elapsedDays = (Date.now() - cancelledTime) / (1000 * 60 * 60 * 24);
+  const remainingDays = Math.max(0, Math.ceil(7 - elapsedDays));
+  if (remainingDays > 1) {
+    return `سيتم الحذف نهائياً بعد ${remainingDays} أيام`;
+  } else if (remainingDays === 1) {
+    return `سيتم الحذف نهائياً خلال 24 ساعة`;
+  } else {
+    return `سيتم الحذف نهائياً خلال ساعات`;
+  }
+}
+
 export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) {
   const queryClient = useQueryClient();
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("all");
@@ -386,6 +401,14 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
                       <CreditCard className="w-3 h-3" />
                       <span>{paymentConfig.label}</span>
                     </span>
+
+                    {/* Auto Delete Notice for Cancelled */}
+                    {order.status === "cancelled" && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                        <Clock className="w-3 h-3" />
+                        <span>{getAutoDeleteNotice(order)}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 

@@ -305,7 +305,7 @@ export const api = {
 
   threadMessages: (
     threadId: string,
-    options?: { limit?: number; before?: string; around?: string },
+    options?: { limit?: number; before?: string; around?: string; signal?: AbortSignal },
   ) => {
     const params = new URLSearchParams({ threadId });
     if (options?.limit) params.set("limit", String(options.limit));
@@ -320,7 +320,7 @@ export const api = {
       typers?: { userId: string; userName: string; senderRole: "user" | "admin" }[];
       isOnline?: boolean;
       adminAvailability?: AdminAvailabilityStatus;
-    }>(`/api/chat?${params.toString()}`);
+    }>(`/api/chat?${params.toString()}`, { signal: options?.signal });
   },
 
   searchThreadMessages: (threadId: string, q: string) =>

@@ -5,6 +5,7 @@ import {
   BookOpen,
   Camera,
   Check,
+  Clock,
   Copy,
   FileText,
   Gamepad2,
@@ -12,6 +13,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { normalizeAccountCard, isRenderableAccountCard } from "@/lib/account-cards";
 
@@ -20,7 +22,7 @@ interface AccountCardProps {
   body: Record<string, unknown> | null | undefined;
   /** "ar" (default) or "en" labels */
   locale?: "ar" | "en";
-  /** visual tone: light bubble (customer) or dark admin bubble */
+  /** visual tone */
   tone?: "default" | "admin";
   /**
    * The member's own delivery controls. Present only on the buyer's side of an
@@ -39,27 +41,29 @@ interface AccountCardProps {
 const LABELS = {
   ar: {
     credentials: "معلومات الحساب",
-    verification: "رمز التحقق",
+    verification: "كود التحقق",
     instructions: "التعليمات",
     accountUser: "اسم المستخدم",
     password: "كلمة المرور",
-    code: "رمز التحقق",
+    code: "كود التحقق",
     copy: "نسخ",
     copied: "تم النسخ",
     show: "إظهار",
     hide: "إخفاء",
+    validFor: "صالح لمدة 10 دقائق",
   },
   en: {
     credentials: "Account details",
-    verification: "Verification code",
+    verification: "Verification Code",
     instructions: "Instructions",
     accountUser: "Account user",
     password: "Password",
-    code: "Verification code",
+    code: "Verification Code",
     copy: "Copy",
     copied: "Copied",
     show: "Show",
     hide: "Hide",
+    validFor: "Valid for 10 minutes",
   },
 } as const;
 
@@ -126,6 +130,98 @@ function CopyField({
   );
 }
 
+export function VerificationOtpCard({
+  code,
+  title,
+  expiresInMinutes = 10,
+  locale = "ar",
+}: {
+  code: string;
+  title?: string | null;
+  expiresInMinutes?: number;
+  locale?: "ar" | "en";
+}) {
+  const [copied, setCopied] = useState(false);
+  const isAr = locale === "ar";
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      toast.success(isAr ? "تم نسخ كود التحقق" : "Verification code copied");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div
+      dir={isAr ? "rtl" : "ltr"}
+      className="w-full max-w-[270px] sm:max-w-[290px] rounded-2xl border border-border/80 bg-[#FCF9F5] dark:bg-card text-foreground p-3.5 shadow-2xs space-y-2.5 transition-all text-right"
+    >
+      {/* 1. Header: Small Title */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <ShieldCheck className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0" />
+          <span className="text-[13px] font-bold text-foreground">
+            {isAr ? "كود التحقق" : "Verification Code"}
+          </span>
+        </div>
+      </div>
+
+      {/* 2. Secondary Game Name / Title */}
+      {title ? (
+        <div className="text-[11px] font-medium text-muted-foreground truncate" title={title}>
+          {title}
+        </div>
+      ) : null}
+
+      {/* 3. Code & Copy on the SAME line */}
+      <div className="flex items-center justify-between gap-2 rounded-xl bg-card border border-border/80 p-2 shadow-2xs">
+        <span
+          dir="ltr"
+          className="font-mono text-lg sm:text-xl font-black tracking-widest text-foreground select-all px-1 truncate"
+        >
+          {code}
+        </span>
+        <button
+          type="button"
+          onClick={onCopy}
+          aria-label={isAr ? "نسخ كود التحقق" : "Copy code"}
+          className={`shrink-0 inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-all active:scale-95 cursor-pointer ${
+            copied
+              ? "bg-emerald-600 text-white"
+              : "bg-foreground text-background hover:opacity-90"
+          }`}
+        >
+          {copied ? (
+            <>
+              <Check className="h-3.5 w-3.5" />
+              <span>{isAr ? "تم النسخ" : "Copied"}</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3.5 w-3.5" />
+              <span>{isAr ? "نسخ" : "Copy"}</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* 4. Small Expiration Subtitle */}
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 font-medium">
+        <Clock className="h-3 w-3 shrink-0 opacity-70" />
+        <span>
+          {isAr
+            ? `صالح لمدة ${expiresInMinutes} دقائق`
+            : `Valid for ${expiresInMinutes} minutes`}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function AccountCard({
   kind,
   body,
@@ -136,30 +232,32 @@ export function AccountCard({
   const card = normalizeAccountCard(kind, body);
   if (!card || !isRenderableAccountCard(card)) return null;
 
+  // DEDICATED CLEAN OTP CARD
+  if (card.type === "verification" && card.verificationCode) {
+    const rawExpires = typeof body?.["expiresInMinutes"] === "number" ? body["expiresInMinutes"] : 10;
+    return (
+      <VerificationOtpCard
+        code={card.verificationCode}
+        title={card.title}
+        expiresInMinutes={rawExpires}
+        locale={locale}
+      />
+    );
+  }
+
   // Which order line this account belongs to; the delivery controls act on it.
   const itemId = typeof body?.["itemId"] === "string" ? (body["itemId"] as string) : "";
   const t = LABELS[locale];
 
-  const heading =
-    card.type === "credentials"
-      ? t.credentials
-      : card.type === "verification"
-        ? t.verification
-        : t.instructions;
-
-  const Icon =
-    card.type === "credentials" ? KeyRound : card.type === "verification" ? ShieldCheck : FileText;
+  const heading = card.type === "credentials" ? t.credentials : t.instructions;
+  const Icon = card.type === "credentials" ? KeyRound : FileText;
 
   return (
     <div
       dir={locale === "ar" ? "rtl" : "ltr"}
-      className={`w-full max-w-[320px] space-y-3 rounded-2xl border p-3 ${
-        tone === "admin"
-          ? "border-white/15 bg-white/5"
-          : "border-border/60 bg-card/80 text-foreground"
-      }`}
+      className="w-full max-w-[320px] space-y-3 rounded-2xl border border-border/70 bg-card/90 text-foreground p-3.5 shadow-2xs"
     >
-      <div className="flex items-center justify-between border-b border-current/10 pb-2">
+      <div className="flex items-center justify-between border-b border-border/60 pb-2">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 shrink-0 opacity-80" />
           <span className="text-[13px] font-bold">{heading}</span>
@@ -168,12 +266,6 @@ export function AccountCard({
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             {delivery?.proofSent ? "تم إرفاق الإثبات" : "جاهز للتسجيل"}
-          </span>
-        )}
-        {card.type === "verification" && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
-            <ShieldCheck className="h-3 w-3" />
-            رمز الأمان
           </span>
         )}
       </div>
@@ -204,22 +296,13 @@ export function AccountCard({
         />
       ) : null}
 
-      {card.type === "verification" && card.verificationCode ? (
-        <CopyField
-          label={t.code}
-          value={card.verificationCode}
-          copyLabel={t.copy}
-          copiedLabel={t.copied}
-        />
-      ) : null}
-
       {card.type === "instructions" && card.text ? (
         <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{card.text}</p>
       ) : null}
 
       {/* Buyer's next steps for an account they were just handed. */}
       {card.type === "credentials" && delivery && itemId ? (
-        <div className="space-y-2 border-t border-current/10 pt-2">
+        <div className="space-y-2 border-t border-border/60 pt-2">
           {/* Quick Action: Login Instructions Guide */}
           <a
             href="/account_guides"
@@ -296,7 +379,7 @@ export function AccountCard({
                 src={src}
                 alt={card.title ?? heading}
                 loading="lazy"
-                className="h-24 w-full rounded-xl object-cover border border-current/10"
+                className="h-24 w-full rounded-xl object-cover border border-border/60"
               />
             </a>
           ))}

@@ -8,6 +8,13 @@ import {
   saveThread,
   getThread,
   deleteOrder,
+  cleanupExpiredCancelledOrders,
+  d1All,
+  d1Batch,
+  d1Execute,
+  d1Ready,
+  d1Run,
+  randomId,
 } from "@/lib/db.server";
 import { decryptSecretValue } from "@/lib/crypto.server";
 import { body, guard, json } from "@/lib/http.server";
@@ -107,6 +114,10 @@ export const Route = createFileRoute("/api/admin/orders")({
       GET: async ({ request }) =>
         guard(async () => {
           await requireAdmin(request);
+          // Background auto-cleanup for expired cancelled orders (cancelled >= 7 days ago)
+          void cleanupExpiredCancelledOrders().catch((e) =>
+            console.warn("[admin.orders:cleanup_warn]", e),
+          );
           const orders = await listOrders();
           return json({ orders: orders.map(redactOrder) });
         }),
@@ -138,7 +149,6 @@ export const Route = createFileRoute("/api/admin/orders")({
 
           // Record audit log
           try {
-            const { d1Run, randomId } = await import("@/lib/db.server");
             await d1Run(
               `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -154,7 +164,7 @@ export const Route = createFileRoute("/api/admin/orders")({
             // Ignore if schema mismatch
           }
 
-          return json({ success: true, message: "تم حذف الطلب بنجاح" });
+          return json({ success: true, message: "تم حذف الطلب وجميع البيانات المرتبطة بنجاح" });
         }),
       POST: async ({ request }) =>
         guard(async () => {
@@ -184,7 +194,6 @@ export const Route = createFileRoute("/api/admin/orders")({
               await deleteOrder(order.id);
 
               try {
-                const { d1Run, randomId } = await import("@/lib/db.server");
                 await d1Run(
                   `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -200,7 +209,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                 // Ignore if schema mismatch
               }
 
-              return json({ success: true, message: "تم حذف الطلب بنجاح" });
+              return json({ success: true, message: "تم حذف الطلب وجميع البيانات المرتبطة بنجاح" });
             }
             case "set_payment": {
               next = { ...order, paymentStatus: data.paymentStatus ?? "paid", updatedAt: now };
@@ -224,84 +233,181 @@ export const Route = createFileRoute("/api/admin/orders")({
               break;
             }
             case "cancel_order": {
-              if (order.status === "cancelled")
+              if (order.status === "cancelled") {
                 return json({ error: "الطلب ملغي بالفعل" }, { status: 400 });
-
-              const { d1All, d1Batch, randomId } = await import("@/lib/db.server");
-
-              // Find if there was a wallet payment for this order
-              const payments = await d1All<{ amount: number }>(
-                `SELECT amount FROM wallet_transactions WHERE order_id = ? AND kind = 'payment' LIMIT 1`,
-                order.id,
-              );
-
-              const wasPaidByWallet = payments.length > 0;
-              const refundAmount = Math.abs(payments[0]?.amount || 0);
-
-              if (wasPaidByWallet && refundAmount > 0) {
-                // Check if already refunded (Idempotency check)
-                const refunds = await d1All(
-                  `SELECT id FROM wallet_transactions WHERE order_id = ? AND kind = 'order_refund' LIMIT 1`,
-                  order.id,
-                );
-
-                if (refunds.length === 0) {
-                  // Perform safe idempotent atomic refund
-                  await d1Batch([
-                    {
-                      sql: `UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?`,
-                      params: [refundAmount, order.userId],
-                    },
-                    {
-                      sql: `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, created_at)
-                             VALUES (?, ?, 'order_refund', ?, ?, ?, ?)`,
-                      params: [
-                        randomId("wlt"),
-                        order.userId,
-                        refundAmount,
-                        `استرجاع مبلغ الطلب الملغي #${order.code}`,
-                        order.id,
-                        now,
-                      ],
-                    },
-                    {
-                      sql: `UPDATE orders SET status = 'cancelled', payment_status = 'rejected', updated_at = ? WHERE id = ?`,
-                      params: [now, order.id],
-                    },
-                  ]);
-                }
-              } else {
-                // Not paid by wallet, update status
-                const { d1Run } = await import("@/lib/db.server");
-                await d1Run(
-                  `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ?`,
-                  now,
-                  order.id,
-                );
               }
 
-              // Update in memory object for response
+              // 1. Determine if this order was paid via wallet and calculate refund amount
+              let wasPaidByWallet = false;
+              let refundAmount = 0;
+
+              if (await d1Ready()) {
+                const payments = await d1All<{ amount: number }>(
+                  `SELECT amount FROM wallet_transactions 
+                   WHERE (order_id = ? OR order_id = ? OR description LIKE ?) 
+                     AND (kind = 'payment' OR amount < 0) 
+                   ORDER BY created_at ASC LIMIT 1`,
+                  order.id,
+                  order.code,
+                  `%${order.code}%`,
+                );
+
+                if (payments.length > 0) {
+                  wasPaidByWallet = true;
+                  refundAmount = Math.abs(Number(payments[0]?.amount || 0));
+                } else if (order.paymentStatus === "paid") {
+                  wasPaidByWallet = true;
+                  refundAmount = Number(order.total || 0);
+                }
+              } else {
+                wasPaidByWallet = order.paymentStatus === "paid";
+                refundAmount = Number(order.total || 0);
+              }
+
+              // 2. Check Idempotency: has this order already received an order_refund transaction?
+              let alreadyRefunded = false;
+              if (wasPaidByWallet && (await d1Ready())) {
+                const refunds = await d1All<{ id: string }>(
+                  `SELECT id FROM wallet_transactions 
+                   WHERE (order_id = ? OR order_id = ? OR reference_id = ? OR (reference_type = 'order_refund' AND reference_id = ?)) 
+                     AND (kind = 'order_refund' OR kind = 'refund') 
+                   LIMIT 1`,
+                  order.id,
+                  order.code,
+                  order.id,
+                  order.id,
+                );
+                alreadyRefunded = refunds.length > 0;
+              }
+
+              // 3. Execute atomic transaction
+              if (wasPaidByWallet && refundAmount > 0 && !alreadyRefunded) {
+                if (await d1Ready()) {
+                  try {
+                    const refundTxId = randomId("wtx");
+                    const refundDesc = `استرجاع مبلغ الطلب الملغي #${order.code}`;
+                    await d1Batch([
+                      {
+                        sql: `UPDATE users SET wallet_balance = COALESCE(wallet_balance, 0) + ? WHERE id = ?`,
+                        params: [refundAmount, order.userId],
+                      },
+                      {
+                        sql: `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, reference_type, reference_id, created_at)
+                              VALUES (?, ?, 'order_refund', ?, ?, ?, 'order_refund', ?, ?)`,
+                        params: [
+                          refundTxId,
+                          order.userId,
+                          refundAmount,
+                          refundDesc,
+                          order.id,
+                          order.id,
+                          now,
+                        ],
+                      },
+                      {
+                        sql: `UPDATE orders SET status = 'cancelled', payment_status = 'rejected', updated_at = ?, cancelled_at = ? WHERE id = ?`,
+                        params: [now, now, order.id],
+                      },
+                    ]);
+                  } catch (refundErr: any) {
+                    console.error("[cancel_order:d1_batch_error]", refundErr);
+                    return json(
+                      {
+                        error: `فشل استرجاع المبلغ وإلغاء الطلب: ${refundErr?.message || "خطأ أثناء تحديث قاعدة البيانات"}`,
+                      },
+                      { status: 500 },
+                    );
+                  }
+                } else {
+                  // Non-D1 fallback
+                  try {
+                    const { updateUser, createWalletTransaction } = await import("@/lib/db.server");
+                    await updateUser(order.userId, (u) => ({
+                      ...u,
+                      walletBalance: (u.walletBalance || 0) + refundAmount,
+                    }));
+                    await createWalletTransaction({
+                      userId: order.userId,
+                      kind: "refund",
+                      amount: refundAmount,
+                      description: `استرجاع مبلغ الطلب الملغي #${order.code}`,
+                      orderId: order.id,
+                    });
+                  } catch (err: any) {
+                    return json(
+                      { error: `فشل استرجاع المبلغ: ${err?.message || "خطأ غير متوقع"}` },
+                      { status: 500 },
+                    );
+                  }
+                }
+              } else {
+                // Not paid by wallet or already refunded - simply cancel order in DB
+                if (await d1Ready()) {
+                  try {
+                    await d1Execute(
+                      `UPDATE orders SET status = 'cancelled', updated_at = ?, cancelled_at = ? WHERE id = ?`,
+                      now,
+                      now,
+                      order.id,
+                    );
+                  } catch (err: any) {
+                    console.warn("[cancel_order:update_orders_err]", err);
+                  }
+                }
+              }
+
+              // 4. Update memory representation and write to JSON/D1 doc
               next = {
                 ...order,
                 status: "cancelled",
                 paymentStatus: wasPaidByWallet ? ("rejected" as any) : order.paymentStatus,
+                cancelledAt: now,
                 updatedAt: now,
               };
 
-              // Send system message
-              await appendMessage(order.threadId, {
-                senderRole: "system",
-                kind: "system",
-                body: {
-                  text: wasPaidByWallet
-                    ? `تم إلغاء الطلب من قبل الإدارة. تم استرجاع مبلغ (${refundAmount.toLocaleString()}) إلى محفظتك بنجاح.`
-                    : "تم إلغاء الطلب من قبل الإدارة.",
-                },
-              });
-
-              // Log history and audit log
               try {
-                const { d1Run, randomId } = await import("@/lib/db.server");
+                await saveOrder(next);
+              } catch (saveErr) {
+                console.error("[cancel_order:saveOrder_err]", saveErr);
+              }
+
+              // 5. Send system message to order chat
+              if (order.threadId) {
+                try {
+                  await appendMessage(order.threadId, {
+                    senderRole: "system",
+                    kind: "system",
+                    body: {
+                      text: wasPaidByWallet
+                        ? `تم إلغاء الطلب من قبل الإدارة. تم استرجاع مبلغ (${refundAmount.toLocaleString()} IQD) بالكامل إلى محفظتك بنجاح.`
+                        : "تم إلغاء الطلب من قبل الإدارة.",
+                    },
+                  });
+                } catch {
+                  // Ignore thread message error
+                }
+              }
+
+              // 6. In-app user notification
+              try {
+                await d1Run(
+                  `INSERT INTO notifications (id, user_id, title, body, link, is_read, created_at)
+                   VALUES (?, ?, ?, ?, ?, 0, ?)`,
+                  randomId("notif"),
+                  order.userId,
+                  "تم إلغاء الطلب واسترجاع المبلغ",
+                  wasPaidByWallet
+                    ? `تم إلغاء طلبك #${order.code} وإرجاع مبلغ ${refundAmount.toLocaleString()} IQD إلى محفظتك بنجاح.`
+                    : `تم إلغاء طلبك #${order.code} من قبل الإدارة.`,
+                  `/orders`,
+                  now,
+                );
+              } catch {
+                // Ignore notification table errors
+              }
+
+              // 7. Audit log & status history
+              try {
                 await d1Run(
                   `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -310,7 +416,8 @@ export const Route = createFileRoute("/api/admin/orders")({
                   order.status,
                   "cancelled",
                   admin.id,
-                  "إلغاء الطلب من قبل المشرف" + (wasPaidByWallet ? " مع استرجاع الرصيد" : ""),
+                  "إلغاء الطلب من قبل المشرف" +
+                    (wasPaidByWallet ? ` مع استرجاع ${refundAmount} IQD` : ""),
                   now,
                 );
                 await d1Run(
@@ -328,11 +435,10 @@ export const Route = createFileRoute("/api/admin/orders")({
                   now,
                 );
               } catch {
-                // Ignore if schema mismatch
+                // Ignore audit log error
               }
 
-              await saveOrder(next);
-              return json({ order: redactOrder(next) });
+              return json({ order: redactOrder(next), success: true });
             }
             case "direct_send_credentials": {
               if (!data.itemId || !data.email) {
@@ -501,10 +607,14 @@ export const Route = createFileRoute("/api/admin/orders")({
 
               const targetThreadId = await resolveThreadId(order, data.threadId);
               if (targetThreadId) {
+                const otpClientMsgId =
+                  data.clientMessageId ||
+                  `otp-${targetItemId}-${code}-${now.slice(0, 16)}`;
                 await appendMessage(targetThreadId, {
                   senderRole: "admin",
                   senderName: adminName,
                   kind: "item_verification_code",
+                  clientMessageId: otpClientMsgId,
                   body: {
                     itemId: targetItemId,
                     code,
@@ -512,7 +622,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                     title: itemTitle,
                     expiresInMinutes: 10,
                     sentAt: now,
-                    text: `🔐 كود التحقق الخاص بـ ${itemTitle}:\n${code}\n\nصالح لمدة 10 دقائق. استخدمه لإكمال تسجيل الدخول.`,
+                    clientMessageId: otpClientMsgId,
                   },
                 });
 

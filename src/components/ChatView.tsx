@@ -637,6 +637,8 @@ export default function ChatView({
   ]);
   const [selectedNav, setSelectedNav] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | undefined>(initialThreadId);
+  const [isThreadLoading, setIsThreadLoading] = useState(false);
+  const activeAbortControllerRef = useRef<AbortController | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [recordingState, setRecordingState] = useState<"idle" | "recording" | "paused">("idle");
   const [recordingTime, setRecordingTime] = useState(0);
@@ -667,13 +669,6 @@ export default function ChatView({
 
   /**
    * Open the conversation that belongs to an order arriving in the URL.
-   *
-   * Arriving from an order card or the /orders redirect must land the member in
-   * that order's own conversation — not in a fresh assistant chat, which is what
-   * "you sent me somewhere else entirely" looks like. Matching only against the
-   * threads list made that dependent on the list having loaded and on nothing
-   * else being selected yet; the order itself carries its threadId, so that is
-   * the primary source and the thread list is only a fallback.
    */
   const resolvedOrderThreadRef = useRef<string | null>(null);
 
@@ -715,11 +710,6 @@ export default function ChatView({
 
   /**
    * A signed-in member always talks in a real conversation.
-   *
-   * The assistant used to answer from client state alone: nothing was stored,
-   * so leaving the page threw the whole conversation away and staff had no way
-   * to see it or reply. Reusing the member's own assistant thread keeps the
-   * history and puts every message where the admin inbox can reach it.
    */
   useEffect(() => {
     if (!user || threadId || initialOrderId || initialThreadId) return;
@@ -743,7 +733,19 @@ export default function ChatView({
     [threads, threadId],
   );
 
-  const activeOrderId = currentThread?.orderId || initialOrderId;
+  // STRICT ORDER ISOLATION: Never let initialOrderId bleed into unrelated conversations
+  const activeOrderId = useMemo(() => {
+    if (currentThread) {
+      return currentThread.orderId;
+    }
+    if (!threadId && initialOrderId) {
+      return initialOrderId;
+    }
+    if (threadId && threadId === initialThreadId && initialOrderId) {
+      return initialOrderId;
+    }
+    return undefined;
+  }, [currentThread, threadId, initialOrderId, initialThreadId]);
 
   const currentOrder = useMemo(
     () => (activeOrderId ? orders.find((o) => o.id === activeOrderId) : null),
@@ -917,20 +919,50 @@ export default function ChatView({
     },
   });
 
-  // Fetch initial paginated messages when threadId changes
+  // Fetch initial paginated messages when threadId changes with strict AbortController and state isolation
   useEffect(() => {
+    // 1. Cancel previous pending fetch if any
+    if (activeAbortControllerRef.current) {
+      activeAbortControllerRef.current.abort();
+      activeAbortControllerRef.current = null;
+    }
+
+    // 2. Immediately purge state to ensure no cross-conversation contamination
+    setServerMessages([]);
+    setLocalMessages([]);
+    setHasMore(false);
+    setNextCursor(null);
+    setIsLoadingOlder(false);
+    setLiveQueueMetrics(null);
+    setIsPeerTyping(false);
+    setIsSelfTyping(false);
+    setIsSearching(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setHighlightedMessageId(null);
+    setUnreadCountBelow(0);
+    setShowScrollBottomPill(false);
+
+    if (supportCountdownTimerRef.current) {
+      clearInterval(supportCountdownTimerRef.current);
+      supportCountdownTimerRef.current = null;
+    }
+    setSupportCountdown(null);
+
     if (!threadId) {
-      setServerMessages([]);
-      setHasMore(false);
-      setNextCursor(null);
+      setIsThreadLoading(false);
       return;
     }
 
-    let isMounted = true;
+    setIsThreadLoading(true);
+    const controller = new AbortController();
+    activeAbortControllerRef.current = controller;
+
     void (async () => {
       try {
-        const res = await api.threadMessages(threadId, { limit: 15 });
-        if (!isMounted) return;
+        const res = await api.threadMessages(threadId, { limit: 20, signal: controller.signal });
+        if (controller.signal.aborted) return;
+
         setServerMessages(res.messages.map(mapServerMessage));
         setHasMore(res.hasMore ?? false);
         setNextCursor(res.nextCursor ?? null);
@@ -942,19 +974,31 @@ export default function ChatView({
         }
         // Mark read
         void api.markThreadRead(threadId);
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.name === "AbortError" || controller.signal.aborted) {
+          return; // Aborted request, ignore safely
+        }
         console.error("Failed to fetch initial thread messages", err);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsThreadLoading(false);
+        }
       }
     })();
 
     // Heartbeat presence interval
     const presenceInterval = setInterval(() => {
-      void api.sendPresence(threadId);
+      if (!controller.signal.aborted) {
+        void api.sendPresence(threadId);
+      }
     }, 45_000);
     void api.sendPresence(threadId);
 
     return () => {
-      isMounted = false;
+      controller.abort();
+      if (activeAbortControllerRef.current === controller) {
+        activeAbortControllerRef.current = null;
+      }
       clearInterval(presenceInterval);
     };
   }, [threadId, mapServerMessage]);
@@ -998,7 +1042,7 @@ export default function ChatView({
       const isAnyAdminTyping = typers.some((t) => t.senderRole !== "user");
       setIsPeerTyping(isAnyAdminTyping);
     },
-    onPresenceUpdate: (participants) => {
+    onPresenceUpdate: () => {
       // In customer chat, if we get an update, we assume admin is online
       setIsOnline(true);
     },
@@ -1012,6 +1056,7 @@ export default function ChatView({
   // Load older messages (Cursor Pagination with scroll preservation)
   const handleLoadOlder = async () => {
     if (!threadId || !nextCursor || isLoadingOlder) return;
+    const targetThreadId = threadId;
     setIsLoadingOlder(true);
 
     const container = messagesContainerRef.current;
@@ -1020,6 +1065,9 @@ export default function ChatView({
 
     try {
       const res = await api.threadMessages(threadId, { before: nextCursor, limit: 15 });
+      // Drop results if user switched threads while loading older messages
+      if (threadId !== targetThreadId) return;
+
       const olderMapped = res.messages.map(mapServerMessage);
 
       setServerMessages((prev) => [...olderMapped, ...prev]);
@@ -1108,7 +1156,48 @@ export default function ChatView({
     }
   }, [serverMessages.length, localMessages.length, isPeerTyping]);
 
-  const messages: DisplayMessage[] = isHumanChat ? serverMessages : localMessages;
+  // Deduplicate and sanitize messages to prevent duplicate cards and double rendering
+  const messages = useMemo(() => {
+    const rawList: DisplayMessage[] = isHumanChat ? serverMessages : localMessages;
+    const seenIds = new Set<string>();
+    const seenOtpKeys = new Set<string>();
+    const filtered: DisplayMessage[] = [];
+
+    for (const msg of rawList) {
+      if (!msg || !msg.id) continue;
+
+      // Deduplicate by message ID or clientMessageId
+      if (seenIds.has(msg.id)) continue;
+      if (msg.clientMessageId && seenIds.has(msg.clientMessageId)) continue;
+
+      // Deduplicate OTP verification code messages
+      if (msg.type === "account_card" && msg.payload) {
+        const payload = msg.payload as Record<string, unknown>;
+        const kind = String(payload["kind"] ?? "");
+        const body = (payload["body"] as Record<string, unknown> | undefined) ?? {};
+
+        if (kind === "item_verification_code" || kind === "otp" || kind === "verification") {
+          const itemId = String(body["itemId"] ?? "");
+          const code = String(body["code"] ?? body["verificationCode"] ?? "");
+          const otpKey = `${itemId}:${code}`;
+
+          if (code && seenOtpKeys.has(otpKey)) {
+            // Already rendered this exact OTP for this item
+            continue;
+          }
+          if (code) {
+            seenOtpKeys.add(otpKey);
+          }
+        }
+      }
+
+      seenIds.add(msg.id);
+      if (msg.clientMessageId) seenIds.add(msg.clientMessageId);
+      filtered.push(msg);
+    }
+
+    return filtered;
+  }, [isHumanChat, serverMessages, localMessages]);
 
   const pushLocal = (message: DisplayMessage) => setLocalMessages((prev) => [...prev, message]);
 
@@ -1826,7 +1915,8 @@ export default function ChatView({
 
         {/* 3. Hero Welcome Greeting (Visible in empty chat when there are no messages, never in order threads) */}
         <AnimatePresence>
-          {!isOrderMode &&
+          {!isThreadLoading &&
+            !isOrderMode &&
             !currentThread?.orderId &&
             messages.length === 0 && (
               <motion.div
@@ -2012,7 +2102,18 @@ export default function ChatView({
 
         {/* Dynamic Chat Messages */}
         <div className="flex flex-col gap-3">
-          {messages.map((msg) => {
+          {isThreadLoading ? (
+            <div className="flex flex-col gap-4 py-8">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold text-[var(--muted-ink)]">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--ink)] border-t-transparent" />
+                <span>{tr("جاري تحميل المحادثة...")}</span>
+              </div>
+              <div className="flex w-3/4 mr-auto animate-pulse flex-col gap-2 rounded-2xl bg-black/5 p-4 dark:bg-white/5" />
+              <div className="flex w-2/3 ml-auto animate-pulse flex-col gap-2 rounded-2xl bg-amber-500/10 p-4" />
+              <div className="flex w-1/2 mr-auto animate-pulse flex-col gap-2 rounded-2xl bg-black/5 p-4 dark:bg-white/5" />
+            </div>
+          ) : (
+            messages.map((msg) => {
             const isMine = msg.sender === "user";
             const isHighlighted = highlightedMessageId === msg.id;
 
@@ -2323,7 +2424,8 @@ export default function ChatView({
                 )}
               </motion.div>
             );
-          })}
+          })
+        )}
 
           {/* Animated Typing Indicator */}
           {isPeerTyping && (

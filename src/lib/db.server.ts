@@ -1004,18 +1004,44 @@ export async function listOrdersByUser(userId: string, limit = 200): Promise<Ord
 
 export async function saveOrder(order: Order): Promise<Order> {
   if (await d1Ready()) {
-    await d1Execute(
-      `INSERT INTO orders (id, code, user_id, doc, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET code = excluded.code, user_id = excluded.user_id,
-         doc = excluded.doc, updated_at = excluded.updated_at`,
-      order.id,
-      order.code,
-      order.userId,
-      JSON.stringify(order),
-      order.createdAt,
-      order.updatedAt,
-    );
+    try {
+      await d1Execute(
+        `INSERT INTO orders (id, code, user_id, doc, status, payment_status, total, created_at, updated_at, cancelled_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET 
+           code = excluded.code, 
+           user_id = excluded.user_id,
+           doc = excluded.doc, 
+           status = excluded.status,
+           payment_status = excluded.payment_status,
+           total = excluded.total,
+           updated_at = excluded.updated_at,
+           cancelled_at = excluded.cancelled_at`,
+        order.id,
+        order.code,
+        order.userId,
+        JSON.stringify(order),
+        order.status,
+        order.paymentStatus,
+        order.total,
+        order.createdAt,
+        order.updatedAt,
+        order.cancelledAt || (order.status === "cancelled" ? order.updatedAt : null),
+      );
+    } catch {
+      await d1Execute(
+        `INSERT INTO orders (id, code, user_id, doc, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET code = excluded.code, user_id = excluded.user_id,
+           doc = excluded.doc, updated_at = excluded.updated_at`,
+        order.id,
+        order.code,
+        order.userId,
+        JSON.stringify(order),
+        order.createdAt,
+        order.updatedAt,
+      );
+    }
     return order;
   }
   await writeJson(orderKey(order.id), order);
@@ -1027,20 +1053,106 @@ export async function saveOrder(order: Order): Promise<Order> {
 
 export async function deleteOrder(id: string): Promise<boolean> {
   if (await d1Ready()) {
+    // 1. Fetch order details before deleting to clean up thread/messages if needed
+    const existing = await getOrder(id);
+    const threadId = existing?.threadId;
+
+    // 2. Delete main order row
     await d1Execute(`DELETE FROM orders WHERE id = ?`, id);
-    // Also clean up any pending queues or snapshots safely
+
+    // 3. Clean up associated dependencies safely
     try {
+      await d1Execute(`DELETE FROM order_items_snapshot WHERE order_id = ?`, id);
       await d1Execute(`DELETE FROM order_queue WHERE order_id = ?`, id);
       await d1Execute(`DELETE FROM account_batch_entries WHERE order_id = ?`, id);
-    } catch {
-      // Ignore if table schema variations exist
+      await d1Execute(`DELETE FROM order_status_history WHERE order_id = ?`, id);
+      await d1Execute(`DELETE FROM order_status_history_v2 WHERE order_id = ?`, id);
+      await d1Execute(`DELETE FROM coupon_redemptions WHERE order_id = ?`, id);
+      await d1Execute(`DELETE FROM product_reviews WHERE order_id = ?`, id);
+    } catch (e) {
+      console.warn("[deleteOrder:tables_cleanup_warn]", e);
+    }
+
+    // 4. Clean up order-specific conversation thread and messages
+    if (threadId) {
+      try {
+        await d1Execute(`DELETE FROM messages WHERE thread_id = ?`, threadId);
+        await d1Execute(`DELETE FROM threads WHERE id = ? OR order_id = ?`, threadId, id);
+      } catch (e) {
+        console.warn("[deleteOrder:thread_cleanup_warn]", e);
+      }
     }
     return true;
   }
   const { deleteStoreKey } = await import("./storage.server");
+  const existing = await getOrder(id);
+  if (existing?.threadId) {
+    await deleteStoreKey(`messages/${existing.threadId}.json`);
+    await deleteStoreKey(`threads/${existing.threadId}.json`);
+    await mutateJson<string[]>(THREAD_INDEX_KEY, [], (ids) =>
+      ids.filter((i) => i !== existing.threadId),
+    );
+  }
   await deleteStoreKey(orderKey(id));
   await mutateJson<string[]>(ORDER_INDEX_KEY, [], (ids) => ids.filter((i) => i !== id));
   return true;
+}
+
+/**
+ * Automatically cleans up cancelled orders that have been cancelled for >= 7 days.
+ * Only targets orders with status = 'cancelled'.
+ * Preserves financial transactions and wallet ledger history with order code/metadata intact.
+ */
+export async function cleanupExpiredCancelledOrders(): Promise<number> {
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  const cutoffDate = new Date(Date.now() - SEVEN_DAYS_MS).toISOString();
+  let deletedCount = 0;
+
+  try {
+    if (await d1Ready()) {
+      const expiredOrders = await d1All<{ id: string; doc: string }>(
+        `SELECT id, doc FROM orders 
+         WHERE status = 'cancelled' 
+           AND (
+             (cancelled_at IS NOT NULL AND cancelled_at <= ?)
+             OR (cancelled_at IS NULL AND updated_at <= ?)
+           )
+         LIMIT 50`,
+        cutoffDate,
+        cutoffDate,
+      );
+
+      for (const row of expiredOrders) {
+        try {
+          const parsed = parse<Order>(row.doc, {} as Order);
+          if (parsed.status === "cancelled") {
+            await deleteOrder(row.id);
+            deletedCount++;
+          }
+        } catch {
+          await deleteOrder(row.id);
+          deletedCount++;
+        }
+      }
+    } else {
+      const allOrders = await listOrders();
+      for (const order of allOrders) {
+        if (order.status === "cancelled") {
+          const cancelledTime = new Date(
+            order.cancelledAt || order.updatedAt || order.createdAt,
+          ).getTime();
+          if (Date.now() - cancelledTime >= SEVEN_DAYS_MS) {
+            await deleteOrder(order.id);
+            deletedCount++;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[cleanupExpiredCancelledOrders:err]", err);
+  }
+
+  return deletedCount;
 }
 
 /* --------------------------------- threads -------------------------------- */
