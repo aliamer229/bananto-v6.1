@@ -775,50 +775,24 @@ export function ActiveConversation({
           {/* Actions Bar */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
-              {/* Account Credentials Tool */}
+              {/* Unified Delivery Tool */}
               <button
                 type="button"
                 onClick={() => {
                   setAccountToolsDefaultTab("credentials");
                   setIsAccountToolsOpen(true);
                 }}
-                className="flex items-center gap-1 px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-lg text-xs font-bold transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/25 rounded-xl text-xs font-bold transition-all shadow-2xs"
               >
-                <Key className="w-3.5 h-3.5" />
-                <span>تجهيز بيانات الحساب</span>
-              </button>
-
-              {/* OTP Tool */}
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountToolsDefaultTab("otp");
-                  setIsAccountToolsOpen(true);
-                }}
-                className="flex items-center gap-1 px-2.5 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold transition-colors"
-              >
-                <Lock className="w-3.5 h-3.5" />
-                <span>كود التحقق</span>
-              </button>
-
-              {/* Instructions Tool */}
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountToolsDefaultTab("instructions");
-                  setIsAccountToolsOpen(true);
-                }}
-                className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold transition-colors"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>تعليمات</span>
+                <Key className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>أداة تسليم الطلب (حسابات / أكواد)</span>
               </button>
 
               {/* Quick Replies */}
               <button
                 type="button"
                 onClick={() => setIsQuickRepliesOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-muted/50 hover:bg-muted text-foreground border border-border rounded-lg text-xs font-bold transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-muted/50 hover:bg-muted text-foreground border border-border rounded-xl text-xs font-bold transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                 <span>ردود جاهزة</span>
@@ -887,22 +861,16 @@ export function ActiveConversation({
           <AccountToolsModal
             isOpen={isAccountToolsOpen}
             onClose={() => setIsAccountToolsOpen(false)}
+            order={linkedOrder}
             defaultTab={accountToolsDefaultTab}
             onSendCredentials={(payload) => {
               onSendMessage({ kind: "credentials", body: payload });
-              setIsAccountToolsOpen(false);
             }}
             onSendVerificationCode={(payload) => {
               onSendMessage({ kind: "otp", body: payload });
-              setIsAccountToolsOpen(false);
-            }}
-            onSendInstructions={(payload) => {
-              onSendMessage({ kind: "instructions", body: payload });
-              setIsAccountToolsOpen(false);
             }}
             onSendCardCode={(payload) => {
               onSendMessage({ kind: "card", body: payload });
-              setIsAccountToolsOpen(false);
             }}
           />
         )}
