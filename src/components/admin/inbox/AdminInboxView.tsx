@@ -338,6 +338,33 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
               : m,
           ),
         );
+
+        // Auto-advance admin to next digital order in queue upon sending OTP
+        if (newMsgData.kind === "item_verification_code" || (newMsgData.body as any)?.code) {
+          const orderMap = new Map(orders.map((o) => [o.id, o]));
+          const nextOrderThread = threads.find((t) => {
+            if (t.id === selectedThreadId || t.id === newMsgData.threadId) return false;
+            if (t.status !== "open" || t.mode === "RESOLVED") return false;
+            const ord = t.orderId ? orderMap.get(t.orderId) : undefined;
+            if (ord) {
+              return (
+                ord.status === "processing" ||
+                ord.status === "pending" ||
+                ord.status === "delivering"
+              );
+            }
+            return t.chatType === "ORDER_SUPPORT" || t.chatType === "DELIVERY";
+          });
+
+          if (nextOrderThread) {
+            setTimeout(() => {
+              setSelectedThreadId(nextOrderThread.id);
+              toast.success("تم إرسال كود التحقق بنجاح والانتقال للطلب التالي في الطابور ⏭️");
+            }, 350);
+          } else {
+            toast.success("تم إرسال كود التحقق (OTP) بنجاح - تم إكمال تجهيز جميع الطلبات الحالية 🎉");
+          }
+        }
       }
     },
     onError: (err: any, newMsgData, context) => {

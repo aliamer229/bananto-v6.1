@@ -1077,10 +1077,10 @@ function CartPage() {
             <button
               id="checkout-recharge-insufficient-btn"
               onClick={() => void navigate({ to: "/wallet" })}
-              className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black py-3.5 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all text-sm sm:text-base"
+              className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black py-3 px-3 sm:py-3.5 sm:px-5 rounded-2xl flex items-center justify-center gap-1.5 sm:gap-2 shadow-md active:scale-[0.99] transition-all text-xs sm:text-sm"
             >
-              <Wallet className="w-4 h-4" />
-              <span>
+              <Wallet className="w-4 h-4 shrink-0" />
+              <span className="truncate">
                 {tr("الرصيد غير كافٍ — شحن المحفظة (ناقص ")}
                 {formatIQDPrice(missingAmount)})
               </span>

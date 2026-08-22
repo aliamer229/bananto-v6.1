@@ -121,7 +121,7 @@ export function rowToCoupon(row: CouponRow | any): Coupon {
       ? Boolean(Number(row.once_per_user_lifetime))
       : row.oncePerUserLifetime !== undefined
         ? Boolean(row.oncePerUserLifetime)
-        : perUserLimit === 1);
+        : false);
 
   return {
     id: String(row.id ?? ""),
@@ -134,7 +134,7 @@ export function rowToCoupon(row: CouponRow | any): Coupon {
     ...(expiration
       ? { expirationAt: expiration, expiration_at: expiration, expires_at: expiration }
       : {}),
-    ...(usageLimit !== undefined ? { usageLimit, usage_limit: usageLimit } : {}),
+    ...(usageLimit !== undefined && usageLimit > 0 ? { usageLimit, usage_limit: usageLimit } : {}),
     perUserLimit,
     per_user_limit: perUserLimit,
     eligibleProducts: jsonList(row.eligible_products ?? row.eligibleProducts),
@@ -247,18 +247,25 @@ export function checkCoupon(
     return { ok: false, reason: "expired" };
   }
 
-  if (coupon.usageLimit !== undefined && input.globalUses >= coupon.usageLimit) {
+  // Global usage limit: Only enforced if usageLimit is specified and > 0
+  if (
+    coupon.usageLimit !== undefined &&
+    coupon.usageLimit > 0 &&
+    input.globalUses >= coupon.usageLimit
+  ) {
     return { ok: false, reason: "usage_limit" };
   }
 
-  // Lifetime single-item / once per user lifetime restriction
-  if (coupon.discountType === "single_item_percent" || coupon.oncePerUserLifetime) {
-    if ((input.lifetimeSingleItemUses ?? 0) > 0 || input.userUses >= 1) {
+  // Lifetime single-item restriction (50% single item discount)
+  if (coupon.discountType === "single_item_percent") {
+    if ((input.lifetimeSingleItemUses ?? 0) > 0) {
       return { ok: false, reason: "lifetime_single_item_used" };
     }
   }
 
-  if (input.userUses >= coupon.perUserLimit) {
+  // Per-user limit: Each user can use up to coupon.perUserLimit times (default 1)
+  const maxUserUses = coupon.perUserLimit && coupon.perUserLimit > 0 ? coupon.perUserLimit : 1;
+  if (input.userUses >= maxUserUses) {
     return { ok: false, reason: "per_user_limit" };
   }
 

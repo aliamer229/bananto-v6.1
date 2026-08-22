@@ -398,7 +398,7 @@ export function AccountToolsModal({
 
     onSendVerificationCode({
       code: otpCode.trim(),
-      expiresInMinutes: 15,
+      expiresInMinutes: 60,
       itemId: selectedItemId || undefined,
       title: selectedGameTitle || undefined,
     });

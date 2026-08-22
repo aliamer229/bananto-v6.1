@@ -104,6 +104,40 @@ describe("checkCoupon", () => {
     });
   });
 
+  it("allows User B to use a coupon even if User A already redeemed it when global limit is not reached", () => {
+    const unlimitedGlobalCoupon = rowToCoupon({
+      ...ROW,
+      usage_limit: null,
+      per_user_limit: 1,
+    });
+    // User A has already used it (userUses: 1) -> refused
+    expect(
+      checkCoupon({
+        coupon: unlimitedGlobalCoupon,
+        ...base,
+        userId: "user_A",
+        userUses: 1,
+        globalUses: 15,
+      }),
+    ).toEqual({
+      ok: false,
+      reason: "per_user_limit",
+    });
+
+    // User B has NOT used it yet (userUses: 0) -> accepted
+    expect(
+      checkCoupon({
+        coupon: unlimitedGlobalCoupon,
+        ...base,
+        userId: "user_B",
+        userUses: 0,
+        globalUses: 15,
+      }),
+    ).toEqual({
+      ok: true,
+    });
+  });
+
   it("refuses single_item_percent if already used in user lifetime", () => {
     const singleCoupon = rowToCoupon({
       ...ROW,

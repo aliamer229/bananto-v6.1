@@ -50,7 +50,7 @@ const LABELS = {
     copied: "تم النسخ",
     show: "إظهار",
     hide: "إخفاء",
-    validFor: "صالح لمدة 10 دقائق",
+    validFor: "صالح لمدة 60 دقيقة",
   },
   en: {
     credentials: "Account details",
@@ -63,7 +63,7 @@ const LABELS = {
     copied: "Copied",
     show: "Show",
     hide: "Hide",
-    validFor: "Valid for 10 minutes",
+    validFor: "Valid for 60 minutes",
   },
 } as const;
 

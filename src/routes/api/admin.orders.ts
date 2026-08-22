@@ -609,6 +609,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               if (targetThreadId) {
                 const otpClientMsgId =
                   data.clientMessageId || `otp-${targetItemId}-${code}-${now.slice(0, 16)}`;
+                const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
                 await appendMessage(targetThreadId, {
                   senderRole: "admin",
                   senderName: adminName,
@@ -619,7 +620,8 @@ export const Route = createFileRoute("/api/admin/orders")({
                     code,
                     verificationCode: code,
                     title: itemTitle,
-                    expiresInMinutes: 10,
+                    expiresInMinutes: 60,
+                    expiresAt,
                     sentAt: now,
                     clientMessageId: otpClientMsgId,
                   },
@@ -641,7 +643,29 @@ export const Route = createFileRoute("/api/admin/orders")({
               next = patchItem(order, targetItemId, {
                 verificationCodeSentAt: now,
                 verificationCode: code,
+                deliveredAt: now,
               });
+
+              // Check if all order items are delivered / completed
+              const { areAllOrderItemsDelivered } = await import("@/lib/orders.server");
+              if (areAllOrderItemsDelivered(next)) {
+                // Free the admin and move order to awaiting_customer_confirmation immediately
+                next = {
+                  ...next,
+                  status: "awaiting_customer_confirmation",
+                  updatedAt: now,
+                };
+                try {
+                  const { d1Run } = await import("@/lib/db.server");
+                  await d1Run(
+                    `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
+                    now,
+                    order.id,
+                  );
+                } catch {
+                  // Fallback
+                }
+              }
 
               // Safe audit log & status history in D1
               try {
@@ -681,7 +705,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                 );
                 if (link?.telegram_chat_id) {
                   const { sendTelegramMessage } = await import("@/lib/telegram.server");
-                  const otpText = `🔐 *كود التحقق الخاص بطلبك #${order.code}*\n\nالخدمة: ${itemTitle}\nالكود: \`${code}\`\n\nصالح لمدة 10 دقائق. استخدمه لإكمال تسجيل الدخول.`;
+                  const otpText = `🔐 *كود التحقق الخاص بطلبك #${order.code}*\n\nالخدمة: ${itemTitle}\nالكود: \`${code}\`\n\nصالح لمدة 60 دقيقة. استخدمه لإكمال تسجيل الدخول.`;
                   await sendTelegramMessage(String(link.telegram_chat_id), otpText);
                 }
               } catch {
