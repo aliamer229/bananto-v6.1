@@ -50,6 +50,8 @@ export function CustomerList({
   // Compute filter counts
   const filterCounts = useMemo(() => {
     const counts: Record<InboxFilter, number> = {
+      digital_queue: 0,
+      open_tickets: 0,
       queue: 0,
       all: threads.length,
       needs_reply: 0,
@@ -66,16 +68,29 @@ export function CustomerList({
 
     for (const t of threads) {
       const isClosed = t.status === "closed" || t.mode === "RESOLVED";
-      const hasOrder = Boolean(t.orderId);
+      const isDigitalOrder =
+        (Boolean(t.orderId) ||
+          t.chatType === "ORDER_SUPPORT" ||
+          t.chatType === "DELIVERY" ||
+          t.mode === "ORDER_PREPARATION") &&
+        t.chatType !== "GENERAL_SUPPORT" &&
+        t.chatType !== "AUTOMATED_SUPPORT";
+
       const linkedOrder = t.orderId ? orderMap.get(t.orderId) : undefined;
       const orderIsActive = linkedOrder
         ? linkedOrder.status !== "completed" && linkedOrder.status !== "cancelled"
         : true;
       const orderIsCompleted = linkedOrder ? linkedOrder.status === "completed" : false;
 
-      // Queue counts open active / waiting chats
-      if (t.status === "open" && !isClosed) {
+      // Digital queue counts active open digital orders needing preparation/delivery
+      if (t.status === "open" && !isClosed && isDigitalOrder) {
+        counts.digital_queue++;
         counts.queue++;
+      }
+
+      // Open tickets count non-digital support chats/inquiries
+      if (t.status === "open" && !isClosed && !isDigitalOrder) {
+        counts.open_tickets++;
       }
 
       if (t.needsAdmin || t.mode === "WAITING_FOR_ADMIN" || t.mode === "ESCALATED") {
@@ -84,10 +99,10 @@ export function CustomerList({
       if (t.status === "open" && !isClosed) {
         counts.active_chats++;
       }
-      if (hasOrder && orderIsActive && !isClosed) {
+      if (isDigitalOrder && orderIsActive && !isClosed) {
         counts.active_orders++;
       }
-      if (!hasOrder && t.status === "open" && !isClosed) {
+      if (!isDigitalOrder && t.status === "open" && !isClosed) {
         counts.active_tickets++;
       }
       if (t.mode === "ORDER_PREPARATION") {
@@ -102,7 +117,7 @@ export function CustomerList({
       if (t.mode === "ESCALATED") {
         counts.escalated++;
       }
-      if (hasOrder && orderIsCompleted) {
+      if (isDigitalOrder && orderIsCompleted) {
         counts.completed_orders++;
       }
       if (isClosed) {
@@ -117,7 +132,14 @@ export function CustomerList({
   const filteredThreads = useMemo(() => {
     const list = threads.filter((t) => {
       const isClosed = t.status === "closed" || t.mode === "RESOLVED";
-      const hasOrder = Boolean(t.orderId);
+      const isDigitalOrder =
+        (Boolean(t.orderId) ||
+          t.chatType === "ORDER_SUPPORT" ||
+          t.chatType === "DELIVERY" ||
+          t.mode === "ORDER_PREPARATION") &&
+        t.chatType !== "GENERAL_SUPPORT" &&
+        t.chatType !== "AUTOMATED_SUPPORT";
+
       const linkedOrder = t.orderId ? orderMap.get(t.orderId) : undefined;
       const orderIsActive = linkedOrder
         ? linkedOrder.status !== "completed" && linkedOrder.status !== "cancelled"
@@ -127,8 +149,12 @@ export function CustomerList({
       // Filter check
       let matchesFilter = true;
       switch (activeFilter) {
+        case "digital_queue":
         case "queue":
-          matchesFilter = t.status === "open" && !isClosed;
+          matchesFilter = t.status === "open" && !isClosed && isDigitalOrder;
+          break;
+        case "open_tickets":
+          matchesFilter = t.status === "open" && !isClosed && !isDigitalOrder;
           break;
         case "needs_reply":
           matchesFilter = Boolean(
@@ -139,10 +165,10 @@ export function CustomerList({
           matchesFilter = t.status === "open" && !isClosed;
           break;
         case "active_orders":
-          matchesFilter = hasOrder && orderIsActive && !isClosed;
+          matchesFilter = isDigitalOrder && orderIsActive && !isClosed;
           break;
         case "active_tickets":
-          matchesFilter = !hasOrder && t.status === "open" && !isClosed;
+          matchesFilter = !isDigitalOrder && t.status === "open" && !isClosed;
           break;
         case "order_preparation":
           matchesFilter = t.mode === "ORDER_PREPARATION";
@@ -157,7 +183,7 @@ export function CustomerList({
           matchesFilter = t.mode === "ESCALATED";
           break;
         case "completed_orders":
-          matchesFilter = hasOrder && orderIsCompleted;
+          matchesFilter = isDigitalOrder && orderIsCompleted;
           break;
         case "closed_tickets":
           matchesFilter = isClosed;
@@ -182,10 +208,10 @@ export function CustomerList({
       return matchName || matchSubject || matchPreview || matchOrderId || matchOrderCode;
     });
 
-    // If Queue filter is active, sort strictly FIFO:
+    // If Digital Queue filter is active, sort strictly FIFO:
     // 1. Active / Queued items: oldest entry time first (FIFO order)
     // 2. Snoozed items (queueStatus === "snoozed") at the very end
-    if (activeFilter === "queue") {
+    if (activeFilter === "digital_queue" || activeFilter === "queue") {
       return [...list].sort((a, b) => {
         const aSnoozed = a.queueStatus === "snoozed";
         const bSnoozed = b.queueStatus === "snoozed";
@@ -221,18 +247,12 @@ export function CustomerList({
     }
   };
 
-  const FILTERS: { id: InboxFilter; label: string; color?: string }[] = [
-    { id: "queue", label: "الطابور", color: "text-amber-700 bg-amber-500/10 font-bold" },
+  const SUB_FILTERS: { id: InboxFilter; label: string; color?: string }[] = [
     { id: "all", label: "الكل" },
     { id: "needs_reply", label: "بحاجة إلى رد", color: "text-red-600 bg-red-500/10" },
-    { id: "active_chats", label: "المحادثات الجارية" },
-    { id: "active_orders", label: "طلبات نشطة", color: "text-blue-600 bg-blue-500/10" },
-    { id: "active_tickets", label: "تذاكر نشطة" },
-    { id: "order_preparation", label: "قيد التجهيز", color: "text-amber-600 bg-amber-500/10" },
     { id: "waiting_user", label: "بانتظار العميل" },
     { id: "waiting_admin", label: "بانتظار الإدارة" },
     { id: "escalated", label: "المصعّدة", color: "text-purple-600 bg-purple-500/10" },
-    { id: "completed_orders", label: "طلبات مكتملة" },
     { id: "closed_tickets", label: "تذاكر مغلقة" },
   ];
 
@@ -277,9 +297,44 @@ export function CustomerList({
           )}
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-          {FILTERS.map((f) => {
+        {/* Primary Filter Tabs: Digital Queue vs Open Tickets */}
+        <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted/50 rounded-xl border border-border/80">
+          <button
+            type="button"
+            onClick={() => onChangeFilter("digital_queue")}
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+              activeFilter === "digital_queue" || activeFilter === "queue"
+                ? "bg-background text-foreground shadow-sm border border-border font-black"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span className="truncate">طابور تجهيز الطلبات الرقمية</span>
+            <span className="bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.2 rounded-full text-[10px] shrink-0 font-mono">
+              {filterCounts.digital_queue}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeFilter("open_tickets")}
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+              activeFilter === "open_tickets"
+                ? "bg-background text-foreground shadow-sm border border-border font-black"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="truncate">التذاكر المفتوحة</span>
+            <span className="bg-primary/15 text-primary px-1.5 py-0.2 rounded-full text-[10px] shrink-0 font-mono">
+              {filterCounts.open_tickets}
+            </span>
+          </button>
+        </div>
+
+        {/* Secondary Filter Pills */}
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+          {SUB_FILTERS.map((f) => {
             const count = filterCounts[f.id] || 0;
             const isSelected = activeFilter === f.id;
             return (
@@ -287,7 +342,7 @@ export function CustomerList({
                 key={f.id}
                 type="button"
                 onClick={() => onChangeFilter(f.id)}
-                className={`whitespace-nowrap px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 ${
+                className={`whitespace-nowrap px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5 shrink-0 ${
                   isSelected
                     ? "bg-foreground text-background shadow-2xs font-bold"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -332,7 +387,20 @@ export function CustomerList({
               t.needsAdmin || t.mode === "WAITING_FOR_ADMIN" || t.mode === "ESCALATED";
             const linkedOrder = t.orderId ? orderMap.get(t.orderId) : undefined;
             const isSnoozed = t.queueStatus === "snoozed";
-            const queueRank = activeFilter === "queue" && !isSnoozed ? index + 1 : null;
+            const isDigitalOrder =
+              (Boolean(t.orderId) ||
+                t.chatType === "ORDER_SUPPORT" ||
+                t.chatType === "DELIVERY" ||
+                t.mode === "ORDER_PREPARATION") &&
+              t.chatType !== "GENERAL_SUPPORT" &&
+              t.chatType !== "AUTOMATED_SUPPORT";
+
+            const queueRank =
+              isDigitalOrder &&
+              (activeFilter === "digital_queue" || activeFilter === "queue") &&
+              !isSnoozed
+                ? index + 1
+                : null;
 
             return (
               <div

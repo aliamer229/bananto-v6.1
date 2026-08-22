@@ -338,35 +338,45 @@ export async function resumeQueueCustomer(threadId: string): Promise<Thread | nu
   return updated;
 }
 
+/**
+ * Determines whether a thread is an active digital order requiring preparation and delivery.
+ * Excludes human support, automated support, game requests, and general inquiries.
+ */
+export function isDigitalOrderPreparationThread(t: Thread): boolean {
+  if (t.chatType === "GENERAL_SUPPORT" || t.chatType === "AUTOMATED_SUPPORT") return false;
+  return Boolean(
+    t.orderId ||
+    t.chatType === "ORDER_SUPPORT" ||
+    t.chatType === "DELIVERY" ||
+    t.mode === "ORDER_PREPARATION",
+  );
+}
+
 export interface QueueMetrics {
+  isQueueEligible: boolean;
   position: number;
   aheadCount: number;
   estimatedMinutesMin: number;
   estimatedMinutesMax: number;
   estimatedMinutesText: string;
-  status: "active" | "queued" | "snoozed" | "serving_now";
+  status: "active" | "queued" | "snoozed" | "serving_now" | "not_queued";
   adminStatus: "available" | "busy" | "offline";
   workingHoursText?: string;
 }
 
 /**
  * Real-time queue metrics calculation based on true backend state.
+ * Strictly calculates queue position and wait times ONLY for active digital orders.
  */
 export async function calculateQueueMetrics(threadOrOrderId: string): Promise<QueueMetrics> {
   const availability = await getAdminAvailabilityStatus();
   const allThreads = await listThreads();
 
-  // Active queue threads: open and requiring admin/order preparation, not pure automated and not snoozed
+  // Active queue threads: open and strictly digital orders requiring preparation/delivery
   const queueThreads = allThreads.filter((t) => {
     if (t.status !== "open" || t.mode === "RESOLVED" || isPureAutomatedThread(t)) return false;
     if (t.queueStatus === "snoozed") return false;
-    return Boolean(
-      t.orderId ||
-      t.chatType === "ORDER_SUPPORT" ||
-      t.chatType === "DELIVERY" ||
-      t.chatType === "GENERAL_SUPPORT" ||
-      t.needsAdmin,
-    );
+    return isDigitalOrderPreparationThread(t);
   });
 
   // Sort FIFO by queueEnteredAt / createdAt
@@ -387,13 +397,19 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
       : "available";
 
   if (index === -1) {
+    const targetThread = allThreads.find(
+      (t) => t.id === threadOrOrderId || t.orderId === threadOrOrderId,
+    );
+    const isEligible = targetThread ? isDigitalOrderPreparationThread(targetThread) : false;
+
     return {
-      position: 1,
+      isQueueEligible: isEligible,
+      position: isEligible ? 1 : 0,
       aheadCount: 0,
-      estimatedMinutesMin: 1,
-      estimatedMinutesMax: 3,
-      estimatedMinutesText: "1 - 3 دقائق",
-      status: "active",
+      estimatedMinutesMin: isEligible ? 1 : 0,
+      estimatedMinutesMax: isEligible ? 3 : 0,
+      estimatedMinutesText: isEligible ? "1 - 3 دقائق" : "غير مدرج بالطابور",
+      status: isEligible ? "active" : "not_queued",
       adminStatus,
       workingHoursText: availability.workingHoursText,
     };
@@ -410,6 +426,7 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
     : `${estimatedMinutesMin}–${estimatedMinutesMax} دقيقة`;
 
   return {
+    isQueueEligible: true,
     position,
     aheadCount,
     estimatedMinutesMin,

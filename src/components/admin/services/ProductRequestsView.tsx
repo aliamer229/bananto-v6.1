@@ -268,12 +268,78 @@ function RequestCard({
           </div>
         </div>
         {!isEditing && (
-          <button
-            onClick={onEdit}
-            className="text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"
-          >
-            <Edit3 className="w-4 h-4" /> {t("تحديث الحالة")}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                onSave({
+                  status: "accepted",
+                  userVisibleNote: "تم قبول طلب اللعبة وجارٍ تجهيزها وإضافتها للمتجر قريباً.",
+                });
+              }}
+              disabled={isSaving || req.status === "accepted" || req.status === "added"}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              title="قبول الطلب"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {t("قبول الطلب")}
+            </button>
+
+            <div className="relative group">
+              <button
+                type="button"
+                disabled={isSaving || req.status === "rejected"}
+                className="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                {t("رفض الطلب")}
+              </button>
+              <div className="hidden group-hover:block absolute left-0 top-full mt-1 bg-card border border-border rounded-xl shadow-xl p-1.5 z-20 min-w-[220px] space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSave({
+                      status: "rejected",
+                      userVisibleNote: "نعتذر، اللعبة متوفرة مسبقاً في المتجر، يمكنك البحث عنها وطلبها مباشرة.",
+                    });
+                  }}
+                  className="w-full text-right px-3 py-2 text-xs font-semibold rounded-lg hover:bg-muted transition-colors text-foreground block"
+                >
+                  📌 اللعبة متوفرة مسبقاً في المتجر
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSave({
+                      status: "rejected",
+                      userVisibleNote: "نعتذر، اللعبة غير متوفرة حالياً أو غير متوافقة رقمياً.",
+                    });
+                  }}
+                  className="w-full text-right px-3 py-2 text-xs font-semibold rounded-lg hover:bg-muted transition-colors text-foreground block"
+                >
+                  ⚠️ غير متوافقة أو غير متاحة رقمياً
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSave({
+                      status: "rejected",
+                      userVisibleNote: "نعتذر، معلومات اللعبة غير كافية للتحقق منها.",
+                    });
+                  }}
+                  className="w-full text-right px-3 py-2 text-xs font-semibold rounded-lg hover:bg-muted transition-colors text-foreground block"
+                >
+                  ❓ معلومات غير كافية
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={onEdit}
+              className="text-primary hover:bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" /> {t("تعديل كامل")}
+            </button>
+          </div>
         )}
       </div>
 

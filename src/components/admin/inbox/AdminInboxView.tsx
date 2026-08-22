@@ -34,7 +34,7 @@ interface AdminInboxViewProps {
 export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: AdminInboxViewProps) {
   const queryClient = useQueryClient();
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(initialThreadId);
-  const [activeFilter, setActiveFilter] = useState<InboxFilter>("queue");
+  const [activeFilter, setActiveFilter] = useState<InboxFilter>("digital_queue");
   const [searchTerm, setSearchTerm] = useState("");
   const [, startTransition] = useTransition();
 

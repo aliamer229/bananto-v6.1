@@ -118,7 +118,7 @@ export function CustomerDetailsDrawer({
             </div>
 
             {/* Current Thread Context */}
-            <div className="p-3.5 bg-muted/20 border border-border rounded-xl space-y-2">
+            <div className="p-3.5 bg-muted/20 border border-border rounded-xl space-y-2.5">
               <div className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>معلومات التذكرة الحالية</span>
                 <span
@@ -145,6 +145,42 @@ export function CustomerDetailsDrawer({
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <span className="font-semibold text-foreground">الطلب المرتبط: </span>
                   <span className="font-mono text-primary font-bold">{thread.orderId}</span>
+                </div>
+              )}
+
+              {/* Real Server Timestamps */}
+              <div className="pt-2 border-t border-border/40 grid grid-cols-2 gap-2 text-[11px]">
+                <div>
+                  <div className="text-muted-foreground">آخر نشاط للمستخدم:</div>
+                  <div className="font-semibold text-foreground mt-0.5">
+                    {thread.lastUserActivityAt || thread.lastUserMessageAt
+                      ? new Date(
+                          thread.lastUserActivityAt || thread.lastUserMessageAt!,
+                        ).toLocaleTimeString("ar-IQ", { hour: "2-digit", minute: "2-digit" })
+                      : "لا يوجد"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">آخر رد للإدارة:</div>
+                  <div className="font-semibold text-foreground mt-0.5">
+                    {thread.lastAdminActivityAt || thread.lastAdminMessageAt
+                      ? new Date(
+                          thread.lastAdminActivityAt || thread.lastAdminMessageAt!,
+                        ).toLocaleTimeString("ar-IQ", { hour: "2-digit", minute: "2-digit" })
+                      : "لم يتم الرد بعد"}
+                  </div>
+                </div>
+              </div>
+
+              {thread.queueEnteredAt && (
+                <div className="text-[11px] text-muted-foreground pt-1 flex items-center justify-between">
+                  <span>تاريخ دخول الطابور:</span>
+                  <span className="font-mono font-medium text-foreground">
+                    {new Date(thread.queueEnteredAt).toLocaleTimeString("ar-IQ", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </div>
               )}
             </div>

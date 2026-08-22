@@ -418,19 +418,34 @@ export interface Coupon {
   discountType: DiscountType;
   discountValue: number;
   startAt?: string;
+  start_at?: string;
   expirationAt?: string;
+  expiration_at?: string;
+  expires_at?: string;
   usageLimit?: number;
+  usage_limit?: number;
   perUserLimit: number;
+  per_user_limit?: number;
   eligibleProducts: (string | number)[];
+  eligible_products?: (string | number)[];
   eligibleCategories: (string | number)[];
+  eligible_categories?: (string | number)[];
   eligibleUsers: string[];
+  eligible_users?: string[];
   minOrderAmount: number;
+  min_order_amount?: number;
   maxDiscountAmount?: number;
+  max_discount_amount?: number;
   isActive: boolean;
+  is_active?: boolean | number;
   onlyDigitalProducts?: boolean;
+  only_digital_products?: boolean | number;
   isStackable?: boolean;
+  is_stackable?: boolean | number;
   oncePerUserLifetime?: boolean;
+  once_per_user_lifetime?: boolean | number;
   createdAt: string;
+  created_at?: string;
 }
 
 export type BananaTransactionType =
@@ -820,10 +835,17 @@ export interface Thread {
   /** Queue management properties */
   queueStatus?: "queued" | "active" | "snoozed" | "completed";
   queueEnteredAt?: string;
+  queue_entered_at?: string;
   queueSnoozedAt?: string;
+  pausedAt?: string;
+  paused_at?: string;
   inactivityReminders?: string[];
   lastAdminMessageAt?: string;
   lastUserMessageAt?: string;
+  lastUserActivityAt?: string;
+  last_user_activity_at?: string;
+  lastAdminActivityAt?: string;
+  last_admin_activity_at?: string;
   humanRequested?: boolean;
 
   lastMessageAt: string;

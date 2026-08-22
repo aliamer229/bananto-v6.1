@@ -119,51 +119,6 @@ export const Route = createFileRoute("/api/game-requests")({
             row.updatedAt,
           );
 
-          // Create or find a support thread
-          try {
-            const { saveThread, appendMessage, listThreadsByUser } =
-              await import("@/lib/db.server");
-            const { randomId } = await import("@/lib/crypto.server");
-            const userThreads = await listThreadsByUser(user.id);
-            let humanThread = userThreads.find(
-              (t) => t.chatType === "GENERAL_SUPPORT" && t.status === "open" && !t.orderId,
-            );
-
-            if (!humanThread) {
-              humanThread = await saveThread({
-                id: randomId("thr"),
-                userId: user.id,
-                userName: user.name,
-                subject: "محادثة الدعم مع الإدارة",
-                chatType: "GENERAL_SUPPORT",
-                status: "open",
-                mode: "WAITING_FOR_ADMIN",
-                aiPaused: true,
-                needsAdmin: true,
-                lastMessageAt: now,
-                createdAt: now,
-              });
-            } else {
-              humanThread = await saveThread({
-                ...humanThread,
-                mode: "WAITING_FOR_ADMIN",
-                aiPaused: true,
-                needsAdmin: true,
-                lastMessageAt: now,
-              });
-            }
-
-            await appendMessage(humanThread.id, {
-              senderRole: "system",
-              kind: "system",
-              body: {
-                text: `تم تقديم طلب لعبة: ${row.productName}. الإدارة ستقوم بالرد عليك قريباً في هذه المحادثة.`,
-              },
-            });
-          } catch (err) {
-            console.error("Failed to create thread for game request", err);
-          }
-
           // Notify the admin Telegram chat
           try {
             const { notifyAdminGameRequest } = await import("@/lib/telegram-notifications.server");

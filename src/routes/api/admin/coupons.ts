@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { d1All, d1First, d1Execute } from "@/lib/d1.server";
+import { d1All, d1First, d1Execute, d1Ready } from "@/lib/d1.server";
 import { body, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
+import { rowToCoupon } from "@/lib/coupons";
 import { v4 as uuidv4 } from "uuid";
 
 export const Route = createFileRoute("/api/admin/coupons")({
@@ -10,12 +11,15 @@ export const Route = createFileRoute("/api/admin/coupons")({
       GET: async ({ request }) =>
         guard(async () => {
           await requireAdmin(request);
-          const coupons = await d1All("SELECT * FROM coupons ORDER BY created_at DESC");
+          await d1Ready();
+          const rows = await d1All<any>("SELECT * FROM coupons ORDER BY created_at DESC");
+          const coupons = rows.map((r) => rowToCoupon(r));
           return json({ coupons });
         }),
       POST: async ({ request }) =>
         guard(async () => {
           await requireAdmin(request);
+          await d1Ready();
           const data = await body(request);
           const id = uuidv4();
           const createdAt = new Date().toISOString();
@@ -24,15 +28,35 @@ export const Route = createFileRoute("/api/admin/coupons")({
             .trim()
             .toUpperCase();
           if (!code) {
-            return json({ error: "code_required" }, { status: 400 });
+            return json({ error: "كود الكوبون مطلوب" }, { status: 400 });
+          }
+
+          // Check if code exists
+          const existing = await d1First<{ id: string }>(
+            "SELECT id FROM coupons WHERE UPPER(code) = ?",
+            code,
+          );
+          if (existing) {
+            return json(
+              { error: `كود الكوبون "${code}" مستخدم مسبقاً، يرجى اختيار كود آخر` },
+              { status: 400 },
+            );
           }
 
           const discountType = String(data.discountType || data.discount_type || "percentage");
           const discountValue = Number(
-            data.discountValue ||
-              data.discount_value ||
-              (discountType === "single_item_percent" ? 50 : 0),
+            data.discountValue !== undefined
+              ? data.discountValue
+              : data.discount_value !== undefined
+                ? data.discount_value
+                : discountType === "single_item_percent"
+                  ? 50
+                  : 0,
           );
+          const expirationAt =
+            data.expirationAt || data.expiration_at || data.expiresAt || data.expires_at || null;
+          const startAt = data.startAt || data.start_at || null;
+
           const oncePerUserLifetime =
             data.oncePerUserLifetime !== undefined
               ? data.oncePerUserLifetime
@@ -56,15 +80,17 @@ export const Route = createFileRoute("/api/admin/coupons")({
             code,
             discountType,
             discountValue,
-            data.startAt || data.start_at || null,
-            data.expirationAt || data.expiration_at || null,
-            data.usageLimit || data.usage_limit || null,
-            data.perUserLimit || data.per_user_limit || 1,
+            startAt,
+            expirationAt,
+            data.usageLimit !== undefined ? data.usageLimit : data.usage_limit || null,
+            data.perUserLimit !== undefined ? data.perUserLimit : data.per_user_limit || 1,
             JSON.stringify(data.eligibleProducts || data.eligible_products || []),
             JSON.stringify(data.eligibleCategories || data.eligible_categories || []),
             JSON.stringify(data.eligibleUsers || data.eligible_users || []),
-            data.minOrderAmount || data.min_order_amount || 0,
-            data.maxDiscountAmount || data.max_discount_amount || null,
+            data.minOrderAmount !== undefined ? data.minOrderAmount : data.min_order_amount || 0,
+            data.maxDiscountAmount !== undefined
+              ? data.maxDiscountAmount
+              : data.max_discount_amount || null,
             data.isActive === false || data.is_active === 0 ? 0 : 1,
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0,
             data.isStackable || data.is_stackable ? 1 : 0,
@@ -77,17 +103,44 @@ export const Route = createFileRoute("/api/admin/coupons")({
       PUT: async ({ request }) =>
         guard(async () => {
           await requireAdmin(request);
+          await d1Ready();
           const data = await body(request);
 
           const code = String(data.code || "")
             .trim()
             .toUpperCase();
+          if (!code) {
+            return json({ error: "كود الكوبون مطلوب" }, { status: 400 });
+          }
+
+          if (!data.id) {
+            return json({ error: "معرف الكوبون مفقود" }, { status: 400 });
+          }
+
+          // Check if code is already used by another coupon
+          const duplicate = await d1First<{ id: string }>(
+            "SELECT id FROM coupons WHERE UPPER(code) = ? AND id != ?",
+            code,
+            data.id,
+          );
+          if (duplicate) {
+            return json({ error: `كود الكوبون "${code}" مستخدم في كوبون آخر` }, { status: 400 });
+          }
+
           const discountType = String(data.discountType || data.discount_type || "percentage");
           const discountValue = Number(
-            data.discountValue ||
-              data.discount_value ||
-              (discountType === "single_item_percent" ? 50 : 0),
+            data.discountValue !== undefined
+              ? data.discountValue
+              : data.discount_value !== undefined
+                ? data.discount_value
+                : discountType === "single_item_percent"
+                  ? 50
+                  : 0,
           );
+          const expirationAt =
+            data.expirationAt || data.expiration_at || data.expiresAt || data.expires_at || null;
+          const startAt = data.startAt || data.start_at || null;
+
           const oncePerUserLifetime =
             data.oncePerUserLifetime !== undefined
               ? data.oncePerUserLifetime
@@ -110,15 +163,17 @@ export const Route = createFileRoute("/api/admin/coupons")({
             code,
             discountType,
             discountValue,
-            data.startAt || data.start_at || null,
-            data.expirationAt || data.expiration_at || null,
-            data.usageLimit || data.usage_limit || null,
-            data.perUserLimit || data.per_user_limit || 1,
+            startAt,
+            expirationAt,
+            data.usageLimit !== undefined ? data.usageLimit : data.usage_limit || null,
+            data.perUserLimit !== undefined ? data.perUserLimit : data.per_user_limit || 1,
             JSON.stringify(data.eligibleProducts || data.eligible_products || []),
             JSON.stringify(data.eligibleCategories || data.eligible_categories || []),
             JSON.stringify(data.eligibleUsers || data.eligible_users || []),
-            data.minOrderAmount || data.min_order_amount || 0,
-            data.maxDiscountAmount || data.max_discount_amount || null,
+            data.minOrderAmount !== undefined ? data.minOrderAmount : data.min_order_amount || 0,
+            data.maxDiscountAmount !== undefined
+              ? data.maxDiscountAmount
+              : data.max_discount_amount || null,
             data.isActive === false || data.is_active === 0 ? 0 : 1,
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0,
             data.isStackable || data.is_stackable ? 1 : 0,
@@ -131,6 +186,7 @@ export const Route = createFileRoute("/api/admin/coupons")({
       DELETE: async ({ request }) =>
         guard(async () => {
           await requireAdmin(request);
+          await d1Ready();
           const url = new URL(request.url);
           const id = url.searchParams.get("id");
           if (id) {

@@ -16,8 +16,12 @@ import {
   Flame,
   Search,
   Filter,
+  Clock,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { adminApi, api } from "@/lib/api";
+import { getCouponRemainingTime } from "@/lib/coupons";
 import type { Coupon, DiscountType, Product } from "@/lib/types";
 import {
   Dialog,
@@ -67,33 +71,33 @@ export default function CouponsManager() {
   const createMutation = useMutation({
     mutationFn: () => adminApi.createCoupon(form),
     onSuccess: () => {
-      toast.success("تم إنشاء الكوبون بنجاح");
+      toast.success("تم إنشاء الكوبون بنجاح وحفظه في السيرفر");
       queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
       setIsAdding(false);
       resetForm();
     },
-    onError: () => toast.error("حدث خطأ أثناء حفظ الكوبون"),
+    onError: (err: any) => toast.error(err.message || "حدث خطأ أثناء حفظ الكوبون"),
   });
 
   const updateMutation = useMutation({
     mutationFn: (payload: Partial<Coupon>) => adminApi.updateCoupon(payload),
     onSuccess: () => {
-      toast.success("تم تحديث الكوبون بنجاح");
+      toast.success("تم تحديث الكوبون بنجاح في السيرفر");
       queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
       setEditingId(null);
       setIsAdding(false);
       resetForm();
     },
-    onError: () => toast.error("حدث خطأ أثناء تحديث الكوبون"),
+    onError: (err: any) => toast.error(err.message || "حدث خطأ أثناء تحديث الكوبون"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApi.deleteCoupon(id),
     onSuccess: () => {
-      toast.success("تم حذف الكوبون بنجاح");
+      toast.success("تم حذف الكوبون نهائياً من السيرفر");
       queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
     },
-    onError: () => toast.error("حدث خطأ أثناء الحذف"),
+    onError: (err: any) => toast.error(err.message || "حدث خطأ أثناء الحذف"),
   });
 
   const resetForm = () => {
@@ -432,10 +436,11 @@ export default function CouponsManager() {
                     : coupon.discountValue;
                 const isActive =
                   coupon.is_active !== undefined
-                    ? Boolean(coupon.is_active)
+                    ? Boolean(Number(coupon.is_active))
                     : Boolean(coupon.isActive);
-                const isExpired =
-                  coupon.expiration_at && new Date(coupon.expiration_at).getTime() < Date.now();
+                const expDate = coupon.expiration_at || coupon.expirationAt || coupon.expires_at;
+                const remInfo = getCouponRemainingTime(expDate);
+                const isExpired = remInfo.isExpired;
                 const isStarted =
                   !coupon.start_at || new Date(coupon.start_at).getTime() <= Date.now();
 
@@ -507,17 +512,22 @@ export default function CouponsManager() {
                     </td>
 
                     <td className="px-5 py-4 text-xs">
-                      {coupon.expiration_at || coupon.start_at ? (
+                      {expDate || coupon.start_at ? (
                         <div className="space-y-1 text-muted-foreground">
                           {coupon.start_at && (
                             <div>من: {new Date(coupon.start_at).toLocaleDateString("ar-IQ")}</div>
                           )}
-                          {coupon.expiration_at && (
+                          {expDate && (
                             <div className={isExpired ? "text-red-500 font-bold" : ""}>
-                              إلى: {new Date(coupon.expiration_at).toLocaleDateString("ar-IQ")}
-                              {isExpired && " (منتهي)"}
+                              إلى: {new Date(expDate).toLocaleDateString("ar-IQ")}
                             </div>
                           )}
+                          <div
+                            className={`font-semibold flex items-center gap-1 ${isExpired ? "text-red-500" : "text-amber-500"}`}
+                          >
+                            <Clock className="w-3 h-3" />
+                            {remInfo.remainingText}
+                          </div>
                         </div>
                       ) : (
                         <span className="text-muted-foreground">دائم (بدون انتهاء)</span>

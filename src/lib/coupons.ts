@@ -46,8 +46,50 @@ function jsonList(value: unknown): string[] {
   }
 }
 
-export function rowToCoupon(row: CouponRow): Coupon {
-  const rawType = String(row.discount_type ?? "fixed").toLowerCase();
+export function getCouponRemainingTime(expirationAt?: string): {
+  isExpired: boolean;
+  remainingMs: number;
+  remainingText: string;
+} {
+  if (!expirationAt) {
+    return { isExpired: false, remainingMs: Infinity, remainingText: "صلاحية غير محدودة" };
+  }
+  const expTime = new Date(expirationAt).getTime();
+  if (isNaN(expTime)) {
+    return { isExpired: false, remainingMs: Infinity, remainingText: "صلاحية غير محدودة" };
+  }
+  const diffMs = expTime - Date.now();
+  if (diffMs <= 0) {
+    return { isExpired: true, remainingMs: 0, remainingText: "منتهي الصلاحية" };
+  }
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return {
+      isExpired: false,
+      remainingMs: diffMs,
+      remainingText: `متبقي ${days} يوم${hours > 0 ? ` و ${hours} ساعة` : ""}`,
+    };
+  }
+  if (hours > 0) {
+    return {
+      isExpired: false,
+      remainingMs: diffMs,
+      remainingText: `متبقي ${hours} ساعة${minutes > 0 ? ` و ${minutes} دقيقة` : ""}`,
+    };
+  }
+  return {
+    isExpired: false,
+    remainingMs: diffMs,
+    remainingText: `متبقي ${Math.max(1, minutes)} دقيقة`,
+  };
+}
+
+export function rowToCoupon(row: CouponRow | any): Coupon {
+  const rawType = String(row.discount_type ?? row.discountType ?? "fixed").toLowerCase();
   let discountType: DiscountType = "fixed";
   if (rawType === "percentage") discountType = "percentage";
   else if (
@@ -58,37 +100,70 @@ export function rowToCoupon(row: CouponRow): Coupon {
     discountType = "single_item_percent";
   }
 
-  const startAt = row.start_at ? String(row.start_at) : undefined;
-  const expiration = row.expiration_at ? String(row.expiration_at) : undefined;
-  const usageLimit = optionalNumber(row.usage_limit);
-  const maxDiscount = optionalNumber(row.max_discount_amount);
-  const perUserLimit = optionalNumber(row.per_user_limit) ?? 1;
+  const startAt = row.start_at
+    ? String(row.start_at)
+    : row.startAt
+      ? String(row.startAt)
+      : undefined;
+  const expiration = row.expiration_at
+    ? String(row.expiration_at)
+    : row.expires_at
+      ? String(row.expires_at)
+      : row.expirationAt
+        ? String(row.expirationAt)
+        : undefined;
+  const usageLimit = optionalNumber(row.usage_limit ?? row.usageLimit);
+  const maxDiscount = optionalNumber(row.max_discount_amount ?? row.maxDiscountAmount);
+  const perUserLimit = optionalNumber(row.per_user_limit ?? row.perUserLimit) ?? 1;
   const oncePerUserLifetime =
     discountType === "single_item_percent" ||
     (row.once_per_user_lifetime !== undefined && row.once_per_user_lifetime !== null
       ? Boolean(Number(row.once_per_user_lifetime))
-      : perUserLimit === 1);
+      : row.oncePerUserLifetime !== undefined
+        ? Boolean(row.oncePerUserLifetime)
+        : perUserLimit === 1);
 
   return {
     id: String(row.id ?? ""),
     code: String(row.code ?? ""),
     discountType,
     discountValue:
-      optionalNumber(row.discount_value) ?? (discountType === "single_item_percent" ? 50 : 0),
-    ...(startAt ? { startAt } : {}),
-    ...(expiration ? { expirationAt: expiration } : {}),
-    ...(usageLimit !== undefined ? { usageLimit } : {}),
+      optionalNumber(row.discount_value ?? row.discountValue) ??
+      (discountType === "single_item_percent" ? 50 : 0),
+    ...(startAt ? { startAt, start_at: startAt } : {}),
+    ...(expiration
+      ? { expirationAt: expiration, expiration_at: expiration, expires_at: expiration }
+      : {}),
+    ...(usageLimit !== undefined ? { usageLimit, usage_limit: usageLimit } : {}),
     perUserLimit,
-    eligibleProducts: jsonList(row.eligible_products),
-    eligibleCategories: jsonList(row.eligible_categories),
-    eligibleUsers: jsonList(row.eligible_users),
-    minOrderAmount: optionalNumber(row.min_order_amount) ?? 0,
-    ...(maxDiscount !== undefined ? { maxDiscountAmount: maxDiscount } : {}),
-    isActive: row.is_active === undefined ? true : Boolean(Number(row.is_active)),
-    onlyDigitalProducts: Boolean(Number(row.only_digital_products ?? 0)),
-    isStackable: Boolean(Number(row.is_stackable ?? 0)),
+    per_user_limit: perUserLimit,
+    eligibleProducts: jsonList(row.eligible_products ?? row.eligibleProducts),
+    eligibleCategories: jsonList(row.eligible_categories ?? row.eligibleCategories),
+    eligibleUsers: jsonList(row.eligible_users ?? row.eligibleUsers),
+    minOrderAmount: optionalNumber(row.min_order_amount ?? row.minOrderAmount) ?? 0,
+    ...(maxDiscount !== undefined
+      ? { maxDiscountAmount: maxDiscount, max_discount_amount: maxDiscount }
+      : {}),
+    isActive:
+      row.is_active === undefined && row.isActive === undefined
+        ? true
+        : Boolean(Number(row.is_active ?? (row.isActive ? 1 : 0))),
+    is_active:
+      row.is_active === undefined && row.isActive === undefined
+        ? 1
+        : Number(Boolean(Number(row.is_active ?? (row.isActive ? 1 : 0)))),
+    onlyDigitalProducts: Boolean(
+      Number(row.only_digital_products ?? (row.onlyDigitalProducts ? 1 : 0)),
+    ),
+    only_digital_products: Number(
+      Boolean(Number(row.only_digital_products ?? (row.onlyDigitalProducts ? 1 : 0))),
+    ),
+    isStackable: Boolean(Number(row.is_stackable ?? (row.isStackable ? 1 : 0))),
+    is_stackable: Number(Boolean(Number(row.is_stackable ?? (row.isStackable ? 1 : 0)))),
     oncePerUserLifetime,
-    createdAt: String(row.created_at ?? ""),
+    once_per_user_lifetime: Number(oncePerUserLifetime),
+    createdAt: String(row.created_at ?? row.createdAt ?? ""),
+    created_at: String(row.created_at ?? row.createdAt ?? ""),
   };
 }
 
