@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { ExternalLink, X, RefreshCw, Newspaper, AlertCircle } from "lucide-react";
 import { useI18n } from "../i18n";
 import { motion, AnimatePresence } from "motion/react";
+import { playSound } from "../utils/audio";
 
 interface NewsItem {
   title: string;
@@ -158,7 +159,10 @@ export default function NintendoNews() {
               {t("تعذر تحميل الأخبار في الوقت الحالي")}
             </p>
             <button
-              onClick={handleInitialLoad}
+              onClick={() => {
+                playSound("loading", 0.6);
+                handleInitialLoad();
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary font-bold text-xs rounded-xl hover:bg-primary/20 transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -175,7 +179,11 @@ export default function NintendoNews() {
           return (
             <div
               key={item.link || i}
-              onClick={() => setSelectedNews(item)}
+              data-sfx-hover="hover_s"
+              onClick={() => {
+                playSound("news", 0.6);
+                setSelectedNews(item);
+              }}
               className="flex gap-3 sm:gap-4 bg-card rounded-2xl overflow-hidden border border-border p-2.5 sm:p-3 hover:border-primary/40 hover:shadow-md transition-all group cursor-pointer"
             >
               <div className="w-[85px] h-[85px] sm:w-[110px] sm:h-[110px] shrink-0 rounded-xl overflow-hidden bg-muted relative">
@@ -232,7 +240,10 @@ export default function NintendoNews() {
         {selectedNews && (
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSelectedNews(null)}
+            onClick={() => {
+              playSound("nock", 0.6);
+              setSelectedNews(null);
+            }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -242,7 +253,10 @@ export default function NintendoNews() {
               className="bg-card w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl relative border border-border flex flex-col max-h-[85vh]"
             >
               <button
-                onClick={() => setSelectedNews(null)}
+                onClick={() => {
+                  playSound("nock", 0.6);
+                  setSelectedNews(null);
+                }}
                 className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -275,6 +289,7 @@ export default function NintendoNews() {
                   href={selectedNews.link}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => playSound("bumper_end", 0.6)}
                   className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground py-3 rounded-2xl font-bold hover:bg-primary/90 transition-colors text-sm shadow-md mt-4"
                 >
                   <ExternalLink className="w-4 h-4" />

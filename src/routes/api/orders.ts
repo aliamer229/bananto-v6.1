@@ -81,11 +81,17 @@ export const Route = createFileRoute("/api/orders")({
             items?: CheckoutLine[];
             address?: Address;
             couponCode?: string;
+            acceptedTerms?: boolean;
+            idempotencyKey?: string;
           }>(request);
-          const throttle = await consumeRateLimit(request, "order-create", 10, 15 * 60, user.id);
+          const throttle = await consumeRateLimit(request, "order-create", 15, 15 * 60, user.id);
           if (!throttle.allowed) return rateLimitResponse(throttle.retryAfter);
           if (!Array.isArray(data.items) || data.items.length > 50) {
             return json({ error: "invalid_cart" }, { status: 400 });
+          }
+
+          if (data.acceptedTerms === false) {
+            return json({ error: "terms_required" }, { status: 400 });
           }
 
           try {
@@ -94,6 +100,8 @@ export const Route = createFileRoute("/api/orders")({
               data.items ?? [],
               data.address,
               data.couponCode,
+              data.acceptedTerms !== false,
+              data.idempotencyKey,
             );
             return json({ order: redactOrder(order) });
           } catch (error) {
@@ -104,6 +112,7 @@ export const Route = createFileRoute("/api/orders")({
               "insufficient_balance",
               "invalid_total",
               "coupon_invalid",
+              "terms_required",
             ]);
             return json({ error: safe.has(code) ? code : "order_failed" }, { status: 400 });
           }

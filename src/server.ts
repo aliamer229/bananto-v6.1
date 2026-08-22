@@ -1,3 +1,4 @@
+import { DurableObject } from "cloudflare:workers";
 import { processAutoScheduledTasks, processBotTrading } from "./lib/scheduled-jobs.server";
 import "./lib/error-capture";
 
@@ -96,16 +97,15 @@ function edgeCache(): CacheLike | undefined {
 
 type DurableObjectState = { id: unknown; storage: unknown };
 
-export class ChatRealtimeDO {
-  private state: DurableObjectState;
+export class ChatRealtimeDO extends DurableObject {
   private subscribers: Set<ReadableStreamDefaultController>;
   private typingMap: Map<string, { userName: string; senderRole: string; expiresAt: number }>;
   private presenceMap: Map<string, number>;
   private cleanupInterval: number | null = null;
   private pingInterval: number | null = null;
 
-  constructor(state: DurableObjectState, env: any) {
-    this.state = state;
+  constructor(ctx: DurableObjectState, env: any) {
+    super(ctx as any, env);
     this.subscribers = new Set();
     this.typingMap = new Map();
     this.presenceMap = new Map();

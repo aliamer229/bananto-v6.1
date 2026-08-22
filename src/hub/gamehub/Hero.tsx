@@ -200,7 +200,7 @@ export function Hero() {
 
             {/* Media rail — trailer + stills, secondary to the product. */}
             {(trailer || images.length > 0) && (
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                 {trailer && (
                   <button
                     onClick={() => {

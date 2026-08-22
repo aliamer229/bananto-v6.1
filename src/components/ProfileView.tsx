@@ -601,6 +601,7 @@ export default function ProfileView() {
                     }
                   }, 2000);
                 } catch (e) {
+                  playSound("error", 0.6);
                   if (btn) {
                     btn.innerText = t("إرسال الرسالة");
                     btn.removeAttribute("disabled");

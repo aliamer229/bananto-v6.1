@@ -1,7 +1,6 @@
-import { tr } from "@/i18n";
-import { useMutation } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { tr, useI18n } from "@/i18n";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Minus,
@@ -14,26 +13,26 @@ import {
   MapPin,
   Ticket,
   CheckCircle2,
-  Heart,
-  MoreHorizontal,
   Sparkles,
-  Pencil,
-  Clock,
-  Utensils,
   AlertCircle,
   Gamepad2,
   Copy,
   MessageCircle,
   Check,
+  ExternalLink,
+  ShieldCheck,
+  CheckSquare,
+  Square,
+  Package,
+  Layers,
+  ArrowUpRight,
+  RefreshCw,
 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 import { validateCoupon } from "@/lib/reviews-coupons.functions";
-
-import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
-import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
-
 import AppShell from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
@@ -52,10 +51,10 @@ export const Route = createFileRoute("/cart")({
       { title: "سلة المشتريات — بنانا ستور" },
       {
         name: "description",
-        content: "أكمل شراء الحسابات الرقمية والأجهزة، مع عنوان توصيل للأجهزة فقط.",
+        content: "أكمل شراء الحسابات الرقمية والأجهزة بأمان وسرعة فائقة من محفظتك.",
       },
       { property: "og:title", content: "سلة المشتريات — بنانا ستور" },
-      { property: "og:description", content: "دفع سهل وتسليم الحسابات عبر محادثة الطلب." },
+      { property: "og:description", content: "دفع سهل وتسليم الحسابات فورياً عبر محادثة الطلب." },
     ],
   }),
   component: CartPage,
@@ -71,157 +70,179 @@ const emptyAddress: Omit<Address, "id"> = {
   notes: "",
 };
 
-const SwipeableCartItem = ({
+/** Single Cart Item Card */
+function CartItemCard({
   line,
   onUpdateQuantity,
-  onRemove,
+  onRequestDelete,
 }: {
   line: CartLine;
-  onUpdateQuantity: (id: string, delta: number) => void;
-  onRemove: (id: string) => void;
-}) => {
+  onUpdateQuantity: (id: string | number, delta: number) => void;
+  onRequestDelete: (line: CartLine) => void;
+}) {
   const { formatIQDPrice } = useCurrency();
-  const controls = useAnimation();
-  const x = useMotionValue(0);
+  const itemTotal = line.price * line.quantity;
 
-  const deleteBgOpacity = useTransform(x, [-50, -150], [0, 1]);
-  const deleteIconScale = useTransform(x, [-50, -150], [0.5, 1]);
-
-  const handleDragEnd = async (_: any, info: any) => {
-    const offset = info.offset.x;
-    const threshold = window.innerWidth * 0.4;
-
-    if (offset <= -threshold) {
-      await controls.start({
-        x: -window.innerWidth,
-        transition: { duration: 0.2, ease: "easeOut" },
-      });
-      onRemove(String(line.productId));
-    } else {
-      controls.start({ x: 0, transition: { type: "spring", stiffness: 400, damping: 30 } });
+  const getKindBadge = () => {
+    if (line.requiresAddress || line.kind === "hardware") {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+          <Truck className="h-3 w-3" /> {tr("شحن وتوصيل")}
+        </span>
+      );
     }
+    if (line.kind === "bundle") {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
+          <Layers className="h-3 w-3" /> {tr("باقة ألعاب")}
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+        <Zap className="h-3 w-3" /> {tr("تسليم فوري")}
+      </span>
+    );
   };
+
+  const getOptionLabel = () => {
+    const parts: string[] = [];
+    if (line.offerLabel) parts.push(line.offerLabel);
+    if (line.optionName) parts.push(line.optionName);
+    if (line.typeName) parts.push(line.typeName);
+    if (line.meta?.editionId) parts.push(`إصدار خاص`);
+    return parts.join(" • ");
+  };
+
+  const optionLabel = getOptionLabel();
 
   return (
     <motion.div
-      className="relative overflow-hidden border-b border-border/40 last:border-0"
+      id={`cart-item-${line.productId}`}
       layout
-      initial={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0, transition: { duration: 0.3 } }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, height: 0, transition: { duration: 0.25 } }}
+      className="p-4 bg-[var(--card)] hover:bg-muted/20 transition-colors border-b border-border/60 last:border-0"
     >
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute inset-0 bg-destructive flex items-center justify-end pr-6"
-          style={{ opacity: deleteBgOpacity }}
-        >
-          <motion.div style={{ scale: deleteIconScale }}>
-            <Trash2 className="w-6 h-6 text-destructive-foreground" />
-          </motion.div>
-        </motion.div>
-      </div>
+      <div className="flex items-start gap-3.5">
+        {/* Product Image */}
+        <div className="relative shrink-0">
+          {line.image ? (
+            <img
+              src={cdnImage(line.image)}
+              alt={line.title}
+              className="w-20 h-20 sm:w-22 sm:h-22 object-cover rounded-2xl border border-border/70 bg-muted shadow-sm"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl bg-muted/80 border border-border flex items-center justify-center text-muted-foreground shadow-sm">
+              <Gamepad2 className="w-8 h-8 opacity-60" />
+            </div>
+          )}
+        </div>
 
-      <motion.div
-        drag="x"
-        dragDirectionLock
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={1}
-        onDragEnd={handleDragEnd}
-        animate={controls}
-        style={{ x, touchAction: "pan-y" }}
-        className="relative bg-[var(--card)] py-4 flex flex-col z-10 w-full cursor-grab active:cursor-grabbing"
-      >
-        <div className="flex items-start justify-between gap-3.5 px-4">
-          <div className="flex-1 min-w-0 pr-1">
-            <h2
-              className="text-base sm:text-lg font-bold text-foreground leading-snug line-clamp-2"
+        {/* Product Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h3
+              className="text-sm sm:text-base font-black text-foreground leading-snug line-clamp-2"
               dir="ltr"
             >
               {line.title}
-            </h2>
+            </h3>
 
-            {line.offerLabel && (
-              <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                <span className="font-semibold text-foreground/80">{tr("العرض")}: </span>
-                <span>{tr(line.offerLabel)}</span>
-              </div>
-            )}
+            {/* Delete button (desktop / direct) */}
+            <button
+              id={`delete-btn-${line.productId}`}
+              onClick={() => onRequestDelete(line)}
+              className="p-1.5 -m-1 text-muted-foreground hover:text-destructive active:scale-90 transition-all rounded-lg hover:bg-destructive/10 shrink-0"
+              title={tr("حذف المنتج من السلة")}
+              aria-label={tr("حذف المنتج")}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
 
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-base font-black text-foreground">
-                {formatIQDPrice(line.price)}
-              </span>
-              {line.requiresAddress || line.kind === "hardware" ? (
-                <span className="bg-muted text-muted-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Truck className="h-3 w-3" /> {tr("توصيل")}
-                </span>
-              ) : (
-                <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Zap className="h-3 w-3" /> {tr("فوري")}
-                </span>
-              )}
+          {/* Option / Variant Label */}
+          {optionLabel && (
+            <p className="text-[11px] text-muted-foreground font-medium mt-1 truncate">
+              {optionLabel}
+            </p>
+          )}
+
+          {/* Badges & Price per unit */}
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            {getKindBadge()}
+            <div className="text-xs text-muted-foreground">
+              <span>{tr("سعر الوحدة")}: </span>
+              <span className="font-bold text-foreground">{formatIQDPrice(line.price)}</span>
             </div>
           </div>
-
-          <div className="relative shrink-0">
-            {line.image ? (
-              <img
-                src={cdnImage(line.image)}
-                alt={line.title}
-                className="w-18 h-18 sm:w-20 sm:h-20 object-cover rounded-2xl border border-border/50 bg-muted pointer-events-none"
-              />
-            ) : (
-              <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-muted border border-border/50" />
-            )}
-          </div>
         </div>
+      </div>
 
-        <div className="flex items-center justify-between mt-3 px-4 pt-1">
+      {/* Item Controls & Total */}
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
+        {/* Quantity Controls */}
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => onRemove(String(line.productId))}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/70 text-muted-foreground hover:text-destructive hover:border-destructive/30 text-xs font-semibold bg-background hover:bg-destructive/5 active:scale-95 transition-all"
+            id={`qty-minus-${line.productId}`}
+            onClick={() => {
+              if (line.quantity <= 1) {
+                onRequestDelete(line);
+              } else {
+                playSound("hover", 0.4);
+                onUpdateQuantity(line.productId, line.quantity - 1);
+              }
+            }}
+            className="w-8 h-8 rounded-xl border border-border bg-background hover:bg-muted active:scale-90 text-foreground flex items-center justify-center transition-all shadow-xs"
+            aria-label="إنقاص الكمية"
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>{tr("حذف")}</span>
+            {line.quantity <= 1 ? (
+              <Trash2 className="w-3.5 h-3.5 text-destructive" />
+            ) : (
+              <Minus className="w-3.5 h-3.5" />
+            )}
           </button>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => {
-                playSound("hover", 0.4);
-                onUpdateQuantity(String(line.productId), line.quantity - 1);
-              }}
-              className="w-8 h-8 rounded-full border border-border bg-background hover:bg-muted active:scale-90 text-foreground flex items-center justify-center transition-all"
-              aria-label="إنقاص الكمية"
-            >
-              <Minus className="w-3.5 h-3.5" />
-            </button>
+          <span
+            className="font-black text-foreground text-sm min-w-[28px] text-center select-none"
+            dir="ltr"
+          >
+            {line.quantity}
+          </span>
 
-            <span className="font-black text-foreground text-sm min-w-[20px] text-center">
-              {line.quantity}
-            </span>
-
-            <button
-              onClick={() => {
-                playSound("hover", 0.4);
-                onUpdateQuantity(String(line.productId), line.quantity + 1);
-              }}
-              className="w-8 h-8 rounded-full border border-border bg-background hover:bg-muted active:scale-90 text-foreground flex items-center justify-center transition-all"
-              aria-label="زيادة الكمية"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <button
+            id={`qty-plus-${line.productId}`}
+            onClick={() => {
+              playSound("hover", 0.4);
+              onUpdateQuantity(line.productId, line.quantity + 1);
+            }}
+            className="w-8 h-8 rounded-xl border border-border bg-background hover:bg-muted active:scale-90 text-foreground flex items-center justify-center transition-all shadow-xs"
+            aria-label="زيادة الكمية"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
-      </motion.div>
+
+        {/* Item Total */}
+        <div className="text-right">
+          <span className="text-[11px] text-muted-foreground ml-1">{tr("الإجمالي")}:</span>
+          <span className="text-sm sm:text-base font-black text-foreground">
+            {formatIQDPrice(itemTotal)}
+          </span>
+        </div>
+      </div>
     </motion.div>
   );
-};
+}
 
 function CartPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { currency, formatIQDPrice } = useCurrency();
+  const { formatIQDPrice } = useCurrency();
   const {
     lines: localLines,
     setQuantity: setLocalQuantity,
@@ -229,16 +250,28 @@ function CartPage() {
     clear,
   } = useCartStore();
 
+  // State: Deletion Confirmation Modal
+  const [itemToDelete, setItemToDelete] = useState<CartLine | null>(null);
+
+  // State: Terms & Policy Checkbox
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [highlightTerms, setHighlightTerms] = useState(false);
+
+  // State: Modals & Flow
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<Order | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [isPolicySheetOpen, setIsPolicySheetOpen] = useState(false);
+
+  // Idempotency Key for single safe checkout transaction
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
   const fetchCartFn = useServerFn(getCart);
   const updateItemFn = useServerFn(updateCartItem);
   const removeItemFn = useServerFn(removeCartItem);
 
-  const { data: dbItems = [], isLoading: isCartLoading } = useQuery({
+  const { data: dbItems = [] } = useQuery({
     queryKey: ["cart"],
     queryFn: () => fetchCartFn(),
     enabled: !!user,
@@ -256,7 +289,6 @@ function CartPage() {
 
   // Combine both local Zustand lines and DB lines
   const lines: CartLine[] = useMemo(() => {
-    // If local lines exist, use local lines enriched with product data if needed
     if (localLines && localLines.length > 0) {
       return localLines.map((l) => {
         const product = products.find((p) => String(p.id) === String(l.productId)) as any;
@@ -305,8 +337,60 @@ function CartPage() {
   const [error, setError] = useState<string>();
 
   const needsAddress = cartNeedsAddress(lines);
-  const total = cartTotal(lines);
+  const subtotal = cartTotal(lines);
+  const totalItemsCount = lines.reduce((sum, l) => sum + (l.quantity || 1), 0);
 
+  // Delivery calculation if physical hardware exists
+  const deliveryBase = Number(storeData?.settings?.["deliveryBase"] || 5000);
+  const deliveryPrice = needsAddress ? deliveryBase : 0;
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState("");
+  const validateCouponFn = useServerFn(validateCoupon);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsApplyingCoupon(true);
+    setCouponError("");
+    try {
+      const res = await validateCouponFn({
+        data: {
+          code: couponCode.trim(),
+          orderAmount: subtotal,
+          items: lines.map((l) => ({
+            productId: String(l.productId),
+            categoryId: "",
+            kind: String(l.kind),
+          })),
+        },
+      });
+      if (res.valid && res.coupon) {
+        setAppliedCoupon({ ...res.coupon, code: couponCode.trim() });
+        playSound("turn_on", 0.5);
+        toast.success("تم تطبيق كود الخصم بنجاح!");
+      } else {
+        setCouponError(res.message || "كود الخصم غير صالح أو منتهي الصلاحية");
+        playSound("Error", 0.5);
+      }
+    } catch (e) {
+      setCouponError("حدث خطأ أثناء التحقق من كود الخصم");
+      playSound("Error", 0.5);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const finalDiscount = Number(appliedCoupon?.discountAmount ?? 0);
+  const totalPayable = Math.max(0, subtotal - finalDiscount + deliveryPrice);
+
+  const walletBalance = user?.walletBalance || 0;
+  const isBalanceSufficient = walletBalance >= totalPayable;
+  const missingAmount = Math.max(0, totalPayable - walletBalance);
+
+  // Quantity updates
   const setQuantity = async (
     productId: string | number,
     quantity: number,
@@ -327,68 +411,28 @@ function CartPage() {
     }
   };
 
-  const remove = async (
-    productId: string | number,
-    offerKind?: string,
-    optionId?: string,
-    typeId?: string,
-    editionId?: string,
-  ) => {
-    removeLocal(productId, offerKind, optionId, typeId, editionId);
-    const item = dbItems.find((i: any) => String(i.product_id) === String(productId)) as any;
+  // Remove item
+  const executeRemove = async (line: CartLine) => {
+    removeLocal(line.productId, line.offerKind, line.optionId, line.typeId, line.editionId);
+    playSound("turn_off", 0.6);
+    toast.success("تم حذف المنتج من السلة");
+
+    const item = dbItems.find((i: any) => String(i.product_id) === String(line.productId)) as any;
     if (item && user) {
       try {
         await removeItemFn({ data: { id: item.id } });
         queryClient.invalidateQueries({ queryKey: ["cart"] });
       } catch (err) {
-        console.error("Failed to remove cart item:", err);
+        console.error("Failed to remove cart item from backend:", err);
       }
     }
+    setItemToDelete(null);
   };
 
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
-  const [couponError, setCouponError] = useState("");
-  const validateCouponFn = useServerFn(validateCoupon);
-  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-
-  const handleApplyCoupon = async () => {
-    if (!couponCode) return;
-    setIsApplyingCoupon(true);
-    setCouponError("");
-    try {
-      // `itemsTotal` never existed here, so applying a coupon threw a
-      // ReferenceError before it reached the server; the cart total is `total`.
-      const res = await validateCouponFn({
-        data: {
-          code: couponCode,
-          orderAmount: total,
-          items: lines.map((l) => ({
-            productId: String(l.productId),
-            categoryId: "",
-            kind: String(l.kind),
-          })),
-        },
-      });
-      if (res.valid && res.coupon) {
-        setAppliedCoupon({ ...res.coupon, code: couponCode });
-      } else {
-        setCouponError(res.message || "كوبون غير صالح");
-      }
-    } catch (e) {
-      setCouponError("حدث خطأ في التحقق من الكوبون");
-    } finally {
-      setIsApplyingCoupon(false);
-    }
-  };
-
-  // The server already worked out what the coupon is worth against this exact
-  // basket; recomputing it here is how the cart and the order end up disagreeing.
-  const finalDiscount = Number(appliedCoupon?.discountAmount ?? 0);
-
+  // Checkout Mutation
   const checkout = useMutation({
-    mutationFn: () =>
-      api.checkout(
+    mutationFn: async () => {
+      return await api.checkout(
         lines.map((l) => ({
           productId: l.productId,
           quantity: l.quantity,
@@ -397,39 +441,65 @@ function CartPage() {
         })),
         needsAddress ? { id: "cart", ...address } : undefined,
         appliedCoupon?.code,
-      ),
+        true, // acceptedTerms: explicitly confirmed
+        idempotencyKeyRef.current,
+      );
+    },
     onSuccess: ({ order }) => {
       setShowConfirmModal(false);
       clear();
+      // Generate new key for subsequent sessions
+      idempotencyKeyRef.current = crypto.randomUUID();
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["auth"] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["threads"] });
-      playSound("bumper_end", 0.6);
-      toast.success("تم تأكيد الطلب بنجاح، جاري تحويلك لمحادثة الطلب...");
+      playSound("bumper_end", 0.7);
+      toast.success("تم تأكيد الطلب والدفع بنجاح!");
       void navigate({ to: "/chat", search: { initialOrderId: order.id } });
     },
     onError: (err: Error) => {
       setShowConfirmModal(false);
       setError(err.message);
-      toast.error(err.message);
+      playSound("Error", 0.6);
+      if (err.message === "terms_required") {
+        toast.error("يرجى الموافقة على سياسة الشراء قبل إتمام الطلب.");
+        setHighlightTerms(true);
+      } else if (err.message === "insufficient_balance") {
+        toast.error("رصيد المحفظة غير كافٍ لإتمام الدفع.");
+        setShowInsufficientModal(true);
+      } else {
+        toast.error(err.message || "فشلت عملية الدفع، يرجى المحاولة مرة أخرى.");
+      }
     },
   });
 
   const handleInitiatePayment = () => {
     setError(undefined);
+
     if (!user) {
+      toast.info("يرجى تسجيل الدخول أولاً لإتمام الشراء");
       return void navigate({ to: "/auth" });
+    }
+
+    // Step 2 Validation: Checkbox approval required
+    if (!acceptedTerms) {
+      setHighlightTerms(true);
+      playSound("Error", 0.6);
+      toast.error("يرجى الموافقة على سياسة الشراء قبل إتمام الطلب.");
+      setTimeout(() => setHighlightTerms(false), 2000);
+      return;
     }
 
     if (needsAddress && (!address.fullName || !address.phone || !address.city)) {
       setError("الأجهزة تحتاج عنوان توصيل: الاسم، الهاتف، والمدينة مطلوبة.");
       toast.error("يرجى إكمال بيانات عنوان التوصيل للأجهزة");
+      playSound("Error", 0.5);
       return;
     }
 
-    const currentBalance = user.walletBalance || 0;
-    if (currentBalance < total) {
+    if (!isBalanceSufficient) {
+      playSound("Error", 0.5);
       setShowInsufficientModal(true);
       return;
     }
@@ -438,227 +508,43 @@ function CartPage() {
   };
 
   const confirmAndPay = () => {
+    if (checkout.isPending) return;
     playSound("loading", 0.6);
     checkout.mutate();
   };
 
-  // Render: Animated Order Confirmed Screen
-  if (confirmedOrder) {
-    const hasDigital = confirmedOrder.items?.some(
-      (item: any) => !["hardware", "physical", "accessory", "device"].includes(item.kind),
-    );
-
+  // Render: Empty Cart State
+  if (lines.length === 0 && !confirmedOrder) {
     return (
       <AppShell currentView="cart">
-        <header className="shrink-0 bg-white dark:bg-card px-4 py-4 flex items-center justify-between z-20 border-b border-border/50">
-          <div className="w-10 h-10"></div>
-          <h1 className="text-[17px] font-bold text-foreground">{tr("تأكيد الطلب")}</h1>
-          <div className="w-10 h-10"></div>
-        </header>
-
-        <main
-          className="flex-1 overflow-y-auto px-4 py-6 max-w-lg mx-auto w-full pb-28 text-center"
-          dir="rtl"
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="space-y-6"
-          >
-            {/* Animated Success Icon */}
-            <div className="relative mx-auto w-20 h-20">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-                className="absolute inset-0 rounded-full bg-emerald-500/20"
-              />
-              <div className="relative w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/10">
-                <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-foreground mb-1.5">
-                تم تأكيد واستقطاع المبلغ بنجاح! 🎉
-              </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                تم خصم قيمة الطلب من محفظتك وبدء تجهيز طلبك فوراً
-              </p>
-            </div>
-
-            {/* Order Code Card */}
-            <div className="bg-card border border-border rounded-3xl p-5 shadow-sm text-right space-y-4">
-              <div className="flex items-center justify-between border-b border-border/70 pb-3">
-                <span className="text-xs font-bold text-muted-foreground">رمز الطلب:</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-black text-foreground" dir="ltr">
-                    {confirmedOrder.code}
-                  </span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(confirmedOrder.code);
-                      setCopiedCode(true);
-                      setTimeout(() => setCopiedCode(false), 2000);
-                      toast.success("تم نسخ رمز الطلب");
-                    }}
-                    className="p-1 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
-                    title="نسخ رمز الطلب"
-                  >
-                    {copiedCode ? (
-                      <Check className="h-4 w-4 text-emerald-500" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Items Summary */}
-              <div className="space-y-2.5">
-                <span className="text-xs font-bold text-muted-foreground block">
-                  المنتجات المشمولة:
-                </span>
-                {confirmedOrder.items?.map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 bg-muted/40 rounded-2xl p-2.5 border border-border/50"
-                  >
-                    {item.image ? (
-                      <img
-                        src={cdnImage(item.image)}
-                        alt=""
-                        className="w-11 h-11 rounded-xl object-cover border border-border/60 shrink-0"
-                      />
-                    ) : (
-                      <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
-                        <Gamepad2 className="w-5 h-5" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {formatIQDPrice(item.unitPrice || item.price || 0)} × {item.quantity || 1}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="pt-2 border-t border-border/70 flex justify-between items-center text-xs sm:text-sm">
-                <span className="font-bold text-muted-foreground">المبلغ المستقطع:</span>
-                <span className="font-black text-emerald-600 dark:text-emerald-400 text-base">
-                  {formatIQDPrice(confirmedOrder.total)}
-                </span>
-              </div>
-            </div>
-
-            {/* Digital Account Banner & Direct Transition */}
-            {hasDigital && (
-              <div className="rounded-3xl border border-amber-400/40 bg-amber-500/10 p-4 text-right space-y-2">
-                <div className="flex items-center gap-2 text-xs font-black text-amber-700 dark:text-amber-300">
-                  <Sparkles className="h-4 w-4" />
-                  <span>تم إرسال بطاقة طلبك إلى محادثة الدعم</span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  تواصل مع الدعم الفني مباشرة في صفحة المحادثة لتسليم بيانات الحساب وأكواد التفعيل
-                  فوراً.
-                </p>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-2.5 pt-2">
-              <button
-                onClick={() => void navigate({ to: "/chat" })}
-                className="w-full py-3.5 bg-[var(--brand-red)] hover:opacity-90 text-white font-black rounded-2xl shadow-md shadow-rose-500/20 active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>الانتقال للمحادثة مع الدعم لاستلام الحساب</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  void navigate({ to: "/chat", search: { initialOrderId: confirmedOrder.id } })
-                }
-                className="w-full py-3 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm"
-              >
-                عرض تفاصيل الطلب الكاملة
-              </button>
-
-              <button
-                onClick={() => void navigate({ to: "/" })}
-                className="w-full py-2.5 text-muted-foreground hover:text-foreground font-medium text-xs transition-colors"
-              >
-                العودة للصفحة الرئيسية
-              </button>
-            </div>
-          </motion.div>
-        </main>
-      </AppShell>
-    );
-  }
-
-  if (lines.length === 0) {
-    return (
-      <AppShell currentView="cart">
-        <header className="shrink-0 bg-white px-4 py-4 flex items-center justify-between z-20">
+        <header className="shrink-0 bg-background px-4 py-4 flex items-center justify-between z-20 border-b border-border/40">
           <button
+            id="cart-back-empty-btn"
             onClick={() => void navigate({ to: "/" })}
-            className="w-10 h-10 bg-slate-100 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors"
+            className="w-10 h-10 bg-muted flex items-center justify-center rounded-2xl hover:bg-muted/80 text-foreground transition-colors"
+            aria-label="العودة"
           >
-            <ChevronDown className="w-6 h-6 stroke-[2.5]" />
+            <ChevronDown className="w-5 h-5 stroke-[2.5]" />
           </button>
-          <h1 className="text-[17px] font-bold text-slate-900">{tr("سلة المشتريات")}</h1>
+          <h1 className="text-base font-black text-foreground">{tr("سلة المشتريات")}</h1>
           <div className="w-10 h-10"></div>
         </header>
 
-        <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20 text-center">
-          <div className="relative w-64 h-64 sm:w-72 sm:h-72 mb-8 opacity-20">
-            <svg
-              viewBox="0 0 240 240"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-full h-full drop-shadow-sm"
-            >
-              <ellipse
-                cx="120"
-                cy="190"
-                rx="95"
-                ry="12"
-                fill="#fde8e9"
-                transform="rotate(-4 120 190)"
-              />
-              <path
-                d="M95 90 L95 70 L150 70 L150 90"
-                stroke="#d68a29"
-                strokeWidth="12"
-                strokeLinejoin="round"
-                fill="none"
-              />
-              <polygon points="80,105 165,105 165,90 90,90" fill="#d07e1c" />
-              <path d="M95 105 C95 80, 142 80, 142 105 Z" fill="#fb8e49" />
-              <polygon points="170,105 190,110 170,185 150,180" fill="#d57b28" />
-              <polygon points="65,105 170,105 150,180 50,170" fill="#f8c347" />
-              <path
-                d="M85 105 L85 82 L135 82 L135 105"
-                stroke="#f8c347"
-                strokeWidth="12"
-                strokeLinejoin="round"
-                fill="none"
-              />
-            </svg>
+        <main className="flex-1 flex flex-col items-center justify-center px-6 pb-24 text-center">
+          <div className="w-24 h-24 rounded-3xl bg-muted/60 border border-border/70 flex items-center justify-center text-muted-foreground mb-6 shadow-sm">
+            <Package className="w-12 h-12 stroke-[1.5] text-primary/70" />
           </div>
-          <h2 className="text-2xl font-black mb-3 text-slate-900">{tr("السلة فارغة")}</h2>
-          <p className="text-slate-500 text-sm max-w-xs mb-8">
-            {tr("عندما تضيف منتجات إلى سلتك، ستظهر هنا لتتمكن من إكمال طلبك.")}
+          <h2 className="text-2xl font-black mb-2 text-foreground">{tr("السلة فارغة")}</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm max-w-xs mb-8 leading-relaxed">
+            {tr("عندما تضيف منتجات إلى سلتك، ستظهر هنا لتتمكن من مراجعتها وإتمام شرائها فوراً.")}
           </p>
           <button
+            id="start-shopping-btn"
             onClick={() => void navigate({ to: "/" })}
-            className="bg-[var(--brand-red)] text-white font-bold px-8 py-3.5 rounded-2xl shadow-lg shadow-rose-500/20 active:scale-95 transition-all"
+            className="bg-primary hover:opacity-90 text-primary-foreground font-black px-8 py-3.5 rounded-2xl shadow-lg active:scale-95 transition-all text-sm flex items-center gap-2"
           >
-            {tr("ابدأ التسوق")}
+            <Gamepad2 className="w-4 h-4" />
+            <span>{tr("ابدأ التسوق وتصفح الألعاب")}</span>
           </button>
         </main>
       </AppShell>
@@ -667,137 +553,339 @@ function CartPage() {
 
   return (
     <AppShell currentView="cart">
+      {/* Top Header */}
       <header className="shrink-0 bg-[var(--card)]/90 backdrop-blur-md sticky top-0 px-4 py-3.5 flex items-center justify-between z-20 border-b border-border">
         <div className="flex items-center gap-3">
           <button
+            id="cart-header-back-btn"
             onClick={() => void navigate({ to: "/" })}
-            className="w-9 h-9 bg-muted flex items-center justify-center rounded-xl hover:bg-muted/80 text-foreground transition-colors"
+            className="w-9 h-9 bg-muted flex items-center justify-center rounded-xl hover:bg-muted/80 text-foreground transition-colors active:scale-95"
             aria-label="العودة"
           >
             <ChevronDown className="w-5 h-5 stroke-[2.5]" />
           </button>
-          <h1 className="text-base font-bold text-foreground tracking-tight">
+          <h1 className="text-base font-black text-foreground tracking-tight">
             {tr("سلة المشتريات")}
           </h1>
         </div>
-        {lines.length > 0 && (
-          <span className="text-xs font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-            {lines.length} {tr("منتجات")}
+
+        <div className="flex items-center gap-2">
+          <span
+            id="cart-items-count-badge"
+            className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full"
+          >
+            {totalItemsCount} {totalItemsCount === 1 ? tr("عنصر") : tr("عناصر")}
           </span>
-        )}
+        </div>
       </header>
 
-      <main className="flex-1 px-0 pb-[220px]">
-        <div className="divide-y divide-border/40">
-          <AnimatePresence mode="popLayout">
-            {lines.map((line) => (
-              <SwipeableCartItem
-                key={String(line.productId)}
-                line={line}
-                onUpdateQuantity={(_, q) =>
-                  setQuantity(
-                    line.productId,
-                    q,
-                    line.offerKind,
-                    line.optionId,
-                    line.typeId,
-                    line.editionId,
-                  )
-                }
-                onRemove={() =>
-                  remove(line.productId, line.offerKind, line.optionId, line.typeId, line.editionId)
-                }
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-
-        <div className="px-4 py-5 space-y-4">
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-sm font-bold text-foreground">{tr("هل تحتاج شيئاً آخر؟")}</span>
-            <button
-              onClick={() => void navigate({ to: "/" })}
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-            >
-              <span>{tr("تصفح المزيد من الألعاب")}</span>
-              <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
-            </button>
+      <main className="flex-1 px-4 py-4 pb-48 max-w-2xl mx-auto w-full space-y-4" dir="rtl">
+        {/* Products List Section */}
+        <section className="bg-[var(--card)] border border-border rounded-3xl overflow-hidden shadow-xs">
+          <div className="px-4 py-3 border-b border-border/60 bg-muted/20 flex items-center justify-between">
+            <span className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Gamepad2 className="w-4 h-4 text-primary" />
+              <span>{tr("المنتجات في السلة")}</span>
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {lines.length} {lines.length === 1 ? tr("منتج مختلف") : tr("منتجات")}
+            </span>
           </div>
 
-          {needsAddress ? (
-            <div className="p-4 bg-muted/40 rounded-2xl border border-border space-y-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-card rounded-xl flex items-center justify-center shadow-sm">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <h4 className="font-bold text-foreground text-xs sm:text-sm">
-                  {tr("عنوان التوصيل (للأجهزة)")}
-                </h4>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {(
-                  [
-                    ["fullName", "الاسم الكامل"],
-                    ["phone", "رقم الهاتف"],
-                    ["city", "المدينة"],
-                    ["area", "المنطقة"],
-                    ["street", "الشارع / أقرب نقطة دالة"],
-                    ["notes", "ملاحظات"],
-                  ] as const
-                ).map(([field, label]) => (
-                  <input
-                    key={field}
-                    value={String(address[field] ?? "")}
-                    onChange={(event) =>
-                      setAddress((prev) => ({ ...prev, [field]: event.target.value }))
-                    }
-                    placeholder={label}
-                    className="rounded-xl border border-border bg-[var(--card)] px-3 py-2 text-xs sm:text-sm outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="p-3.5 bg-card rounded-2xl border border-border/70 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <Zap className="w-4 h-4" />
-              </div>
-              <p className="text-xs font-medium text-foreground/80 leading-relaxed">
-                {tr("تسليم فوري لجميع المنتجات الرقمية عبر محادثة الطلب فور تأكيد الدفع.")}
-              </p>
-            </div>
-          )}
+          <div className="divide-y divide-border/40">
+            <AnimatePresence mode="popLayout">
+              {lines.map((line) => (
+                <CartItemCard
+                  key={`${line.productId}-${line.offerKind || ""}-${line.optionId || ""}-${line.typeId || ""}`}
+                  line={line}
+                  onUpdateQuantity={(id, q) =>
+                    setQuantity(id, q, line.offerKind, line.optionId, line.typeId, line.editionId)
+                  }
+                  onRequestDelete={(l) => {
+                    playSound("nock", 0.4);
+                    setItemToDelete(l);
+                  }}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        </section>
 
+        {/* Continue Shopping Link */}
+        <div className="flex items-center justify-between px-2">
+          <span className="text-xs font-medium text-muted-foreground">
+            {tr("هل تبحث عن ألعاب أو بطاقات أخرى؟")}
+          </span>
+          <button
+            id="browse-more-games-btn"
+            onClick={() => void navigate({ to: "/" })}
+            className="text-xs font-bold text-primary hover:underline flex items-center gap-1 active:scale-95 transition-transform"
+          >
+            <span>{tr("تصفح المزيد")}</span>
+            <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
+          </button>
+        </div>
+
+        {/* Address Form (If physical hardware is in cart) */}
+        {needsAddress ? (
+          <section className="p-4 bg-[var(--card)] rounded-3xl border border-border space-y-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-amber-500/10 text-amber-600 rounded-xl flex items-center justify-center">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-black text-foreground text-xs sm:text-sm">
+                  {tr("عنوان التوصيل (للأجهزة والملحقات)")}
+                </h4>
+                <p className="text-[11px] text-muted-foreground">
+                  {tr("مطلوب لتوصيل الطلبات الملموسة إلى باب منزلك")}
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 pt-1">
+              {(
+                [
+                  ["fullName", "الاسم الكامل"],
+                  ["phone", "رقم الهاتف للتواصل"],
+                  ["city", "المدينة / المحافظة"],
+                  ["area", "المنطقة / الحي"],
+                  ["street", "الشارع وأقرب نقطة دالة"],
+                  ["notes", "ملاحظات إضافية للتوصيل (اختياري)"],
+                ] as const
+              ).map(([field, label]) => (
+                <input
+                  key={field}
+                  id={`address-input-${field}`}
+                  value={String(address[field] ?? "")}
+                  onChange={(event) =>
+                    setAddress((prev) => ({ ...prev, [field]: event.target.value }))
+                  }
+                  placeholder={label}
+                  className="rounded-xl border border-border bg-background px-3 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-muted-foreground"
+                />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <div className="p-3.5 bg-emerald-500/5 rounded-2xl border border-emerald-500/20 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+              <Zap className="w-4 h-4" />
+            </div>
+            <p className="text-xs font-medium text-foreground/90 leading-relaxed">
+              {tr("تسليم فوري لجميع الحسابات الرقمية والأكواد مباشرة في محادثة الطلب بعد الدفع.")}
+            </p>
+          </div>
+        )}
+
+        {/* Coupon Code Section */}
+        <section className="bg-[var(--card)] p-3.5 rounded-3xl border border-border space-y-2 shadow-xs">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Ticket className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Ticket className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
+                id="coupon-code-input"
                 type="text"
-                placeholder={tr("أضف كود الخصم")}
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-border bg-[var(--card)] text-xs sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
+                value={couponCode}
+                onChange={(e) => {
+                  setCouponCode(e.target.value.toUpperCase());
+                  setCouponError("");
+                }}
+                placeholder={tr("أدخل كود الخصم (إن وجد)")}
+                className="w-full pr-10 pl-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 uppercase font-mono tracking-wider transition-all placeholder:text-muted-foreground placeholder:normal-case placeholder:font-sans"
               />
             </div>
-            <button className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-xl text-xs active:scale-95 transition-all border border-border/60">
-              {tr("تطبيق")}
+            <button
+              id="apply-coupon-btn"
+              onClick={handleApplyCoupon}
+              disabled={isApplyingCoupon || !couponCode.trim()}
+              className="px-4 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl text-xs active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0 shadow-xs"
+            >
+              {isApplyingCoupon && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+              <span>{tr("تطبيق")}</span>
             </button>
           </div>
 
-          {error && (
-            <div className="p-3.5 bg-destructive/10 rounded-2xl border border-destructive/20 text-destructive text-xs font-semibold">
-              {error}
+          {appliedCoupon && (
+            <div className="flex items-center justify-between px-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+              <span>تم تطبيق الكود ({appliedCoupon.code})</span>
+              <span>- {formatIQDPrice(finalDiscount)}</span>
             </div>
           )}
-        </div>
+
+          {couponError && (
+            <p className="text-xs text-destructive font-medium px-2">{couponError}</p>
+          )}
+        </section>
+
+        {/* Requirement 3: Detailed Order Breakdown / Summary */}
+        <section className="bg-[var(--card)] p-4 rounded-3xl border border-border shadow-xs space-y-3">
+          <h4 className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-border/60">
+            <Package className="w-4 h-4 text-primary" />
+            <span>{tr("تفاصيل وملخص السلة")}</span>
+          </h4>
+
+          <div className="space-y-2 text-xs sm:text-sm">
+            {/* Total items count */}
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span>{tr("عدد العناصر الإجمالي")}:</span>
+              <span className="font-bold text-foreground">
+                {totalItemsCount} {totalItemsCount === 1 ? tr("عنصر") : tr("عناصر")}
+              </span>
+            </div>
+
+            {/* Subtotal */}
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span>{tr("المجموع الفرعي")}:</span>
+              <span className="font-bold text-foreground">{formatIQDPrice(subtotal)}</span>
+            </div>
+
+            {/* Discount if present */}
+            {finalDiscount > 0 && (
+              <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-bold">
+                <span className="flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{tr("الخصم المطبق")}:</span>
+                </span>
+                <span>- {formatIQDPrice(finalDiscount)}</span>
+              </div>
+            )}
+
+            {/* Delivery Fee if present */}
+            {needsAddress && (
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span>{tr("رسوم التوصيل")}:</span>
+                <span className="font-bold text-foreground">{formatIQDPrice(deliveryPrice)}</span>
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-border/60 flex justify-between items-center">
+              <span className="font-bold text-foreground">{tr("رصيد محفظتك الحالي")}:</span>
+              <span
+                className={`font-black ${
+                  isBalanceSufficient
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-rose-600 dark:text-rose-400"
+                }`}
+              >
+                {formatIQDPrice(walletBalance)}
+              </span>
+            </div>
+
+            {/* Amount to be deducted */}
+            <div className="pt-1 flex justify-between items-center">
+              <span className="font-black text-foreground text-sm">
+                {tr("المبلغ المطلوب دفعه من المحفظة")}:
+              </span>
+              <span className="font-black text-primary text-base">
+                {formatIQDPrice(totalPayable)}
+              </span>
+            </div>
+          </div>
+
+          {/* Insufficient Balance Notice */}
+          {!isBalanceSufficient && (
+            <div className="mt-3 p-3.5 bg-rose-500/10 border border-rose-500/25 rounded-2xl text-right space-y-2">
+              <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 text-xs font-black">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{tr("الرصيد غير كافٍ لإتمام الدفع")}</span>
+              </div>
+              <div className="text-xs text-muted-foreground flex justify-between items-center">
+                <span>{tr("المبلغ الناقص")}:</span>
+                <span className="font-black text-rose-600 dark:text-rose-400">
+                  {formatIQDPrice(missingAmount)}
+                </span>
+              </div>
+              <button
+                id="cart-insufficient-recharge-btn"
+                onClick={() => void navigate({ to: "/wallet" })}
+                className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span>{tr("شحن المحفظة الآن")}</span>
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* Requirement 2: Purchase Policy Checkbox Agreement */}
+        <section
+          id="terms-agreement-section"
+          className={`p-4 rounded-3xl border transition-all duration-300 ${
+            highlightTerms
+              ? "bg-destructive/10 border-destructive shadow-md ring-2 ring-destructive/40 animate-pulse"
+              : acceptedTerms
+                ? "bg-primary/5 border-primary/30 shadow-xs"
+                : "bg-[var(--card)] border-border shadow-xs"
+          }`}
+        >
+          <div className="flex items-start gap-3 select-none">
+            <button
+              id="policy-checkbox"
+              type="button"
+              onClick={() => {
+                const next = !acceptedTerms;
+                setAcceptedTerms(next);
+                playSound(next ? "turn_on" : "turn_off", 0.5);
+                if (highlightTerms) setHighlightTerms(false);
+              }}
+              className="mt-0.5 shrink-0 text-primary focus:outline-none"
+              aria-label="الموافقة على سياسة الشراء"
+            >
+              {acceptedTerms ? (
+                <CheckSquare className="w-5 h-5 text-primary" />
+              ) : (
+                <Square
+                  className={`w-5 h-5 ${highlightTerms ? "text-destructive" : "text-muted-foreground"}`}
+                />
+              )}
+            </button>
+
+            <div className="text-xs leading-relaxed text-foreground">
+              <span>{tr("أوافق على ")}</span>
+              <a
+                id="view-policy-link"
+                href="/policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  // If on mobile or preview, let user open in new tab or sheet to preserve cart
+                  playSound("hover", 0.4);
+                }}
+                className="font-bold text-primary underline underline-offset-4 hover:opacity-80 inline-flex items-center gap-0.5"
+              >
+                <span>{tr("سياسة الشراء والشروط والأحكام")}</span>
+                <ExternalLink className="w-3 h-3 inline" />
+              </a>
+              <span className="text-muted-foreground text-[11px] block mt-1">
+                {tr(
+                  "بالنقر على إتمام الدفع، يتم خصم قيمة الطلب فوراً من محفظتك وبدء تجهيز الحسابات عبر الدعم.",
+                )}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Global Error Banner if any */}
+        {error && (
+          <div className="p-3.5 bg-destructive/10 rounded-2xl border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
       </main>
 
-      <footer className="fixed bottom-[58px] sm:bottom-[60px] left-0 right-0 bg-[var(--card)]/95 backdrop-blur-md border-t border-border px-4 py-3 sm:py-3.5 space-y-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] z-40">
-        <div className="flex items-center justify-between max-w-3xl mx-auto w-full">
-          <div className="flex flex-col">
+      {/* Fixed Checkout Bar */}
+      <footer
+        className="fixed bottom-[58px] sm:bottom-[60px] left-0 right-0 bg-[var(--card)]/95 backdrop-blur-md border-t border-border px-4 py-3 sm:py-3.5 space-y-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-40"
+        dir="rtl"
+      >
+        <div className="flex items-center justify-between max-w-2xl mx-auto w-full">
+          <div className="flex flex-col text-right">
             <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider mb-0.5">
-              {tr("إجمالي السلة")}
+              {tr("إجمالي الطلب المطلوب")}
             </div>
             <div className="text-foreground font-black text-lg sm:text-xl tracking-tight">
-              {formatIQDPrice(total)}
+              {formatIQDPrice(totalPayable)}
             </div>
           </div>
 
@@ -810,94 +898,128 @@ function CartPage() {
             </div>
             <div
               className={`font-black text-sm sm:text-base tracking-tight ${
-                user?.walletBalance && user.walletBalance >= total
+                isBalanceSufficient
                   ? "text-emerald-600 dark:text-emerald-400"
                   : "text-rose-600 dark:text-rose-400"
               }`}
             >
-              {formatIQDPrice(user?.walletBalance || 0)}
+              {formatIQDPrice(walletBalance)}
             </div>
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto w-full">
-          <button
-            onClick={handleInitiatePayment}
-            disabled={checkout.isPending}
-            className="w-full bg-primary hover:opacity-90 text-primary-foreground font-black py-3 sm:py-3.5 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all disabled:opacity-50"
-          >
-            <Wallet className="w-4 h-4" />
-            <span className="text-sm sm:text-base">
-              {checkout.isPending ? tr("جاري الطلب...") : tr("إتمام الدفع عبر المحفظة")}
-            </span>
-          </button>
+        {/* Payment Action Button */}
+        <div className="max-w-2xl mx-auto w-full">
+          {isBalanceSufficient ? (
+            <button
+              id="checkout-pay-btn"
+              onClick={handleInitiatePayment}
+              disabled={checkout.isPending}
+              className={`w-full bg-primary hover:opacity-95 text-primary-foreground font-black py-3.5 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all disabled:opacity-60 ${
+                !acceptedTerms ? "opacity-90" : ""
+              }`}
+            >
+              {checkout.isPending ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span className="text-sm sm:text-base">{tr("جاري الدفع وتجهيز الطلب...")}</span>
+                </>
+              ) : (
+                <>
+                  <Wallet className="w-4 h-4" />
+                  <span className="text-sm sm:text-base">{tr("إتمام الدفع عبر المحفظة")}</span>
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              id="checkout-recharge-insufficient-btn"
+              onClick={() => void navigate({ to: "/wallet" })}
+              className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black py-3.5 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all text-sm sm:text-base"
+            >
+              <Wallet className="w-4 h-4" />
+              <span>
+                {tr("الرصيد غير كافٍ — شحن المحفظة (ناقص ")}
+                {formatIQDPrice(missingAmount)})
+              </span>
+            </button>
+          )}
         </div>
       </footer>
 
-      {/* Modal: Insufficient Balance */}
+      {/* Requirement 1: Confirmation Modal when quantity is 1 and user clicks - or delete */}
       <AnimatePresence>
-        {showInsufficientModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        {itemToDelete && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowInsufficientModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => {
+                playSound("nock", 0.4);
+                setItemToDelete(null);
+              }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-[var(--card)] rounded-3xl p-6 shadow-2xl z-10 text-center border border-border"
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-sm bg-[var(--card)] rounded-3xl p-5 sm:p-6 shadow-2xl z-10 text-center border border-border"
               dir="rtl"
             >
-              <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-400 mx-auto mb-3.5 border border-rose-500/20 shadow-sm">
-                <AlertCircle className="w-6 h-6 stroke-[2.5]" />
+              <div className="w-12 h-12 bg-destructive/10 rounded-2xl flex items-center justify-center text-destructive mx-auto mb-3.5 border border-destructive/20 shadow-xs">
+                <Trash2 className="w-6 h-6 stroke-[2]" />
               </div>
 
-              <h3 className="text-lg font-black text-foreground mb-1.5">
-                {tr("رصيد المحفظة غير كافٍ")}
+              <h3 className="text-lg font-black text-foreground mb-1">
+                {tr("حذف المنتج من السلة؟")}
               </h3>
-              <p className="text-muted-foreground text-xs sm:text-sm mb-5 leading-relaxed">
-                {tr("رصيدك الحالي لا يغطي قيمة هذا الطلب. يمكنك شحن محفظتك لإتمام الشراء.")}
+              <p className="text-muted-foreground text-xs sm:text-sm mb-4 leading-relaxed">
+                {tr("هل تريد إزالة هذا المنتج من سلة المشتريات؟")}
               </p>
 
-              <div className="bg-muted/50 rounded-2xl p-3.5 mb-5 text-xs sm:text-sm space-y-2 border border-border/60 text-right">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-medium">{tr("إجمالي السلة")}:</span>
-                  <span className="text-foreground font-black">{formatIQDPrice(total)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-medium">{tr("رصيدك الحالي")}:</span>
-                  <span className="text-rose-600 dark:text-rose-400 font-bold">
-                    {formatIQDPrice(user?.walletBalance || 0)}
-                  </span>
-                </div>
-                <div className="pt-2 border-t border-border flex justify-between items-center">
-                  <span className="text-foreground font-bold">{tr("المبلغ المطلوب شحنه")}:</span>
-                  <span className="text-primary font-black">
-                    {formatIQDPrice(Math.max(0, total - (user?.walletBalance || 0)))}
-                  </span>
+              {/* Item Preview Card */}
+              <div className="bg-muted/40 rounded-2xl p-3 mb-5 flex items-center gap-3 text-right border border-border/60">
+                {itemToDelete.image ? (
+                  <img
+                    src={cdnImage(itemToDelete.image)}
+                    alt=""
+                    className="w-12 h-12 rounded-xl object-cover border border-border shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                    <Gamepad2 className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-foreground truncate" dir="ltr">
+                    {itemToDelete.title}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground font-semibold">
+                    {formatIQDPrice(itemToDelete.price)}
+                  </p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => {
-                    setShowInsufficientModal(false);
-                    void navigate({ to: "/wallet" });
-                  }}
-                  className="w-full py-3 bg-primary hover:opacity-90 text-primary-foreground font-black rounded-2xl shadow-sm active:scale-[0.98] transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+                  id="confirm-delete-item-btn"
+                  onClick={() => executeRemove(itemToDelete)}
+                  className="w-full py-3 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-black rounded-2xl shadow-xs active:scale-[0.98] transition-all text-xs sm:text-sm flex items-center justify-center gap-1.5"
                 >
-                  <Wallet className="w-4 h-4" />
-                  <span>{tr("شحن المحفظة الآن")}</span>
+                  <Trash2 className="w-4 h-4" />
+                  <span>{tr("حذف المنتج")}</span>
                 </button>
                 <button
-                  onClick={() => setShowInsufficientModal(false)}
+                  id="cancel-delete-item-btn"
+                  onClick={() => {
+                    playSound("nock", 0.4);
+                    setItemToDelete(null);
+                  }}
                   className="w-full py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm"
                 >
-                  {tr("إلغاء والعودة للسلة")}
+                  {tr("إلغاء")}
                 </button>
               </div>
             </motion.div>
@@ -905,7 +1027,7 @@ function CartPage() {
         )}
       </AnimatePresence>
 
-      {/* Modal: Confirm Payment */}
+      {/* Modal: Confirm Payment & Deduct Balance */}
       <AnimatePresence>
         {showConfirmModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -914,7 +1036,7 @@ function CartPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => !checkout.isPending && setShowConfirmModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -923,32 +1045,32 @@ function CartPage() {
               className="relative w-full max-w-md bg-[var(--card)] rounded-3xl p-6 shadow-2xl z-10 text-center border border-border"
               dir="rtl"
             >
-              <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-3.5 border border-emerald-500/20 shadow-sm">
-                <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto mb-3.5 border border-emerald-500/20 shadow-xs">
+                <ShieldCheck className="w-6 h-6 stroke-[2.5]" />
               </div>
 
               <h3 className="text-lg font-black text-foreground mb-1">
                 {tr("تأكيد الدفع عبر المحفظة")}
               </h3>
               <p className="text-muted-foreground text-xs sm:text-sm mb-5">
-                {tr("هل ترغب بتأكيد الطلب واستقطاع المبلغ من رصيدك؟")}
+                {tr("هل ترغب بتأكيد الطلب واستقطاع المبلغ فوراً من محفظتك؟")}
               </p>
 
               <div className="bg-muted/50 rounded-2xl p-3.5 mb-5 text-xs sm:text-sm space-y-2 border border-border/60 text-right">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-medium">{tr("عدد المنتجات")}:</span>
+                  <span className="text-muted-foreground font-medium">{tr("عدد العناصر")}:</span>
                   <span className="text-foreground font-bold">
-                    {lines.length} {tr("منتج")}
+                    {totalItemsCount} {tr("عنصر")}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground font-medium">{tr("إجمالي المبلغ")}:</span>
-                  <span className="text-foreground font-black">{formatIQDPrice(total)}</span>
+                  <span className="text-foreground font-black">{formatIQDPrice(totalPayable)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground font-medium">{tr("رصيدك الحالي")}:</span>
                   <span className="text-muted-foreground font-bold">
-                    {formatIQDPrice(user?.walletBalance || 0)}
+                    {formatIQDPrice(walletBalance)}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-border flex justify-between items-center">
@@ -956,29 +1078,108 @@ function CartPage() {
                     {tr("الرصيد المتبقي بعد الدفع")}:
                   </span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-black">
-                    {formatIQDPrice(Math.max(0, (user?.walletBalance || 0) - total))}
+                    {formatIQDPrice(Math.max(0, walletBalance - totalPayable))}
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
                 <button
+                  id="modal-confirm-pay-btn"
                   onClick={confirmAndPay}
                   disabled={checkout.isPending}
-                  className="w-full py-3 bg-primary hover:opacity-90 text-primary-foreground font-black rounded-2xl shadow-sm active:scale-[0.98] transition-all text-xs sm:text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 bg-primary hover:opacity-90 text-primary-foreground font-black rounded-2xl shadow-xs active:scale-[0.98] transition-all text-xs sm:text-sm flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {checkout.isPending ? (
-                    <span>{tr("جاري تأكيد واستقطاع المبلغ...")}</span>
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>{tr("جاري تأكيد واستقطاع المبلغ...")}</span>
+                    </>
                   ) : (
                     <span>{tr("تأكيد واستقطاع المبلغ")}</span>
                   )}
                 </button>
                 <button
-                  onClick={() => setShowConfirmModal(false)}
+                  id="modal-cancel-pay-btn"
+                  onClick={() => {
+                    playSound("nock", 0.4);
+                    setShowConfirmModal(false);
+                  }}
                   disabled={checkout.isPending}
                   className="w-full py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm disabled:opacity-50"
                 >
                   {tr("تراجع")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal: Insufficient Balance Alert */}
+      <AnimatePresence>
+        {showInsufficientModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowInsufficientModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-[var(--card)] rounded-3xl p-6 shadow-2xl z-10 text-center border border-border"
+              dir="rtl"
+            >
+              <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-400 mx-auto mb-3.5 border border-rose-500/20 shadow-xs">
+                <AlertCircle className="w-6 h-6 stroke-[2.5]" />
+              </div>
+
+              <h3 className="text-lg font-black text-foreground mb-1.5">
+                {tr("رصيد المحفظة غير كافٍ")}
+              </h3>
+              <p className="text-muted-foreground text-xs sm:text-sm mb-5 leading-relaxed">
+                {tr("رصيدك الحالي لا يغطي قيمة هذا الطلب. يمكنك شحن محفظتك لإتمام الشراء فوراً.")}
+              </p>
+
+              <div className="bg-muted/50 rounded-2xl p-3.5 mb-5 text-xs sm:text-sm space-y-2 border border-border/60 text-right">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-medium">{tr("إجمالي الطلب")}:</span>
+                  <span className="text-foreground font-black">{formatIQDPrice(totalPayable)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-medium">{tr("رصيدك الحالي")}:</span>
+                  <span className="text-rose-600 dark:text-rose-400 font-bold">
+                    {formatIQDPrice(walletBalance)}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <span className="text-foreground font-bold">{tr("المبلغ المطلوب شحنه")}:</span>
+                  <span className="text-primary font-black">{formatIQDPrice(missingAmount)}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  id="modal-goto-wallet-btn"
+                  onClick={() => {
+                    setShowInsufficientModal(false);
+                    void navigate({ to: "/wallet" });
+                  }}
+                  className="w-full py-3 bg-primary hover:opacity-90 text-primary-foreground font-black rounded-2xl shadow-xs active:scale-[0.98] transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>{tr("شحن المحفظة الآن")}</span>
+                </button>
+                <button
+                  id="modal-cancel-insufficient-btn"
+                  onClick={() => setShowInsufficientModal(false)}
+                  className="w-full py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-2xl transition-colors text-xs sm:text-sm"
+                >
+                  {tr("إلغاء والعودة للسلة")}
                 </button>
               </div>
             </motion.div>

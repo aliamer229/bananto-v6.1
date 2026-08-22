@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { useState } from "react";
 
 import { useTranslation } from "@/i18n";
+import { playSound } from "@/utils/audio";
 
 /**
  * Image viewer for the details hero.
@@ -26,7 +27,10 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
     );
   }
 
-  const step = (delta: number) => setActive((i) => (i + delta + images.length) % images.length);
+  const step = (delta: number) => {
+    playSound("album", 0.5);
+    setActive((i) => (i + delta + images.length) % images.length);
+  };
   const isRtl = dir === "rtl";
   const PrevIcon = isRtl ? ChevronRight : ChevronLeft;
   const NextIcon = isRtl ? ChevronLeft : ChevronRight;
@@ -48,6 +52,7 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
           <>
             <button
               type="button"
+              data-sfx-hover="hover_s"
               onClick={() => step(-1)}
               aria-label={t("common.previous")}
               className="absolute top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 shadow-sm backdrop-blur transition hover:bg-background"
@@ -57,6 +62,7 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
             </button>
             <button
               type="button"
+              data-sfx-hover="hover_s"
               onClick={() => step(1)}
               aria-label={t("common.next")}
               className="absolute top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 shadow-sm backdrop-blur transition hover:bg-background"
@@ -82,7 +88,11 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
               <button
                 key={`${src}-${index}`}
                 type="button"
-                onClick={() => setActive(index)}
+                data-sfx-hover="hover_s"
+                onClick={() => {
+                  playSound("album", 0.5);
+                  setActive(index);
+                }}
                 aria-label={`${alt} ${index + 1}`}
                 className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition ${
                   index === active ? "border-primary" : "border-border opacity-70 hover:opacity-100"

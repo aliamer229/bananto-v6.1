@@ -133,6 +133,8 @@ export default function FlowerMenu({
       <button
         ref={triggerRef}
         type="button"
+        data-sfx="settings"
+        data-sfx-hover="hover_s"
         className="absolute inset-0 z-20 m-auto flex touch-manipulation cursor-pointer items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
         aria-expanded={isOpen}
         aria-haspopup="menu"
@@ -183,6 +185,7 @@ export default function FlowerMenu({
                   itemRefs.current[index] = node;
                 }}
                 role="menuitem"
+                data-sfx-hover="hover_s"
                 aria-label={item.label}
                 tabIndex={isOpen && !activeSubMenuIndex ? 0 : -1}
                 className={cn(

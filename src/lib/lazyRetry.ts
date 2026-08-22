@@ -1,4 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
+import { isScriptImportError } from "./polyfills";
 
 /**
  * Wraps React.lazy with retry mechanisms to gracefully handle transient network errors

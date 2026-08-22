@@ -230,13 +230,20 @@ export const api = {
       `/api/orders?orderId=${encodeURIComponent(orderId)}`,
     ),
   checkout: (
-    items: { productId: string | number; quantity: number }[],
+    items: {
+      productId: string | number;
+      quantity: number;
+      editionId?: string | null;
+      dlcIds?: string[] | null;
+    }[],
     address?: unknown,
     couponCode?: string,
+    acceptedTerms?: boolean,
+    idempotencyKey?: string,
   ) =>
     request<{ order: Order }>("/api/orders", {
       method: "POST",
-      body: JSON.stringify({ items, address, couponCode }),
+      body: JSON.stringify({ items, address, couponCode, acceptedTerms, idempotencyKey }),
     }),
   setOrderAddress: (orderId: string, address: unknown) =>
     request<{ order: Order }>("/api/orders", {

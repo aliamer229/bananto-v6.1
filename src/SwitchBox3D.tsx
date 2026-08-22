@@ -27,7 +27,7 @@ export function SwitchBox3D({
 }: SwitchBox3DProps) {
   const { nodes, materials } = useGLTF(SWITCH_GLB_URL) as any;
   const group = useRef<THREE.Group>(null);
-  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
     if (nodes && materials) {
@@ -37,226 +37,47 @@ export function SwitchBox3D({
 
   useEffect(() => {
     let isMounted = true;
-    const canvas = document.createElement("canvas");
-    // Standard Nintendo Switch Case sleeve template resolution
-    canvas.width = 1236;
-    canvas.height = 951;
-    const ctx = canvas.getContext("2d", { alpha: false });
-    if (!ctx) return;
+    
+    if (!coverImage) {
+      setTexture(null);
+      return;
+    }
 
-    const backWidth = 588;
-    const spineWidth = 60;
-    const frontWidth = 588;
-    const spineX = backWidth;
-    const frontX = backWidth + spineWidth;
-
-    const isSwitch2 = platform === "ns2";
-    const brandColor = isSwitch2 ? "#d60012" : "#e60012";
-
-    const drawTexture = async () => {
+    const loader = new THREE.TextureLoader();
+    if (/^https?:\/\//i.test(coverImage)) {
       try {
-        // Base fill
-        ctx.fillStyle = "#111317";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        let artworkDrawn = false;
-
-        if (coverImage) {
-          const img = new Image();
-          // Only a genuinely cross-origin image needs (and can use) CORS mode.
-          // `cdnImage()` already rewrites remote artwork to the same-origin
-          // /api/img proxy, and asking for CORS on a same-origin URL can only
-          // fail the load — which left the sleeve on its dark base fill and made
-          // the cartridge look black.
-          if (/^https?:\/\//i.test(coverImage)) {
-            try {
-              if (new URL(coverImage).origin !== window.location.origin) {
-                img.crossOrigin = "anonymous";
-              }
-            } catch {
-              img.crossOrigin = "anonymous";
-            }
-          }
-
-          await new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = () => {
-              console.warn("[SwitchBox3D] Cover image load error:", coverImage);
-              resolve(null);
-            };
-            img.src = coverImage;
-          });
-
-          if (isMounted && img.complete && img.naturalWidth > 0) {
-            artworkDrawn = true;
-            const aspect = img.naturalWidth / img.naturalHeight;
-
-            // If image is a full retail box sleeve wrap (aspect ratio > 1.15)
-            if (aspect > 1.15) {
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            } else {
-              // Image is a front-only cover art -> construct the authentic physical box art wrap:
-
-              // 1. Front Cover Section (x = 648 to 1236)
-              ctx.save();
-              ctx.beginPath();
-              ctx.rect(frontX, 0, frontWidth, canvas.height);
-              ctx.clip();
-              // Cover background / art
-              ctx.drawImage(img, frontX, 0, frontWidth, canvas.height);
-              ctx.restore();
-
-              // 2. Spine Section (x = 588 to 648)
-              ctx.save();
-              ctx.fillStyle = brandColor;
-              ctx.fillRect(spineX, 0, spineWidth, canvas.height);
-
-              // Spine top Nintendo Switch mark
-              ctx.fillStyle = "#ffffff";
-              ctx.textAlign = "center";
-              ctx.font = "900 13px system-ui, -apple-system, sans-serif";
-              ctx.fillText("NINTENDO", spineX + spineWidth / 2, 48);
-              ctx.font = "900 15px system-ui, -apple-system, sans-serif";
-              ctx.fillText(isSwitch2 ? "SWITCH 2" : "SWITCH", spineX + spineWidth / 2, 66);
-
-              // Red / White subtle separator line
-              ctx.strokeStyle = "rgba(255,255,255,0.4)";
-              ctx.lineWidth = 1;
-              ctx.beginPath();
-              ctx.moveTo(spineX + 8, 80);
-              ctx.lineTo(spineX + spineWidth - 8, 80);
-              ctx.stroke();
-
-              // Spine Title (Rotated 90 degrees)
-              const titleText = (gameName || "NINTENDO SWITCH GAME").toUpperCase();
-              ctx.save();
-              ctx.translate(spineX + spineWidth / 2, 110);
-              ctx.rotate(Math.PI / 2);
-              ctx.fillStyle = "#ffffff";
-              ctx.textAlign = "left";
-              ctx.font = "bold 22px system-ui, -apple-system, sans-serif";
-              // Truncate title if too long for spine
-              const maxSpineLength = canvas.height - 240;
-              let renderedTitle = titleText;
-              if (ctx.measureText(renderedTitle).width > maxSpineLength) {
-                while (
-                  ctx.measureText(renderedTitle + "...").width > maxSpineLength &&
-                  renderedTitle.length > 5
-                ) {
-                  renderedTitle = renderedTitle.slice(0, -1);
-                }
-                renderedTitle += "...";
-              }
-              ctx.fillText(renderedTitle, 0, 7);
-              ctx.restore();
-
-              // Spine bottom Nintendo mark
-              ctx.fillStyle = "#ffffff";
-              ctx.textAlign = "center";
-              ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
-              ctx.fillText("Nintendo", spineX + spineWidth / 2, canvas.height - 40);
-              ctx.restore();
-
-              // 3. Back Cover Section (x = 0 to 588)
-              ctx.save();
-              ctx.beginPath();
-              ctx.rect(0, 0, backWidth, canvas.height);
-              ctx.clip();
-
-              // Atmospheric blurred artwork backdrop on the back
-              ctx.filter = "blur(18px) brightness(0.55)";
-              ctx.drawImage(img, -40, -40, backWidth + 80, canvas.height + 80);
-              ctx.filter = "none";
-
-              // Subtle overlay gradient on back cover
-              const backGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-              backGrad.addColorStop(0, "rgba(10, 12, 16, 0.65)");
-              backGrad.addColorStop(0.5, "rgba(10, 12, 16, 0.45)");
-              backGrad.addColorStop(1, "rgba(10, 12, 16, 0.95)");
-              ctx.fillStyle = backGrad;
-              ctx.fillRect(0, 0, backWidth, canvas.height);
-
-              // Back top bar with Switch branding
-              ctx.fillStyle = brandColor;
-              ctx.fillRect(24, 28, backWidth - 48, 4);
-
-              // Back screenshot / card preview
-              ctx.strokeStyle = "rgba(255,255,255,0.2)";
-              ctx.lineWidth = 2;
-              ctx.strokeRect(36, 70, backWidth - 72, 340);
-              ctx.drawImage(img, 38, 72, backWidth - 76, 336);
-
-              // Back game title
-              ctx.fillStyle = "#ffffff";
-              ctx.font = "bold 26px system-ui, -apple-system, sans-serif";
-              ctx.textAlign = "right";
-              ctx.fillText(gameName || "Nintendo Switch", backWidth - 36, 460);
-
-              // Technical / Rating spec footer
-              ctx.fillStyle = "rgba(255,255,255,0.7)";
-              ctx.font = "12px system-ui, -apple-system, sans-serif";
-              ctx.fillText("TV Mode • Tabletop Mode • Handheld Mode", backWidth - 36, 490);
-              ctx.fillText("1-4 Players • Pro Controller Compatible", backWidth - 36, 510);
-
-              // Footer legal & official seal
-              ctx.fillStyle = "rgba(255,255,255,0.4)";
-              ctx.font = "10px monospace";
-              ctx.fillText(
-                "Official Nintendo Licensed Product",
-                backWidth - 36,
-                canvas.height - 45,
-              );
-              ctx.restore();
-            }
-          }
+        if (new URL(coverImage).origin !== window.location.origin) {
+          loader.setCrossOrigin("anonymous");
         }
+      } catch {
+        loader.setCrossOrigin("anonymous");
+      }
+    }
 
-        // A cover that was supplied but never decoded used to fall through with
-        // nothing but the dark base fill, so the case rendered as a black slab.
-        // Treat it exactly like having no artwork at all.
-        if (!artworkDrawn) {
-          ctx.fillStyle = brandColor;
-          ctx.fillRect(spineX, 0, spineWidth, canvas.height);
-
-          ctx.fillStyle = "#ffffff";
-          ctx.textAlign = "center";
-          ctx.font = "bold 15px sans-serif";
-          ctx.fillText("SWITCH", spineX + spineWidth / 2, 60);
-
-          ctx.save();
-          ctx.translate(spineX + spineWidth / 2, 120);
-          ctx.rotate(Math.PI / 2);
-          ctx.font = "bold 22px sans-serif";
-          ctx.textAlign = "left";
-          ctx.fillText(gameName || "Nintendo Switch", 0, 7);
-          ctx.restore();
-        }
-
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.minFilter = THREE.LinearFilter;
-        tex.magFilter = THREE.LinearFilter;
-        tex.generateMipmaps = false;
+    loader.load(
+      coverImage,
+      (tex) => {
+        if (!isMounted) return;
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.flipY = false;
         tex.needsUpdate = true;
-
-        if (isMounted) {
-          setTexture((prev) => {
-            if (prev) prev.dispose();
-            return tex;
-          });
-        }
-      } catch (err) {
-        console.error("[SwitchBox3D] Error drawing canvas texture:", err);
+        
+        setTexture((prev) => {
+          if (prev) prev.dispose();
+          return tex;
+        });
+      },
+      undefined,
+      (err) => {
+        console.warn("[SwitchBox3D] Cover image load error:", err);
+        if (isMounted) setTexture(null);
       }
-    };
-
-    drawTexture();
+    );
 
     return () => {
       isMounted = false;
     };
-  }, [coverImage, platform, gameName]);
+  }, [coverImage]);
 
   // Calibrate realistic materials for the GLB
   if (materials?.foil) {
@@ -313,11 +134,9 @@ export function SwitchBox3D({
         {/* 1. Printed sleeve insert (artwork placeholder) */}
         <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
           <meshStandardMaterial
-            map={texture}
-            // Tint only ever multiplies the map, so it must stay white once
-            // there is artwork. Before the canvas is ready this used to paint a
-            // near-white panel, which is what a missing texture looked like.
-            color={texture ? "#ffffff" : "#3a3f47"}
+            key={texture ? texture.uuid : "empty"}
+            map={texture || null}
+            color={texture ? "#ffffff" : "#111317"}
             roughness={0.65}
             metalness={0.0}
             side={THREE.DoubleSide}

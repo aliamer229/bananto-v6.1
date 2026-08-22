@@ -16,22 +16,49 @@ import { UI_SOUND_MAP } from "../config/publicAssets";
 
 export type SoundName =
   | "bumper_end"
+  | "confirm"
+  | "action"
   | "home"
   | "hover"
   | "hover_s"
   | "klick"
+  | "click"
+  | "select"
+  | "button"
+  | "switch_click"
   | "loading"
+  | "load"
   | "nock"
+  | "back"
+  | "close"
   | "hide_modal"
   | "turn_off"
+  | "toggle_off"
   | "turn_on"
-  | "user"
-  | "switch_click"
-  | "click"
+  | "toggle_on"
   | "complete_task"
+  | "user"
+  | "profile"
+  | "settings"
+  | "Settings"
+  | "news"
+  | "News"
+  | "album"
+  | "Album"
+  | "message_toast"
+  | "08. Message Toast"
+  | "toast"
+  | "message"
   | "receive_message"
+  | "typing"
+  | "21. Typing"
+  | "type"
+  | "error"
+  | "Error"
+  | "fail"
+  | "alert"
   | "send_message"
-  | string;
+  | (string & {});
 
 const soundMap: Record<string, string> = UI_SOUND_MAP;
 
@@ -40,15 +67,29 @@ export const CRITICAL_SOUNDS = [
   "hover",
   "hover_s",
   "klick",
+  "click",
   "turn_on",
   "turn_off",
   "nock",
-  "hide_modal",
-  "switch_click",
-  "click",
+  "home",
+  "user",
+  "settings",
+  "news",
+  "album",
+  "message_toast",
+  "typing",
+  "error",
+  "bumper_end",
+  "loading",
 ] as const;
 
-export const SECONDARY_SOUNDS = ["home", "user", "bumper_end", "loading"] as const;
+export const SECONDARY_SOUNDS = [
+  "hide_modal",
+  "switch_click",
+  "complete_task",
+  "receive_message",
+  "send_message",
+] as const;
 
 // Singletons & Memory Caches
 let audioContext: AudioContext | null = null;
@@ -136,6 +177,18 @@ export const startOffsets: Record<string, number> = {
   turn_on: 0,
   turn_off: 0,
   user: 0.015,
+  settings: 0,
+  Settings: 0,
+  news: 0,
+  News: 0,
+  album: 0,
+  Album: 0,
+  message_toast: 0,
+  "08. Message Toast": 0,
+  typing: 0,
+  "21. Typing": 0,
+  error: 0,
+  Error: 0,
 };
 
 /**
@@ -392,6 +445,32 @@ if (typeof window !== "undefined") {
       const name = el.dataset["sfxHover"] || "hover_s";
       const volume = Number(el.dataset["sfxVolume"] ?? "0.5");
       playSound(name, Number.isFinite(volume) ? volume : 0.5, false);
+    },
+    { capture: true, passive: true },
+  );
+
+  // Global delegation for typing in inputs and textareas
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+      const isTextInput =
+        target.tagName === "TEXTAREA" ||
+        (target.tagName === "INPUT" &&
+          ["text", "search", "password", "email", "tel", "url", "number"].includes(
+            (target as HTMLInputElement).type || "text",
+          ));
+      if (
+        isTextInput &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        event.key &&
+        event.key.length === 1
+      ) {
+        playSound("typing", 0.35);
+      }
     },
     { capture: true, passive: true },
   );

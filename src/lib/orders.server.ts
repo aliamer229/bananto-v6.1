@@ -115,12 +115,48 @@ async function validateLine(
   };
 }
 
+const idempotencyCache = new Map<string, { order: Order; at: number }>();
+
+function getCachedOrder(key?: string): Order | null {
+  if (!key) return null;
+  const entry = idempotencyCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.at > 60_000) {
+    idempotencyCache.delete(key);
+    return null;
+  }
+  return entry.order;
+}
+
+function setCachedOrder(key: string | undefined, order: Order) {
+  if (!key) return;
+  idempotencyCache.set(key, { order, at: Date.now() });
+  // Clean old entries
+  if (idempotencyCache.size > 200) {
+    const now = Date.now();
+    for (const [k, v] of idempotencyCache.entries()) {
+      if (now - v.at > 60_000) idempotencyCache.delete(k);
+    }
+  }
+}
+
 export async function createOrderForUser(
   user: User,
   lines: CheckoutLine[],
   address?: Address,
   couponCode?: string,
+  acceptedTerms?: boolean,
+  idempotencyKey?: string,
 ): Promise<Order> {
+  if (acceptedTerms === false) {
+    throw new Error("terms_required");
+  }
+
+  if (idempotencyKey) {
+    const existing = getCachedOrder(idempotencyKey);
+    if (existing) return existing;
+  }
+
   const store = await getStore();
   const items: OrderItem[] = [];
 
@@ -494,6 +530,8 @@ export async function createOrderForUser(
       console.error("[order:telegram_notify_failed]", err);
     }
   }
+
+  setCachedOrder(idempotencyKey, order);
 
   return order;
 }

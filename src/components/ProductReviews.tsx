@@ -76,7 +76,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
   };
 
   return (
-    <section className="mx-auto max-w-6xl space-y-4 p-4" dir="rtl">
+    <section className="mx-auto max-w-6xl space-y-4 p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">تقييمات وتجارب اللاعبين</h2>
         <span className="text-sm text-muted-foreground">
