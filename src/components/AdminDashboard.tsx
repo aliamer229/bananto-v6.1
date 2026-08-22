@@ -174,6 +174,43 @@ export default function AdminDashboard() {
   const [discTrades, setDiscTrades] = useState<any[]>([]);
   const [problemSolutions, setProblemSolutions] = useState<ProblemSolution[]>([]);
 
+  // Real database queries for orders and messages to ensure accurate statistics
+  const { data: dbOrdersData } = useQuery({
+    queryKey: ["admin_db_orders"],
+    queryFn: async () => {
+      const res = await fetch("/api/orders?all=true", { credentials: "include" });
+      if (!res.ok) return { orders: [] };
+      return (await res.json()) as { orders?: any[] };
+    },
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+  });
+
+  const { data: dbThreadsData } = useQuery({
+    queryKey: ["admin_db_threads"],
+    queryFn: async () => {
+      const res = await fetch("/api/chat?surface=admin", { credentials: "include" });
+      if (!res.ok) return { threads: [] };
+      return (await res.json()) as { threads?: any[] };
+    },
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+  });
+
+  const effectiveOrders = React.useMemo(() => {
+    if (dbOrdersData?.orders && Array.isArray(dbOrdersData.orders) && dbOrdersData.orders.length > 0) {
+      return dbOrdersData.orders;
+    }
+    return orders;
+  }, [dbOrdersData?.orders, orders]);
+
+  const effectiveMessages = React.useMemo(() => {
+    if (dbThreadsData?.threads && Array.isArray(dbThreadsData.threads) && dbThreadsData.threads.length > 0) {
+      return dbThreadsData.threads;
+    }
+    return messages;
+  }, [dbThreadsData?.threads, messages]);
+
   // true only after a SUCCESSFUL read; a failed read must never trigger writes
   const canWrite = React.useRef(false);
   // skip the first write per key (it would just echo the loaded snapshot back)
@@ -387,8 +424,8 @@ export default function AdminDashboard() {
         return (
           <DashboardHome
             changeTab={setActiveSidebar}
-            orders={orders}
-            messages={messages}
+            orders={effectiveOrders}
+            messages={effectiveMessages}
             products={products}
             categories={categories}
             visits={visits}
@@ -399,8 +436,8 @@ export default function AdminDashboard() {
         return (
           <div className="w-full p-2 sm:p-6">
             <StoreAdvisorSection
-              orders={orders}
-              messages={messages}
+              orders={effectiveOrders}
+              messages={effectiveMessages}
               products={products}
               categories={categories}
               changeTab={setActiveSidebar}
@@ -478,7 +515,7 @@ export default function AdminDashboard() {
       case "market_settings":
         return <BananaManagementView />;
       case "financial_stats":
-        return <FinancialStatsView products={products} orders={orders} />;
+        return <FinancialStatsView products={products} orders={effectiveOrders} />;
       case "pricing_settings":
         return <PricingSettingsView />;
       case "wallet_mgmt":
@@ -498,7 +535,7 @@ export default function AdminDashboard() {
       case "stats":
         return (
           <StatsView
-            orders={orders}
+            orders={effectiveOrders}
             products={products}
             categories={categories}
             visits={visits}
@@ -512,8 +549,8 @@ export default function AdminDashboard() {
         return (
           <DashboardHome
             changeTab={setActiveSidebar}
-            orders={orders}
-            messages={messages}
+            orders={effectiveOrders}
+            messages={effectiveMessages}
             products={products}
             categories={categories}
             visits={visits}

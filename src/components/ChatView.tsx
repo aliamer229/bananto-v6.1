@@ -792,6 +792,13 @@ export default function ChatView({
 
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | null>(null);
 
+  /* ------------------------- human support countdown ------------------------- */
+  const [supportCountdown, setSupportCountdown] = useState<{
+    active: boolean;
+    secondsRemaining: number;
+  } | null>(null);
+  const supportCountdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   /* ------------------------- order delivery steps ------------------------- */
   const proofInputRef = useRef<HTMLInputElement | null>(null);
   const proofItemRef = useRef<string>("");
@@ -1422,15 +1429,7 @@ export default function ChatView({
     }
   };
 
-  const handleRequestHumanSupport = async () => {
-    if (!user) {
-      pushLocal({
-        id: Date.now().toString(),
-        sender: "ai",
-        text: "يرجى تسجيل الدخول أولاً للتحدث مع فريق الدعم والإدارة.",
-      });
-      return;
-    }
+  const executeActualHumanSupport = async () => {
     setIsPeerTyping(true);
     try {
       const res = await api.requestHumanSupport(threadId);
@@ -1438,6 +1437,7 @@ export default function ChatView({
         if (res.thread) {
           setThreadId(res.thread.id);
           void queryClient.invalidateQueries({ queryKey: ["threads"] });
+          toast.success("تم إرسال طلبك للإدارة بنجاح — بانتظار المشرف");
         }
       } else {
         const stamp = Date.now();
@@ -1455,10 +1455,65 @@ export default function ChatView({
         }
       }
     } catch {
-      // Fallback
+      toast.error("تعذر إرسال طلب الدعم");
     } finally {
       setIsPeerTyping(false);
     }
+  };
+
+  const handleCancelHumanSupportRequest = () => {
+    if (supportCountdownTimerRef.current) {
+      clearInterval(supportCountdownTimerRef.current);
+      supportCountdownTimerRef.current = null;
+    }
+    setSupportCountdown(null);
+    toast.info("تم إلغاء طلب التحدث مع المشرف");
+    if (!isHumanChat) {
+      pushLocal({
+        id: `${Date.now()}-cancelled`,
+        sender: "ai",
+        text: "تم إلغاء طلب التحدث مع المشرف. يمكنك الاستمرار في المحادثة معي هنا.",
+        createdAt: new Date().toISOString(),
+        status: "sent",
+      });
+    }
+  };
+
+  const handleRequestHumanSupport = async () => {
+    if (!user) {
+      pushLocal({
+        id: Date.now().toString(),
+        sender: "ai",
+        text: "يرجى تسجيل الدخول أولاً للتحدث مع فريق الدعم والإدارة.",
+      });
+      return;
+    }
+
+    if (supportCountdown?.active) {
+      return;
+    }
+
+    // Start 30-second countdown with cancellation
+    if (supportCountdownTimerRef.current) {
+      clearInterval(supportCountdownTimerRef.current);
+    }
+
+    setSupportCountdown({ active: true, secondsRemaining: 30 });
+
+    let remaining = 30;
+    supportCountdownTimerRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        if (supportCountdownTimerRef.current) {
+          clearInterval(supportCountdownTimerRef.current);
+          supportCountdownTimerRef.current = null;
+        }
+        setSupportCountdown(null);
+        void executeActualHumanSupport();
+      } else {
+        setSupportCountdown({ active: true, secondsRemaining: remaining });
+      }
+    }, 1000);
   };
 
   useEffect(() => {
@@ -2239,6 +2294,39 @@ export default function ChatView({
             />
           </svg>
         </div>
+
+        {/* 30-second Human Support Request Countdown Banner */}
+        <AnimatePresence>
+          {supportCountdown?.active && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              className="relative z-20 flex items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 shadow-sm backdrop-blur-md"
+              dir="rtl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white font-mono font-black text-xs shadow-xs">
+                  {supportCountdown.secondsRemaining}s
+                </div>
+                <div>
+                  <p className="text-xs font-black text-amber-950 dark:text-amber-200">
+                    طلب التحدث مع المشرف قيد التجهيز...
+                  </p>
+                  <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+                    سيتم فتح تذكرة مع الإدارة خلال {supportCountdown.secondsRemaining} ثانية، يمكنك الإلغاء إذا كنت تريد المتابعة هنا.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCancelHumanSupportRequest}
+                className="shrink-0 rounded-xl bg-card border border-amber-500/30 px-3 py-1.5 text-xs font-black text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors shadow-xs cursor-pointer"
+              >
+                إلغاء الطلب
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Dynamic Suggestions or Voice recording */}
         <AnimatePresence mode="wait">

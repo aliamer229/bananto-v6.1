@@ -427,10 +427,13 @@ export const Route = createFileRoute("/api/chat")({
               });
             }
 
-            // Admin is available: Create or switch to human GENERAL_SUPPORT thread
+            // Admin is available: Reuse any existing active human GENERAL_SUPPORT thread for this user (prevent duplicate tickets)
             const userThreads = await listThreadsByUser(user.id);
             let humanThread = userThreads.find(
-              (t) => t.chatType === "GENERAL_SUPPORT" && t.status === "open" && !t.orderId,
+              (t) =>
+                (t.chatType === "GENERAL_SUPPORT" || t.chatType === "SUPPORT") &&
+                t.status === "open" &&
+                !t.orderId,
             );
 
             const now = new Date().toISOString();
@@ -456,20 +459,27 @@ export const Route = createFileRoute("/api/chat")({
                 },
               });
             } else {
+              // Idempotency: only append notification if not already in waiting/active state
+              const needsStateUpdate =
+                humanThread.mode !== "WAITING_FOR_ADMIN" && humanThread.mode !== "ADMIN_ACTIVE";
+
               humanThread = await saveThread({
                 ...humanThread,
-                mode: "WAITING_FOR_ADMIN",
+                mode: humanThread.mode === "ADMIN_ACTIVE" ? "ADMIN_ACTIVE" : "WAITING_FOR_ADMIN",
                 aiPaused: true,
                 needsAdmin: true,
                 lastMessageAt: now,
               });
-              await appendMessage(humanThread.id, {
-                senderRole: "system",
-                kind: "system",
-                body: {
-                  text: "طلب العميل التحدث مع الإدارة. تم وضع المحادثة بانتظار استلام المشرف.",
-                },
-              });
+
+              if (needsStateUpdate) {
+                await appendMessage(humanThread.id, {
+                  senderRole: "system",
+                  kind: "system",
+                  body: {
+                    text: "طلب العميل التحدث مع الإدارة. تم وضع المحادثة بانتظار استلام المشرف.",
+                  },
+                });
+              }
             }
 
             return json({
