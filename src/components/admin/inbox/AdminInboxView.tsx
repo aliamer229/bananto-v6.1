@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useTransition } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useChatRealtime } from "@/hooks/useChatRealtime";
 import { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
@@ -24,6 +24,7 @@ import { ActiveConversation, ConversationErrorBoundary } from "./ActiveConversat
 import { AdminAvailabilityBar } from "./AdminAvailabilityBar";
 import { InboxFilter } from "./types";
 import { toast } from "sonner";
+import { normalizeMessage, type NormalizedChatMessage } from "@/lib/message-normalizer";
 
 interface AdminInboxViewProps {
   initialThreadId?: string | null;
@@ -35,6 +36,16 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(initialThreadId);
   const [activeFilter, setActiveFilter] = useState<InboxFilter>("queue");
   const [searchTerm, setSearchTerm] = useState("");
+  const [, startTransition] = useTransition();
+
+  // State to hold active messages for selected thread
+  const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
+  const [isCustomerTyping, setIsCustomerTyping] = useState(false);
+  const [isCustomerOnline, setIsCustomerOnline] = useState(false);
+  const [customerLastReadAt, setCustomerLastReadAt] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
 
   // Sync initialThreadId changes from parent or URL
   useEffect(() => {
@@ -86,45 +97,66 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     }
   }, [threads, selectedThreadId]);
 
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  // 4. Clean conversation switch:
+  // Reset message state, reset typing & presence, abort previous query
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // 4. Fetch initial messages
+  useEffect(() => {
+    // Clear state on conversation change to prevent state bleed
+    setLiveMessages([]);
+    setHasMore(false);
+    setNextCursor(null);
+    setIsCustomerTyping(false);
+    setIsCustomerOnline(false);
+    setCustomerLastReadAt(null);
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [selectedThreadId]);
+
+  // 5. Fetch initial messages strictly by selectedThreadId
   const { data: initialMessagesData, isLoading: isMessagesLoading } = useQuery({
     queryKey: ["thread-messages", selectedThreadId],
     queryFn: async () => {
       if (!selectedThreadId) return null;
       try {
         const res = (await getThreadMessages({
-          data: { threadId: selectedThreadId, limit: 15 },
+          data: { threadId: selectedThreadId, limit: 20 },
         })) as ThreadMessagesPage;
-        return res;
+
+        // Pass every message through centralized normalizer
+        const normalized = (res?.messages || []).map((m) => normalizeMessage(m, selectedThreadId));
+        return {
+          messages: normalized,
+          hasMore: Boolean(res?.hasMore),
+          nextCursor: res?.nextCursor || null,
+        };
       } catch (err) {
         console.error("Error fetching thread messages:", err);
         return null;
       }
     },
     enabled: !!selectedThreadId,
-    // Polling removed in favor of SSE
+    staleTime: 0,
+    gcTime: 0,
   });
 
-  // State to hold all messages combining initial + realtime
-  const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
-  const [isCustomerTyping, setIsCustomerTyping] = useState(false);
-  const [isCustomerOnline, setIsCustomerOnline] = useState(false);
-  const [customerLastReadAt, setCustomerLastReadAt] = useState<string | null>(null);
-
-  // Update live messages when initial messages load or thread changes
+  // Populate liveMessages upon query resolution
   useEffect(() => {
-    if (initialMessagesData) {
-      setLiveMessages(initialMessagesData.messages);
-      setHasMore(initialMessagesData.hasMore);
-      setNextCursor(initialMessagesData.nextCursor);
-    } else {
-      setLiveMessages([]);
-      setHasMore(false);
-      setNextCursor(null);
+    if (initialMessagesData && selectedThreadId) {
+      startTransition(() => {
+        setLiveMessages(initialMessagesData.messages);
+        setHasMore(initialMessagesData.hasMore);
+        setNextCursor(initialMessagesData.nextCursor);
+      });
     }
   }, [initialMessagesData, selectedThreadId]);
 
@@ -139,7 +171,10 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
       const res = (await getThreadMessages({
         data: { threadId: selectedThreadId, before: nextCursor, limit: 15 },
       })) as ThreadMessagesPage;
-      setLiveMessages((prev) => [...res.messages, ...prev]);
+
+      const normalized = (res?.messages || []).map((m) => normalizeMessage(m, selectedThreadId));
+
+      setLiveMessages((prev) => [...normalized, ...prev]);
       setHasMore(res.hasMore);
       setNextCursor(res.nextCursor);
 
@@ -156,22 +191,26 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     }
   };
 
+  // 6. Realtime subscription strictly scoped to selectedThreadId
   useChatRealtime({
     threadId: selectedThreadId,
     surface: "admin",
     onMessageCreated: (rawMsg, clientMsgId) => {
+      if (!selectedThreadId) return;
+      const safeMsg = normalizeMessage(rawMsg, selectedThreadId);
+
       setLiveMessages((prev) => {
-        const existsById = prev.some((m) => m.id === rawMsg.id);
+        const existsById = prev.some((m) => m.id === safeMsg.id);
         if (existsById) return prev;
 
         const existingTempIndex = clientMsgId ? prev.findIndex((m) => m.id === clientMsgId) : -1;
 
         if (existingTempIndex !== -1) {
           const copy = [...prev];
-          copy[existingTempIndex] = rawMsg;
+          copy[existingTempIndex] = safeMsg;
           return copy;
         }
-        return [...prev, rawMsg];
+        return [...prev, safeMsg];
       });
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
     },
@@ -183,7 +222,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
       setIsCustomerTyping(isCustomerTypingNow);
     },
     onPresenceUpdate: (participants) => {
-      const isCustomerOnlineNow = participants.some((p) => true); // In this basic implementation we just assume they are online if we got a heartbeat from them
+      const isCustomerOnlineNow = participants.some((p) => true);
       setIsCustomerOnline(isCustomerOnlineNow);
     },
     onReadUpdate: (data) => {
@@ -203,7 +242,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     return () => clearInterval(presenceInterval);
   }, [selectedThreadId]);
 
-  // 5. Mark thread as read when selected
+  // 7. Mark thread as read when selected
   const markReadMutation = useMutation({
     mutationFn: (threadId: string) => markThreadAsRead({ data: { threadId } }),
     onSuccess: () => {
@@ -216,7 +255,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     markReadMutation.mutate(threadId);
   };
 
-  // 6. Send message mutation with optimistic updates
+  // 8. Send message mutation with optimistic updates
   const sendMutation = useMutation({
     mutationFn: (data: {
       threadId: string;
@@ -244,7 +283,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
 
       const tempId = newMsgData.clientMessageId || `temp-${Date.now()}`;
       if (selectedThreadId) {
-        const optimisticMsg: ChatMessage = {
+        const rawOptimistic: ChatMessage = {
           id: tempId,
           threadId: selectedThreadId,
           senderRole: "admin",
@@ -258,6 +297,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
           createdAt: new Date().toISOString(),
         };
 
+        const optimisticMsg = normalizeMessage(rawOptimistic, selectedThreadId);
         setLiveMessages((prev) => [...prev, optimisticMsg]);
       }
 
@@ -270,12 +310,11 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
       toast.error("فشل إرسال الرسالة، يرجى إعادة المحاولة");
     },
     onSettled: () => {
-      // Re-fetch threads
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
     },
   });
 
-  // 7. Mode mutation
+  // 9. Mode mutation
   const modeMutation = useMutation({
     mutationFn: (data: { threadId: string; mode: string }) => setThreadMode({ data }),
     onSuccess: () => {
@@ -283,14 +322,13 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     },
   });
 
-  // 8. Status mutation with auto-advance
+  // 10. Status mutation with auto-advance
   const statusMutation = useMutation({
     mutationFn: (data: { threadId: string; status: "open" | "closed" }) =>
       setThreadStatus({ data }),
     onSuccess: (updatedThread, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
       if (variables.status === "closed") {
-        // Auto-advance to next thread in queue
         const remainingQueue = threads.filter(
           (t) => t.id !== variables.threadId && t.status === "open" && t.mode !== "RESOLVED",
         );
@@ -302,13 +340,12 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     },
   });
 
-  // 9. Skip Queue Mutation (Move to back of queue + auto-advance)
+  // 11. Skip Queue Mutation
   const skipQueueMutation = useMutation({
     mutationFn: (threadId: string) => skipQueueThread({ data: { threadId } }),
     onSuccess: (data, threadId) => {
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
       toast.success("تم تأجيل العميل ونقله لآخر الطابور");
-      // Auto-advance to next active thread in queue
       const nextActiveInQueue = threads.filter(
         (t) =>
           t.id !== threadId &&
@@ -323,7 +360,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     },
   });
 
-  // 10. Resume Queue Mutation
+  // 12. Resume Queue Mutation
   const resumeQueueMutation = useMutation({
     mutationFn: (threadId: string) => resumeQueueThread({ data: { threadId } }),
     onSuccess: () => {
@@ -332,7 +369,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     },
   });
 
-  // 11. Send Reminder Mutation
+  // 13. Send Reminder Mutation
   const reminderMutation = useMutation({
     mutationFn: ({ threadId, text }: { threadId: string; text?: string }) =>
       sendQueueReminder({ data: { threadId, text } }),
@@ -340,7 +377,8 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
       const created = (res as { message?: ChatMessage } | undefined)?.message;
       if (created && selectedThreadId) {
-        setLiveMessages((prev) => [...prev, created]);
+        const normalized = normalizeMessage(created, selectedThreadId);
+        setLiveMessages((prev) => [...prev, normalized]);
       }
       toast.success("تم إرسال تنبيه عدم الرد إلى العميل");
     },
@@ -458,4 +496,5 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     </ConversationErrorBoundary>
   );
 }
+
 export default AdminInboxView;

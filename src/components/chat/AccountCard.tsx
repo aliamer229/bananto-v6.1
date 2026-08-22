@@ -85,15 +85,18 @@ function CopyField({
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(!masked);
 
+  const safeVal = String(value ?? "");
   const onCopy = async () => {
     try {
-      await navigator.clipboard.writeText(value);
+      await navigator.clipboard.writeText(safeVal);
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
       setCopied(false);
     }
   };
+
+  const repeatCount = Math.max(0, Math.min(safeVal.length || 6, 12));
 
   return (
     <div className="space-y-1 min-w-0">
@@ -105,7 +108,7 @@ function CopyField({
             mono ? "font-mono" : ""
           }`}
         >
-          {revealed ? value : "•".repeat(Math.min(value.length, 12))}
+          {revealed ? safeVal : "•".repeat(repeatCount)}
         </span>
         {masked ? (
           <button

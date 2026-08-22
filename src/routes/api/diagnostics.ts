@@ -24,8 +24,8 @@ export const Route = createFileRoute("/api/diagnostics")({
         const doBinding = getBinding("CHAT_REALTIME_DO");
         const doWorking = Boolean(
           doBinding &&
-            (typeof (doBinding as any).get === "function" ||
-              typeof (doBinding as any).idFromName === "function"),
+          (typeof (doBinding as any).get === "function" ||
+            typeof (doBinding as any).idFromName === "function"),
         );
 
         const queueBinding = getBinding("NOTIFICATIONS_QUEUE");
@@ -33,8 +33,7 @@ export const Route = createFileRoute("/api/diagnostics")({
           queueBinding && typeof (queueBinding as any).send === "function",
         );
 
-        const appEnv =
-          env("APP_ENV") || (isProductionEnvironment() ? "production" : "development");
+        const appEnv = env("APP_ENV") || (isProductionEnvironment() ? "production" : "development");
 
         return json({
           worker: true,

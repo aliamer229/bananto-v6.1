@@ -355,9 +355,7 @@ function RootInner() {
     }
 
     const register = () => {
-      navigator.serviceWorker
-        .register("/sw.js", { scope: "/" })
-        .catch(() => undefined);
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => undefined);
     };
     if (document.readyState === "complete") register();
     else window.addEventListener("load", register, { once: true });

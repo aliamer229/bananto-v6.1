@@ -1,4 +1,12 @@
-import React, { useState, useRef, useEffect, Component, ErrorInfo, ReactNode } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import {
   Send,
   Paperclip,
@@ -16,6 +24,8 @@ import {
   Lock,
   FileText,
   ExternalLink,
+  Bot,
+  Headphones,
 } from "lucide-react";
 import { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
 import { api, type AdminReplySuggestion } from "@/lib/api";
@@ -25,6 +35,11 @@ import { QuickRepliesModal } from "./QuickRepliesModal";
 import { CustomerDetailsDrawer } from "./CustomerDetailsDrawer";
 import { OrderPreviewDrawer } from "./OrderPreviewDrawer";
 import { toast } from "sonner";
+import {
+  normalizeMessage,
+  logMessageDiagnosticError,
+  type NormalizedChatMessage,
+} from "@/lib/message-normalizer";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -47,7 +62,9 @@ export class ConversationErrorBoundary extends Component<ErrorBoundaryProps, Err
   }
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Conversation render error:", error, errorInfo);
+    logMessageDiagnosticError(error, {
+      source: "ConversationErrorBoundary.componentDidCatch",
+    });
   }
 
   override render() {
@@ -69,7 +86,7 @@ export class ConversationErrorBoundary extends Component<ErrorBoundaryProps, Err
             </p>
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
-              className="px-4 py-2 bg-foreground text-background rounded-xl text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1.5"
+              className="px-4 py-2 bg-foreground text-background rounded-xl text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>إعادة المحاولة</span>
@@ -149,6 +166,19 @@ export function ActiveConversation({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Strict Separation: classify conversation type
+  const isOrderConversation = Boolean(thread?.orderId || thread?.chatType === "ORDER_SUPPORT");
+  const isAiSupport = Boolean(
+    thread?.chatType === "AUTOMATED_SUPPORT" || thread?.mode === "AI_ACTIVE",
+  );
+  const isHumanSupport = !isOrderConversation && !isAiSupport;
+
+  // Only link orders when conversation is specifically an order conversation
+  const linkedOrder = useMemo(() => {
+    if (!isOrderConversation || !thread?.orderId) return null;
+    return orders.find((o) => o && (o.id === thread.orderId || o.code === thread.orderId)) || null;
+  }, [isOrderConversation, thread?.orderId, orders]);
+
   const handleScroll = () => {
     const container = messagesContainerRef.current;
     if (container && container.scrollTop === 0 && hasMore && !isLoadingOlder && onLoadOlder) {
@@ -156,32 +186,32 @@ export function ActiveConversation({
     }
   };
 
-  const linkedOrder = thread?.orderId
-    ? orders.find((o) => o && (o.id === thread.orderId || o.code === thread.orderId))
-    : null;
-
   // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  // Deduplicate messages & OTP cards for admin view
+  // Clean, normalize and deduplicate messages
   const displayedMessages = useMemo(() => {
     const seenIds = new Set<string>();
     const seenOtpKeys = new Set<string>();
-    const filtered: ChatMessage[] = [];
+    const filtered: NormalizedChatMessage[] = [];
 
-    for (const msg of messages) {
+    for (const rawMsg of messages) {
+      if (!rawMsg) continue;
+      const msg = normalizeMessage(rawMsg, thread?.id);
       if (!msg || !msg.id) continue;
       if (seenIds.has(msg.id)) continue;
-      const clientMsgId = (msg.body as any)?.clientMessageId;
+
+      const clientMsgId = msg.body?.clientMessageId;
       if (clientMsgId && seenIds.has(clientMsgId)) continue;
 
       const kind = msg.kind;
-      const body = (msg.body as Record<string, unknown> | undefined) ?? {};
-      if (kind === "item_verification_code" || kind === "otp" || kind === "verification") {
-        const itemId = String(body["itemId"] ?? "");
-        const code = String(body["code"] ?? body["verificationCode"] ?? "");
+      const body = msg.body || {};
+
+      if (kind === "item_verification_code" || kind === "otp") {
+        const itemId = String(body.itemId ?? "");
+        const code = String(body.code ?? body.verificationCode ?? "");
         const otpKey = `${itemId}:${code}`;
         if (code && seenOtpKeys.has(otpKey)) {
           continue;
@@ -196,12 +226,9 @@ export function ActiveConversation({
       filtered.push(msg);
     }
     return filtered;
-  }, [messages]);
+  }, [messages, thread?.id]);
 
-  // Ranked reply suggestions, derived on the server from how the customer
-  // phrased things and from where their order actually stands. They refresh
-  // whenever the customer says something new, so the strip always answers the
-  // latest message rather than the one that opened the thread.
+  // Suggestions fetching
   const threadId = thread?.id ?? null;
   let lastCustomerMessageId = "";
   for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -226,8 +253,6 @@ export function ActiveConversation({
         setSmartSuggestions(Array.isArray(result?.suggestions) ? result.suggestions : []);
       })
       .catch(() => {
-        // A failed suggestion fetch must never block answering the customer:
-        // the static contextual pills stay in place as the fallback.
         if (active) setSmartSuggestions([]);
       })
       .finally(() => {
@@ -258,173 +283,118 @@ export function ActiveConversation({
 
   // Calculate elapsed waiting time
   const getElapsedWait = () => {
+    const lastMsg = messages[messages.length - 1];
+    const timestamp = lastMsg?.createdAt || thread.updatedAt || thread.createdAt;
+    if (!timestamp) return { text: "الآن", level: "green" };
     try {
-      const dateVal = thread.lastMessageAt || thread.createdAt;
-      if (!dateVal) return { text: "الآن", level: "green" };
-      const diffMs = Date.now() - new Date(dateVal).getTime();
-      if (isNaN(diffMs)) return { text: "الآن", level: "green" };
-      const mins = Math.floor(diffMs / 60000);
-      if (mins < 1) return { text: "الآن", level: "green" };
-      if (mins < 5) return { text: `${mins} د`, level: "green" };
-      if (mins < 20) return { text: `${mins} د`, level: "amber" };
-      const hours = Math.floor(mins / 60);
-      return { text: `${hours} س`, level: "red" };
+      const diffMs = Date.now() - new Date(timestamp).getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return { text: "الآن", level: "green" };
+      if (diffMins < 5) return { text: `${diffMins} د`, level: "green" };
+      if (diffMins < 10) return { text: `${diffMins} د`, level: "amber" };
+      return { text: `${diffMins} د`, level: "red" };
     } catch {
-      return { text: "-", level: "green" };
+      return { text: "الآن", level: "green" };
     }
   };
+
   const waitInfo = getElapsedWait();
 
-  // Handle file uploads (Private R2 upload via /api/upload)
-  const handleFileUpload = async (file: File) => {
-    if (!file) return;
-    if (file.size > 4 * 1024 * 1024) {
-      toast.error("حجم الملف كبير جداً (الحد ٤ ميغابايت)");
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64Data = reader.result as string;
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dataUrl: base64Data, folder: "chat" }),
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || "فشل رفع الملف");
-        }
-
-        const data = await res.json();
-        if (data.url) {
-          onSendMessage({ imageUrl: data.url, text: inputText.trim() || undefined });
-          setInputText("");
-          toast.success("تم إرفاق الملف بنجاح");
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err: any) {
-      toast.error(err.message || "حدث خطأ أثناء رفع الملف");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  // Handle typing state
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
-
-    // Auto-resize
-    e.target.style.height = "auto";
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-
-    // Broadcast typing
-    if (thread) {
-      void api.sendTyping(thread.id, true, "admin").catch(() => {});
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = setTimeout(() => {
-        void api.sendTyping(thread.id, false, "admin").catch(() => {});
-      }, 3000);
+    if (!threadId) return;
+    if (!typingTimeoutRef.current) {
+      void api.sendTyping(threadId, "admin", true);
+    } else {
+      clearTimeout(typingTimeoutRef.current);
     }
+    typingTimeoutRef.current = setTimeout(() => {
+      if (threadId) {
+        void api.sendTyping(threadId, "admin", false);
+      }
+      typingTimeoutRef.current = null;
+    }, 2500);
   };
 
-  const handleSendText = () => {
+  const handleSend = () => {
     if (!inputText.trim()) return;
-
-    const clientMessageId = `admin-msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    onSendMessage({ text: inputText.trim(), clientMessageId } as any);
-
+    onSendMessage({ text: inputText.trim() });
     setInputText("");
+    if (typingTimeoutRef.current && threadId) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+      void api.sendTyping(threadId, "admin", false);
+    }
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
+  };
 
-    if (thread) {
-      void api.sendTyping(thread.id, false, "admin").catch(() => {});
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error("فشل رفع الملف");
+      }
+      const data = await res.json();
+      if (data.url) {
+        onSendMessage({
+          imageUrl: data.url,
+          kind: "image",
+          body: { imageUrl: data.url, text: file.name },
+        });
+        toast.success("تم إرسال الصورة بنجاح");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "فشل رفع الصورة");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
   };
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
+
+  const handleDragLeave = () => {
     setIsDragging(false);
   };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files && files[0]) {
-      void handleFileUpload(files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      void handleFileUpload(e.dataTransfer.files[0]);
     }
-  };
-
-  // Contextual quick suggestions based on mode
-  const getContextSuggestions = () => {
-    if (thread.mode === "ORDER_PREPARATION") {
-      return [
-        "جاري تجهيز طلبك الآن وسنرسل التفاصيل خلال دقائق ⏳",
-        "تم إنشاء الحساب بنجاح، جاري تفعيل اللعبة 🎮",
-        "يرجى تزويدنا بكود التحقق الواصل إليك لإكمال الدخول 🔐",
-      ];
-    }
-    if (thread.mode === "WAITING_FOR_USER") {
-      return [
-        "ننتظر تأكيدك للدخول للحساب وإكمال العملية 👍",
-        "هل واجهتك أي مشكلة أثناء إدخال البيانات؟",
-        "يرجى تزويدنا بصورة لرسالة الخطأ التي تظهر على شاشتك 📸",
-      ];
-    }
-    if (thread.needsAdmin || thread.mode === "ESCALATED" || thread.mode === "WAITING_FOR_ADMIN") {
-      return [
-        "أهلاً بك، تم استلام المحادثة من قبل المشرف وسيتم مساعدتك فوراً.",
-        "نعتذر عن الانتظار، جاري فحص المشكلة الآن وحلها 🌟",
-      ];
-    }
-    return [
-      "أهلاً بك في متجر بنانتو! كيف يمكننا مساعدتك اليوم؟ 👋",
-      "تم حل المشكلة وتأكيد التفعيل بنجاح. سعداء بخدمتك! 🌟",
-    ];
   };
 
   const THREAD_MODES: { mode: ThreadMode; label: string; desc: string; color: string }[] = [
     {
-      mode: "ADMIN_ACTIVE",
-      label: "مشرف نشط",
-      desc: "المحادثة مدارة يدويًا بواسطة المشرف",
-      color: "text-foreground bg-muted",
-    },
-    {
-      mode: "ORDER_PREPARATION",
-      label: "قيد تجهيز الطلب",
-      desc: "جاري تجهيز الحساب أو الكود للعميل",
-      color: "text-amber-700 bg-amber-500/10",
-    },
-    {
-      mode: "WAITING_FOR_USER",
-      label: "بانتظار رد العميل",
-      desc: "تم الرد وننتظر إدخال العميل للبيانات",
+      mode: "HUMAN_ACTIVE",
+      label: "تحكم بشري مباشر",
+      desc: "أنت تتولى المحادثة بالكامل حالياً",
       color: "text-blue-700 bg-blue-500/10",
     },
     {
-      mode: "WAITING_FOR_ADMIN",
-      label: "بانتظار المشرف",
-      desc: "المحادثة تتطلب ردًا عاجلاً من الإدارة",
-      color: "text-red-700 bg-red-500/10",
+      mode: "AI_ACTIVE",
+      label: "مساعد الذكاء الاصطناعي",
+      desc: "الرد الآلي على استفسارات العميل",
+      color: "text-amber-700 bg-amber-500/10",
     },
     {
-      mode: "ESCALATED",
-      label: "تصعيد عاجل",
-      desc: "تم تحويل المحادثة لمشرف رئيسي",
-      color: "text-purple-700 bg-purple-500/10",
+      mode: "WAITING_FOR_ADMIN",
+      label: "في طابور الانتظار",
+      desc: "بانتظار استلام أحد المشرفين",
+      color: "text-amber-700 bg-amber-500/10",
     },
     {
       mode: "RESOLVED",
@@ -443,7 +413,7 @@ export function ActiveConversation({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* Drag & Drop Visual Overlay */}
+        {/* Drag & Drop Overlay */}
         {isDragging && (
           <div className="absolute inset-0 z-40 bg-primary/20 backdrop-blur-xs border-2 border-dashed border-primary flex items-center justify-center pointer-events-none">
             <div className="p-4 bg-card rounded-2xl shadow-xl flex items-center gap-2 font-bold text-xs text-primary">
@@ -456,11 +426,10 @@ export function ActiveConversation({
         {/* 1. Header Toolbar */}
         <div className="p-3 border-b border-border bg-card flex items-center justify-between gap-3 shrink-0 shadow-2xs">
           <div className="flex items-center gap-2.5 min-w-0">
-            {/* Back button on mobile */}
             {onBackToList && (
               <button
                 onClick={onBackToList}
-                className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
                 title="رجوع للقائمة"
               >
                 <ArrowRight className="w-5 h-5" />
@@ -483,9 +452,20 @@ export function ActiveConversation({
                   <span className="font-bold text-xs text-foreground truncate">
                     {thread.userName || "عميل"}
                   </span>
-                  {thread.userId && (
-                    <span className="text-[10px] text-muted-foreground font-mono bg-muted/60 px-1.5 py-0.2 rounded">
-                      {thread.userId}
+                  {/* Mode Badge */}
+                  {isOrderConversation ? (
+                    <span className="text-[10px] bg-blue-500/10 text-blue-600 font-bold px-1.5 py-0.2 rounded">
+                      محادثة طلب
+                    </span>
+                  ) : isAiSupport ? (
+                    <span className="text-[10px] bg-amber-500/10 text-amber-600 font-bold px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                      <Bot className="w-2.5 h-2.5" />
+                      <span>دعم آلي</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 font-bold px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                      <Headphones className="w-2.5 h-2.5" />
+                      <span>دعم عام</span>
                     </span>
                   )}
                 </div>
@@ -517,7 +497,7 @@ export function ActiveConversation({
             <div className="relative">
               <button
                 onClick={() => setIsModeDropdownOpen(!isModeDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 hover:bg-muted border border-border rounded-xl text-xs font-bold text-foreground transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 hover:bg-muted border border-border rounded-xl text-xs font-bold text-foreground transition-all cursor-pointer"
               >
                 <span>
                   {THREAD_MODES.find((m) => m.mode === thread.mode)?.label ||
@@ -540,7 +520,7 @@ export function ActiveConversation({
                         setIsModeDropdownOpen(false);
                         toast.success(`تم تغيير الوضع إلى: ${m.label}`);
                       }}
-                      className={`w-full text-right p-2 rounded-xl text-xs flex flex-col transition-colors ${
+                      className={`w-full text-right p-2 rounded-xl text-xs flex flex-col transition-colors cursor-pointer ${
                         thread.mode === m.mode
                           ? "bg-primary text-primary-foreground font-bold"
                           : "hover:bg-muted text-foreground"
@@ -557,23 +537,11 @@ export function ActiveConversation({
             {/* Customer info button */}
             <button
               onClick={() => setIsCustomerDrawerOpen(true)}
-              className="p-2 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl border border-border transition-colors"
+              className="p-2 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl border border-border transition-colors cursor-pointer"
               title="معلومات العميل والطلبات"
             >
               <User className="w-4 h-4" />
             </button>
-
-            {/* Skip queue button for non-order threads */}
-            {!linkedOrder && !thread.orderId && onSkipQueue && thread.status === "open" && (
-              <button
-                type="button"
-                onClick={onSkipQueue}
-                className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl border border-border text-xs font-bold transition-colors"
-                title="تأجيل العميل ونقله لآخر الطابور"
-              >
-                <span>تخطي ⏭️</span>
-              </button>
-            )}
 
             {/* Close/Resolve Button */}
             <button
@@ -584,7 +552,7 @@ export function ActiveConversation({
                   newStatus === "closed" ? "تم إغلاق التذكرة" : "تمت إعادة فتح التذكرة",
                 );
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                 thread.status === "open"
                   ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
                   : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
@@ -596,8 +564,8 @@ export function ActiveConversation({
           </div>
         </div>
 
-        {/* 2. Order Context Strip (If order linked) - Lightweight, non-intrusive */}
-        {(linkedOrder || thread.orderId) && (
+        {/* 2. Order Context Strip (Strict: Only for Order Conversations) */}
+        {isOrderConversation && (
           <div className="p-2.5 px-4 bg-muted/25 border-b border-border flex items-center justify-between gap-3 shrink-0 text-xs">
             <div className="flex items-center gap-2 min-w-0 flex-wrap">
               <ShoppingBag className="w-4 h-4 text-blue-500 shrink-0" />
@@ -634,12 +602,11 @@ export function ActiveConversation({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {/* Queue actions */}
               {onSendQueueReminder && (
                 <button
                   type="button"
                   onClick={() => onSendQueueReminder()}
-                  className="text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 px-2.5 py-1 rounded-lg border border-amber-500/30 transition-all flex items-center gap-1"
+                  className="text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 px-2.5 py-1 rounded-lg border border-amber-500/30 transition-all flex items-center gap-1 cursor-pointer"
                   title="إرسال تنبيه للعميل لسرعة الرد وإكمال الطلب"
                 >
                   <Clock className="w-3 h-3" />
@@ -651,7 +618,7 @@ export function ActiveConversation({
                 <button
                   type="button"
                   onClick={onSkipQueue}
-                  className="text-[11px] font-bold text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded-lg border border-border transition-all flex items-center gap-1"
+                  className="text-[11px] font-bold text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded-lg border border-border transition-all flex items-center gap-1 cursor-pointer"
                   title="نقل العميل لآخر الطابور لعدم الرد والانتقال للتالي"
                 >
                   <span>تخطي الدور ⏭️</span>
@@ -661,7 +628,7 @@ export function ActiveConversation({
               <button
                 type="button"
                 onClick={() => setIsOrderDrawerOpen(true)}
-                className="text-[11px] font-bold text-primary hover:underline px-2 py-1 rounded hover:bg-primary/5"
+                className="text-[11px] font-bold text-primary hover:underline px-2 py-1 rounded hover:bg-primary/5 cursor-pointer"
               >
                 معاينة الطلب
               </button>
@@ -669,7 +636,7 @@ export function ActiveConversation({
                 <button
                   type="button"
                   onClick={() => onNavigateToOrder(linkedOrder?.id || thread.orderId!)}
-                  className="text-[11px] font-bold text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded-lg flex items-center gap-1 border border-border"
+                  className="text-[11px] font-bold text-foreground bg-muted hover:bg-muted/80 px-2.5 py-1 rounded-lg flex items-center gap-1 border border-border cursor-pointer"
                   title="فتح صفحة إدارة الطلبات"
                 >
                   <span>إدارة الطلب</span>
@@ -680,7 +647,7 @@ export function ActiveConversation({
           </div>
         )}
 
-        {/* 2.1 Snooze Banner if customer was moved to back of queue */}
+        {/* 2.1 Snooze Banner */}
         {thread.queueStatus === "snoozed" && (
           <div className="p-3 px-4 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between gap-3 shrink-0 text-xs text-amber-900 dark:text-amber-200">
             <div className="flex items-center gap-2">
@@ -693,7 +660,7 @@ export function ActiveConversation({
               <button
                 type="button"
                 onClick={onResumeQueue}
-                className="px-3 py-1 bg-amber-600 text-white hover:bg-amber-700 rounded-lg text-xs font-bold shadow-xs transition-all shrink-0"
+                className="px-3 py-1 bg-amber-600 text-white hover:bg-amber-700 rounded-lg text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer"
               >
                 استئناف ومتابعة الآن
               </button>
@@ -712,12 +679,12 @@ export function ActiveConversation({
               <RefreshCw className="w-6 h-6 animate-spin mx-auto text-primary" />
               <div>جاري تحميل الرسائل...</div>
             </div>
-          ) : messages.length === 0 ? (
+          ) : displayedMessages.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground text-xs space-y-2">
               <Sparkles className="w-8 h-8 mx-auto text-muted-foreground/30" />
               <div className="font-semibold">لا توجد رسائل سابقة في هذه المحادثة</div>
               <p className="text-[11px] text-muted-foreground/70">
-                يمكنك كتابة رسالة أو إرسال بيانات الحساب أو استخدام الردود السريعة أدناه.
+                يمكنك كتابة رسالة أو استخدام الردود السريعة أدناه.
               </p>
             </div>
           ) : (
@@ -782,9 +749,7 @@ export function ActiveConversation({
                     style={{ animationDelay: "300ms" }}
                   />
                 </span>
-                <span className="text-[10px] font-medium text-muted-foreground">
-                  العميل يكتب...
-                </span>
+                <span className="text-xs text-muted-foreground">العميل يكتب الآن...</span>
               </div>
             </div>
           )}
@@ -792,69 +757,54 @@ export function ActiveConversation({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* 4. Contextual Suggestions Pills */}
-        <div className="px-3 py-1.5 border-t border-border bg-card/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-          <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 shrink-0">
-            <Sparkles className="w-3 h-3 text-amber-500" />
-            {smartSuggestions.length > 0 ? "اقتراحات ذكية:" : "اقتراحات:"}
-          </span>
-          {isLoadingSuggestions && smartSuggestions.length === 0 && (
-            <span className="text-[10px] text-muted-foreground shrink-0">جاري التحليل...</span>
-          )}
-          {/* Ranked suggestions lead; the contextual pills stay behind them so
-              the strip is never sparse and nothing that used to be one click
-              away has moved. */}
-          {smartSuggestions.map((suggestion) => (
-            <button
-              key={suggestion.id}
-              type="button"
-              title={suggestion.reason}
-              onClick={() => {
-                setInputText(suggestion.text);
-                textareaRef.current?.focus();
-              }}
-              className="whitespace-nowrap px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-foreground text-[11px] rounded-lg transition-colors border border-amber-500/25 shrink-0"
-            >
-              {suggestion.text}
-            </button>
-          ))}
-          {getContextSuggestions()
-            .filter((sugg) => !smartSuggestions.some((s) => s.text === sugg))
-            .map((sugg, idx) => (
+        {/* 4. Suggestions Strip */}
+        {smartSuggestions.length > 0 && (
+          <div className="px-3 py-2 bg-card border-t border-border flex items-center gap-1.5 overflow-x-auto shrink-0 scrollbar-none">
+            <span className="text-[11px] font-bold text-muted-foreground shrink-0 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-500" />
+              <span>اقتراحات:</span>
+            </span>
+            {smartSuggestions.map((suggestion) => (
               <button
-                key={`ctx-${idx}`}
+                key={suggestion.id}
                 type="button"
-                onClick={() => setInputText(sugg)}
-                className="whitespace-nowrap px-2.5 py-1 bg-muted/40 hover:bg-muted text-foreground text-[11px] rounded-lg transition-colors border border-border/40 shrink-0"
+                title={suggestion.reason}
+                onClick={() => {
+                  setInputText(suggestion.text);
+                  textareaRef.current?.focus();
+                }}
+                className="whitespace-nowrap px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-foreground text-[11px] rounded-lg transition-colors border border-amber-500/25 shrink-0 cursor-pointer"
               >
-                {sugg}
+                {suggestion.text}
               </button>
             ))}
-        </div>
+          </div>
+        )}
 
-        {/* 5. Modern Composer Toolbar & Input */}
+        {/* 5. Composer Toolbar & Input */}
         <div className="p-3 border-t border-border bg-card space-y-2 shrink-0">
-          {/* Actions Bar */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
-              {/* Unified Delivery Tool */}
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountToolsDefaultTab("credentials");
-                  setIsAccountToolsOpen(true);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/25 rounded-xl text-xs font-bold transition-all shadow-2xs"
-              >
-                <Key className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                <span>أداة تسليم الطلب (حسابات / أكواد)</span>
-              </button>
+              {/* Delivery Tools (Only for Order Conversations) */}
+              {isOrderConversation && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAccountToolsDefaultTab("credentials");
+                    setIsAccountToolsOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/25 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  <Key className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>أداة تسليم الطلب (حسابات / أكواد)</span>
+                </button>
+              )}
 
               {/* Quick Replies */}
               <button
                 type="button"
                 onClick={() => setIsQuickRepliesOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-muted/50 hover:bg-muted text-foreground border border-border rounded-xl text-xs font-bold transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-muted/50 hover:bg-muted text-foreground border border-border rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                 <span>ردود جاهزة</span>
@@ -880,7 +830,7 @@ export function ActiveConversation({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="p-2.5 text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted border border-border rounded-xl transition-colors shrink-0"
+              className="p-2.5 text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted border border-border rounded-xl transition-colors shrink-0 cursor-pointer"
               title="إرفاق صورة"
             >
               {isUploading ? (
@@ -898,153 +848,80 @@ export function ActiveConversation({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    handleSendText();
+                    handleSend();
                   }
                 }}
-                placeholder="اكتب ردك للعميل هنا... (Enter للإرسال)"
+                placeholder="اكتب ردك هنا..."
                 rows={1}
-                className="w-full resize-none p-2.5 pr-3 bg-muted/30 border border-border rounded-xl text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground/60 leading-relaxed max-h-32"
+                className="w-full resize-none rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary max-h-32 min-h-[38px]"
               />
             </div>
 
             <button
               type="button"
+              onClick={handleSend}
               disabled={!inputText.trim() || isSending}
-              onClick={handleSendText}
-              className="p-2.5 bg-foreground hover:bg-foreground/90 disabled:opacity-40 text-background rounded-xl transition-all shadow-xs shrink-0 flex items-center justify-center"
+              className="p-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
+              title="إرسال"
             >
-              <Send className="w-4 h-4" />
+              {isSending ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 rtl:rotate-180" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* Account Tools Modal */}
-        {isAccountToolsOpen && (
+        {/* Modals & Drawers */}
+        {isOrderConversation && (
           <AccountToolsModal
             isOpen={isAccountToolsOpen}
             onClose={() => setIsAccountToolsOpen(false)}
+            thread={thread}
             order={linkedOrder}
             defaultTab={accountToolsDefaultTab}
-            onSendCredentials={async (payload) => {
-              const targetOrderId = linkedOrder?.id || thread?.orderId;
-              if (targetOrderId && payload.itemId) {
-                try {
-                  const res = await fetch("/api/admin/orders", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      orderId: targetOrderId,
-                      threadId: thread?.id,
-                      action: "direct_send_credentials",
-                      itemId: payload.itemId,
-                      email: payload.email,
-                      password: payload.password,
-                    }),
-                  });
-                  if (!res.ok) {
-                    const err = (await res.json().catch(() => ({}))) as {
-                      error?: string;
-                      message?: string;
-                    };
-                    throw new Error(err.error || err.message || "فشل إرسال بيانات الحساب");
-                  }
-                  toast.success("تم إرسال بيانات الحساب بنجاح");
-                  await onRefreshMessages();
-                  return; // Server automatically appends the chat message
-                } catch (e: any) {
-                  toast.error(e?.message || "فشل إرسال بيانات الحساب");
-                  return;
-                }
-              }
-              onSendMessage({ kind: "credentials", body: payload });
-            }}
-            onSendVerificationCode={async (payload) => {
-              const targetOrderId = linkedOrder?.id || thread?.orderId;
-              if (targetOrderId) {
-                try {
-                  const res = await fetch("/api/admin/orders", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      orderId: targetOrderId,
-                      threadId: thread?.id,
-                      action: "send_verification_code",
-                      itemId: payload.itemId,
-                      code: payload.code,
-                      title: payload.title,
-                    }),
-                  });
-                  if (!res.ok) {
-                    const err = (await res.json().catch(() => ({}))) as {
-                      error?: string;
-                      message?: string;
-                    };
-                    throw new Error(err.error || err.message || "فشل إرسال كود OTP");
-                  }
-                  toast.success("تم إرسال كود التحقق بنجاح");
-                  await onRefreshMessages();
-                  return;
-                } catch (e: any) {
-                  toast.error(e?.message || "فشل إرسال كود OTP");
-                  return;
-                }
-              }
-              onSendMessage({ kind: "otp", body: payload });
-            }}
-            onSendCardCode={(payload) => {
-              onSendMessage({ kind: "card", body: payload });
+            onSend={(payload) => {
+              onSendMessage(payload);
+              setIsAccountToolsOpen(false);
             }}
           />
         )}
 
-        {/* Quick Replies Modal */}
-        {isQuickRepliesOpen && (
-          <QuickRepliesModal
-            isOpen={isQuickRepliesOpen}
-            onClose={() => setIsQuickRepliesOpen(false)}
-            onSelectReply={(text) => {
-              setInputText(text);
-              setIsQuickRepliesOpen(false);
-            }}
-          />
-        )}
+        <QuickRepliesModal
+          isOpen={isQuickRepliesOpen}
+          onClose={() => setIsQuickRepliesOpen(false)}
+          onSelect={(replyText) => {
+            setInputText(replyText);
+            setIsQuickRepliesOpen(false);
+            textareaRef.current?.focus();
+          }}
+        />
 
-        {/* Customer Details Drawer */}
-        {isCustomerDrawerOpen && (
-          <CustomerDetailsDrawer
-            isOpen={isCustomerDrawerOpen}
-            onClose={() => setIsCustomerDrawerOpen(false)}
-            thread={thread}
-            orders={orders}
-            onOpenOrder={(orderId: string) => {
-              setIsCustomerDrawerOpen(false);
-              if (onNavigateToOrder) {
-                onNavigateToOrder(orderId);
-              } else {
-                setIsOrderDrawerOpen(true);
-              }
-            }}
-          />
-        )}
+        <CustomerDetailsDrawer
+          isOpen={isCustomerDrawerOpen}
+          onClose={() => setIsCustomerDrawerOpen(false)}
+          thread={thread}
+          orders={isOrderConversation ? orders : []}
+          onOpenOrder={onNavigateToOrder}
+        />
 
-        {/* Order Preview Drawer */}
-        {isOrderDrawerOpen && linkedOrder && (
+        {isOrderConversation && (
           <OrderPreviewDrawer
             isOpen={isOrderDrawerOpen}
             onClose={() => setIsOrderDrawerOpen(false)}
             order={linkedOrder}
-            onOpenFullOrder={
-              onNavigateToOrder
-                ? () => {
-                    setIsOrderDrawerOpen(false);
-                    onNavigateToOrder(linkedOrder.id);
-                  }
-                : undefined
-            }
+            onOpenFullOrder={() => {
+              if (linkedOrder && onNavigateToOrder) {
+                onNavigateToOrder(linkedOrder.id);
+                setIsOrderDrawerOpen(false);
+              }
+            }}
           />
         )}
       </div>
     </ConversationErrorBoundary>
   );
 }
+
 export default ActiveConversation;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Component, type ErrorInfo, type ReactNode } from "react";
 import { isVideoUrl } from "@/lib/uploads";
 import {
   Key,
@@ -16,14 +16,22 @@ import {
   Download,
   Send,
   Loader2,
+  AlertTriangle,
+  ShoppingBag,
+  ExternalLink,
 } from "lucide-react";
 import { ChatMessage, MessageKind } from "@/lib/types";
 import { toast } from "sonner";
 import { accountCardTypeFor } from "@/lib/account-cards";
-import AccountCard from "@/components/chat/AccountCard";
+import AccountCard, { VerificationOtpCard } from "@/components/chat/AccountCard";
+import {
+  normalizeMessage,
+  logMessageDiagnosticError,
+  type NormalizedChatMessage,
+} from "@/lib/message-normalizer";
 
 export interface MessageCardProps {
-  message: ChatMessage;
+  message: ChatMessage | NormalizedChatMessage;
   onSelectSuggestion?: (text: string) => void;
   order?: {
     id: string;
@@ -33,8 +41,77 @@ export interface MessageCardProps {
   isSendingOtp?: boolean;
 }
 
-export function MessageCard({
-  message,
+interface MessageErrorBoundaryProps {
+  message: ChatMessage | NormalizedChatMessage;
+  children: ReactNode;
+}
+
+interface MessageErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+/**
+ * Isolated Per-Message Error Boundary:
+ * Ensures that a corrupted or unrenderable message NEVER crashes the conversation.
+ */
+class MessageErrorBoundary extends Component<MessageErrorBoundaryProps, MessageErrorBoundaryState> {
+  constructor(props: MessageErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): MessageErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    const msg = this.props.message;
+    logMessageDiagnosticError(error, {
+      conversationId: msg?.threadId,
+      messageId: msg?.id,
+      messageType: msg?.kind,
+      source: "MessageErrorBoundary.componentDidCatch",
+    });
+  }
+
+  override render() {
+    if (this.state.hasError) {
+      const msg = this.props.message;
+      return (
+        <div className="flex justify-center my-2 w-full" dir="rtl">
+          <div className="flex items-center gap-2 p-2.5 px-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs shadow-2xs">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="flex-1 min-w-0">
+              <span className="font-bold">تعذر عرض هذه الرسالة</span>
+              {msg?.id && (
+                <span className="text-[10px] opacity-70 font-mono block">
+                  معرف الرسالة: {msg.id}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const diag = `Message ID: ${msg?.id}\nType: ${msg?.kind}\nError: ${this.state.error?.message}\nStack: ${this.state.error?.stack}`;
+                navigator.clipboard.writeText(diag);
+                toast.success("تم نسخ تفاصيل الخطأ للفحص");
+              }}
+              className="p-1 hover:bg-amber-500/20 rounded-md transition-colors text-[10px] font-bold"
+              title="نسخ تفاصيل الخطأ"
+            >
+              نسخ الخطأ
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function InnerMessageCard({
+  message: rawMessage,
   onSelectSuggestion,
   order,
   onSendOtp,
@@ -45,6 +122,10 @@ export function MessageCard({
   const [otpInput, setOtpInput] = useState("");
   const [isSubmittingOtp, setIsSubmittingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+
+  // Guarantee sanitized message structure
+  const message = normalizeMessage(rawMessage);
+  const body = message.body || {};
 
   const copyText = (text: string, label: string) => {
     if (!text) return;
@@ -77,45 +158,33 @@ export function MessageCard({
   const isAssistant = message.senderRole === "assistant";
   const isSystem = message.senderRole === "system";
 
-  const rawBody = (message.body || {}) as Record<string, any>;
-  const cleanVal = (val: any) => {
-    if (!val) return null;
-    const str = String(val).trim();
-    if (str === "null" || str === "undefined" || str === "excluded_from_export" || str === "") {
-      return null;
-    }
-    return str;
-  };
-
-  const body: Record<string, any> = {
-    ...rawBody,
-    email: cleanVal(rawBody.email),
-    password: cleanVal(rawBody.password),
-    pin: cleanVal(rawBody.pin),
-    code: cleanVal(rawBody.code),
-    activationCode: cleanVal(rawBody.activationCode),
-    cardCode: cleanVal(rawBody.cardCode),
-    title: cleanVal(rawBody.title),
-    text: cleanVal(rawBody.text),
-    notes: cleanVal(rawBody.notes),
-    instructions: cleanVal(rawBody.instructions),
-    imageUrl:
-      cleanVal(rawBody.imageUrl) ||
-      (rawBody.mediaId ? `/api/files/legacy/${rawBody.mediaId}` : null),
-  };
   const kind = message.kind;
   const legacyCardType = accountCardTypeFor(kind);
 
   // System notification message
   if (isSystem) {
     return (
-      <div className="flex justify-center my-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/60 border border-border/60 text-[11px] text-muted-foreground font-medium shadow-2xs">
-          <Info className="w-3 h-3 text-muted-foreground" />
-          <span>{body.text || "إشعار نظام"}</span>
+      <div className="flex justify-center my-2.5 w-full">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/60 border border-border/60 text-[11px] text-muted-foreground font-medium shadow-2xs max-w-[90%] text-center">
+          <Info className="w-3 h-3 text-muted-foreground shrink-0" />
+          <span className="break-words">{body.text || "إشعار نظام"}</span>
         </div>
       </div>
     );
+  }
+
+  // Formatting date safely
+  let formattedTime = "";
+  try {
+    const d = new Date(message.createdAt);
+    if (!isNaN(d.getTime())) {
+      formattedTime = d.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+  } catch {
+    formattedTime = "";
   }
 
   return (
@@ -125,7 +194,9 @@ export function MessageCard({
     >
       {/* Sender Header */}
       <div
-        className={`flex items-center gap-1.5 mb-1 px-1 text-[11px] text-muted-foreground ${isAdmin ? "flex-row-reverse" : ""}`}
+        className={`flex items-center gap-1.5 mb-1 px-1 text-[11px] text-muted-foreground ${
+          isAdmin ? "flex-row-reverse" : ""
+        }`}
         dir="auto"
       >
         {isAdmin && (
@@ -137,9 +208,7 @@ export function MessageCard({
         {isAssistant && (
           <>
             <Bot className="w-3 h-3 text-amber-500" />
-            <span className="font-bold text-foreground">
-              {message.senderName || "مساعد بنانتو"}
-            </span>
+            <span className="font-bold text-foreground">{message.senderName || "الدعم الآلي"}</span>
           </>
         )}
         {isUser && (
@@ -148,37 +217,39 @@ export function MessageCard({
             <User className="w-3 h-3 text-muted-foreground" />
           </>
         )}
-        <span className="text-[10px] opacity-70">
-          {new Date(message.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </span>
+        {formattedTime && <span className="text-[10px] opacity-70">{formattedTime}</span>}
       </div>
 
       {/* Bubble / Card container */}
-      {legacyCardType === "verification" || kind === "item_verification_code" ? (
+      {kind === "item_verification_code" ||
+      kind === "otp" ||
+      (legacyCardType === "verification" && body.code) ? (
         <div dir="auto" className="relative transition-all">
-          <AccountCard kind={kind} body={rawBody} tone="default" />
+          <VerificationOtpCard
+            code={body.code || body.verificationCode || ""}
+            title={body.title || body.gameName || null}
+            expiresInMinutes={body.expiresInMinutes || 10}
+            locale="ar"
+          />
         </div>
-      ) : legacyCardType ? (
+      ) : legacyCardType || kind === "item_credentials" || kind === "credentials" ? (
         <div dir="auto" className="relative transition-all">
-          <AccountCard kind={kind} body={rawBody} tone="default" />
+          <AccountCard kind={kind} body={body} tone="default" />
         </div>
       ) : (
         <div
           dir="auto"
           className={`relative max-w-[88%] sm:max-w-[78%] rounded-2xl p-3.5 shadow-2xs text-xs leading-relaxed transition-all ${
             isAdmin
-              ? "bg-[var(--admin-ink)] text-white rounded-tr-xs border border-black/10"
+              ? "bg-[var(--admin-ink,#1e293b)] text-white rounded-tr-xs border border-black/10"
               : isAssistant
                 ? "bg-amber-500/10 text-foreground border border-amber-500/20 rounded-tr-xs"
                 : "bg-muted/30 text-foreground border border-border rounded-tl-xs"
           }`}
         >
-          {/* 2. Activation Code / Card Code / Discount Code */}
+          {/* Activation Code / Card Code / Discount Code */}
           {kind === "discount_code" ||
-          (body.code && !body.email) ||
+          (body.code && !body.email && !body.imageUrl) ||
           body.activationCode ||
           body.cardCode ? (
             <div className="space-y-2.5 min-w-[240px] sm:min-w-[260px]">
@@ -257,11 +328,11 @@ export function MessageCard({
                 </div>
               )}
 
-              {body.expiresInMinutes && (
+              {body.expiresInMinutes ? (
                 <div className="text-[10px] opacity-80 text-center">
                   صالح لمدة {body.expiresInMinutes} دقيقة
                 </div>
-              )}
+              ) : null}
 
               {body.instructions && (
                 <div className="text-[11px] opacity-90 p-2 rounded-xl bg-black/10 mt-1 whitespace-pre-wrap">
@@ -271,7 +342,7 @@ export function MessageCard({
             </div>
           ) : null}
 
-          {/* 4. Image Attachment & Login Proof with Direct OTP */}
+          {/* Image Attachment & Login Proof with Direct OTP */}
           {body.imageUrl && !legacyCardType ? (
             <div className="space-y-2.5">
               <div className="relative group overflow-hidden rounded-xl border border-border/40 max-w-sm bg-black/10">
@@ -295,7 +366,7 @@ export function MessageCard({
                 <div className="absolute top-2 left-2 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
                   <button
                     type="button"
-                    onClick={() => downloadOriginalImage(body.imageUrl)}
+                    onClick={() => downloadOriginalImage(body.imageUrl!)}
                     className="flex items-center gap-1 px-2.5 py-1 bg-black/70 hover:bg-black/90 text-white rounded-lg text-[10px] font-bold backdrop-blur-xs transition-all shadow-xs cursor-pointer"
                     title="تحميل الصورة بالجودة الأصلية"
                   >
@@ -390,7 +461,7 @@ export function MessageCard({
             </div>
           ) : null}
 
-          {/* 5. Standard Text message (if not handled by custom cards) */}
+          {/* Standard Text message */}
           {!legacyCardType &&
             kind !== "discount_code" &&
             !body.imageUrl &&
@@ -400,7 +471,31 @@ export function MessageCard({
               <p className="whitespace-pre-wrap text-xs font-sans leading-relaxed">{body.text}</p>
             )}
 
-          {/* 6. AI Assistant Suggestions / Cards */}
+          {/* AI Assistant Product Cards */}
+          {body.cards && Array.isArray(body.cards) && body.cards.length > 0 && (
+            <div className="mt-2.5 space-y-2 pt-2 border-t border-current/10">
+              {body.cards.map((c, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2.5 p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-current/10"
+                >
+                  {c.image && (
+                    <img
+                      src={c.image}
+                      alt={c.name || "منتج"}
+                      className="w-10 h-10 rounded-lg object-cover bg-muted shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-[11px] truncate">{c.name || "منتج"}</div>
+                    {c.text && <div className="text-[10px] opacity-75 truncate">{c.text}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Suggestions */}
           {body.suggestions && Array.isArray(body.suggestions) && body.suggestions.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2 border-t border-current/10">
               {body.suggestions.map((sugg: string, idx: number) => (
@@ -408,7 +503,7 @@ export function MessageCard({
                   key={idx}
                   type="button"
                   onClick={() => onSelectSuggestion && onSelectSuggestion(sugg)}
-                  className="px-2 py-1 bg-white/20 hover:bg-white/30 text-current rounded-lg text-[10px] font-semibold transition-colors flex items-center gap-1"
+                  className="px-2 py-1 bg-white/20 hover:bg-white/30 text-current rounded-lg text-[10px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <span>{sugg}</span>
                 </button>
@@ -432,7 +527,7 @@ export function MessageCard({
             />
             <button
               onClick={() => setShowImageZoom(false)}
-              className="absolute top-3 right-3 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition-all"
+              className="absolute top-3 right-3 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
             >
               إغلاق
             </button>
@@ -442,3 +537,13 @@ export function MessageCard({
     </div>
   );
 }
+
+export function MessageCard(props: MessageCardProps) {
+  return (
+    <MessageErrorBoundary message={props.message}>
+      <InnerMessageCard {...props} />
+    </MessageErrorBoundary>
+  );
+}
+
+export default MessageCard;
