@@ -863,10 +863,45 @@ export function ActiveConversation({
             onClose={() => setIsAccountToolsOpen(false)}
             order={linkedOrder}
             defaultTab={accountToolsDefaultTab}
-            onSendCredentials={(payload) => {
+            onSendCredentials={async (payload) => {
+              if (linkedOrder && payload.itemId) {
+                try {
+                  await fetch("/api/admin/orders", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      orderId: linkedOrder.id,
+                      action: "direct_send_credentials",
+                      itemId: payload.itemId,
+                      email: payload.email,
+                      password: payload.password,
+                    }),
+                  });
+                  return; // Server automatically appends the chat message
+                } catch (e) {
+                  console.error(e);
+                }
+              }
               onSendMessage({ kind: "credentials", body: payload });
             }}
-            onSendVerificationCode={(payload) => {
+            onSendVerificationCode={async (payload) => {
+              if (linkedOrder && payload.itemId) {
+                try {
+                  await fetch("/api/admin/orders", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      orderId: linkedOrder.id,
+                      action: "send_verification_code",
+                      itemId: payload.itemId,
+                      code: payload.code,
+                    }),
+                  });
+                  return;
+                } catch (e) {
+                  console.error(e);
+                }
+              }
               onSendMessage({ kind: "otp", body: payload });
             }}
             onSendCardCode={(payload) => {

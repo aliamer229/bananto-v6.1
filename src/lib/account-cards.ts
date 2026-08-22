@@ -69,9 +69,11 @@ export function hasProtectedLegacyPassword(body: Record<string, unknown>): boole
 }
 
 export function accountCardTypeFor(kind: string): AccountCardType | null {
-  if (kind === "item_credentials") return "credentials";
-  if (kind === "item_verification_code") return "verification";
+  if (kind === "item_credentials" || kind === "credentials") return "credentials";
+  if (kind === "item_verification_code" || kind === "otp" || kind === "verification")
+    return "verification";
   if (kind === "instructions") return "instructions";
+  if (kind === "card" || kind === "digital_card") return "credentials"; // or verification based on your model
   return null;
 }
 

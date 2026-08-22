@@ -136,7 +136,7 @@ export function guessLang(languages: readonly string[]): Lang {
     if (base === "en") return "en";
     if (base === "ku") return "ku";
   }
-  return "en";
+  return "ar"; // Fallback to Arabic as requested
 }
 
 export function readCookie(name: string, header = cookieHeader()): string | undefined {

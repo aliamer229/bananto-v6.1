@@ -220,7 +220,10 @@ export function AccountCard({
       {card.type === "credentials" && delivery && itemId ? (
         <div className="space-y-2 border-t border-current/10 pt-2">
           <div className="group relative flex items-start gap-1.5 rounded-xl bg-amber-500/10 p-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300 border border-amber-500/20">
-            <div className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-bold text-[10px]" title="يجب إرفاق صورة تثبت تسجيل الدخول إلى الحساب قبل طلب كود التحقق">
+            <div
+              className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-bold text-[10px]"
+              title="يجب إرفاق صورة تثبت تسجيل الدخول إلى الحساب قبل طلب كود التحقق"
+            >
               !
             </div>
             <div className="flex-1">

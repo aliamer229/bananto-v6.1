@@ -123,6 +123,127 @@ export const Route = createFileRoute("/api/admin/orders")({
               next = { ...order, status: data.status ?? order.status, updatedAt: now };
               break;
             }
+            case "cancel_order": {
+              if (order.status === "cancelled")
+                return json({ error: "already_cancelled" }, { status: 400 });
+
+              const { d1All, d1Batch, randomId } = await import("@/lib/db.server");
+
+              // Find if there was a wallet payment for this order
+              const payments = await d1All<{ amount: number }>(
+                `SELECT amount FROM wallet_transactions WHERE order_id = ? AND kind = 'payment' LIMIT 1`,
+                order.id,
+              );
+
+              const wasPaidByWallet = payments.length > 0;
+              const refundAmount = Math.abs(payments[0]?.amount || 0);
+
+              if (wasPaidByWallet) {
+                // Check if already refunded
+                const refunds = await d1All(
+                  `SELECT id FROM wallet_transactions WHERE order_id = ? AND kind = 'order_refund' LIMIT 1`,
+                  order.id,
+                );
+
+                if (refunds.length === 0) {
+                  // Perform safe idempotent refund
+                  await d1Batch([
+                    {
+                      sql: `UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?`,
+                      params: [refundAmount, order.userId],
+                    },
+                    {
+                      sql: `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, created_at)
+                             VALUES (?, ?, 'order_refund', ?, ?, ?, ?)`,
+                      params: [
+                        randomId("wlt"),
+                        order.userId,
+                        refundAmount,
+                        `استرجاع مبلغ الطلب الملغي #${order.code}`,
+                        order.id,
+                        now,
+                      ],
+                    },
+                    {
+                      sql: `UPDATE orders SET status = 'cancelled', payment_status = 'rejected', updated_at = ? WHERE id = ?`,
+                      params: [now, order.id],
+                    },
+                  ]);
+                }
+              } else {
+                // Not paid by wallet, just cancel
+                await d1Run(
+                  `UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ?`,
+                  now,
+                  order.id,
+                );
+              }
+
+              // Update in memory object for response
+              next = {
+                ...order,
+                status: "cancelled",
+                paymentStatus: wasPaidByWallet ? ("rejected" as any) : order.paymentStatus,
+                updatedAt: now,
+              };
+
+              // Send system message
+              await appendMessage(order.threadId, {
+                senderRole: "system",
+                kind: "system",
+                body: {
+                  text: wasPaidByWallet
+                    ? `تم إلغاء الطلب من قبل الإدارة. تم استرجاع مبلغ (${refundAmount.toLocaleString()}) إلى محفظتك بنجاح.`
+                    : "تم إلغاء الطلب من قبل الإدارة.",
+                },
+              });
+
+              // Log history
+              await d1Run(
+                `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                randomId("osh"),
+                order.id,
+                order.status,
+                "cancelled",
+                admin.id,
+                "إلغاء الطلب من قبل المشرف" + (wasPaidByWallet ? " مع استرجاع الرصيد" : ""),
+                now,
+              );
+
+              return json({ order: redactOrder(next) });
+            }
+            case "direct_send_credentials": {
+              if (!data.itemId || !data.email) {
+                return json({ error: "missing_fields" }, { status: 400 });
+              }
+              const { stageCredentials } = await import("@/lib/orders.server");
+              // 1. Save delivery info (staging)
+              next = await stageCredentials(order, data.itemId, data.email, data.password);
+
+              // 2. Send the message immediately
+              const item = next.items.find((i) => i.id === data.itemId);
+              if (item) {
+                await appendMessage(order.threadId, {
+                  senderRole: "admin",
+                  senderName: adminName,
+                  kind: "item_credentials", // explicit type the frontend knows
+                  body: {
+                    itemId: item.id,
+                    title: item.title,
+                    email: data.email,
+                    ...(data.password ? { password: data.password } : {}),
+                  },
+                });
+                next = patchItem(next, item.id, { credsSentAt: now });
+                if (next.status === "processing") {
+                  next = { ...next, status: "delivering" };
+                }
+              }
+
+              await saveOrder(next);
+              return json({ order: redactOrder(next) });
+            }
             case "stage_credentials": {
               if (!data.itemId || !data.email)
                 return json({ error: "missing_fields" }, { status: 400 });

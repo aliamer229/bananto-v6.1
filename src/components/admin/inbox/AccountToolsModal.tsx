@@ -236,9 +236,14 @@ export function AccountToolsModal({
         username: m.account.username,
         password: m.account.password,
         label: m.account.label,
-        matchedItemId: m.matchedItemId || targetSlot?.itemId || (orderItems[0]?.id ? orderItems[0].id : undefined),
+        matchedItemId:
+          m.matchedItemId ||
+          targetSlot?.itemId ||
+          (orderItems[0]?.id ? orderItems[0].id : undefined),
         matchedItemTitle:
-          m.matchedItemTitle || targetSlot?.title || (orderItems[0]?.title ? orderItems[0].title : undefined),
+          m.matchedItemTitle ||
+          targetSlot?.title ||
+          (orderItems[0]?.title ? orderItems[0].title : undefined),
         slotNumber: m.slotNumber || targetSlot?.slotIndex || 1,
         isSent: false,
       };
@@ -433,11 +438,7 @@ export function AccountToolsModal({
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-border bg-muted/20 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              {mode === "account" ? (
-                <Key className="w-4 h-4" />
-              ) : (
-                <Ticket className="w-4 h-4" />
-              )}
+              {mode === "account" ? <Key className="w-4 h-4" /> : <Ticket className="w-4 h-4" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -532,9 +533,7 @@ export function AccountToolsModal({
                   <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
                     <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>
-                        تم استخراج {stagedAccounts.length} حساب جاهز للمراجعة والتسليم
-                      </span>
+                      <span>تم استخراج {stagedAccounts.length} حساب جاهز للمراجعة والتسليم</span>
                     </div>
                     {stagedAccounts.length > 1 && (
                       <button
@@ -557,16 +556,13 @@ export function AccountToolsModal({
                       <Gamepad2 className="w-3.5 h-3.5 text-primary" />
                       <span>الألعاب والعناصر في هذا الطلب:</span>
                     </span>
-                    <span className="text-[10px] opacity-75">
-                      {deliverableSlots.length} عنصر
-                    </span>
+                    <span className="text-[10px] opacity-75">{deliverableSlots.length} عنصر</span>
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar">
                     {deliverableSlots.map((slot) => {
                       const isSelected =
-                        selectedItemId === slot.itemId &&
-                        selectedSlotNumber === slot.slotIndex;
+                        selectedItemId === slot.itemId && selectedSlotNumber === slot.slotIndex;
                       const hasCreds = Boolean(slot.originalItem.credsSentAt);
                       const hasProof = Boolean(slot.originalItem.loginProofUrl);
                       const isDone = Boolean(slot.originalItem.completedAt);
@@ -586,9 +582,7 @@ export function AccountToolsModal({
                         >
                           <div className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1">
-                              <span className="truncate max-w-[180px]">
-                                {slot.title}
-                              </span>
+                              <span className="truncate max-w-[180px]">{slot.title}</span>
                               {slot.totalSlots > 1 && (
                                 <span className="text-[10px] px-1 rounded-sm bg-muted text-muted-foreground">
                                   #{slot.slotIndex}
@@ -811,7 +805,10 @@ export function AccountToolsModal({
                         <span className="text-[10px] text-muted-foreground block">
                           اسم المستخدم:
                         </span>
-                        <span className="font-mono font-bold text-foreground select-all truncate block" dir="ltr">
+                        <span
+                          className="font-mono font-bold text-foreground select-all truncate block"
+                          dir="ltr"
+                        >
                           {username || "—"}
                         </span>
                       </div>
@@ -829,7 +826,10 @@ export function AccountToolsModal({
                         <span className="text-[10px] text-muted-foreground block">
                           كلمة المرور:
                         </span>
-                        <span className="font-mono font-bold text-foreground select-all truncate block" dir="ltr">
+                        <span
+                          className="font-mono font-bold text-foreground select-all truncate block"
+                          dir="ltr"
+                        >
                           {password || "—"}
                         </span>
                       </div>
@@ -941,9 +941,7 @@ export function AccountToolsModal({
                 ) : (
                   <div className="space-y-1.5 animate-in fade-in">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-foreground">
-                        الرقم السري (PIN)
-                      </label>
+                      <label className="text-xs font-bold text-foreground">الرقم السري (PIN)</label>
                       <button
                         type="button"
                         onClick={() => {
@@ -976,19 +974,22 @@ export function AccountToolsModal({
                   <div className="flex items-center justify-between border-b border-border/60 pb-2">
                     <div className="flex items-center gap-2">
                       <Ticket className="w-4 h-4 text-emerald-500" />
-                      <span className="text-xs font-bold text-foreground">كود البطاقة / التفعيل</span>
+                      <span className="text-xs font-bold text-foreground">
+                        كود البطاقة / التفعيل
+                      </span>
                     </div>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold">
                       جاهز للاستخدام
                     </span>
                   </div>
 
-                  <div className="text-xs font-bold text-foreground truncate">
-                    {cardTitle}
-                  </div>
+                  <div className="text-xs font-bold text-foreground truncate">{cardTitle}</div>
 
                   <div className="p-2.5 rounded-xl bg-card border border-border flex items-center justify-between">
-                    <span className="font-mono font-bold text-sm tracking-wider text-foreground select-all truncate" dir="ltr">
+                    <span
+                      className="font-mono font-bold text-sm tracking-wider text-foreground select-all truncate"
+                      dir="ltr"
+                    >
                       {cardCode || "XXXX-XXXX-XXXX-XXXX"}
                     </span>
                     <button

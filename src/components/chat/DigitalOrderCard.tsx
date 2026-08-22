@@ -126,7 +126,9 @@ export function DigitalOrderCard({
       if (queuePosition <= 1) {
         return isAr ? "دورك الآن - قيد التجهيز المباشر ⚡" : "Your turn - Preparing now";
       }
-      return isAr ? `رقمك في طابور التجهيز: #${queuePosition}` : `Queue Position: #${queuePosition}`;
+      return isAr
+        ? `رقمك في طابور التجهيز: #${queuePosition}`
+        : `Queue Position: #${queuePosition}`;
     }
     return isAr ? "قيد التجهيز والتسليم" : "Processing Delivery";
   }, [isCompleted, adminStatus, queuePosition, isAr]);
@@ -464,7 +466,13 @@ export function DigitalOrderCard({
                       {isAr ? "حالة الطلب" : "Order Status"}
                     </span>
                     <span className="font-bold text-amber-600 dark:text-amber-400 text-[11px]">
-                      {isCompleted ? (isAr ? "مكتمل" : "Completed") : isAr ? "قيد التجهيز" : "Processing"}
+                      {isCompleted
+                        ? isAr
+                          ? "مكتمل"
+                          : "Completed"
+                        : isAr
+                          ? "قيد التجهيز"
+                          : "Processing"}
                     </span>
                   </div>
                 </div>
@@ -476,17 +484,22 @@ export function DigitalOrderCard({
                   </div>
                   <div className="border border-[var(--line)] rounded-xl overflow-hidden divide-y divide-[var(--line)]">
                     {items.map((item, i) => (
-                      <div key={i} className="p-2.5 flex items-center justify-between gap-2 bg-card">
+                      <div
+                        key={i}
+                        className="p-2.5 flex items-center justify-between gap-2 bg-card"
+                      >
                         <div className="min-w-0 flex-1">
                           <div className="font-bold text-[var(--ink)] truncate text-xs">
                             {item.title}
                           </div>
                           <div className="text-[10px] text-[var(--muted-ink)]">
-                            {item.quantity || 1} × {(item.unitPrice || 0).toLocaleString()} {currency}
+                            {item.quantity || 1} × {(item.unitPrice || 0).toLocaleString()}{" "}
+                            {currency}
                           </div>
                         </div>
                         <div className="font-bold text-[var(--ink)] font-mono text-xs">
-                          {((item.unitPrice || 0) * (item.quantity || 1)).toLocaleString()} {currency}
+                          {((item.unitPrice || 0) * (item.quantity || 1)).toLocaleString()}{" "}
+                          {currency}
                         </div>
                       </div>
                     ))}

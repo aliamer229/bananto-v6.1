@@ -116,6 +116,32 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
     onError: (err: Error) => toast.error(err.message),
   });
 
+  // Cancel order mutation
+  const cancelOrderMutation = useMutation({
+    mutationFn: async (orderId: string) => {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, action: "cancel_order" }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "فشل إلغاء الطلب");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast.success("تم إلغاء الطلب بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["admin-orders-list"] });
+      // Invalidate wallet or user info if needed
+      queryClient.invalidateQueries({ queryKey: ["user_info"] });
+      if (selectedOrder && selectedOrder.id === data.order.id) {
+        setSelectedOrder(data.order);
+      }
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   // Update payment status mutation
   const updatePaymentMutation = useMutation({
     mutationFn: async ({
@@ -545,21 +571,42 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
 
             {/* Modal Actions */}
             <div className="flex items-center justify-between border-t border-border pt-4">
-              <button
-                onClick={() => {
-                  const threadId = selectedOrder.threadId;
-                  setSelectedOrder(null);
-                  if (onNavigateToChat && threadId) {
-                    onNavigateToChat(threadId);
-                  } else if (threadId) {
-                    window.location.href = `/admin?tab=messages&thread=${threadId}`;
-                  }
-                }}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-bold flex items-center gap-1.5"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>فتح محادثة الدعم</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const threadId = selectedOrder.threadId;
+                    setSelectedOrder(null);
+                    if (onNavigateToChat && threadId) {
+                      onNavigateToChat(threadId);
+                    } else if (threadId) {
+                      window.location.href = `/admin?tab=messages&thread=${threadId}`;
+                    }
+                  }}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-bold flex items-center gap-1.5"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>فتح محادثة الدعم</span>
+                </button>
+                {selectedOrder.status !== "cancelled" && (
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "هل أنت متأكد من إلغاء هذا الطلب؟ إذا كان الطلب مدفوعاً من المحفظة سيتم إرجاع المبلغ تلقائياً.",
+                        )
+                      ) {
+                        cancelOrderMutation.mutate(selectedOrder.id);
+                      }
+                    }}
+                    disabled={cancelOrderMutation.isPending}
+                    className="px-4 py-2 bg-red-500/10 text-red-600 font-bold rounded-xl text-xs hover:bg-red-500/20 transition-colors border border-red-500/20"
+                  >
+                    {cancelOrderMutation.isPending
+                      ? "جاري الإلغاء..."
+                      : "إلغاء الطلب واسترجاع المبلغ"}
+                  </button>
+                )}
+              </div>
 
               <button
                 onClick={() => setSelectedOrder(null)}

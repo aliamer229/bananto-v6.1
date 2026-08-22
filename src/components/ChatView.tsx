@@ -697,7 +697,8 @@ export default function ChatView({
 
     // Direct lookup fallback if query hasn't synced yet
     let active = true;
-    api.order(initialOrderId)
+    api
+      .order(initialOrderId)
       .then((res) => {
         if (active && res?.order?.threadId) {
           resolvedOrderThreadRef.current = initialOrderId;
@@ -750,9 +751,9 @@ export default function ChatView({
 
   const isOrderMode = Boolean(
     activeOrderId ||
-      currentThread?.chatType === "ORDER_SUPPORT" ||
-      currentThread?.chatType === "DELIVERY" ||
-      currentThread?.mode === "ORDER_PREPARATION",
+    currentThread?.chatType === "ORDER_SUPPORT" ||
+    currentThread?.chatType === "DELIVERY" ||
+    currentThread?.mode === "ORDER_PREPARATION",
   );
 
   const orderThreads = useMemo(() => {
@@ -760,9 +761,7 @@ export default function ChatView({
       .filter(
         (t) =>
           t.status === "open" &&
-          (Boolean(t.orderId) ||
-            t.chatType === "ORDER_SUPPORT" ||
-            t.mode === "ORDER_PREPARATION"),
+          (Boolean(t.orderId) || t.chatType === "ORDER_SUPPORT" || t.mode === "ORDER_PREPARATION"),
       )
       .sort(
         (a, b) =>
@@ -774,9 +773,7 @@ export default function ChatView({
   const currentQueueIndex = useMemo(() => {
     if (!threadId && !activeOrderId) return 1;
     const idx = orderThreads.findIndex(
-      (t) =>
-        t.id === threadId ||
-        (activeOrderId && t.orderId === activeOrderId),
+      (t) => t.id === threadId || (activeOrderId && t.orderId === activeOrderId),
     );
     return idx >= 0 ? idx + 1 : 1;
   }, [orderThreads, threadId, activeOrderId]);
@@ -1125,11 +1122,7 @@ export default function ChatView({
         ]);
       }
     } else {
-      setSuggestions([
-        "تصفح الألعاب",
-        "أحدث الإكسسوارات",
-        "تحدث مع الدعم",
-      ]);
+      setSuggestions(["تصفح الألعاب", "أحدث الإكسسوارات", "تحدث مع الدعم"]);
     }
   }, [isOrderMode, currentOrder?.status, hasAccountCards]);
 
@@ -1741,172 +1734,184 @@ export default function ChatView({
             !threadId &&
             !currentThread?.orderId &&
             messages.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20, height: 0, marginBottom: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col gap-4 pt-2"
-            >
-              {isAr ? (
-                <>
-                  <h1
-                    className="text-[32px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[38px] text-right"
-                    dir="rtl"
-                  >
-                    {user?.name ? (
-                      <>
-                        أهلاً{" "}
-                        <SquigglyText
-                          stepDuration={70}
-                          scale={[2, 4]}
-                          className="text-[var(--ink)]"
-                        >
-                          {firstName}
-                        </SquigglyText>
-                      </>
-                    ) : (
-                      "أهلاً بك"
-                    )}
-                    <br />
-                    كيف أقدر أساعدك اليوم؟
-                  </h1>
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20, height: 0, marginBottom: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col gap-4 pt-2"
+              >
+                {isAr ? (
+                  <>
+                    <h1
+                      className="text-[32px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[38px] text-right"
+                      dir="rtl"
+                    >
+                      {user?.name ? (
+                        <>
+                          أهلاً{" "}
+                          <SquigglyText
+                            stepDuration={70}
+                            scale={[2, 4]}
+                            className="text-[var(--ink)]"
+                          >
+                            {firstName}
+                          </SquigglyText>
+                        </>
+                      ) : (
+                        "أهلاً بك"
+                      )}
+                      <br />
+                      كيف أقدر أساعدك اليوم؟
+                    </h1>
 
-                  <div
-                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
-                    dir="rtl"
-                  >
-                    <p>مرحباً بك في عالم بنانا</p>
-                    <div className="flex flex-wrap items-center">
-                      هل تبحث عن{" "}
-                      <FlipWords
-                        words={["لعبة", "مجسم", "جهاز", "حل لمشكلة", "إكسسوار"]}
-                        className="font-bold text-amber-600 px-1"
-                      />
-                      ؟
+                    <div
+                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
+                      dir="rtl"
+                    >
+                      <p>مرحباً بك في عالم بنانا</p>
+                      <div className="flex flex-wrap items-center">
+                        هل تبحث عن{" "}
+                        <FlipWords
+                          words={["لعبة", "مجسم", "جهاز", "حل لمشكلة", "إكسسوار"]}
+                          className="font-bold text-amber-600 px-1"
+                        />
+                        ؟
+                      </div>
                     </div>
-                  </div>
-                </>
-              ) : lang === "ku" ? (
-                <>
-                  <h1
-                    className="text-[30px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[36px] text-right"
-                    dir="rtl"
-                  >
-                    {user?.name ? (
-                      <>
-                        Silav{" "}
-                        <SquigglyText
-                          stepDuration={70}
-                          scale={[2, 4]}
-                          className="text-[var(--ink)]"
-                        >
-                          {firstName}
-                        </SquigglyText>
-                      </>
-                    ) : (
-                      "Bi xêr hatî"
-                    )}
-                    <br />
-                    Îro çawa dikarim alîkariya we bikim?
-                  </h1>
+                  </>
+                ) : lang === "ku" ? (
+                  <>
+                    <h1
+                      className="text-[30px] font-black leading-[1.2] tracking-[-0.03em] text-[var(--ink)] sm:text-[36px] text-right"
+                      dir="rtl"
+                    >
+                      {user?.name ? (
+                        <>
+                          Silav{" "}
+                          <SquigglyText
+                            stepDuration={70}
+                            scale={[2, 4]}
+                            className="text-[var(--ink)]"
+                          >
+                            {firstName}
+                          </SquigglyText>
+                        </>
+                      ) : (
+                        "Bi xêr hatî"
+                      )}
+                      <br />
+                      Îro çawa dikarim alîkariya we bikim?
+                    </h1>
 
-                  <div
-                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
-                    dir="rtl"
-                  >
-                    <p>Bi xêr hatî cîhana Bananto</p>
-                    <div className="flex flex-wrap items-center">
-                      Li çi digerî{" "}
-                      <FlipWords
-                        words={["lîstikek", "fîgûrek", "konsol", "piştgirî", "aksesorek"]}
-                        className="font-bold text-amber-600 px-1"
-                      />
-                      ؟
+                    <div
+                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-right"
+                      dir="rtl"
+                    >
+                      <p>Bi xêr hatî cîhana Bananto</p>
+                      <div className="flex flex-wrap items-center">
+                        Li çi digerî{" "}
+                        <FlipWords
+                          words={["lîstikek", "fîgûrek", "konsol", "piştgirî", "aksesorek"]}
+                          className="font-bold text-amber-600 px-1"
+                        />
+                        ؟
+                      </div>
                     </div>
-                  </div>
-                </>
-              ) : lang === "tr" ? (
-                <>
-                  <h1
-                    className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
-                    dir="ltr"
-                  >
-                    {user?.name ? (
-                      <>
-                        Merhaba{" "}
-                        <SquigglyText
-                          stepDuration={70}
-                          scale={[2, 4]}
-                          className="text-[var(--ink)]"
-                        >
-                          {firstName}
-                        </SquigglyText>
-                      </>
-                    ) : (
-                      "Hoş Geldiniz"
-                    )}
-                    <br />
-                    Bugün size nasıl yardımcı olabiliriz?
-                  </h1>
+                  </>
+                ) : lang === "tr" ? (
+                  <>
+                    <h1
+                      className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
+                      dir="ltr"
+                    >
+                      {user?.name ? (
+                        <>
+                          Merhaba{" "}
+                          <SquigglyText
+                            stepDuration={70}
+                            scale={[2, 4]}
+                            className="text-[var(--ink)]"
+                          >
+                            {firstName}
+                          </SquigglyText>
+                        </>
+                      ) : (
+                        "Hoş Geldiniz"
+                      )}
+                      <br />
+                      Bugün size nasıl yardımcı olabiliriz?
+                    </h1>
 
-                  <div
-                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
-                    dir="ltr"
-                  >
-                    <p>Bananto dünyasına hoş geldiniz</p>
-                    <div className="flex flex-wrap items-center">
-                      Aradığınız:{" "}
-                      <FlipWords
-                        words={["bir oyun", "bir figür", "bir konsol", "bir çözüm", "bir aksesuar"]}
-                        className="font-bold text-amber-600 px-1"
-                      />
-                      ?
+                    <div
+                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
+                      dir="ltr"
+                    >
+                      <p>Bananto dünyasına hoş geldiniz</p>
+                      <div className="flex flex-wrap items-center">
+                        Aradığınız:{" "}
+                        <FlipWords
+                          words={[
+                            "bir oyun",
+                            "bir figür",
+                            "bir konsol",
+                            "bir çözüm",
+                            "bir aksesuar",
+                          ]}
+                          className="font-bold text-amber-600 px-1"
+                        />
+                        ?
+                      </div>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h1
-                    className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
-                    dir="ltr"
-                  >
-                    {user?.name ? (
-                      <>
-                        Hello{" "}
-                        <SquigglyText
-                          stepDuration={70}
-                          scale={[2, 4]}
-                          className="text-[var(--ink)]"
-                        >
-                          {firstName}
-                        </SquigglyText>
-                      </>
-                    ) : (
-                      "Welcome"
-                    )}
-                    <br />
-                    How can we help you today?
-                  </h1>
+                  </>
+                ) : (
+                  <>
+                    <h1
+                      className="text-[28px] font-black leading-[1.2] tracking-[-0.02em] text-[var(--ink)] sm:text-[34px] text-left"
+                      dir="ltr"
+                    >
+                      {user?.name ? (
+                        <>
+                          Hello{" "}
+                          <SquigglyText
+                            stepDuration={70}
+                            scale={[2, 4]}
+                            className="text-[var(--ink)]"
+                          >
+                            {firstName}
+                          </SquigglyText>
+                        </>
+                      ) : (
+                        "Welcome"
+                      )}
+                      <br />
+                      How can we help you today?
+                    </h1>
 
-                  <div
-                    className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
-                    dir="ltr"
-                  >
-                    <p>Welcome to the Banana world</p>
-                    <div className="flex flex-wrap items-center">
-                      Looking for{" "}
-                      <FlipWords
-                        words={["a game", "a collectible", "a console", "support", "an accessory"]}
-                        className="font-bold text-amber-600 px-1"
-                      />
-                      ?
+                    <div
+                      className="space-y-3 text-[15px] font-medium leading-[1.35] text-[var(--ink)] text-left"
+                      dir="ltr"
+                    >
+                      <p>Welcome to the Banana world</p>
+                      <div className="flex flex-wrap items-center">
+                        Looking for{" "}
+                        <FlipWords
+                          words={[
+                            "a game",
+                            "a collectible",
+                            "a console",
+                            "support",
+                            "an accessory",
+                          ]}
+                          className="font-bold text-amber-600 px-1"
+                        />
+                        ?
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          )}
+                  </>
+                )}
+              </motion.div>
+            )}
         </AnimatePresence>
 
         {/* Dynamic Chat Messages */}
@@ -1921,9 +1926,9 @@ export default function ChatView({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={msg.id}
-                className={`flex ${isMine ? "justify-end" : "justify-start"} ${
-                  isHighlighted ? "animate-pulse rounded-2xl ring-2 ring-amber-500 p-0.5" : ""
-                }`}
+                className={`flex w-fit max-w-full ${
+                  isMine ? "ml-auto mr-0" : "mr-auto ml-0"
+                } ${isHighlighted ? "animate-pulse rounded-2xl ring-2 ring-amber-500 p-0.5" : ""}`}
               >
                 {msg.type === "digital_order_card" && msg.payload ? (
                   <DigitalOrderCard
@@ -1948,9 +1953,14 @@ export default function ChatView({
                         : currentOrder?.total
                     }
                     currency={String(
-                      msg.payload["currency"] ?? currentOrder?.currency ?? activeCurrencyInfo?.symbol ?? "د.ع",
+                      msg.payload["currency"] ??
+                        currentOrder?.currency ??
+                        activeCurrencyInfo?.symbol ??
+                        "د.ع",
                     )}
-                    paymentStatus={String(msg.payload["paymentStatus"] ?? currentOrder?.paymentStatus ?? "paid")}
+                    paymentStatus={String(
+                      msg.payload["paymentStatus"] ?? currentOrder?.paymentStatus ?? "paid",
+                    )}
                     paymentMethod="محفظة بنانا"
                     status={currentOrder?.status ?? "processing"}
                     createdAt={currentOrder?.createdAt ?? msg.createdAt}
@@ -2314,7 +2324,8 @@ export default function ChatView({
                     طلب التحدث مع المشرف قيد التجهيز...
                   </p>
                   <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
-                    سيتم فتح تذكرة مع الإدارة خلال {supportCountdown.secondsRemaining} ثانية، يمكنك الإلغاء إذا كنت تريد المتابعة هنا.
+                    سيتم فتح تذكرة مع الإدارة خلال {supportCountdown.secondsRemaining} ثانية، يمكنك
+                    الإلغاء إذا كنت تريد المتابعة هنا.
                   </p>
                 </div>
               </div>
@@ -2983,7 +2994,10 @@ export default function ChatView({
                   </div>
                   <div className="border border-[var(--line)] rounded-xl overflow-hidden divide-y divide-[var(--line)]">
                     {selectedInvoiceOrder.items.map((item, i) => (
-                      <div key={i} className="p-2.5 flex items-center justify-between gap-2 bg-card">
+                      <div
+                        key={i}
+                        className="p-2.5 flex items-center justify-between gap-2 bg-card"
+                      >
                         <div className="min-w-0 flex-1">
                           <div className="font-bold text-[var(--ink)] truncate text-xs">
                             {item.title}

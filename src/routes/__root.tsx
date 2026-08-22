@@ -243,7 +243,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html
       lang={prefs.lang}
-      dir="rtl"
+      dir={prefs.dir}
       data-theme={prefs.theme}
       data-motion={prefs.motion}
       className={prefs.dark ? "dark" : undefined}

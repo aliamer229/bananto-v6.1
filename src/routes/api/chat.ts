@@ -220,6 +220,7 @@ export const Route = createFileRoute("/api/chat")({
             clientMessageId?: string;
             q?: string;
             surface?: "store" | "admin";
+            body?: any;
             /** admin availability config */
             adminAvailabilityConfig?: Partial<AdminAvailabilityConfig>;
             /** admin controls */
@@ -635,16 +636,18 @@ export const Route = createFileRoute("/api/chat")({
               ? isVideoUploadUrl(data.imageUrl)
                 ? "video"
                 : (data.kind ?? "image")
-              : "text",
+              : (data.kind ?? "text"),
             clientMessageId: data.clientMessageId,
-            body: data.imageUrl
-              ? { imageUrl: data.imageUrl, ...(data.text ? { text: data.text } : {}) }
-              : { text: data.text },
+            body:
+              data.body ||
+              (data.imageUrl
+                ? { imageUrl: data.imageUrl, ...(data.text ? { text: data.text } : {}) }
+                : { text: data.text }),
           });
 
           // Update thread lastMessageAt
           current.lastMessageAt = message.createdAt;
-          current.lastMessagePreview = data.text || "مرفق";
+          current.lastMessagePreview = data.body?.title || data.text || "مرفق";
           if (!user.isAdmin) {
             current.userLastReadAt = message.createdAt;
           } else if (data.surface === "admin") {

@@ -198,14 +198,22 @@ export default function AdminDashboard() {
   });
 
   const effectiveOrders = React.useMemo(() => {
-    if (dbOrdersData?.orders && Array.isArray(dbOrdersData.orders) && dbOrdersData.orders.length > 0) {
+    if (
+      dbOrdersData?.orders &&
+      Array.isArray(dbOrdersData.orders) &&
+      dbOrdersData.orders.length > 0
+    ) {
       return dbOrdersData.orders;
     }
     return orders;
   }, [dbOrdersData?.orders, orders]);
 
   const effectiveMessages = React.useMemo(() => {
-    if (dbThreadsData?.threads && Array.isArray(dbThreadsData.threads) && dbThreadsData.threads.length > 0) {
+    if (
+      dbThreadsData?.threads &&
+      Array.isArray(dbThreadsData.threads) &&
+      dbThreadsData.threads.length > 0
+    ) {
       return dbThreadsData.threads;
     }
     return messages;
