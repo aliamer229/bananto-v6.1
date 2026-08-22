@@ -205,7 +205,7 @@ export async function claimLegacyAccount(params: {
     );
   }
 
-  // B. Orders & Items
+  // B. Orders & Items: link archive in legacy_orders without polluting active store orders
   if (!claim.orders_done) {
     const legacyOrders = await d1All<{
       legacy_id: string;
@@ -215,64 +215,12 @@ export async function claimLegacyAccount(params: {
       raw_json: string | null;
     }>(`SELECT * FROM legacy_orders WHERE legacy_user_id = ?`, legacyId);
 
-    for (const ord of legacyOrders) {
-      const liveOrderId = `legacy_ord_${ord.legacy_id}`;
-      const items = await d1All<{
-        legacy_id: string;
-        product_id: string;
-        quantity: number;
-        price_iqd: number;
-        raw_json: string | null;
-      }>(`SELECT * FROM legacy_order_items WHERE legacy_order_id = ?`, ord.legacy_id);
+    await d1Run(
+      `UPDATE legacy_orders SET claimed_by_user_id = ? WHERE legacy_user_id = ?`,
+      userId,
+      legacyId,
+    );
 
-      // Merge items from table and raw_json (table preferred)
-      const finalItems = items.map((i) => ({
-        id: i.legacy_id,
-        productId: i.product_id,
-        title: safeJson<{ title?: string }>(i.raw_json)?.title ?? String(i.product_id),
-        kind: "account",
-        quantity: i.quantity,
-        unitPrice: i.price_iqd,
-        meta: safeJson<Record<string, unknown>>(i.raw_json) ?? {},
-      }));
-
-      const createdAt = ord.created_at || now;
-      // The whole order lives in the `doc` column — that is what getOrder() and
-      // listOrders() parse. Writing user_name/currency/items/thread_id as
-      // columns targeted fields the orders table does not have, so the INSERT
-      // failed (silently, since d1Run swallows the error) and the claim was
-      // marked done having imported nothing.
-      const orderDoc = {
-        id: liveOrderId,
-        code: ord.order_no || `LEG-${ord.legacy_id.slice(-6)}`,
-        userId,
-        userName: legacyUser.name || "عضو بنانتو",
-        items: finalItems,
-        total: ord.total_iqd || 0,
-        currency: "IQD",
-        status: "completed",
-        paymentStatus: "paid",
-        needsAddress: false,
-        threadId: `legacy_thr_${ord.legacy_id}`,
-        createdAt,
-        updatedAt: createdAt,
-        events: [{ type: "order_created", at: createdAt }],
-        legacyImport: true,
-      };
-
-      await d1Run(
-        `INSERT INTO orders (id, code, user_id, doc, status, payment_status, total, created_at, updated_at)
-         VALUES (?, ?, ?, ?, 'completed', 'paid', ?, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, doc = excluded.doc`,
-        liveOrderId,
-        orderDoc.code,
-        userId,
-        JSON.stringify(orderDoc),
-        orderDoc.total,
-        createdAt,
-        createdAt,
-      );
-    }
     await d1Run(
       `UPDATE legacy_claims SET orders_done = 1, orders_linked = ?, updated_at = ? WHERE legacy_user_id = ?`,
       legacyOrders.length,
@@ -281,7 +229,7 @@ export async function claimLegacyAccount(params: {
     );
   }
 
-  // C. Threads & Messages
+  // C. Threads & Messages: link archive in legacy_threads without polluting active store threads
   if (!claim.threads_done) {
     const legacyThreads = await d1All<{
       legacy_id: string;
@@ -289,80 +237,12 @@ export async function claimLegacyAccount(params: {
       created_at: string;
     }>(`SELECT * FROM legacy_threads WHERE legacy_user_id = ?`, legacyId);
 
-    for (const thr of legacyThreads) {
-      const liveThreadId = `legacy_thr_${thr.legacy_id}`;
-      const threadCreatedAt = thr.created_at || now;
-      // Same as the orders above: readers parse `doc`, and user_name / subject /
-      // status / mode / migration_archive are not columns on threads.
-      const threadDoc = {
-        id: liveThreadId,
-        userId,
-        userName: legacyUser.name || "عضو بنانتو",
-        subject: thr.subject || "محادثة أرشيفية",
-        status: "closed",
-        mode: "RESOLVED",
-        chatType: "GENERAL_SUPPORT",
-        migrationArchive: true,
-        lastMessageAt: threadCreatedAt,
-        createdAt: threadCreatedAt,
-      };
-      await d1Run(
-        `INSERT INTO threads (id, user_id, order_id, doc, last_message_at)
-         VALUES (?, ?, NULL, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, doc = excluded.doc`,
-        liveThreadId,
-        userId,
-        JSON.stringify(threadDoc),
-        threadCreatedAt,
-      );
+    await d1Run(
+      `UPDATE legacy_threads SET claimed_by_user_id = ? WHERE legacy_user_id = ?`,
+      userId,
+      legacyId,
+    );
 
-      const msgs = await d1All<{
-        legacy_id: string;
-        body: string;
-        kind: string | null;
-        sender_role: string | null;
-        sender_name: string | null;
-        sender_type?: string | null;
-        created_at: string;
-      }>(
-        `SELECT * FROM legacy_messages WHERE legacy_thread_id = ? ORDER BY created_at ASC`,
-        thr.legacy_id,
-      );
-
-      for (const msg of msgs) {
-        const liveMsgId = `legacy_msg_${msg.legacy_id}`;
-        const senderRole = (msg.sender_role || msg.sender_type) === "user" ? "user" : "admin";
-        // Preserve structured card bodies (item_credentials / item_verification_code /
-        // instructions) exactly; never flatten them into plain text.
-        let body: Record<string, unknown>;
-        try {
-          const parsed = JSON.parse(msg.body || "{}");
-          body = parsed && typeof parsed === "object" ? parsed : { text: String(msg.body ?? "") };
-        } catch {
-          body = { text: String(msg.body ?? "") };
-        }
-        const doc = {
-          id: liveMsgId,
-          threadId: liveThreadId,
-          senderRole,
-          senderName:
-            msg.sender_name ||
-            (senderRole === "admin" ? "الإدارة" : legacyUser.name || "عضو بنانتو"),
-          kind: msg.kind || "text",
-          body,
-          createdAt: msg.created_at || now,
-        };
-        await d1Run(
-          `INSERT INTO messages (id, thread_id, doc, created_at) 
-           VALUES (?, ?, ?, ?)
-           ON CONFLICT(id) DO NOTHING`,
-          liveMsgId,
-          liveThreadId,
-          JSON.stringify(doc),
-          msg.created_at || now,
-        );
-      }
-    }
     await d1Run(
       `UPDATE legacy_claims SET threads_done = 1, threads_linked = ?, updated_at = ? WHERE legacy_user_id = ?`,
       legacyThreads.length,

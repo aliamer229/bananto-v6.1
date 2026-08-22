@@ -10,6 +10,7 @@ import {
   getOrder,
   d1Batch,
   d1All,
+  createAuditLog,
 } from "./db.server";
 import { sendTelegramMessage } from "./telegram.server";
 import { checkCoupon, couponDiscount, rowToCoupon, type CouponRow } from "./coupons";
@@ -43,6 +44,19 @@ function toNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isInvalidTitle(title: string | undefined | null): boolean {
+  if (!title || typeof title !== "string" || !title.trim()) return true;
+  const clean = title.trim();
+  return (
+    UUID_REGEX.test(clean) ||
+    clean.toLowerCase() === "undefined" ||
+    clean.toLowerCase() === "null" ||
+    clean.toLowerCase() === "nan"
+  );
+}
+
 /**
  * Server-side validation of a cart line to ensure price and availability are real.
  */
@@ -50,19 +64,24 @@ async function validateLine(
   line: CheckoutLine,
   store: { products: Product[]; bundles?: AccountBundle[] },
 ): Promise<OrderItem | null> {
+  if (!line || !line.productId) return null;
   const product = store.products.find((p) => String(p.id) === String(line.productId));
   const bundle = store.bundles?.find((b) => String(b.id) === String(line.productId));
 
   if (!product && bundle) {
     if (bundle.isActive === false) return null;
+    const unitPrice = toNumber(bundle.price);
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0 || isInvalidTitle(bundle.title)) {
+      return null;
+    }
     return {
       id: randomId("itm"),
       productId: bundle.id,
-      title: bundle.title,
+      title: bundle.title.trim(),
       ...(bundle.image ? { image: String(bundle.image) } : {}),
       kind: "bundle",
       quantity: Math.max(1, Math.min(99, Math.floor(Number(line.quantity) || 1))),
-      unitPrice: toNumber(bundle.price),
+      unitPrice,
       meta: {
         bundleGameIds: bundle.gameIds,
       } as any,
@@ -78,7 +97,7 @@ async function validateLine(
   if (line.editionId && product.editions) {
     const edition = product.editions.find((e) => e.id === line.editionId);
     if (edition) {
-      unitPrice = edition.price;
+      unitPrice = toNumber(edition.price);
       title = `${title} (${edition.name})`;
     }
   }
@@ -89,7 +108,7 @@ async function validateLine(
     for (const dlcId of line.dlcIds) {
       const dlc = product.dlcs.find((d) => d.id === dlcId);
       if (dlc) {
-        unitPrice += dlc.price;
+        unitPrice += toNumber(dlc.price);
         selectedDlcs.push(dlc.name);
       }
     }
@@ -98,12 +117,16 @@ async function validateLine(
     title = `${title} + ${selectedDlcs.join(", ")}`;
   }
 
+  if (!Number.isFinite(unitPrice) || unitPrice <= 0 || isInvalidTitle(title)) {
+    return null;
+  }
+
   const kind: ProductKind = (product.kind as ProductKind) ?? "account";
 
   return {
     id: randomId("itm"),
     productId: product.id,
-    title,
+    title: title.trim(),
     ...(product.image ? { image: String(product.image) } : {}),
     kind,
     quantity: Math.max(1, Math.min(99, Math.floor(Number(line.quantity) || 1))),
@@ -148,14 +171,40 @@ export async function createOrderForUser(
   acceptedTerms?: boolean,
   idempotencyKey?: string,
   targetProductId?: string | number,
+  source = "checkout_web",
+  checkoutSessionId?: string,
 ): Promise<Order> {
+  if (!user || !user.id || typeof user.id !== "string") {
+    throw new Error("missing_user");
+  }
+
   if (acceptedTerms === false) {
     throw new Error("terms_required");
   }
 
-  if (idempotencyKey) {
-    const existing = getCachedOrder(idempotencyKey);
-    if (existing) return existing;
+  const cleanIdempotencyKey = idempotencyKey?.trim() || undefined;
+
+  if (cleanIdempotencyKey) {
+    // 1. Check in-memory cache
+    const existingMem = getCachedOrder(cleanIdempotencyKey);
+    if (existingMem) return existingMem;
+
+    // 2. Check D1 for existing order with this idempotency_key
+    try {
+      const existingRow = await d1First<{ doc: string }>(
+        `SELECT doc FROM orders WHERE idempotency_key = ? LIMIT 1`,
+        cleanIdempotencyKey,
+      );
+      if (existingRow) {
+        const parsed = JSON.parse(existingRow.doc) as Order;
+        if (parsed && parsed.id) {
+          setCachedOrder(cleanIdempotencyKey, parsed);
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignored if query fails
+    }
   }
 
   const store = await getStore();
@@ -256,6 +305,8 @@ export async function createOrderForUser(
   const orderId = randomId("ord");
   const threadId = randomId("thr");
   const code = `BN-${Date.now().toString().slice(-6)}`;
+  const walletTxId = needsWalletPayment ? randomId("wlt") : undefined;
+  const activeSessionId = checkoutSessionId || randomId("chk");
 
   const order: Order = {
     discountAmount: discountAmount || undefined,
@@ -275,6 +326,11 @@ export async function createOrderForUser(
     createdAt: now,
     updatedAt: now,
     events: [{ type: "order_created", at: now }],
+    source,
+    checkoutSessionId: activeSessionId,
+    paymentReference: walletTxId,
+    idempotencyKey: cleanIdempotencyKey,
+    createdBy: user.id,
   };
 
   if (needsWalletPayment) {
@@ -286,12 +342,27 @@ export async function createOrderForUser(
       {
         sql: `INSERT INTO wallet_transactions (id, user_id, kind, amount, description, order_id, created_at)
                SELECT ?, ?, 'payment', ?, ?, ?, ? WHERE changes() = 1`,
-        params: [randomId("wlt"), user.id, -finalItemsTotal, `شراء طلب ${code}`, orderId, now],
+        params: [walletTxId, user.id, -finalItemsTotal, `شراء طلب ${code}`, orderId, now],
       },
       {
-        sql: `INSERT INTO orders (id, code, user_id, doc, created_at, updated_at)
-              SELECT ?, ?, ?, ?, ?, ? WHERE changes() = 1`,
-        params: [order.id, order.code, order.userId, JSON.stringify(order), now, now],
+        sql: `INSERT INTO orders (
+                id, code, user_id, doc, status, payment_status, total, created_at, updated_at,
+                idempotency_key, checkout_session_id, payment_reference, source, created_by
+              ) SELECT ?, ?, ?, ?, 'processing', 'paid', ?, ?, ?, ?, ?, ?, ?, ? WHERE changes() = 1`,
+        params: [
+          order.id,
+          order.code,
+          order.userId,
+          JSON.stringify(order),
+          order.total,
+          now,
+          now,
+          order.idempotencyKey || null,
+          order.checkoutSessionId || null,
+          order.paymentReference || null,
+          order.source || "checkout_web",
+          order.createdBy || user.id,
+        ],
       },
     ]);
     if (Number(payment[0]?.meta?.changes ?? 0) !== 1) {
@@ -323,6 +394,32 @@ export async function createOrderForUser(
     await saveOrder(order);
   } catch (err) {
     console.error("[order:save_fallback]", err);
+  }
+
+  // Record Audit Trail
+  try {
+    await createAuditLog(user.id, "order_created", "order", order.id, null, null, {
+      source: order.source,
+      checkoutSessionId: order.checkoutSessionId,
+      paymentReference: order.paymentReference,
+      idempotencyKey: order.idempotencyKey,
+      createdBy: user.id,
+      total: order.total,
+      itemsCount: order.items.length,
+      items: order.items.map((i) => ({
+        productId: i.productId,
+        title: i.title,
+        unitPrice: i.unitPrice,
+        quantity: i.quantity,
+        kind: i.kind,
+      })),
+    });
+  } catch (err) {
+    console.error("[order:audit_log_failed]", err);
+  }
+
+  if (cleanIdempotencyKey) {
+    setCachedOrder(cleanIdempotencyKey, order);
   }
 
   // Snapshot Order Items (Safe)

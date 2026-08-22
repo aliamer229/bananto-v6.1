@@ -752,6 +752,12 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   events: { type: string; at: string; payload?: unknown }[];
+  source?: string;
+  checkoutSessionId?: string;
+  paymentReference?: string;
+  idempotencyKey?: string;
+  createdBy?: string;
+  legacyImport?: boolean;
 }
 
 export type MessageKind =

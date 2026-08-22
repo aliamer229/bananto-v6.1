@@ -945,6 +945,64 @@ export async function findOrCreateOAuthUser(profile: {
 
 /* --------------------------------- orders --------------------------------- */
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function validateOrderIntegrity(order: unknown): { ok: boolean; reason?: string } {
+  if (!order || typeof order !== "object") return { ok: false, reason: "invalid_order_object" };
+  const o = order as Record<string, unknown>;
+
+  if (!o.id || typeof o.id !== "string" || !o.id.trim())
+    return { ok: false, reason: "missing_order_id" };
+  if (!o.userId || typeof o.userId !== "string" || !o.userId.trim())
+    return { ok: false, reason: "missing_user_id" };
+  if (!o.code || typeof o.code !== "string" || !o.code.trim())
+    return { ok: false, reason: "missing_order_code" };
+
+  const total = Number(o.total);
+  if (!Number.isFinite(total) || total <= 0 || Number.isNaN(total)) {
+    return { ok: false, reason: "invalid_total_amount" };
+  }
+
+  const items = o.items;
+  if (!Array.isArray(items) || items.length === 0) {
+    return { ok: false, reason: "empty_order_items" };
+  }
+
+  for (const item of items) {
+    if (!item || typeof item !== "object") return { ok: false, reason: "invalid_item_object" };
+    const it = item as Record<string, unknown>;
+
+    if (it.productId === undefined || it.productId === null || it.productId === "") {
+      return { ok: false, reason: "missing_product_id" };
+    }
+
+    if (!it.title || typeof it.title !== "string" || !it.title.trim()) {
+      return { ok: false, reason: "missing_item_title" };
+    }
+    const cleanTitle = it.title.trim();
+    if (
+      UUID_PATTERN.test(cleanTitle) ||
+      cleanTitle.toLowerCase() === "undefined" ||
+      cleanTitle.toLowerCase() === "null" ||
+      cleanTitle.toLowerCase() === "nan"
+    ) {
+      return { ok: false, reason: "illegal_uuid_or_corrupt_title" };
+    }
+
+    const unitPrice = Number(it.unitPrice);
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0 || Number.isNaN(unitPrice)) {
+      return { ok: false, reason: "invalid_unit_price" };
+    }
+
+    const quantity = Number(it.quantity);
+    if (!Number.isFinite(quantity) || quantity < 1) {
+      return { ok: false, reason: "invalid_quantity" };
+    }
+  }
+
+  return { ok: true };
+}
+
 export function orderKey(id: string) {
   return `orders/${id}.json`;
 }
@@ -957,10 +1015,12 @@ export async function getOrder(id: string): Promise<Order | undefined> {
       id,
       id,
     );
-    return row ? parse<Order | undefined>(row.doc, undefined) : undefined;
+    if (!row) return undefined;
+    const parsed = parse<Order | undefined>(row.doc, undefined);
+    return parsed && validateOrderIntegrity(parsed).ok ? parsed : undefined;
   }
   const direct = await readJson<Order | undefined>(orderKey(id), undefined);
-  if (direct) return direct;
+  if (direct && validateOrderIntegrity(direct).ok) return direct;
   const all = await listOrders();
   return all.find((o) => o.id === id || o.code === id);
 }
@@ -974,11 +1034,13 @@ export async function listOrders(limit?: number): Promise<Order[]> {
             limit,
           )
         : await d1All<{ doc: string }>(`SELECT doc FROM orders ORDER BY created_at DESC`);
-    return rows.map((r) => parse<Order>(r.doc, {} as Order));
+    return rows
+      .map((r) => parse<Order>(r.doc, {} as Order))
+      .filter((o) => o && validateOrderIntegrity(o).ok);
   }
   const ids = await readJson<string[]>(ORDER_INDEX_KEY, []);
   const orders = await Promise.all(ids.map((id) => getOrder(id)));
-  const all = orders.filter((o): o is Order => !!o);
+  const all = orders.filter((o): o is Order => !!o && validateOrderIntegrity(o).ok);
   return limit && limit > 0 ? all.slice(0, limit) : all;
 }
 
@@ -996,27 +1058,44 @@ export async function listOrdersByUser(userId: string, limit = 200): Promise<Ord
       userId,
       limit,
     );
-    return rows.map((r) => parse<Order>(r.doc, {} as Order));
+    return rows
+      .map((r) => parse<Order>(r.doc, {} as Order))
+      .filter((o) => o && validateOrderIntegrity(o).ok);
   }
   const all = await listOrders();
-  return all.filter((order) => order.userId === userId).slice(0, limit);
+  return all
+    .filter((order) => order.userId === userId && validateOrderIntegrity(order).ok)
+    .slice(0, limit);
 }
 
 export async function saveOrder(order: Order): Promise<Order> {
+  const check = validateOrderIntegrity(order);
+  if (!check.ok) {
+    console.error("[saveOrder:integrity_failed]", { reason: check.reason, order });
+    throw new Error(`order_integrity_violation: ${check.reason}`);
+  }
+
   if (await d1Ready()) {
     try {
       await d1Execute(
-        `INSERT INTO orders (id, code, user_id, doc, status, payment_status, total, created_at, updated_at, cancelled_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET 
-           code = excluded.code, 
-           user_id = excluded.user_id,
-           doc = excluded.doc, 
-           status = excluded.status,
-           payment_status = excluded.payment_status,
-           total = excluded.total,
-           updated_at = excluded.updated_at,
-           cancelled_at = excluded.cancelled_at`,
+        `INSERT INTO orders (
+          id, code, user_id, doc, status, payment_status, total, created_at, updated_at, cancelled_at,
+          idempotency_key, checkout_session_id, payment_reference, source, created_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET 
+          code = excluded.code, 
+          user_id = excluded.user_id,
+          doc = excluded.doc, 
+          status = excluded.status,
+          payment_status = excluded.payment_status,
+          total = excluded.total,
+          updated_at = excluded.updated_at,
+          cancelled_at = excluded.cancelled_at,
+          idempotency_key = excluded.idempotency_key,
+          checkout_session_id = excluded.checkout_session_id,
+          payment_reference = excluded.payment_reference,
+          source = excluded.source,
+          created_by = excluded.created_by`,
         order.id,
         order.code,
         order.userId,
@@ -1027,6 +1106,11 @@ export async function saveOrder(order: Order): Promise<Order> {
         order.createdAt,
         order.updatedAt,
         order.cancelledAt || (order.status === "cancelled" ? order.updatedAt : null),
+        order.idempotencyKey || null,
+        order.checkoutSessionId || null,
+        order.paymentReference || null,
+        order.source || "checkout_web",
+        order.createdBy || order.userId,
       );
     } catch {
       await d1Execute(

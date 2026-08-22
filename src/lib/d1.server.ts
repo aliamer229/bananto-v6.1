@@ -209,8 +209,10 @@ const SCHEMA: string[] = [
   `CREATE INDEX IF NOT EXISTS users_provider_idx ON users (provider, provider_id)`,
   `CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, code TEXT NOT NULL, user_id TEXT NOT NULL,
     doc TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', payment_status TEXT NOT NULL DEFAULT 'unpaid',
-    total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+    total REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+    cancelled_at TEXT, idempotency_key TEXT, checkout_session_id TEXT, payment_reference TEXT, source TEXT, created_by TEXT)`,
   `CREATE INDEX IF NOT EXISTS orders_user_idx ON orders (user_id, created_at DESC)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS orders_idempotency_idx ON orders (idempotency_key) WHERE idempotency_key IS NOT NULL`,
   `CREATE TABLE IF NOT EXISTS threads (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, order_id TEXT,
     doc TEXT NOT NULL, last_message_at TEXT NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS threads_user_idx ON threads (user_id, last_message_at DESC)`,
@@ -616,6 +618,13 @@ const SCHEMA_PATCHES: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS users_phone_idx ON users (phone)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_username_idx ON users (username)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_member_no_idx ON users (member_no)`,
+  `ALTER TABLE orders ADD COLUMN cancelled_at TEXT`,
+  `ALTER TABLE orders ADD COLUMN idempotency_key TEXT`,
+  `ALTER TABLE orders ADD COLUMN checkout_session_id TEXT`,
+  `ALTER TABLE orders ADD COLUMN payment_reference TEXT`,
+  `ALTER TABLE orders ADD COLUMN source TEXT`,
+  `ALTER TABLE orders ADD COLUMN created_by TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS orders_idempotency_idx ON orders (idempotency_key) WHERE idempotency_key IS NOT NULL`,
   // migrations/0002_otp_phone.sql created otp_codes with only
   // (id, phone, purpose, code_hash, expires_at, attempts, created_at).
   // `CREATE TABLE IF NOT EXISTS` in SCHEMA never widens that table, so every
@@ -1068,7 +1077,13 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE game_records ADD COLUMN game_is_online INTEGER`,
   `ALTER TABLE game_records ADD COLUMN game_language_locked INTEGER`,
   `ALTER TABLE orders ADD COLUMN cancelled_at TEXT`,
+  `ALTER TABLE orders ADD COLUMN idempotency_key TEXT`,
+  `ALTER TABLE orders ADD COLUMN checkout_session_id TEXT`,
+  `ALTER TABLE orders ADD COLUMN payment_reference TEXT`,
+  `ALTER TABLE orders ADD COLUMN source TEXT`,
+  `ALTER TABLE orders ADD COLUMN created_by TEXT`,
   `CREATE INDEX IF NOT EXISTS orders_cancelled_idx ON orders (status, cancelled_at)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS orders_idempotency_idx ON orders (idempotency_key) WHERE idempotency_key IS NOT NULL`,
 ];
 
 /**
@@ -1384,7 +1399,7 @@ export function ensureUsersSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 11;
+const RUNTIME_SCHEMA_VERSION = 12;
 
 async function runSchemaStatements(
   db: D1Like,
@@ -1458,6 +1473,22 @@ export function ensureSchema(): Promise<void> {
         }
       }
       await runSchemaStatements(db, remainingPatches, true);
+
+      // Clean up legacy corrupt/fake orders in D1
+      try {
+        await db
+          .prepare(
+            `DELETE FROM orders 
+             WHERE id LIKE 'legacy_ord_%' 
+                OR code IN ('DP-Z4DPYR', 'DP-9AQL75', 'DP-JAK7PU')
+                OR doc LIKE '%NaN%'
+                OR doc LIKE '%"title":"undefined"%'
+                OR doc LIKE '%"title":"null"%'`,
+          )
+          .run();
+      } catch (err) {
+        console.warn("[d1:cleanup_corrupt_orders_skipped]", err);
+      }
 
       await db
         .prepare(
