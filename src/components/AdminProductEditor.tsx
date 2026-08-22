@@ -417,10 +417,14 @@ export default function AdminProductEditor({
     const existing = categories.find(
       (cat: any) => resolveCategoryType(cat.id, cat.title) === def.type,
     );
+    let title = existing?.title ?? def.labelAr;
+    if (def.type === "game" && (title.includes("الأكثر مبيع") || title.includes("Best Sellers"))) {
+      title = def.labelEn;
+    }
     return {
       def,
       id: existing?.id ?? SECTION_CATEGORY_ID[def.type],
-      title: existing?.title ?? def.labelAr,
+      title,
     };
   });
 

@@ -90,7 +90,7 @@ const services = [
 
 export function StoreServices() {
   return (
-    <section className="-mx-4 pb-4 font-sans bg-transparent" dir="rtl">
+    <section className="pb-4 font-sans bg-transparent w-full max-w-full overflow-hidden" dir="rtl">
       {/* Header Area */}
       <div className="flex flex-row items-center justify-center w-full px-4 sm:px-8 md:px-12 lg:px-16 relative z-10 -mt-0 mb-4 sm:-mt-2 sm:mb-6 md:mt-1 lg:mt-0">
         {/* Center Wooden Sign Image */}
@@ -121,7 +121,7 @@ export function StoreServices() {
       </div>
 
       {/* Cards Grid */}
-      <div className="flex overflow-x-auto pb-6 pt-4 px-4 sm:px-8 md:px-12 lg:px-16 snap-x snap-mandatory hide-scrollbar gap-3 md:gap-4 items-center justify-start w-full">
+      <div className="flex overflow-x-auto pb-6 pt-4 px-4 sm:px-8 md:px-12 lg:px-16 snap-x snap-mandatory hide-scrollbar gap-3 md:gap-4 items-center justify-start w-full max-w-full">
         {services.map((service) => {
           const cardContent = (
             <>

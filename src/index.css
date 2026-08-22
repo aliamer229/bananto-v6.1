@@ -159,10 +159,6 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  html,
-  body {
-    overflow-x: hidden;
-  }
   body {
     background-color: var(--color-cream-100);
     color: var(--color-ink-900);

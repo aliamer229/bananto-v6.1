@@ -133,7 +133,7 @@ function GamesPage() {
         </header>
 
         {/* Platform filter */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 w-full max-w-full">
           {[
             { id: "all", label: "كل الأجهزة" },
             { id: "switch1", label: "Nintendo Switch 1" },
@@ -155,7 +155,7 @@ function GamesPage() {
         </div>
 
         {/* Genre filter */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 w-full max-w-full">
           {[{ id: "all", label: "كل التصنيفات" }, ...availableGenres].map((g) => (
             <button
               key={g.id}

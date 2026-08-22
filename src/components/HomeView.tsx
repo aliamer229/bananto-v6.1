@@ -336,7 +336,7 @@ export default function HomeView({
 
       {/* Main Content Area */}
       <div
-        className={`bg-[var(--page)] rounded-t-[24px] pt-0 -mt-6 pb-12 px-4 space-y-8 relative shadow-[0_-10px_20px_rgba(0,0,0,0.1)] z-10 flex-1`}
+        className={`bg-[var(--page)] rounded-t-[24px] pt-0 -mt-6 pb-12 px-0 space-y-8 relative shadow-[0_-10px_20px_rgba(0,0,0,0.1)] z-10 flex-1 max-w-full overflow-hidden`}
       >
         {/* Store Services and Guides - Moved outside categories loop to ensure it always renders */}
         <Suspense
@@ -349,8 +349,8 @@ export default function HomeView({
 
         {/* Section 4: Latest Nintendo Games Added by Release Date - MOVED UP AS REQUESTED */}
         <LazySection>
-          <section className="-mx-4 mt-2">
-            <div className="flex items-center justify-between gap-2 mb-4 px-8">
+          <section className="mt-2 w-full max-w-full">
+            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold text-foreground">
                   {t("home.latestNintendoGames") === "home.latestNintendoGames"
@@ -363,7 +363,7 @@ export default function HomeView({
               </div>
             </div>
 
-            <div dir="ltr">
+            <div dir="ltr" className="w-full max-w-full">
               <ProductStrip
                 products={adminProducts
                   .filter((p) => {
@@ -523,8 +523,8 @@ export default function HomeView({
           if (index === 0) {
             return (
               <React.Fragment key={category.id}>
-                <section className="relative mt-2 pb-6 -mx-4">
-                  <div className="mb-3 px-8 flex items-center justify-between">
+                <section className="relative mt-2 pb-6 w-full max-w-full">
+                  <div className="mb-3 px-4 sm:px-8 flex items-center justify-between">
                     <h3 className="truncate text-xl font-bold text-foreground">
                       {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
                         ? "nintendo games"
@@ -532,7 +532,7 @@ export default function HomeView({
                     </h3>
                   </div>
 
-                  <div className="relative mb-8 mt-2 min-h-[200px]">
+                  <div className="relative mb-8 mt-2 min-h-[200px] w-full max-w-full">
                     {isPending && adminProducts.length === 0 ? (
                       <CartridgeSkeleton />
                     ) : (
@@ -568,8 +568,8 @@ export default function HomeView({
 
           return (
             <LazySection key={category.id}>
-              <section className="-mx-4 mt-4">
-                <div className="flex items-center justify-between gap-2 mb-4 px-8">
+              <section className="mt-4 w-full max-w-full">
+                <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
                   <h3 className="text-xl font-bold text-foreground">{t(category.title)}</h3>
                   {isNintendoGames && (
                     <Link
@@ -598,8 +598,8 @@ export default function HomeView({
 
         {/* Section 5: Hardware */}
         <LazySection>
-          <section className="-mx-4 mt-8">
-            <div className="flex items-center gap-2 mb-4 px-8">
+          <section className="mt-8 w-full max-w-full">
+            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">أجهزة الهاردوير وملحقاتها</h3>
               <Link
                 to="/category/$categoryId"
@@ -635,8 +635,8 @@ export default function HomeView({
 
         {/* Section 6: Amiibo */}
         <LazySection>
-          <section className="-mx-4 mt-8">
-            <div className="flex items-center gap-2 mb-4 px-8">
+          <section className="mt-8 w-full max-w-full">
+            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">مجسمات amiibo</h3>
               <Link
                 to="/category/$categoryId"
@@ -672,8 +672,8 @@ export default function HomeView({
 
         {/* Section 7: Accessories */}
         <LazySection>
-          <section className="-mx-4 mt-8">
-            <div className="flex items-center gap-2 mb-4 px-8">
+          <section className="mt-8 w-full max-w-full">
+            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">الإكسسوارات</h3>
               <Link
                 to="/category/$categoryId"
@@ -709,8 +709,8 @@ export default function HomeView({
 
         {/* Section 8: Gift Cards */}
         <LazySection>
-          <section className="-mx-4 mt-8">
-            <div className="flex items-center gap-2 mb-4 px-8">
+          <section className="mt-8 w-full max-w-full">
+            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">
                 كروت التعبئة Nintendo Gift Cards
               </h3>
@@ -741,8 +741,8 @@ export default function HomeView({
 
         {/* Section 9: Used Parts & Games */}
         <LazySection>
-          <section className="-mx-4 mt-8">
-            <div className="flex items-center gap-2 mb-4 px-8">
+          <section className="mt-8 w-full max-w-full">
+            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">القطع والألعاب المستخدمة</h3>
               <Link
                 to="/category/$categoryId"
@@ -788,8 +788,8 @@ export default function HomeView({
 
         {/* Section 11: News */}
         <LazySection>
-          <section className="-mx-4 mt-8 mb-12">
-            <div className="flex items-center gap-2 mb-4 px-8">
+          <section className="mt-8 mb-12 w-full max-w-full">
+            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">{t("أحدث أخبار نينتندو")}</h3>
             </div>
             <Suspense

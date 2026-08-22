@@ -7,7 +7,7 @@ import { generateSeedBundles } from "./bundles";
  * Versioned import to ensure database state is correct.
  * Increment version to force a re-import and cleanup.
  */
-const IMPORT_VERSION = "v27-add-account-bundles";
+const IMPORT_VERSION = "v28-restore-nintendo-category";
 const GAMES_CATEGORY_ID = "nintendo-switch-games";
 
 const SWITCH2_GAMES: any[] = [];
@@ -28,14 +28,29 @@ export async function forceFullImport(): Promise<void> {
 
   await updateStore((current) => {
     // 1. Keep essential categories and ensure they exist
-    const categories = (current.categories ?? []).filter((c) =>
-      ["nintendo-switch-games", "hardware", "amiibo", "accessories", "gift-cards", "used"].includes(
-        (c as any).id,
-      ),
-    );
+    const categories = (current.categories ?? [])
+      .map((c: any) => {
+        if (
+          c.id === "nintendo-switch-games" &&
+          (c.title?.includes("الأكثر مبيع") || c.title?.includes("Best Sellers"))
+        ) {
+          return { ...c, title: "Nintendo Switch Games" };
+        }
+        return c;
+      })
+      .filter((c) =>
+        [
+          "nintendo-switch-games",
+          "hardware",
+          "amiibo",
+          "accessories",
+          "gift-cards",
+          "used",
+        ].includes((c as any).id),
+      );
 
     const defaultCats = [
-      { id: "nintendo-switch-games", title: "الألعاب الأكثر مبيعاً", order: 1 },
+      { id: "nintendo-switch-games", title: "Nintendo Switch Games", order: 1 },
       { id: "hardware", title: "أجهزة الهاردوير وملحقاتها", order: 2 },
       { id: "amiibo", title: "مجسمات amiibo", order: 3 },
       { id: "accessories", title: "الإكسسوارات", order: 4 },

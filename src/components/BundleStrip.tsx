@@ -25,9 +25,9 @@ export function BundleStrip({ bundles, products, onSelectBundle }: BundleStripPr
   }
 
   return (
-    <section className="py-6 px-4 sm:px-8 space-y-4">
+    <section className="py-6 space-y-4 w-full">
       {/* Section Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 px-4 sm:px-8">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-600 to-rose-400 text-white flex items-center justify-center shadow-md shadow-red-500/20">
             <Layers className="w-5 h-5" />
@@ -60,7 +60,7 @@ export function BundleStrip({ bundles, products, onSelectBundle }: BundleStripPr
       </div>
 
       {/* Horizontal Strip */}
-      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-3 pt-1 snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-3 pt-1 snap-x px-4 sm:px-8 w-full max-w-full">
         {activeBundles.map((bundle) => (
           <div key={bundle.id} className="snap-start shrink-0">
             <BundleCard

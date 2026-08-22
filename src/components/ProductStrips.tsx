@@ -21,7 +21,7 @@ export function CartridgeStrip({
 
   return (
     <div
-      className="flex gap-3.5 overflow-x-auto pt-2 px-8 no-scrollbar snap-x relative z-10 items-end"
+      className="flex gap-3.5 overflow-x-auto pt-2 px-4 sm:px-8 no-scrollbar snap-x relative z-10 items-end w-full max-w-full"
       dir="ltr"
     >
       {visible.map((game, i) => (
@@ -49,7 +49,10 @@ export function CartridgeStrip({
 
 export function CartridgeSkeleton() {
   return (
-    <div className="flex gap-3.5 overflow-x-auto pt-2 px-8 no-scrollbar items-end" dir="ltr">
+    <div
+      className="flex gap-3.5 overflow-x-auto pt-2 px-4 sm:px-8 no-scrollbar items-end w-full max-w-full"
+      dir="ltr"
+    >
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
@@ -82,7 +85,10 @@ export function ProductStrip({
 
   if (loading && products.length === 0) {
     return (
-      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-8" dir="ltr">
+      <div
+        className="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-4 sm:px-8 w-full max-w-full"
+        dir="ltr"
+      >
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
@@ -94,7 +100,10 @@ export function ProductStrip({
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-8" dir="ltr">
+    <div
+      className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-4 sm:px-8 w-full max-w-full"
+      dir="ltr"
+    >
       {visible.map((product, i) => (
         <StaggerItem key={product.id || i} className="shrink-0" delay={delayFor(i)}>
           <div

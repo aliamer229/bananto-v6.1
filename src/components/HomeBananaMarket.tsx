@@ -20,14 +20,14 @@ export function HomeBananaMarket() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full max-w-full overflow-hidden">
       {/* Top 10 Listings */}
-      <section className="-mx-4 mt-8 bg-gradient-to-b from-yellow-500/10 via-yellow-500/5 to-transparent pt-6 pb-2 relative overflow-hidden">
+      <section className="mt-8 bg-gradient-to-b from-yellow-500/10 via-yellow-500/5 to-transparent pt-6 pb-2 relative overflow-hidden w-full max-w-full">
         {/* Decorative background element */}
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex items-center justify-between gap-2 mb-6 px-8 relative z-10">
+        <div className="flex items-center justify-between gap-2 mb-6 px-4 sm:px-8 relative z-10">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <BananaIcon className="w-5 h-5 text-yellow-500 drop-shadow-sm" solid />
@@ -49,13 +49,13 @@ export function HomeBananaMarket() {
         </div>
 
         <div className="relative z-10">
-          <div className="flex items-center justify-between px-8 mb-3">
+          <div className="flex items-center justify-between px-4 sm:px-8 mb-3">
             <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
               <Trophy className="w-3.5 h-3.5 text-yellow-500" />
               {t("أحدث العروض (Top 10)")}
             </h4>
           </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-8">
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-4 sm:px-8 w-full max-w-full">
             {topListings.map((listing, i) => (
               <div
                 key={listing.id || i}
@@ -132,8 +132,8 @@ export function HomeBananaMarket() {
       </section>
 
       {/* Rewards / Redeem Section */}
-      <section className="-mx-4 pb-8">
-        <div className="flex items-center justify-between gap-2 mb-6 px-8">
+      <section className="pb-8 w-full max-w-full overflow-hidden">
+        <div className="flex items-center justify-between gap-2 mb-6 px-4 sm:px-8">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <Gift className="w-5 h-5 text-green-500 drop-shadow-sm" />
@@ -154,7 +154,7 @@ export function HomeBananaMarket() {
           </Link>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-8">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 snap-x px-4 sm:px-8 w-full max-w-full">
           {latestRewards.map((reward, i) => (
             <Link
               to="/banana_redeem"
