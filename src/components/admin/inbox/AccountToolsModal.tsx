@@ -62,6 +62,7 @@ export interface AccountToolsModalProps {
     instructions?: string;
     itemId?: string;
   }) => void;
+  onCompleteOrder?: (orderId: string) => void | Promise<void>;
 }
 
 export interface StagedAccountState {
@@ -83,6 +84,7 @@ export function AccountToolsModal({
   onSendCredentials,
   onSendVerificationCode,
   onSendCardCode,
+  onCompleteOrder,
 }: AccountToolsModalProps) {
   // 1. Analyze order items to determine mode & slots
   const orderItems: OrderItem[] = useMemo(() => order?.items || [], [order]);
@@ -1023,13 +1025,35 @@ export function AccountToolsModal({
 
         {/* Modal Footer Controls */}
         <div className="p-4 border-t border-border bg-muted/20 flex items-center justify-between gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
-          >
-            إلغاء
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
+            >
+              إلغاء
+            </button>
+
+            {order && order.status !== "completed" && onCompleteOrder && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await onCompleteOrder(order.id);
+                    toast.success("تم إكمال الطلب وإرسال بطاقة التقييم بنجاح ✅");
+                    onClose();
+                  } catch (err: any) {
+                    toast.error(err?.message || "فشل إكمال الطلب");
+                  }
+                }}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                title="تأكيد اكتمال جميع عناصر الطلب وإغلاق التجهيز"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>✓ تأكيد اكتمال الطلب</span>
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             {mode === "account" ? (

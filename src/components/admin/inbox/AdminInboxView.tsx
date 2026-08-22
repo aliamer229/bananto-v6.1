@@ -255,7 +255,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     markReadMutation.mutate(threadId);
   };
 
-  // 8. Send message mutation with optimistic updates
+  // 8. Send message mutation with optimistic updates, server ACK, and error retry
   const sendMutation = useMutation({
     mutationFn: (data: {
       threadId: string;
@@ -265,10 +265,13 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
       imageUrl?: string;
       clientMessageId?: string;
     }) => {
+      const clientMessageId =
+        data.clientMessageId ||
+        `admin-${data.threadId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const payload: any = {
         threadId: data.threadId,
         surface: "admin",
-        clientMessageId: data.clientMessageId || `temp-${Date.now()}`,
+        clientMessageId,
       };
       if (data.text) payload.text = data.text;
       if (data.kind) payload.kind = data.kind;
@@ -281,7 +284,11 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
     onMutate: async (newMsgData) => {
       await queryClient.cancelQueries({ queryKey: ["thread-messages", selectedThreadId] });
 
-      const tempId = newMsgData.clientMessageId || `temp-${Date.now()}`;
+      const tempId =
+        newMsgData.clientMessageId ||
+        `admin-${newMsgData.threadId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      newMsgData.clientMessageId = tempId;
+
       if (selectedThreadId) {
         const rawOptimistic: ChatMessage = {
           id: tempId,
@@ -293,26 +300,95 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
             ...newMsgData.body,
             text: newMsgData.text,
             imageUrl: newMsgData.imageUrl,
+            clientMessageId: tempId,
           },
           createdAt: new Date().toISOString(),
         };
 
-        const optimisticMsg = normalizeMessage(rawOptimistic, selectedThreadId);
-        setLiveMessages((prev) => [...prev, optimisticMsg]);
+        const optimisticMsg = {
+          ...normalizeMessage(rawOptimistic, selectedThreadId),
+          pending: true,
+          isFailed: false,
+          rawPayload: newMsgData,
+        };
+
+        // Update live messages or replace existing pending/failed message
+        setLiveMessages((prev) => {
+          const filtered = prev.filter(
+            (m) => m.id !== tempId && (m.body as any)?.clientMessageId !== tempId,
+          );
+          return [...filtered, optimisticMsg];
+        });
       }
 
       return { tempId };
     },
-    onError: (err, newMsgData, context) => {
-      if (context?.tempId) {
-        setLiveMessages((prev) => prev.filter((m) => m.id !== context.tempId));
+    onSuccess: (res, newMsgData, context) => {
+      const confirmed = res?.message;
+      const clientMessageId = res?.clientMessageId || context?.tempId || newMsgData.clientMessageId;
+
+      if (confirmed) {
+        const normalized = normalizeMessage(confirmed, selectedThreadId || confirmed.threadId);
+        setLiveMessages((prev) =>
+          prev.map((m) =>
+            m.id === context?.tempId ||
+            (m.body as any)?.clientMessageId === clientMessageId ||
+            m.id === confirmed.id
+              ? { ...normalized, pending: false, isFailed: false }
+              : m,
+          ),
+        );
       }
-      toast.error("فشل إرسال الرسالة، يرجى إعادة المحاولة");
+    },
+    onError: (err: any, newMsgData, context) => {
+      const tempId = context?.tempId || newMsgData.clientMessageId;
+      console.error(
+        `[AdminInbox:sendMessage_error] conversation_id=${newMsgData.threadId} client_message_id=${tempId} error=`,
+        err,
+      );
+
+      const errorMessage =
+        err?.message ||
+        err?.details ||
+        err?.sqlError ||
+        "فشل إرسال الرسالة لقاعدة البيانات، يرجى إعادة المحاولة";
+
+      // Mark the message as failed with retry info instead of discarding
+      if (tempId) {
+        setLiveMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempId || (m.body as any)?.clientMessageId === tempId
+              ? {
+                  ...m,
+                  pending: false,
+                  isFailed: true,
+                  errorReason: errorMessage,
+                  rawPayload: newMsgData,
+                }
+              : m,
+          ),
+        );
+      }
+
+      toast.error(errorMessage);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
     },
   });
+
+  const handleRetryMessage = (failedMsg: any) => {
+    if (!selectedThreadId) return;
+    const payload = failedMsg.rawPayload || {
+      threadId: selectedThreadId,
+      text: failedMsg.body?.text,
+      kind: failedMsg.kind,
+      body: failedMsg.body,
+      imageUrl: failedMsg.body?.imageUrl,
+      clientMessageId: failedMsg.body?.clientMessageId || failedMsg.id,
+    };
+    sendMutation.mutate(payload);
+  };
 
   // 9. Mode mutation
   const modeMutation = useMutation({
@@ -452,6 +528,7 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
               onLoadOlder={handleLoadOlder}
               onBackToList={() => setSelectedThreadId(null)}
               onNavigateToOrder={onNavigateToOrder}
+              onRetryMessage={handleRetryMessage}
               onSendMessage={(payload) => {
                 if (selectedThreadId) {
                   sendMutation.mutate({

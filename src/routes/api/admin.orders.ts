@@ -18,7 +18,7 @@ import {
 } from "@/lib/db.server";
 import { decryptSecretValue } from "@/lib/crypto.server";
 import { body, guard, json } from "@/lib/http.server";
-import { stageCredentials } from "@/lib/orders.server";
+import { stageCredentials, evaluateOrderAutoCompletion } from "@/lib/orders.server";
 import {
   claimNextAccount,
   getBatchProgress,
@@ -739,18 +739,84 @@ export const Route = createFileRoute("/api/admin/orders")({
               break;
             }
             case "complete_order": {
-              next = { ...order, status: "completed", updatedAt: now };
+              const updatedItems = order.items.map((it) => ({
+                ...it,
+                completedAt: it.completedAt || now,
+                deliveredAt: it.deliveredAt || now,
+              }));
+
+              next = {
+                ...order,
+                status: "completed",
+                completedAt: now,
+                items: updatedItems,
+                updatedAt: now,
+              };
+
+              // 1. Mark task in order queue completed
+              try {
+                await d1Run(
+                  `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
+                  now,
+                  order.id,
+                );
+
+                await d1Run(
+                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+                   VALUES (?, ?, ?, 'completed', ?, 'تم تأكيد اكتمال الطلب من قبل الإدارة', ?)`,
+                  randomId("osh"),
+                  order.id,
+                  order.status,
+                  user.id,
+                  now,
+                );
+
+                await d1Run(
+                  `INSERT INTO order_status_history_v2 (
+                    id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
+                  ) VALUES (?, ?, ?, 'completed', ?, 'ADMIN', 'Admin finalized order completion', ?)`,
+                  randomId("oshv2"),
+                  order.id,
+                  order.status,
+                  user.id,
+                  now,
+                );
+              } catch (err) {
+                console.error("[admin:complete_order:history_failed]", err);
+              }
+
+              // 2. Append order_completed message
               await appendMessage(order.threadId, {
                 senderRole: "admin",
                 senderName: adminName,
                 kind: "order_completed",
-                body: { code: order.code },
+                body: {
+                  code: order.code,
+                  text: data.text || "تم تسليم وإكمال الطلب بنجاح ✅",
+                },
               });
-              await appendMessage(order.threadId, {
-                senderRole: "system",
-                kind: "review_request",
-                body: { text: "نسعد بتقييمك لتجربة الشراء ⭐" },
-              });
+
+              // 3. Inject Rating Card request if not sent already
+              if (!order.ratingCardSentAt) {
+                await appendMessage(order.threadId, {
+                  senderRole: "assistant",
+                  senderName: "الدعم الآلي",
+                  kind: "review_request",
+                  body: {
+                    orderId: order.id,
+                    orderCode: order.code,
+                    items: order.items.map((i) => ({
+                      id: i.id,
+                      title: i.title,
+                      image: i.image,
+                      productId: i.productId,
+                    })),
+                    text: "نسعد جداً بتقييمك لتجربة الشراء وجودة الخدمة ⭐",
+                  },
+                });
+                next.ratingCardSentAt = now;
+              }
+
               const thread = await getThread(order.threadId);
               if (thread) await saveThread({ ...thread, status: "closed" });
               break;

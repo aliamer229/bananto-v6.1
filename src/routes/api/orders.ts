@@ -14,7 +14,12 @@ import {
   randomId,
 } from "@/lib/db.server";
 import { body, guard, json } from "@/lib/http.server";
-import { createOrderForUser, type CheckoutLine } from "@/lib/orders.server";
+import {
+  createOrderForUser,
+  type CheckoutLine,
+  areAllOrderItemsDelivered,
+  evaluateOrderAutoCompletion,
+} from "@/lib/orders.server";
 import { requireUser } from "@/lib/session.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import type { Address, Order, OrderItem } from "@/lib/types";
@@ -50,10 +55,13 @@ export const Route = createFileRoute("/api/orders")({
           const orderId = url.searchParams.get("orderId");
 
           if (orderId) {
-            const order = await getOrder(orderId);
+            let order = await getOrder(orderId);
             if (!order || (order.userId !== user.id && !user.isAdmin)) {
               return json({ error: "not_found" }, { status: 404 });
             }
+            // Check 1-hour auto-completion window
+            order = await evaluateOrderAutoCompletion(order);
+
             const thread = await getThread(order.threadId);
             const messages = await getMessages(order.threadId);
             const history = await d1All<Record<string, unknown>>(
@@ -234,9 +242,33 @@ export const Route = createFileRoute("/api/orders")({
 
           // Customer confirms receipt of order/accounts
           if (data.action === "confirm_received") {
+            if (order.userId !== user.id && !user.isAdmin) {
+              return json({ error: "forbidden" }, { status: 403 });
+            }
+
+            // Ensure all delivery items are fulfilled before customer can complete the order
+            if (!areAllOrderItemsDelivered(order)) {
+              return json(
+                {
+                  error: "items_not_fully_delivered",
+                  message:
+                    "لا يمكن تأكيد استلام الطلب حتى يتم تسليم كافة الحسابات/الأكواد المشمولة في الطلب.",
+                },
+                { status: 400 },
+              );
+            }
+
             if (order.status !== "completed") {
               const now = new Date().toISOString();
               try {
+                // 1. Remove from active queue
+                await d1Run(
+                  `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
+                  now,
+                  order.id,
+                );
+
+                // 2. Add history records
                 await d1Run(
                   `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
                    VALUES (?, ?, ?, 'completed', ?, 'تم تأكيد الاستلام من قبل العميل', ?)`,
@@ -258,6 +290,7 @@ export const Route = createFileRoute("/api/orders")({
                   now,
                 );
 
+                // 3. Append confirmation system message
                 if (order.threadId) {
                   await appendMessage(order.threadId, {
                     senderRole: "user",
@@ -265,19 +298,51 @@ export const Route = createFileRoute("/api/orders")({
                     body: {
                       text: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
                       code: order.code,
+                      confirmedByCustomer: true,
                     },
                   });
+
+                  // 4. Inject Rating Card request if not sent already
+                  if (!order.ratingCardSentAt) {
+                    await appendMessage(order.threadId, {
+                      senderRole: "assistant",
+                      senderName: "الدعم الآلي",
+                      kind: "review_request",
+                      body: {
+                        orderId: order.id,
+                        orderCode: order.code,
+                        items: order.items.map((i) => ({
+                          id: i.id,
+                          title: i.title,
+                          image: i.image,
+                          productId: i.productId,
+                        })),
+                        text: "نسعد جداً بتقييمك لتجربة الشراء وجودة الخدمة ⭐",
+                      },
+                    });
+                  }
                 }
               } catch (err) {
                 console.error("[order:confirm_received_history_failed]", err);
               }
 
+              const updatedItems = order.items.map((entry) => ({
+                ...entry,
+                completedAt: entry.completedAt || now,
+                deliveredAt: entry.deliveredAt || now,
+              }));
+
               const next: Order = {
                 ...order,
                 status: "completed",
+                completedAt: now,
+                customerConfirmedAt: now,
+                ratingCardSentAt: order.ratingCardSentAt || now,
+                items: updatedItems,
                 updatedAt: now,
                 events: [
                   ...order.events,
+                  { type: "customer_confirmed", at: now, payload: { by: user.id } },
                   { type: "order_completed", at: now, payload: { by: user.id } },
                 ],
               };

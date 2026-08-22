@@ -1293,16 +1293,25 @@ export async function listThreadsByUser(userId: string): Promise<Thread[]> {
 export async function saveThread(thread: Thread): Promise<Thread> {
   const norm = normalizeThread(thread);
   if (await d1Ready()) {
-    await d1Execute(
-      `INSERT INTO threads (id, user_id, order_id, doc, last_message_at)
-       VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET doc = excluded.doc, last_message_at = excluded.last_message_at`,
-      norm.id,
-      norm.userId,
-      norm.orderId ?? null,
-      JSON.stringify(norm),
-      norm.lastMessageAt,
-    );
+    try {
+      await d1Execute(
+        `INSERT INTO threads (id, user_id, order_id, doc, last_message_at)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET 
+           doc = excluded.doc, 
+           last_message_at = excluded.last_message_at,
+           user_id = excluded.user_id,
+           order_id = excluded.order_id`,
+        norm.id,
+        norm.userId,
+        norm.orderId ?? null,
+        JSON.stringify(norm),
+        norm.lastMessageAt,
+      );
+    } catch (err: any) {
+      console.error(`[db:saveThread:error] threadId=${norm.id} userId=${norm.userId} error=`, err);
+      throw err;
+    }
     return norm;
   }
   await writeJson(`threads/${norm.id}.json`, norm);
@@ -1610,13 +1619,17 @@ export async function appendMessage(
   if (await d1Ready()) {
     // Check idempotency first if clientMessageId is present
     if (clientMessageId) {
-      const existingRow = await d1First<{ doc: string }>(
-        `SELECT doc FROM messages WHERE thread_id = ? AND client_message_id = ?`,
-        threadId,
-        clientMessageId,
-      );
-      if (existingRow) {
-        return parse<ChatMessage>(existingRow.doc, {} as ChatMessage);
+      try {
+        const existingRow = await d1First<{ doc: string }>(
+          `SELECT doc FROM messages WHERE thread_id = ? AND client_message_id = ?`,
+          threadId,
+          clientMessageId,
+        );
+        if (existingRow) {
+          return parse<ChatMessage>(existingRow.doc, {} as ChatMessage);
+        }
+      } catch (err) {
+        console.warn(`[db:appendMessage:idempotency_check_failed] threadId=${threadId}`, err);
       }
     }
 
@@ -1630,16 +1643,28 @@ export async function appendMessage(
         clientMessageId || null,
       );
     } catch (e: any) {
-      if (clientMessageId && e.message?.includes("UNIQUE constraint failed")) {
-        const existingRow = await d1First<{ doc: string }>(
-          `SELECT doc FROM messages WHERE thread_id = ? AND client_message_id = ?`,
-          threadId,
-          clientMessageId,
-        );
-        if (existingRow) {
-          return parse<ChatMessage>(existingRow.doc, {} as ChatMessage);
+      if (
+        clientMessageId &&
+        (e.message?.includes("UNIQUE constraint failed") ||
+          e.message?.includes("constraint failed"))
+      ) {
+        try {
+          const existingRow = await d1First<{ doc: string }>(
+            `SELECT doc FROM messages WHERE thread_id = ? AND client_message_id = ?`,
+            threadId,
+            clientMessageId,
+          );
+          if (existingRow) {
+            return parse<ChatMessage>(existingRow.doc, {} as ChatMessage);
+          }
+        } catch {
+          // ignore
         }
       }
+      console.error(
+        `[db:appendMessage:error] threadId=${threadId} msgId=${full.id} senderRole=${full.senderRole} clientMsgId=${clientMessageId} error=`,
+        e?.message || e,
+      );
       throw e;
     }
   } else {
@@ -1653,8 +1678,8 @@ export async function appendMessage(
       type: "message.created",
       payload: { message: full, clientMessageId },
     });
-  } catch {
-    // Realtime hub fallback
+  } catch (rtErr) {
+    console.warn(`[db:appendMessage:broadcast_warning] threadId=${threadId}`, rtErr);
   }
 
   // Notification: Chat Message

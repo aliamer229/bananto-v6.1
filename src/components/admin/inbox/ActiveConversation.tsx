@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { Thread, ChatMessage, ThreadMode, Order } from "@/lib/types";
 import { api, type AdminReplySuggestion } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { MessageCard } from "./MessageCard";
 import { AccountToolsModal } from "./AccountToolsModal";
 import { QuickRepliesModal } from "./QuickRepliesModal";
@@ -119,6 +120,7 @@ interface ActiveConversationProps {
   onSkipQueue?: () => void;
   onResumeQueue?: () => void;
   onSendQueueReminder?: (text?: string) => void;
+  onRetryMessage?: (message: any) => void;
   isSending?: boolean;
 }
 
@@ -142,6 +144,7 @@ export function ActiveConversation({
   onSkipQueue,
   onResumeQueue,
   onSendQueueReminder,
+  onRetryMessage,
   isSending = false,
 }: ActiveConversationProps) {
   const [inputText, setInputText] = useState("");
@@ -157,6 +160,15 @@ export function ActiveConversation({
   const [isCustomerDrawerOpen, setIsCustomerDrawerOpen] = useState(false);
   const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleAdminCompleteOrder = async (orderId: string) => {
+    await api.adminOrderAction(orderId, "complete_order");
+    void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    void queryClient.invalidateQueries({ queryKey: ["orders"] });
+    void queryClient.invalidateQueries({ queryKey: ["threads"] });
+    void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+  };
   const [smartSuggestions, setSmartSuggestions] = useState<AdminReplySuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
@@ -699,6 +711,7 @@ export function ActiveConversation({
                   key={msg.id}
                   message={msg}
                   order={linkedOrder}
+                  onRetry={onRetryMessage}
                   onSendOtp={async (payload) => {
                     const targetOrderId = linkedOrder?.id || thread?.orderId;
                     if (targetOrderId) {
@@ -901,6 +914,7 @@ export function ActiveConversation({
               });
               setIsAccountToolsOpen(false);
             }}
+            onCompleteOrder={handleAdminCompleteOrder}
           />
         )}
 

@@ -750,6 +750,11 @@ export interface Order {
   needsAddress: boolean;
   threadId: string;
   cancelledAt?: string;
+  completedAt?: string;
+  customerConfirmedAt?: string;
+  autoCompletedAt?: string;
+  deliveryViewedAt?: string;
+  ratingCardSentAt?: string;
   createdAt: string;
   updatedAt: string;
   events: { type: string; at: string; payload?: unknown }[];

@@ -195,8 +195,10 @@ export const Route = createFileRoute("/api/chat")({
       POST: async ({ request }) =>
         guard(async () => {
           const user = await requireUser(request);
-          const throttle = await consumeRateLimit(request, "support-chat", 90, 10 * 60, user.id);
-          if (!throttle.allowed) return rateLimitResponse(throttle.retryAfter);
+          if (!user.isAdmin) {
+            const throttle = await consumeRateLimit(request, "support-chat", 90, 10 * 60, user.id);
+            if (!throttle.allowed) return rateLimitResponse(throttle.retryAfter);
+          }
           const data = await body<{
             action?:
               | "request_human"
@@ -585,8 +587,23 @@ export const Route = createFileRoute("/api/chat")({
           }
 
           const thread = data.threadId ? await getThread(data.threadId) : undefined;
+          if (!thread) {
+            console.error(
+              `[chat:error:thread_not_found] threadId=${data.threadId} senderId=${user.id} isAdmin=${Boolean(user.isAdmin)}`,
+            );
+            return json(
+              {
+                error: "not_found",
+                message: "المحادثة غير موجودة أو تم حذفها",
+                conversation_id: data.threadId,
+                sender_id: user.id,
+                status: 404,
+              },
+              { status: 404 },
+            );
+          }
+
           if (
-            !thread ||
             !canAccessThread({
               viewerId: user.id,
               isAdmin: Boolean(user.isAdmin),
@@ -594,7 +611,19 @@ export const Route = createFileRoute("/api/chat")({
               surface: data.surface === "admin" && user.isAdmin ? "admin" : "store",
             })
           ) {
-            return json({ error: "not_found" }, { status: 404 });
+            console.error(
+              `[chat:error:access_denied] threadId=${data.threadId} senderId=${user.id} threadOwner=${thread.userId} isAdmin=${Boolean(user.isAdmin)}`,
+            );
+            return json(
+              {
+                error: "forbidden",
+                message: "ليس لديك صلاحية الوصول لهذه المحادثة",
+                conversation_id: data.threadId,
+                sender_id: user.id,
+                status: 403,
+              },
+              { status: 403 },
+            );
           }
 
           let current = thread;
@@ -623,26 +652,48 @@ export const Route = createFileRoute("/api/chat")({
             false,
           );
 
-          const message = await appendMessage(current.id, {
-            senderRole:
+          let message;
+          try {
+            const senderRole =
               user.isAdmin && data.surface === "admin"
                 ? "admin"
                 : user.isService
                   ? "system"
-                  : "user",
-            senderName: user.name,
-            kind: data.imageUrl
-              ? isVideoUploadUrl(data.imageUrl)
-                ? "video"
-                : (data.kind ?? "image")
-              : (data.kind ?? "text"),
-            clientMessageId: data.clientMessageId,
-            body:
-              data.body ||
-              (data.imageUrl
-                ? { imageUrl: data.imageUrl, ...(data.text ? { text: data.text } : {}) }
-                : { text: data.text }),
-          });
+                  : "user";
+
+            message = await appendMessage(current.id, {
+              senderRole,
+              senderName: user.name,
+              kind: data.imageUrl
+                ? isVideoUploadUrl(data.imageUrl)
+                  ? "video"
+                  : (data.kind ?? "image")
+                : (data.kind ?? "text"),
+              clientMessageId: data.clientMessageId,
+              body:
+                data.body ||
+                (data.imageUrl
+                  ? { imageUrl: data.imageUrl, ...(data.text ? { text: data.text } : {}) }
+                  : { text: data.text }),
+            });
+          } catch (appendErr: any) {
+            console.error(
+              `[chat:POST:appendMessage_failed] conversation_id=${current.id} sender_id=${user.id} client_message_id=${data.clientMessageId} HTTP_status=500 D1_error=`,
+              appendErr?.message || appendErr,
+            );
+            return json(
+              {
+                error: "message_append_failed",
+                message: "فشل إرسال الرسالة لقاعدة البيانات، يرجى إعادة المحاولة",
+                conversation_id: current.id,
+                sender_id: user.id,
+                client_message_id: data.clientMessageId,
+                status: 500,
+                d1_error: appendErr?.message || String(appendErr),
+              },
+              { status: 500 },
+            );
+          }
 
           // Update thread lastMessageAt
           current.lastMessageAt = message.createdAt;
@@ -653,10 +704,11 @@ export const Route = createFileRoute("/api/chat")({
             current.adminLastReadAt = message.createdAt;
           }
 
-          // An admin reply always takes the conversation over.
+          // An admin reply always takes the conversation over and opens the thread if closed
           if (user.isAdmin && data.surface === "admin") {
             await saveThread({
               ...current,
+              status: "open",
               mode: "ADMIN_ACTIVE",
               aiPaused: true,
               needsAdmin: false,

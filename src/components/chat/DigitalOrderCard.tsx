@@ -47,6 +47,9 @@ export interface DigitalOrderCardProps {
   estimatedMinutes?: string;
   adminStatus?: "available" | "busy" | "offline";
   workingHoursText?: string;
+  canConfirmReceived?: boolean;
+  onConfirmReceived?: () => void | Promise<void>;
+  isConfirmingReceived?: boolean;
   onOpenInvoice?: (orderId?: string) => void;
 }
 
@@ -67,6 +70,9 @@ export function DigitalOrderCard({
   estimatedMinutes,
   adminStatus = "available",
   workingHoursText,
+  canConfirmReceived = false,
+  onConfirmReceived,
+  isConfirmingReceived = false,
   onOpenInvoice,
 }: DigitalOrderCardProps) {
   const [copied, setCopied] = useState(false);
@@ -368,6 +374,47 @@ export function DigitalOrderCard({
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Delivery Completion / Confirmation Block */}
+        {canConfirmReceived && status !== "completed" && (
+          <div className="mt-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-foreground space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+              <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>
+                {isAr
+                  ? "تم تسليم كافة حسابات/أكواد الطلب بنجاح!"
+                  : "All order credentials/codes delivered!"}
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              {isAr
+                ? "يرجى التحقق من بيانات الدخول والأكواد، ثم الضغط على الزر أدناه لتأكيد الاستلام وإنهاء الطلب:"
+                : "Please check your accounts/codes and click below to confirm receipt:"}
+            </p>
+            <button
+              type="button"
+              onClick={onConfirmReceived}
+              disabled={isConfirmingReceived}
+              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
+            >
+              {isConfirmingReceived ? (
+                <Clock className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
+              <span>{isAr ? "✅ تم استلام الطلب بنجاح" : "Confirm Order Received"}</span>
+            </button>
+          </div>
+        )}
+
+        {status === "completed" && (
+          <div className="mt-3 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>
+              {isAr ? "تم اكتمال الطلب واستلامه بنجاح ✅" : "Order Completed & Received ✅"}
+            </span>
           </div>
         )}
 

@@ -49,6 +49,7 @@ import { useChatRealtime } from "@/hooks/useChatRealtime";
 import { api, uploadFileWithProgress, walletApi } from "@/lib/api";
 import { isVideoUrl } from "@/lib/uploads";
 import { supportAnswer, type SupportContext } from "@/lib/support";
+import { getSmartCustomerSuggestions } from "@/lib/support/contextual-suggestions";
 import { viewHistoryForSupport } from "@/lib/view-history";
 import type {
   Address,
@@ -62,6 +63,7 @@ import { cdnImage } from "@/lib/img";
 import { accountCardTypeFor } from "@/lib/account-cards";
 import AccountCard from "@/components/chat/AccountCard";
 import { DigitalOrderCard } from "@/components/chat/DigitalOrderCard";
+import { RatingCard } from "@/components/chat/RatingCard";
 import { TopUpModal } from "@/components/wallet/TopUpModal";
 
 export type MessageStatus = "sending" | "sent" | "failed";
@@ -79,7 +81,9 @@ export type DisplayMessage = {
     | "order"
     | "image"
     | "account_card"
-    | "digital_order_card";
+    | "digital_order_card"
+    | "review_request"
+    | "order_completed";
   payload?: Record<string, unknown>;
   createdAt?: string;
   status?: MessageStatus;
@@ -831,6 +835,30 @@ export default function ChatView({
       };
     }
 
+    if (message.kind === "review_request" || message.body?.["type"] === "review_request") {
+      return {
+        id: message.id,
+        sender: "ai",
+        text: String(message.body?.["text"] ?? "تقييم الطلب"),
+        type: "review_request" as const,
+        payload: message.body,
+        createdAt: message.createdAt,
+        status: "sent",
+      };
+    }
+
+    if (message.kind === "order_completed" || message.body?.["type"] === "order_completed") {
+      return {
+        id: message.id,
+        sender: mine ? "user" : "ai",
+        text: String(message.body?.["text"] ?? "تم اكتمال الطلب بنجاح ✅"),
+        type: "order_completed" as const,
+        payload: message.body,
+        createdAt: message.createdAt,
+        status: "sent",
+      };
+    }
+
     const cardType = accountCardTypeFor(message.kind);
     if (cardType) {
       return {
@@ -903,6 +931,52 @@ export default function ChatView({
       toast.error(tr("تعذر طلب الحساب التالي"));
     } finally {
       setDeliveryBusy(false);
+    }
+  };
+
+  const [isConfirmingReceipt, setIsConfirmingReceipt] = useState(false);
+
+  const canConfirmOrderReceipt = useMemo(() => {
+    if (
+      !currentOrder ||
+      currentOrder.status === "completed" ||
+      currentOrder.status === "cancelled"
+    ) {
+      return false;
+    }
+    if (!currentOrder.items || currentOrder.items.length === 0) return false;
+    return currentOrder.items.every((it) => {
+      if (it.completedAt || it.deliveredAt) return true;
+      return Boolean(
+        it.deliveryEmail ||
+        it.credsSentAt ||
+        it.verificationCodeSentAt ||
+        it.verificationCode ||
+        (it as any).cardCode,
+      );
+    });
+  }, [currentOrder]);
+
+  const handleConfirmOrderReceipt = async () => {
+    if (!currentOrder || isConfirmingReceipt) return;
+    setIsConfirmingReceipt(true);
+    try {
+      const res = await api.orderAction({
+        orderId: currentOrder.id,
+        action: "confirm_received",
+      });
+      if (res.order) {
+        setCurrentOrder(res.order);
+      }
+      toast.success(tr("✅ تم استلام الطلب وتأكيده بنجاح!"));
+      await reloadThread();
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["order", currentOrder.id] });
+    } catch (err: any) {
+      console.error("Failed to confirm order receipt", err);
+      toast.error(err?.message || tr("فشل تأكيد استلام الطلب"));
+    } finally {
+      setIsConfirmingReceipt(false);
     }
   };
 
@@ -1641,26 +1715,57 @@ export default function ChatView({
   const isAutomatedThread = !threadId || currentThread?.chatType === "AUTOMATED_SUPPORT";
 
   const activeSuggestions = useMemo(() => {
-    if (isOrderMode) {
-      return [
-        "📸 إرسال إثبات تسجيل الدخول",
-        "🔑 كود التحقق OTP",
-        "⚡ استعجال تجهيز الحساب",
-        "👤 التحدث مع المشرف",
-      ];
-    }
-    if (isAutomatedThread) {
-      return [
-        "📦 كيف أستلم طلبي بعد الشراء؟",
-        "🎮 كيف أسجل الدخول للحساب الرقمي؟",
-        "💳 ما هي طرق شحن المحفظة؟",
-        "👤 التحدث مع الإدارة",
-      ];
-    }
-    return suggestions.length
-      ? suggestions
-      : ["مرحباً، أحتاج مساعدة", "استفسار بخصوص الطلب", "شحن رصيد المحفظة"];
-  }, [isOrderMode, isAutomatedThread, suggestions]);
+    const lastMsg = messages[messages.length - 1];
+    const lastText = typeof lastMsg?.body?.["text"] === "string" ? lastMsg.body["text"] : "";
+    const lastRole = lastMsg?.senderRole;
+
+    const hasSentProof = messages.some(
+      (m) =>
+        m.kind === "proof" ||
+        m.kind === "login_proof" ||
+        (m.body?.["imageUrl"] && m.senderRole === "user") ||
+        (typeof m.body?.["text"] === "string" && m.body["text"].includes("إثبات")),
+    );
+
+    const hasCredsSent = messages.some(
+      (m) =>
+        m.kind === "item_credentials" ||
+        m.kind === "credentials" ||
+        (m.senderRole === "admin" &&
+          typeof m.body?.["text"] === "string" &&
+          m.body["text"].includes("بيانات الحساب")),
+    );
+
+    const dynamicChips = getSmartCustomerSuggestions({
+      chatType:
+        currentThread?.chatType ||
+        (isOrderMode
+          ? "ORDER_SUPPORT"
+          : isAutomatedThread
+            ? "AUTOMATED_SUPPORT"
+            : "GENERAL_SUPPORT"),
+      orderId: threadOrderId || currentThread?.orderId,
+      orderStatus: currentOrder?.status,
+      paymentStatus: currentOrder?.paymentStatus,
+      lastMessageText: lastText,
+      lastSenderRole: lastRole,
+      hasSentProof,
+      hasCredsSent,
+      isCompleted: currentOrder?.status === "completed",
+    });
+
+    return dynamicChips.length > 0 ? dynamicChips : suggestions;
+  }, [
+    isOrderMode,
+    isAutomatedThread,
+    currentThread?.chatType,
+    currentThread?.orderId,
+    threadOrderId,
+    currentOrder?.status,
+    currentOrder?.paymentStatus,
+    messages,
+    suggestions,
+  ]);
 
   const handleSuggestionClick = (text: string) => {
     if (text.includes("إثبات تسجيل الدخول")) {
@@ -2161,10 +2266,52 @@ export default function ChatView({
                       aheadCount={liveQueueMetrics?.aheadCount}
                       adminStatus={liveQueueMetrics?.adminStatus || adminStatus}
                       workingHoursText={adminAvailability?.workingHoursText}
+                      canConfirmReceived={canConfirmOrderReceipt}
+                      onConfirmReceived={handleConfirmOrderReceipt}
+                      isConfirmingReceived={isConfirmingReceipt}
                       onOpenInvoice={() => {
                         if (currentOrder) setSelectedInvoiceOrder(currentOrder);
                       }}
                     />
+                  ) : msg.type === "review_request" && msg.payload ? (
+                    <RatingCard
+                      orderId={String(msg.payload["orderId"] ?? currentOrder?.id ?? "")}
+                      orderCode={String(msg.payload["orderCode"] ?? currentOrder?.code ?? "")}
+                      items={
+                        (msg.payload["items"] as any) ??
+                        currentOrder?.items?.map((it) => ({
+                          id: it.id,
+                          productId: it.productId,
+                          title: it.title,
+                          image: it.image || "",
+                        })) ??
+                        []
+                      }
+                      text={
+                        typeof msg.payload["text"] === "string" ? msg.payload["text"] : undefined
+                      }
+                      locale={lang === "en" ? "en" : "ar"}
+                    />
+                  ) : msg.type === "order_completed" ? (
+                    <div
+                      dir="auto"
+                      className="max-w-[85%] rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-foreground shadow-xs space-y-1.5"
+                    >
+                      <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
+                        <Check className="w-4 h-4 text-emerald-500" />
+                        <span>
+                          {msg.text ||
+                            (lang === "en"
+                              ? "Order has been completed successfully ✅"
+                              : "تم اكتمال الطلب بنجاح ✅")}
+                        </span>
+                      </div>
+                      {typeof msg.payload?.["code"] === "string" && (
+                        <div className="text-[11px] font-mono text-muted-foreground">
+                          #{String(msg.payload["code"])}
+                        </div>
+                      )}
+                    </div>
                   ) : msg.type === "account_card" && msg.payload ? (
                     <AccountCard
                       kind={String(msg.payload["kind"] ?? "")}

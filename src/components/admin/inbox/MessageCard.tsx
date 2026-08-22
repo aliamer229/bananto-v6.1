@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   ShoppingBag,
   ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { ChatMessage, MessageKind } from "@/lib/types";
 import { toast } from "sonner";
@@ -31,7 +32,12 @@ import {
 } from "@/lib/message-normalizer";
 
 export interface MessageCardProps {
-  message: ChatMessage | NormalizedChatMessage;
+  message: (ChatMessage | NormalizedChatMessage) & {
+    pending?: boolean;
+    isFailed?: boolean;
+    errorReason?: string;
+    rawPayload?: any;
+  };
   onSelectSuggestion?: (text: string) => void;
   order?: {
     id: string;
@@ -39,6 +45,7 @@ export interface MessageCardProps {
   } | null;
   onSendOtp?: (params: { itemId?: string; code: string; title?: string }) => void | Promise<void>;
   isSendingOtp?: boolean;
+  onRetry?: (message: (ChatMessage | NormalizedChatMessage) & { rawPayload?: any }) => void;
 }
 
 interface MessageErrorBoundaryProps {
@@ -116,6 +123,7 @@ function InnerMessageCard({
   order,
   onSendOtp,
   isSendingOtp,
+  onRetry,
 }: MessageCardProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showImageZoom, setShowImageZoom] = useState(false);
@@ -126,6 +134,9 @@ function InnerMessageCard({
   // Guarantee sanitized message structure
   const message = normalizeMessage(rawMessage);
   const body = message.body || {};
+  const isFailed = Boolean(rawMessage.isFailed || body["_failed"]);
+  const isPending = Boolean(rawMessage.pending);
+  const errorReason = rawMessage.errorReason || body["_errorReason"];
 
   const copyText = (text: string, label: string) => {
     if (!text) return;
@@ -235,6 +246,39 @@ function InnerMessageCard({
       ) : legacyCardType || kind === "item_credentials" || (kind as string) === "credentials" ? (
         <div dir="auto" className="relative transition-all">
           <AccountCard kind={kind} body={body} tone="default" />
+        </div>
+      ) : kind === "review_request" ? (
+        <div
+          dir="rtl"
+          className="relative max-w-[88%] sm:max-w-[78%] rounded-2xl p-3.5 bg-amber-500/10 border border-amber-500/25 text-foreground shadow-2xs space-y-1.5"
+        >
+          <div className="flex items-center gap-2 font-bold text-xs text-amber-700 dark:text-amber-300">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>طلب تقييم الطلب</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {body.text || "تم إرسال بطاقة التقييم إلى العميل ⭐"}
+          </p>
+          {body.orderCode && (
+            <div className="text-[10px] font-mono text-muted-foreground font-semibold">
+              #{String(body.orderCode)}
+            </div>
+          )}
+        </div>
+      ) : kind === "order_completed" ? (
+        <div
+          dir="rtl"
+          className="relative max-w-[88%] sm:max-w-[78%] rounded-2xl p-3.5 bg-emerald-500/10 border border-emerald-500/25 text-foreground shadow-2xs space-y-1.5"
+        >
+          <div className="flex items-center gap-2 font-bold text-xs text-emerald-700 dark:text-emerald-300">
+            <Check className="w-4 h-4 text-emerald-500" />
+            <span>{body.text || "تم تأكيد اكتمال الطلب واستلامه بنجاح ✅"}</span>
+          </div>
+          {body.code && (
+            <div className="text-[10px] font-mono text-muted-foreground font-semibold">
+              #{String(body.code)}
+            </div>
+          )}
         </div>
       ) : (
         <div
@@ -509,6 +553,37 @@ function InnerMessageCard({
                 </button>
               ))}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Pending Delivery State */}
+      {isPending && (
+        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground px-1 mt-0.5">
+          <Loader2 className="w-3 h-3 animate-spin text-primary" />
+          <span>جاري الإرسال وتأكيد الحفظ...</span>
+        </div>
+      )}
+
+      {/* Failed Message State with Specific Error & Retry */}
+      {isFailed && (
+        <div className="flex items-center gap-2 p-2 rounded-xl bg-red-500/10 border border-red-500/25 text-red-700 dark:text-red-300 text-xs shadow-2xs mt-1 w-fit max-w-full">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
+          <div className="flex-1 min-w-0">
+            <span className="font-bold block">فشل إرسال الرسالة</span>
+            {errorReason && (
+              <span className="text-[10px] opacity-80 line-clamp-1">{errorReason}</span>
+            )}
+          </div>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={() => onRetry(rawMessage)}
+              className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs shrink-0"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>إعادة المحاولة</span>
+            </button>
           )}
         </div>
       )}
