@@ -37,6 +37,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCartStore } from "@/store/useCartStore";
 import { useServerFn } from "@tanstack/react-start";
 import { addToCart as addToCartFn } from "@/lib/cart.functions";
+import { showAddToCartToast } from "@/utils/cart-toast";
 
 export const Route = createFileRoute("/bundles/$bundleId")({
   head: () => ({
@@ -128,11 +129,16 @@ function BundleDetailPage() {
       }
 
       setAdded(true);
-      toast.success(`تمت إضافة "${bundle.titleEn || bundle.title}" إلى السلة`);
-
       if (directCheckout) {
         void navigate({ to: "/cart" });
       } else {
+        showAddToCartToast({
+          title: "أُضيف إلى السلة",
+          message: bundle.titleEn || bundle.title,
+          image: bundle.image || games[0]?.image || "",
+          navigate,
+          playSoundEffect: false,
+        });
         setTimeout(() => setAdded(false), 2500);
       }
     } catch (err) {

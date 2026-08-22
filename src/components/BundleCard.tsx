@@ -12,6 +12,7 @@ import { addToCart as addToCartFn } from "@/lib/cart.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { showAddToCartToast } from "@/utils/cart-toast";
 
 interface BundleCardProps {
   bundle: AccountBundle;
@@ -66,7 +67,13 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
       }
 
       setAdded(true);
-      toast.success(`تمت إضافة "${bundle.titleEn || bundle.title}" إلى السلة`);
+      showAddToCartToast({
+        title: "أُضيف إلى السلة",
+        message: bundle.titleEn || bundle.title,
+        image: bundle.image || games[0]?.image || "",
+        navigate,
+        playSoundEffect: false,
+      });
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       toast.error("حدث خطأ أثناء الإضافة للسلة");

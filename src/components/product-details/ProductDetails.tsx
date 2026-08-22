@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 
 import { useCurrency } from "@/context/CurrencyContext";
 import { useTranslation } from "@/i18n";
@@ -27,6 +28,7 @@ import { buildProductView, type ProductView } from "@/lib/productImport/productV
 import type { ProductSchema } from "@/lib/productImport/types";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProductKind } from "@/lib/types";
+import { showAddToCartToast } from "@/utils/cart-toast";
 
 import { ProductGallery } from "./ProductGallery";
 import { BulletList, Section, SpecTable } from "./Section";
@@ -68,6 +70,7 @@ function DetailsBody({
 }) {
   const { formatIQDPrice } = useCurrency();
   const addToCart = useCartStore((s) => s.add);
+  const navigate = useNavigate();
 
   const [optionId, setOptionId] = useState(view.options[0]?.id ?? "");
   const [variantName, setVariantName] = useState("");
@@ -91,11 +94,12 @@ function DetailsBody({
       return;
     }
     const labelParts = [selectedOption?.name, selectedVariant?.name].filter(Boolean);
+    const itemImage = selectedVariant?.image || selectedOption?.image || view.images[0] || "";
     addToCart(
       {
         productId: String(product["id"] ?? ""),
         title: view.title,
-        image: selectedVariant?.image || selectedOption?.image || view.images[0] || "",
+        image: itemImage,
         price: effectivePrice,
         kind: (view.schema.kind as ProductKind) ?? "accessory",
         requiresAddress: true,
@@ -105,7 +109,13 @@ function DetailsBody({
       },
       quantity,
     );
-    toast.success(t("product.addedToCart"));
+    showAddToCartToast({
+      title: t("product.addedToCart") || "أُضيف إلى السلة",
+      message: `${quantity > 1 ? `${quantity} × ` : ""}${view.title}${labelParts.length ? ` (${labelParts.join(" / ")})` : ""}`,
+      image: itemImage,
+      quantity,
+      navigate,
+    });
   };
 
   return (

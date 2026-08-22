@@ -16,6 +16,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { readPrefs } from "../lib/prefs";
 import { ensureLanguageAssets, useI18n, tr } from "../i18n";
 import GlobalMusicPlayer from "../components/GlobalMusicPlayer";
+import { Toaster } from "../components/ui/sonner";
 import { useQuery } from "@tanstack/react-query";
 import { ensureNintendoCategory } from "../lib/nintendo-setup";
 import { isScriptImportError, handleModuleReload } from "../lib/polyfills";
@@ -347,6 +348,7 @@ function RootInner() {
     <CurrencyProvider>
       <GlobalMusicPlayer musicList={store?.musicList} />
       <ThemeApplier />
+      <Toaster />
       {/* key={lang} remounts the tree so every tr() call re-reads the dictionary. */}
       <div key={`${lang}:${assetsVersion}`} className="contents">
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}

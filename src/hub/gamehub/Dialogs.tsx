@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bell, Check, Minus, Plus, ShoppingBag, TrendingDown } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Modal } from "@/hub/ui/Modal";
 import { Chip } from "@/hub/ui/Bits";
 import { useI18n } from "@/hub/i18n";
@@ -13,6 +14,7 @@ import { cn } from "@/hub/utils/cn";
 import type { CurrencyCode, GameVideo } from "@/hub/types";
 import { useCartStore } from "@/store/useCartStore";
 import { useHub } from "./hubContext";
+import { showAddToCartToast } from "@/utils/cart-toast";
 
 /** Cart labels for the admin offer kinds encoded in the offer id. */
 const OFFER_LABELS_AR: Record<string, string> = {
@@ -53,6 +55,7 @@ export function BuySheet({
   const { addNotification } = useNotifications();
   const { game, ranked } = useHub();
   const addToCart = useCartStore((state) => state.add);
+  const navigate = useNavigate();
 
   const options = game.options ?? [];
   const allTypes = game.types ?? [];
@@ -365,11 +368,12 @@ export function BuySheet({
               ? offerLabelParts.join(" / ")
               : (OFFER_LABELS[offerKind] ?? offerKind);
 
+            const image = game.coverUrl || "";
             addToCart(
               {
                 productId: game.id,
                 title: game.title,
-                ...(game.coverUrl ? { image: game.coverUrl } : {}),
+                ...(image ? { image } : {}),
                 price: unitPrice,
                 kind: isPhysical ? "hardware" : "account",
                 offerKind,
@@ -390,13 +394,16 @@ export function BuySheet({
               },
               quantity,
             );
-            addNotification({
-              title: t("hero.addToCart"),
-              message: `${quantity} × ${game.title}${offerLabel ? ` (${offerLabel})` : ""}`,
-              type: "success",
+            showAddToCartToast({
+              title: "أُضيف إلى السلة",
+              message: `${quantity > 1 ? `${quantity} × ` : ""}${game.title}${offerLabel ? ` (${offerLabel})` : ""}`,
+              image,
+              quantity,
+              navigate,
+              playSoundEffect: false,
             });
           }}
-          className="btn btn-primary h-12 w-full text-sm disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn btn-primary h-12 w-full text-sm disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
         >
           <ShoppingBag className="h-4 w-4" />
           {t("hero.addToCart")}

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Bell, Check, Info, TriangleAlert, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/hub/utils/cn";
 
 export type NotificationType = "info" | "success" | "warning" | "price";
@@ -20,11 +21,14 @@ export interface NotificationInput {
   type?: NotificationType;
   /** Milliseconds before auto-dismiss. `0` keeps it until dismissed. */
   duration?: number;
+  /** Custom destination on click (defaults to /cart for cart additions) */
+  href?: string;
 }
 
-interface NotificationItem extends Required<Omit<NotificationInput, "message">> {
+interface NotificationItem extends Required<Omit<NotificationInput, "message" | "href">> {
   id: string;
   message?: string;
+  href?: string;
 }
 
 interface NotificationValue {
@@ -64,16 +68,38 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const addNotification = useCallback(
     (input: NotificationInput) => {
-      const id = `n_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+      const isCart =
+        input.title.includes("سلة") ||
+        input.title.includes("Cart") ||
+        input.title.includes("أضف") ||
+        input.title.includes("أُضيف");
+
+      const id = isCart
+        ? "cart-hub-notification"
+        : `n_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+
       const item: NotificationItem = {
         id,
         title: input.title,
         ...(input.message !== undefined ? { message: input.message } : {}),
+        ...(input.href !== undefined ? { href: input.href } : {}),
         type: input.type ?? "info",
         duration: input.duration ?? 4200,
       };
-      // Cap the stack so a burst of price updates cannot bury the page.
-      setNotifications((current) => [item, ...current].slice(0, 4));
+
+      // Clear timer for any previous instance with same id
+      const existingTimer = timers.current.get(id);
+      if (existingTimer) {
+        window.clearTimeout(existingTimer);
+        timers.current.delete(id);
+      }
+
+      // Deduplicate: If adding a cart notification or same id, replace previous so user gets only 1 toast
+      setNotifications((current) => {
+        const filtered = current.filter((n) => n.id !== id);
+        return [item, ...filtered].slice(0, 4);
+      });
+
       if (item.duration > 0) {
         timers.current.set(
           id,
@@ -113,6 +139,8 @@ function NotificationViewport({
   items: NotificationItem[];
   onDismiss: (id: string) => void;
 }) {
+  const navigate = useNavigate();
+
   return (
     <div
       className="pointer-events-none fixed inset-x-0 top-3 z-[80] flex flex-col items-center gap-2 px-3 sm:inset-x-auto sm:end-4 sm:top-4 sm:items-end sm:px-0"
@@ -122,6 +150,23 @@ function NotificationViewport({
       <AnimatePresence initial={false}>
         {items.map((item) => {
           const Icon = ICONS[item.type];
+          const isCartAction =
+            item.href === "/cart" ||
+            item.id.includes("cart") ||
+            item.title.includes("سلة") ||
+            item.title.includes("Cart") ||
+            item.title.includes("أضف") ||
+            item.title.includes("أُضيف");
+
+          const handleCardClick = () => {
+            onDismiss(item.id);
+            if (item.href) {
+              void navigate({ to: item.href as never });
+            } else if (isCartAction) {
+              void navigate({ to: "/cart" });
+            }
+          };
+
           return (
             <motion.div
               key={item.id}
@@ -130,31 +175,52 @@ function NotificationViewport({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 420, damping: 32 }}
-              className="pointer-events-auto w-full max-w-sm rounded-2xl border border-white/10 bg-ink-850/95 p-3 backdrop-blur-xl shadow-lift"
+              onClick={handleCardClick}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleCardClick();
+                }
+              }}
+              style={{ cursor: isCartAction || item.href ? "pointer" : "default" }}
+              className={cn(
+                "pointer-events-auto group relative flex w-full max-w-sm select-none items-center justify-between gap-3 overflow-hidden rounded-2xl border border-white/15 bg-ink-850/95 p-3.5 backdrop-blur-xl shadow-2xl transition-all duration-150 active:scale-[0.98]",
+                (isCartAction || item.href) && "cursor-pointer hover:bg-ink-850",
+              )}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <span
                   className={cn(
-                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]",
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06]",
                     TONE[item.type],
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4.5 w-4.5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold leading-snug">{item.title}</p>
+                  <p className="text-sm font-bold leading-snug text-white">{item.title}</p>
                   {item.message && (
-                    <p className="mt-0.5 text-xs leading-relaxed muted">{item.message}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-white/70 truncate">
+                      {item.message}
+                    </p>
                   )}
                 </div>
-                <button
-                  onClick={() => onDismiss(item.id)}
-                  className="-me-1 rounded-lg p-1 muted transition-colors hover:text-white"
-                  aria-label="Close notification"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onDismiss(item.id);
+                }}
+                className="-me-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/50 transition-colors hover:bg-white/10 hover:text-white active:scale-90"
+                aria-label="Close notification"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </motion.div>
           );
         })}
