@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
+  BookOpen,
   Camera,
   Check,
   Copy,
@@ -197,7 +198,7 @@ export function AccountCard({
         <CopyField
           label={t.password}
           value={card.password}
-          masked
+          masked={false}
           copyLabel={t.copy}
           copiedLabel={t.copied}
         />
@@ -219,6 +220,17 @@ export function AccountCard({
       {/* Buyer's next steps for an account they were just handed. */}
       {card.type === "credentials" && delivery && itemId ? (
         <div className="space-y-2 border-t border-current/10 pt-2">
+          {/* Quick Action: Login Instructions Guide */}
+          <a
+            href="/account_guides"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-1.5 w-full rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/20 py-2 px-3 text-[11px] font-bold transition-colors cursor-pointer"
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            <span>{locale === "ar" ? "تعليمات تسجيل الدخول والشرح" : "Login Guides & Instructions"}</span>
+          </a>
+
           <div className="group relative flex items-start gap-1.5 rounded-xl bg-amber-500/10 p-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300 border border-amber-500/20">
             <div
               className="relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-bold text-[10px]"
@@ -241,7 +253,7 @@ export function AccountCard({
               type="button"
               disabled={delivery.busy}
               onClick={() => void delivery.onAttachProof(itemId)}
-              className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-foreground px-3 py-2 text-[11px] font-bold text-background disabled:opacity-50 transition-transform active:scale-95"
+              className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-foreground px-3 py-2 text-[11px] font-bold text-background disabled:opacity-50 transition-transform active:scale-95 cursor-pointer"
             >
               {delivery.busy ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -267,7 +279,7 @@ export function AccountCard({
                     ? "يجب إرفاق صورة تثبت تسجيل الدخول أولاً"
                     : "Attach the sign-in proof first"
               }
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-current/20 px-3 py-2 text-[11px] font-bold disabled:opacity-40 transition-transform active:scale-95"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-current/20 px-3 py-2 text-[11px] font-bold disabled:opacity-40 transition-transform active:scale-95 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               {locale === "ar" ? "التالي" : "Next"}

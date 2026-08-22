@@ -337,15 +337,24 @@ export const Route = createFileRoute("/api/admin/orders")({
             }
 
             case "send_verification_code": {
-              if (!data.itemId || !data.code)
+              const targetItemId =
+                data.itemId ||
+                order.items.find((i) => i.credsSentAt && !i.loggedInAt)?.id ||
+                order.items[0]?.id;
+              if (!targetItemId || !data.code)
                 return json({ error: "missing_fields" }, { status: 400 });
               await appendMessage(order.threadId, {
                 senderRole: "admin",
                 senderName: adminName,
                 kind: "item_verification_code",
-                body: { itemId: data.itemId, code: data.code },
+                body: {
+                  itemId: targetItemId,
+                  code: data.code,
+                  verificationCode: data.code,
+                  title: data.title || order.items.find((i) => i.id === targetItemId)?.title,
+                },
               });
-              next = patchItem(order, data.itemId, { verificationCodeSentAt: now });
+              next = patchItem(order, targetItemId, { verificationCodeSentAt: now });
               break;
             }
             case "send_instructions": {

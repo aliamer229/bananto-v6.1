@@ -696,6 +696,29 @@ export function ActiveConversation({
                 <MessageCard
                   key={msg.id}
                   message={msg}
+                  order={linkedOrder}
+                  onSendOtp={async (payload) => {
+                    if (linkedOrder) {
+                      const res = await fetch("/api/admin/orders", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          orderId: linkedOrder.id,
+                          action: "send_verification_code",
+                          itemId: payload.itemId,
+                          code: payload.code,
+                          title: payload.title,
+                        }),
+                      });
+                      if (!res.ok) {
+                        const err = (await res.json().catch(() => ({}))) as { error?: string };
+                        throw new Error(err.error || "فشل إرسال كود OTP");
+                      }
+                      await onRefreshMessages();
+                      return;
+                    }
+                    onSendMessage({ kind: "otp", body: payload });
+                  }}
                   onSelectSuggestion={(text) => setInputText(text)}
                 />
               ))}

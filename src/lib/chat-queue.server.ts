@@ -337,3 +337,86 @@ export async function resumeQueueCustomer(threadId: string): Promise<Thread | nu
 
   return updated;
 }
+
+export interface QueueMetrics {
+  position: number;
+  aheadCount: number;
+  estimatedMinutesMin: number;
+  estimatedMinutesMax: number;
+  estimatedMinutesText: string;
+  status: "active" | "queued" | "snoozed" | "serving_now";
+  adminStatus: "available" | "busy" | "offline";
+  workingHoursText?: string;
+}
+
+/**
+ * Real-time queue metrics calculation based on true backend state.
+ */
+export async function calculateQueueMetrics(threadOrOrderId: string): Promise<QueueMetrics> {
+  const availability = await getAdminAvailabilityStatus();
+  const allThreads = await listThreads();
+
+  // Active queue threads: open and requiring admin/order preparation, not pure automated and not snoozed
+  const queueThreads = allThreads.filter((t) => {
+    if (t.status !== "open" || t.mode === "RESOLVED" || isPureAutomatedThread(t)) return false;
+    if (t.queueStatus === "snoozed") return false;
+    return Boolean(
+      t.orderId ||
+        t.chatType === "ORDER_SUPPORT" ||
+        t.chatType === "DELIVERY" ||
+        t.chatType === "GENERAL_SUPPORT" ||
+        t.needsAdmin,
+    );
+  });
+
+  // Sort FIFO by queueEnteredAt / createdAt
+  queueThreads.sort((a, b) => {
+    const timeA = new Date(a.queueEnteredAt || a.createdAt).getTime();
+    const timeB = new Date(b.queueEnteredAt || b.createdAt).getTime();
+    return timeA - timeB;
+  });
+
+  const index = queueThreads.findIndex(
+    (t) => t.id === threadOrOrderId || t.orderId === threadOrOrderId,
+  );
+
+  const adminStatus: "available" | "busy" | "offline" = !availability.isAvailable
+    ? "offline"
+    : queueThreads.length > 3
+      ? "busy"
+      : "available";
+
+  if (index === -1) {
+    return {
+      position: 1,
+      aheadCount: 0,
+      estimatedMinutesMin: 1,
+      estimatedMinutesMax: 3,
+      estimatedMinutesText: "1 - 3 دقائق",
+      status: "active",
+      adminStatus,
+      workingHoursText: availability.workingHoursText,
+    };
+  }
+
+  const position = index + 1;
+  const aheadCount = index;
+  const isFirst = index === 0;
+  const status = isFirst ? "serving_now" : "queued";
+  const estimatedMinutesMin = isFirst ? 1 : Math.max(2, aheadCount * 2);
+  const estimatedMinutesMax = isFirst ? 3 : Math.max(4, aheadCount * 3 + 2);
+  const estimatedMinutesText = isFirst
+    ? "دورك الآن"
+    : `${estimatedMinutesMin}–${estimatedMinutesMax} دقيقة`;
+
+  return {
+    position,
+    aheadCount,
+    estimatedMinutesMin,
+    estimatedMinutesMax,
+    estimatedMinutesText,
+    status,
+    adminStatus,
+    workingHoursText: availability.workingHoursText,
+  };
+}

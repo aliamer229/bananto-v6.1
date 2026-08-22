@@ -14,6 +14,7 @@ interface ChatRealtimeOptions {
     readerUserId: string;
     lastReadAt: string;
   }) => void;
+  onQueueUpdated?: (metrics: any) => void;
 }
 
 export function useChatRealtime({
@@ -24,6 +25,7 @@ export function useChatRealtime({
   onTypingUpdate,
   onPresenceUpdate,
   onReadUpdate,
+  onQueueUpdated,
 }: ChatRealtimeOptions) {
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef<number | null>(null);
@@ -117,6 +119,17 @@ export function useChatRealtime({
         // Ignore malformed SSE payload
       }
     });
+
+    es.addEventListener("queue.updated", (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.payload?.queueMetrics && onQueueUpdated) {
+          onQueueUpdated(data.payload.queueMetrics);
+        }
+      } catch {
+        // Ignore malformed SSE payload
+      }
+    });
   }, [
     threadId,
     surface,
@@ -125,6 +138,7 @@ export function useChatRealtime({
     onTypingUpdate,
     onPresenceUpdate,
     onReadUpdate,
+    onQueueUpdated,
   ]);
 
   useEffect(() => {

@@ -789,6 +789,15 @@ export default function ChatView({
 
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | null>(null);
 
+  /* ------------------------- live queue metrics ------------------------- */
+  const [liveQueueMetrics, setLiveQueueMetrics] = useState<{
+    position?: number;
+    aheadCount?: number;
+    estimatedWaitTime?: string;
+    totalWaiting?: number;
+    adminStatus?: "available" | "busy" | "offline";
+  } | null>(null);
+
   /* ------------------------- human support countdown ------------------------- */
   const [supportCountdown, setSupportCountdown] = useState<{
     active: boolean;
@@ -808,7 +817,10 @@ export default function ChatView({
     setServerMessages(res.messages.map(mapServerMessage));
     setHasMore(res.hasMore ?? false);
     setNextCursor(res.nextCursor ?? null);
-  }, [threadId]);
+    if ((res as any).queueMetrics) {
+      setLiveQueueMetrics((res as any).queueMetrics);
+    }
+  }, [threadId, mapServerMessage]);
 
   /** Upload the member's sign-in screenshot and attach it to the order line. */
   const submitLoginProof = async (file: File) => {
@@ -921,6 +933,9 @@ export default function ChatView({
         setServerMessages(res.messages.map(mapServerMessage));
         setHasMore(res.hasMore ?? false);
         setNextCursor(res.nextCursor ?? null);
+        if ((res as any).queueMetrics) {
+          setLiveQueueMetrics((res as any).queueMetrics);
+        }
         if (typeof res.isOnline === "boolean") {
           setIsOnline(res.isOnline);
         }
@@ -985,6 +1000,11 @@ export default function ChatView({
     onPresenceUpdate: (participants) => {
       // In customer chat, if we get an update, we assume admin is online
       setIsOnline(true);
+    },
+    onQueueUpdated: (metrics) => {
+      if (metrics) {
+        setLiveQueueMetrics(metrics);
+      }
     },
   });
 
@@ -1535,26 +1555,61 @@ export default function ChatView({
 
   const isAutomatedThread = !threadId || currentThread?.chatType === "AUTOMATED_SUPPORT";
 
+  const activeSuggestions = useMemo(() => {
+    if (isOrderMode) {
+      return [
+        "📸 إرسال إثبات تسجيل الدخول",
+        "🔑 كود التحقق OTP",
+        "⚡ استعجال تجهيز الحساب",
+        "👤 التحدث مع المشرف",
+      ];
+    }
+    if (isAutomatedThread) {
+      return [
+        "📦 كيف أستلم طلبي بعد الشراء؟",
+        "🎮 كيف أسجل الدخول للحساب الرقمي؟",
+        "💳 ما هي طرق شحن المحفظة؟",
+        "👤 التحدث مع الإدارة",
+      ];
+    }
+    return suggestions.length
+      ? suggestions
+      : ["مرحباً، أحتاج مساعدة", "استفسار بخصوص الطلب", "شحن رصيد المحفظة"];
+  }, [isOrderMode, isAutomatedThread, suggestions]);
+
+  const handleSuggestionClick = (text: string) => {
+    if (text.includes("إثبات تسجيل الدخول")) {
+      proofInputRef.current?.click() || fileRef.current?.click();
+      return;
+    }
+    if (text.includes("التحدث مع الإدارة") || text.includes("التحدث مع المشرف")) {
+      void handleRequestHumanSupport();
+      return;
+    }
+    void handleSend(tr(text));
+  };
+
   return (
     <div
       className="relative flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-[#FCF9F5] via-[#F8EAE0] to-[var(--peach)] text-[var(--ink)]"
       dir={isRtl ? "rtl" : "ltr"}
     >
       {/* 1. Modern Compact Sticky Header */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-white/40 bg-[var(--surface-5)]/85 px-4 py-3 shadow-xs backdrop-blur-md transition-all">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-white/40 bg-[var(--surface-5)]/85 px-3.5 py-2.5 shadow-xs backdrop-blur-md transition-all">
         {/* Back Button */}
         <button
           onClick={onBack}
-          aria-label="Back"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-card/80 text-[var(--ink)] shadow-xs transition-colors hover:bg-[var(--surface-3)] cursor-pointer"
+          aria-label={tr("رجوع")}
+          className="flex h-9 items-center gap-1.5 rounded-full border border-white/40 bg-card/90 px-3 text-[13px] font-bold text-[var(--ink)] shadow-xs transition-all hover:bg-[var(--surface-3)] active:scale-95 cursor-pointer"
         >
-          <Menu className="h-4 w-4" strokeWidth={1.75} />
+          <ArrowRight className="h-4 w-4 rtl:rotate-0 ltr:rotate-180 text-[var(--ink)]" strokeWidth={2.2} />
+          <span className="text-[12px] font-bold">{tr("رجوع")}</span>
         </button>
 
         {/* Thread Info & Live Status Badge */}
         <div className="flex flex-col items-center justify-center text-center">
           <div className="flex items-center gap-1.5" dir={isRtl ? "rtl" : "ltr"}>
-            <span className="text-[14px] font-bold text-[var(--ink)]">
+            <span className="text-[13.5px] font-bold text-[var(--ink)]">
               {isOrderMode
                 ? `${tr("محادثة تجهيز الطلب")} ${currentOrder?.code ? `(${currentOrder.code})` : ""}`
                 : isAutomatedThread
@@ -1564,7 +1619,11 @@ export default function ChatView({
             {isOrderMode ? (
               <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                {currentOrder?.status === "completed" ? tr("مكتمل") : tr("طابور التجهيز")}
+                {currentOrder?.status === "completed"
+                  ? tr("مكتمل")
+                  : (liveQueueMetrics?.position || currentQueueIndex) <= 1
+                    ? tr("دورك الآن ⚡")
+                    : `${tr("طابور")} #${liveQueueMetrics?.position || currentQueueIndex}`}
               </span>
             ) : isAutomatedThread ? (
               <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
@@ -1624,6 +1683,46 @@ export default function ChatView({
           </button>
         </div>
       </div>
+
+      {/* Live Queue Realtime Banner for Orders */}
+      {isOrderMode && currentOrder?.status !== "completed" && (
+        <div
+          className="relative z-20 border-b border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent px-4 py-2 text-xs backdrop-blur-sm shadow-xs"
+          dir={isRtl ? "rtl" : "ltr"}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span className="font-bold text-[var(--ink)]">
+                {(liveQueueMetrics?.position || currentQueueIndex) <= 1
+                  ? tr("⚡ دورك الآن — قيد التجهيز المباشر من المشرف")
+                  : `${tr("طابور التجهيز المباشر: الدور")} #${liveQueueMetrics?.position || currentQueueIndex}`}
+              </span>
+              {(liveQueueMetrics?.aheadCount ?? (currentQueueIndex - 1)) > 0 && (
+                <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                  {isAr
+                    ? `(أمامك ${liveQueueMetrics?.aheadCount ?? (currentQueueIndex - 1)} طلبات)`
+                    : `(${liveQueueMetrics?.aheadCount ?? (currentQueueIndex - 1)} orders ahead)`}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-ink)] font-medium">
+              <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+              <span>
+                {liveQueueMetrics?.estimatedWaitTime || (
+                  (liveQueueMetrics?.position || currentQueueIndex) <= 1
+                    ? tr("خلال دقائق معدودة")
+                    : `${Math.max(5, ((liveQueueMetrics?.position || currentQueueIndex) - 1) * 5)} - ${Math.max(10, (liveQueueMetrics?.position || currentQueueIndex) * 7)} ${tr("دقيقة")}`
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* In-thread Search Bar */}
       <AnimatePresence>
@@ -1966,8 +2065,9 @@ export default function ChatView({
                     createdAt={currentOrder?.createdAt ?? msg.createdAt}
                     text={typeof msg.payload["text"] === "string" ? msg.payload["text"] : undefined}
                     locale={lang === "en" ? "en" : "ar"}
-                    queuePosition={currentQueueIndex > 0 ? currentQueueIndex : 1}
-                    adminStatus={adminStatus}
+                    queuePosition={liveQueueMetrics?.position || (currentQueueIndex > 0 ? currentQueueIndex : 1)}
+                    aheadCount={liveQueueMetrics?.aheadCount}
+                    adminStatus={liveQueueMetrics?.adminStatus || adminStatus}
                     workingHoursText={adminAvailability?.workingHoursText}
                     onOpenInvoice={() => {
                       if (currentOrder) setSelectedInvoiceOrder(currentOrder);
@@ -2399,11 +2499,11 @@ export default function ChatView({
               }}
               className={`relative z-10 flex flex-wrap gap-1.5 ${isRtl ? "justify-end" : "justify-start"}`}
             >
-              {suggestions.map((suggestion, idx) => (
+              {activeSuggestions.map((suggestion, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleSend(tr(suggestion))}
-                  className="rounded-[14px] border border-[var(--surface-4)] bg-[var(--surface-2)] px-3 py-1 text-[12px] font-medium text-[var(--ink)] shadow-xs transition-colors hover:bg-card cursor-pointer"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="rounded-[14px] border border-[var(--surface-4)] bg-[var(--surface-2)] px-3 py-1 text-[12px] font-medium text-[var(--ink)] shadow-xs transition-colors hover:bg-card active:scale-95 cursor-pointer"
                   dir={isRtl ? "rtl" : "ltr"}
                 >
                   {tr(suggestion)}
@@ -2614,24 +2714,40 @@ export default function ChatView({
                     </span>
                   </button>
 
-                  {/* 4. Wallet */}
-                  <button
-                    onClick={() => setSelectedNav("المحفظة")}
-                    className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
-                  >
-                    <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
-                      <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />
-                    </div>
-                    <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
-                      {tr("المحفظة")}
-                    </span>
-                  </button>
+                  {/* 4. Wallet / Location depending on mode */}
+                  {isAutomatedThread ? (
+                    <button
+                      onClick={() => setSelectedNav("الموقع")}
+                      className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                    >
+                      <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
+                        <MapPin className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                      </div>
+                      <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                        {tr("الموقع")}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedNav("المحفظة")}
+                      className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
+                    >
+                      <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[var(--ink)] transition-colors group-hover:bg-[var(--surface-3)]/50">
+                        <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />
+                      </div>
+                      <span className="w-full text-center text-[10px] sm:text-[11px] font-bold tracking-tight opacity-90 truncate leading-tight">
+                        {tr("المحفظة")}
+                      </span>
+                    </button>
+                  )}
 
                   {/* 5. New Chat */}
                   <button
                     onClick={() => {
                       setThreadId(undefined);
                       setLocalMessages([]);
+                      setLiveQueueMetrics(null);
+                      toast.info(tr("بدء محادثة جديدة"));
                     }}
                     className="group flex w-full max-w-[68px] min-w-0 flex-col items-center justify-end gap-1 text-[var(--ink)] cursor-pointer"
                   >
@@ -2722,6 +2838,10 @@ export default function ChatView({
                       settings={storeQuery.data?.settings ?? {}}
                       onSend={(amount) => {
                         setSelectedNav(null);
+                        if (isAutomatedThread) {
+                          toast.error(tr("تحويل الرصيد متاح فقط في محادثة الدعم البشري مع الإدارة"));
+                          return;
+                        }
                         const text = `طلب تحويل رصيد بقيمة ${amount}`;
                         if (isHumanChat) void handleSend(text);
                         else

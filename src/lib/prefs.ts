@@ -48,7 +48,14 @@ const acceptLanguages = createIsomorphicFn()
 
 /** Visitor country from the edge (Cloudflare sets `cf-ipcountry`). */
 const requestCountry = createIsomorphicFn()
-  .server(() => (getRequestHeader("cf-ipcountry") ?? "").toUpperCase())
+  .server(() =>
+    (
+      getRequestHeader("cf-ipcountry") ??
+      getRequestHeader("x-country") ??
+      getRequestHeader("cf_country") ??
+      ""
+    ).toUpperCase(),
+  )
   .client(() => "");
 
 /** Arabic-speaking markets: these default to Arabic, everyone else to English. */

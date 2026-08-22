@@ -13,20 +13,38 @@ import {
   Maximize2,
   Ticket,
   Sparkles,
+  Download,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { ChatMessage, MessageKind } from "@/lib/types";
 import { toast } from "sonner";
 import { accountCardTypeFor } from "@/lib/account-cards";
 import AccountCard from "@/components/chat/AccountCard";
 
-interface MessageCardProps {
+export interface MessageCardProps {
   message: ChatMessage;
   onSelectSuggestion?: (text: string) => void;
+  order?: {
+    id: string;
+    items?: Array<{ id: string; title: string; credsSentAt?: string; loggedInAt?: string }>;
+  } | null;
+  onSendOtp?: (params: { itemId?: string; code: string; title?: string }) => void | Promise<void>;
+  isSendingOtp?: boolean;
 }
 
-export function MessageCard({ message, onSelectSuggestion }: MessageCardProps) {
+export function MessageCard({
+  message,
+  onSelectSuggestion,
+  order,
+  onSendOtp,
+  isSendingOtp,
+}: MessageCardProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showImageZoom, setShowImageZoom] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [isSubmittingOtp, setIsSubmittingOtp] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
   const copyText = (text: string, label: string) => {
     if (!text) return;
@@ -34,6 +52,24 @@ export function MessageCard({ message, onSelectSuggestion }: MessageCardProps) {
     setCopiedKey(label);
     toast.success(`تم نسخ ${label}`);
     setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const downloadOriginalImage = async (url: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `proof-${Date.now()}.${blob.type.includes("png") ? "png" : "jpg"}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success("تم تحميل الصورة بنجاح");
+    } catch {
+      window.open(url, "_blank");
+    }
   };
 
   const isUser = message.senderRole === "user";
@@ -237,35 +273,116 @@ export function MessageCard({ message, onSelectSuggestion }: MessageCardProps) {
           </div>
         ) : null}
 
-        {/* 4. Image Attachment */}
+        {/* 4. Image Attachment & Login Proof with Direct OTP */}
         {body.imageUrl && !legacyCardType ? (
-          <div className="space-y-2">
-            <div className="relative group overflow-hidden rounded-xl border border-border/40 max-w-sm">
+          <div className="space-y-2.5">
+            <div className="relative group overflow-hidden rounded-xl border border-border/40 max-w-sm bg-black/10">
               {isVideoUrl(body.imageUrl) ? (
                 <video
                   src={body.imageUrl}
                   controls
                   preload="metadata"
                   playsInline
-                  className="w-full max-h-60 bg-black"
+                  className="w-full max-h-64 bg-black"
                 />
               ) : (
                 <img
                   src={body.imageUrl}
-                  alt="مرفق محادثة"
-                  className="w-full max-h-60 object-cover cursor-pointer hover:scale-102 transition-transform"
+                  alt="مرفق إثبات تسجيل الدخول"
+                  className="w-full max-h-64 object-contain bg-black/5 cursor-pointer hover:opacity-95 transition-opacity"
                   onClick={() => setShowImageZoom(true)}
                 />
               )}
-              <button
-                type="button"
-                onClick={() => setShowImageZoom(true)}
-                className="absolute bottom-2 left-2 p-1.5 bg-black/60 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </button>
+              {/* Image Floating Actions */}
+              <div className="absolute top-2 left-2 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onClick={() => downloadOriginalImage(body.imageUrl)}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-black/70 hover:bg-black/90 text-white rounded-lg text-[10px] font-bold backdrop-blur-xs transition-all shadow-xs cursor-pointer"
+                  title="تحميل الصورة بالجودة الأصلية"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>تحميل</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowImageZoom(true)}
+                  className="p-1.5 bg-black/70 hover:bg-black/90 text-white rounded-lg backdrop-blur-xs transition-all shadow-xs cursor-pointer"
+                  title="تكبير الصورة"
+                >
+                  <Maximize2 className="w-3 h-3" />
+                </button>
+              </div>
             </div>
+
             {body.text && <p className="text-xs whitespace-pre-wrap">{body.text}</p>}
+
+            {/* Direct OTP Input for Admin after customer submits Login Proof */}
+            {isUser && onSendOtp && (
+              <div className="mt-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-foreground space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>إرسال كود التحقق (OTP) مباشرة:</span>
+                  </div>
+                  {body.itemId ? (
+                    <span className="text-[10px] font-mono opacity-80">عنصر #{String(body.itemId).slice(-4)}</span>
+                  ) : null}
+                </div>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!otpInput.trim()) {
+                      toast.error("يرجى إدخال كود التحقق أولاً");
+                      return;
+                    }
+                    const targetItemId =
+                      (typeof body.itemId === "string" ? body.itemId : undefined) ||
+                      order?.items?.find((i) => i.credsSentAt && !i.loggedInAt)?.id ||
+                      order?.items?.[0]?.id;
+                    setIsSubmittingOtp(true);
+                    try {
+                      await onSendOtp({ itemId: targetItemId, code: otpInput.trim() });
+                      setOtpSent(true);
+                      setOtpInput("");
+                      toast.success("تم إرسال كود OTP بنجاح إلى المحادثة");
+                    } catch {
+                      toast.error("فشل إرسال كود OTP");
+                    } finally {
+                      setIsSubmittingOtp(false);
+                    }
+                  }}
+                  className="flex items-center gap-1.5"
+                >
+                  <input
+                    type="text"
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value)}
+                    placeholder="أدخل كود التحقق OTP..."
+                    className="flex-1 min-w-0 bg-background/90 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground font-mono font-bold placeholder:font-sans placeholder:text-muted-foreground focus:outline-none focus:border-blue-500"
+                    dir="ltr"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmittingOtp || isSendingOtp || !otpInput.trim()}
+                    className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    {isSubmittingOtp || isSendingOtp ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5 rtl:rotate-180" />
+                    )}
+                    <span>إرسال OTP</span>
+                  </button>
+                </form>
+                {otpSent && (
+                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    <span>تم إرسال كود التحقق OTP بنجاح للعميل</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : null}
 

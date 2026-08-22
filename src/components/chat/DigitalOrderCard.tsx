@@ -43,6 +43,7 @@ export interface DigitalOrderCardProps {
   text?: string;
   locale?: "ar" | "en";
   queuePosition?: number;
+  aheadCount?: number;
   estimatedMinutes?: string;
   adminStatus?: "available" | "busy" | "offline";
   workingHoursText?: string;
@@ -62,6 +63,7 @@ export function DigitalOrderCard({
   text,
   locale = "ar",
   queuePosition,
+  aheadCount,
   estimatedMinutes,
   adminStatus = "available",
   workingHoursText,
@@ -122,16 +124,21 @@ export function DigitalOrderCard({
     if (adminStatus === "offline") {
       return isAr ? "خارج ساعات العمل" : "Outside Working Hours";
     }
+    if (aheadCount !== undefined && aheadCount > 0) {
+      return isAr
+        ? `أمامك ${aheadCount} أشخاص • الدور #${queuePosition || aheadCount + 1}`
+        : `${aheadCount} ahead in line • #${queuePosition || aheadCount + 1}`;
+    }
     if (queuePosition !== undefined && queuePosition !== null) {
       if (queuePosition <= 1) {
-        return isAr ? "دورك الآن - قيد التجهيز المباشر ⚡" : "Your turn - Preparing now";
+        return isAr ? "دورك الآن - قيد التجهيز المباشر ⚡" : "Your turn - Preparing now ⚡";
       }
       return isAr
-        ? `رقمك في طابور التجهيز: #${queuePosition}`
-        : `Queue Position: #${queuePosition}`;
+        ? `أمامك ${queuePosition - 1} أشخاص • الدور #${queuePosition}`
+        : `${queuePosition - 1} ahead in line • #${queuePosition}`;
     }
-    return isAr ? "قيد التجهيز والتسليم" : "Processing Delivery";
-  }, [isCompleted, adminStatus, queuePosition, isAr]);
+    return isAr ? "دورك الآن - قيد التجهيز المباشر ⚡" : "Preparing now ⚡";
+  }, [isCompleted, adminStatus, aheadCount, queuePosition, isAr]);
 
   const estimatedTimeLabel = useMemo(() => {
     if (isCompleted) return isAr ? "مكتمل" : "Completed";

@@ -27,6 +27,7 @@ import {
   handleCustomerQueueReentry,
   skipQueueCustomer,
   resumeQueueCustomer,
+  calculateQueueMetrics,
 } from "@/lib/chat-queue.server";
 
 import type { MessageKind, ThreadMode, ChatType, AdminAvailabilityConfig } from "@/lib/types";
@@ -174,6 +175,8 @@ export const Route = createFileRoute("/api/chat")({
             ? await chatRealtime.isUserOnline(threadId, thread.userId)
             : true; // In store chat, admin availability config governs
 
+          const queueMetrics = await calculateQueueMetrics(thread.orderId || thread.id);
+
           return json({
             thread,
             messages: visible,
@@ -181,6 +184,7 @@ export const Route = createFileRoute("/api/chat")({
             nextCursor: paginated.nextCursor,
             totalCount: paginated.totalCount,
             adminAvailability: availability,
+            queueMetrics,
             typers,
             isOnline: isOtherOnline,
             ...(user.isAdmin
@@ -552,14 +556,7 @@ export const Route = createFileRoute("/api/chat")({
             });
 
             if (isAuto) {
-              await appendMessage(created.id, {
-                senderRole: "assistant",
-                senderName: "الدعم الآلي",
-                kind: "text",
-                body: {
-                  text: "مرحباً بك في خدمة الدعم الآلي لبنانتو 🤖\nأنا هنا لمساعدتك في الإجابة عن الاستفسارات العامة، حل المشاكل الشائعة، ودليل استخدام المنصة.\n\n(ملاحظة: هذا المسار مخصص للدعم العام والإرشادات فقط، ولا يقوم بتنفيذ أو تسليم الطلبات).",
-                },
-              });
+              // Clean automated support without database pollution
             } else if (!isOrder && !availability.isAvailable) {
               await appendMessage(created.id, {
                 senderRole: "system",
@@ -578,7 +575,7 @@ export const Route = createFileRoute("/api/chat")({
                 kind: "system",
                 body: {
                   text: isOrder
-                    ? "تم فتح محادثة الطلب مع الإدارة."
+                    ? "تم فتح محادثة تجهيز الطلب مع الإدارة."
                     : "تم فتح محادثة الدعم مع الإدارة.",
                 },
               });

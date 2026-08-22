@@ -30,10 +30,12 @@ interface I18nStore {
  */
 
 function initialLang(): Language {
-  if (typeof document === "undefined") return "en";
+  if (typeof document === "undefined") return "ar";
   const match = /(?:^|;\s*)bananto_lang=([^;]+)/.exec(document.cookie);
   const value = match?.[1];
-  return isLang(value) ? value : "en";
+  if (isLang(value)) return value;
+  const docLang = document.documentElement.lang;
+  return isLang(docLang) ? docLang : "ar";
 }
 
 /** Kurdish predates the key-based dictionaries; it reads Arabic there. */
