@@ -84,11 +84,23 @@ async function attempt<T>(
   } finally {
     clearTimeout(timer);
   }
-  const data = (await response.json().catch(() => ({}))) as T & { error?: string };
+  const data = (await response.json().catch(() => ({}))) as T & {
+    error?: string;
+    message?: string;
+    details?: string;
+    sqlError?: string;
+  };
   if (!response.ok) {
-    // Keep structured hints (e.g. Telegram `needsLinking` + `linkUrl`) on the
-    // thrown error so callers can react instead of only showing text.
-    const error = Object.assign(new Error(data.error || "حدث خطأ، حاول مرة أخرى"), data);
+    // Keep structured hints on the thrown error
+    const errorText =
+      data.message ||
+      (data.error && data.error !== "server_error" ? data.error : null) ||
+      data.details ||
+      data.sqlError ||
+      (data.error === "server_error"
+        ? "خطأ في السيرفر أو قاعدة البيانات"
+        : "حدث خطأ، حاول مرة أخرى");
+    const error = Object.assign(new Error(errorText), data);
     throw error;
   }
   return data;

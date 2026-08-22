@@ -1,4 +1,11 @@
-import { listThreads, getThread, saveThread, appendMessage, getMessages, getAdminAvailabilityStatus } from "./db.server";
+import {
+  listThreads,
+  getThread,
+  saveThread,
+  appendMessage,
+  getMessages,
+  getAdminAvailabilityStatus,
+} from "./db.server";
 import { chatRealtime } from "./chat-realtime.server";
 import type { Thread, ChatMessage } from "./types";
 

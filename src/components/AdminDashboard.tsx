@@ -84,7 +84,6 @@ import AdminProductEditor from "./AdminProductEditor";
 import KbEditor from "./admin/KbEditor";
 import ServicesManager from "./admin/ServicesManager";
 import TradePriceManager from "./admin/TradePriceManager";
-import OrderQueueView from "./admin/OrderQueueView";
 import ReviewsManager from "./admin/ReviewsManager";
 import BundlesManager from "./admin/BundlesManager";
 import { BananaManagementView } from "./admin/BananaManagementView";
@@ -397,7 +396,6 @@ export default function AdminDashboard() {
       ],
     },
 
-    { id: "order_queue", icon: ClipboardList, label: "طابور التسليم الرقمي" },
     {
       id: "store_services",
       icon: HelpCircle,
@@ -496,8 +494,6 @@ export default function AdminDashboard() {
 
       case "trade_prices":
         return <TradePriceManager />;
-      case "order_queue":
-        return <OrderQueueView />;
       case activeSidebar.startsWith("services_") ? activeSidebar : "":
         return <ServicesManager activeSubMenu={activeSidebar} />;
       case "disc_trades_admin":

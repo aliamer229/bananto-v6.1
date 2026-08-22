@@ -77,6 +77,15 @@ export async function guard(handler: () => Promise<Response>, scope = "api"): Pr
     if (error instanceof Response) return error;
     const ref = errorRef();
     logServerError(scope, ref, error);
-    return json({ error: "server_error", ref }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return json(
+      {
+        error: "server_error",
+        ref,
+        message,
+        details: message,
+      },
+      { status: 500 },
+    );
   }
 }

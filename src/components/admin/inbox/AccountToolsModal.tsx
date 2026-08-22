@@ -88,7 +88,13 @@ export function AccountToolsModal({
   const orderItems: OrderItem[] = useMemo(() => order?.items || [], [order]);
 
   const hasCodeItems = useMemo(
-    () => orderItems.some((i) => i.kind === "digital_code" || (i.kind as string) === "code" || (i.kind as string) === "gift_card"),
+    () =>
+      orderItems.some(
+        (i) =>
+          i.kind === "digital_code" ||
+          (i.kind as string) === "code" ||
+          (i.kind as string) === "gift_card",
+      ),
     [orderItems],
   );
 

@@ -69,35 +69,47 @@ export default function CouponsManager() {
   }, [storeData]);
 
   const createMutation = useMutation({
-    mutationFn: () => adminApi.createCoupon(form),
-    onSuccess: () => {
+    mutationFn: (payload: Partial<Coupon>) => adminApi.createCoupon(payload),
+    onSuccess: async () => {
       toast.success("تم إنشاء الكوبون بنجاح وحفظه في السيرفر");
-      queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      await queryClient.refetchQueries({ queryKey: ["admin-coupons"] });
       setIsAdding(false);
       resetForm();
     },
-    onError: (err: any) => toast.error(err.message || "حدث خطأ أثناء حفظ الكوبون"),
+    onError: (err: any) => {
+      const msg = err?.message || err?.error || "حدث خطأ أثناء حفظ الكوبون";
+      toast.error(msg, { duration: 6000 });
+    },
   });
 
   const updateMutation = useMutation({
     mutationFn: (payload: Partial<Coupon>) => adminApi.updateCoupon(payload),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("تم تحديث الكوبون بنجاح في السيرفر");
-      queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      await queryClient.refetchQueries({ queryKey: ["admin-coupons"] });
       setEditingId(null);
       setIsAdding(false);
       resetForm();
     },
-    onError: (err: any) => toast.error(err.message || "حدث خطأ أثناء تحديث الكوبون"),
+    onError: (err: any) => {
+      const msg = err?.message || err?.error || "حدث خطأ أثناء تحديث الكوبون";
+      toast.error(msg, { duration: 6000 });
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApi.deleteCoupon(id),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("تم حذف الكوبون نهائياً من السيرفر");
-      queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      await queryClient.refetchQueries({ queryKey: ["admin-coupons"] });
     },
-    onError: (err: any) => toast.error(err.message || "حدث خطأ أثناء الحذف"),
+    onError: (err: any) => {
+      const msg = err?.message || err?.error || "حدث خطأ أثناء الحذف";
+      toast.error(msg, { duration: 6000 });
+    },
   });
 
   const resetForm = () => {

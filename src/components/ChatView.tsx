@@ -1664,7 +1664,11 @@ export default function ChatView({
 
   const handleSuggestionClick = (text: string) => {
     if (text.includes("إثبات تسجيل الدخول")) {
-      proofInputRef.current?.click() || fileRef.current?.click();
+      if (proofInputRef.current) {
+        proofInputRef.current.click();
+      } else if (fileRef.current) {
+        fileRef.current.click();
+      }
       return;
     }
     if (text.includes("التحدث مع الإدارة") || text.includes("التحدث مع المشرف")) {

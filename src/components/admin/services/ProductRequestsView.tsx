@@ -299,7 +299,8 @@ function RequestCard({
                   onClick={() => {
                     onSave({
                       status: "rejected",
-                      userVisibleNote: "نعتذر، اللعبة متوفرة مسبقاً في المتجر، يمكنك البحث عنها وطلبها مباشرة.",
+                      userVisibleNote:
+                        "نعتذر، اللعبة متوفرة مسبقاً في المتجر، يمكنك البحث عنها وطلبها مباشرة.",
                     });
                   }}
                   className="w-full text-right px-3 py-2 text-xs font-semibold rounded-lg hover:bg-muted transition-colors text-foreground block"

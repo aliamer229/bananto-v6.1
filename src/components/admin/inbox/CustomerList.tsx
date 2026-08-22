@@ -11,6 +11,9 @@ import {
   Filter,
   Sparkles,
   Inbox,
+  Archive,
+  Gamepad2,
+  Package,
 } from "lucide-react";
 import { Thread, Order } from "@/lib/types";
 import { InboxFilter, FilterOption } from "./types";
@@ -50,8 +53,10 @@ export function CustomerList({
   // Compute filter counts
   const filterCounts = useMemo(() => {
     const counts: Record<InboxFilter, number> = {
+      order_queue: 0,
       digital_queue: 0,
       open_tickets: 0,
+      other_chats: 0,
       queue: 0,
       all: threads.length,
       needs_reply: 0,
@@ -82,15 +87,21 @@ export function CustomerList({
         : true;
       const orderIsCompleted = linkedOrder ? linkedOrder.status === "completed" : false;
 
-      // Digital queue counts active open digital orders needing preparation/delivery
-      if (t.status === "open" && !isClosed && isDigitalOrder) {
+      // 1. Digital Queue: Open, active digital order requiring preparation and delivery
+      if (t.status === "open" && !isClosed && isDigitalOrder && orderIsActive) {
+        counts.order_queue++;
         counts.digital_queue++;
         counts.queue++;
       }
 
-      // Open tickets count non-digital support chats/inquiries
+      // 2. Open Tickets: Open human support & technical inquiries (not digital delivery queue)
       if (t.status === "open" && !isClosed && !isDigitalOrder) {
         counts.open_tickets++;
+      }
+
+      // 3. Other Chats: Completed orders, closed tickets, resolved conversations
+      if (isClosed || (isDigitalOrder && orderIsCompleted)) {
+        counts.other_chats++;
       }
 
       if (t.needsAdmin || t.mode === "WAITING_FOR_ADMIN" || t.mode === "ESCALATED") {
@@ -149,12 +160,16 @@ export function CustomerList({
       // Filter check
       let matchesFilter = true;
       switch (activeFilter) {
+        case "order_queue":
         case "digital_queue":
         case "queue":
-          matchesFilter = t.status === "open" && !isClosed && isDigitalOrder;
+          matchesFilter = t.status === "open" && !isClosed && isDigitalOrder && orderIsActive;
           break;
         case "open_tickets":
           matchesFilter = t.status === "open" && !isClosed && !isDigitalOrder;
+          break;
+        case "other_chats":
+          matchesFilter = isClosed || (isDigitalOrder && orderIsCompleted);
           break;
         case "needs_reply":
           matchesFilter = Boolean(
@@ -204,14 +219,23 @@ export function CustomerList({
       const matchPreview = t.lastMessagePreview?.toLowerCase().includes(q);
       const matchOrderId = t.orderId?.toLowerCase().includes(q);
       const matchOrderCode = linkedOrder?.code?.toLowerCase().includes(q);
+      const matchItems = linkedOrder?.items?.some((i) =>
+        (i.productTitle || (i as any).title || "").toLowerCase().includes(q),
+      );
 
-      return matchName || matchSubject || matchPreview || matchOrderId || matchOrderCode;
+      return (
+        matchName || matchSubject || matchPreview || matchOrderId || matchOrderCode || matchItems
+      );
     });
 
     // If Digital Queue filter is active, sort strictly FIFO:
     // 1. Active / Queued items: oldest entry time first (FIFO order)
     // 2. Snoozed items (queueStatus === "snoozed") at the very end
-    if (activeFilter === "digital_queue" || activeFilter === "queue") {
+    if (
+      activeFilter === "order_queue" ||
+      activeFilter === "digital_queue" ||
+      activeFilter === "queue"
+    ) {
       return [...list].sort((a, b) => {
         const aSnoozed = a.queueStatus === "snoozed";
         const bSnoozed = b.queueStatus === "snoozed";
@@ -245,6 +269,18 @@ export function CustomerList({
     } catch {
       return "";
     }
+  };
+
+  const getWaitDuration = (thread: Thread) => {
+    const startTime = thread.queueEnteredAt || thread.escalatedAt || thread.createdAt;
+    if (!startTime) return "الآن";
+    const diffMs = Date.now() - new Date(startTime).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return "أقل من دقيقة";
+    if (mins < 60) return `${mins} دقيقة`;
+    const hours = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return `${hours} ساعة ${remMins > 0 ? `و ${remMins} د` : ""}`;
   };
 
   const SUB_FILTERS: { id: InboxFilter; label: string; color?: string }[] = [
@@ -282,7 +318,7 @@ export function CustomerList({
           <input
             type="text"
             id="inbox-search-input"
-            placeholder="بحث بالاسم، رقم الطلب، أو الموضوع..."
+            placeholder="بحث بالاسم، رقم الطلب، أو اسم المنتج..."
             value={searchTerm}
             onChange={(e) => onChangeSearchTerm(e.target.value)}
             className="w-full pr-9 pl-4 py-2 bg-muted/40 border border-border rounded-xl text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground/70"
@@ -297,28 +333,30 @@ export function CustomerList({
           )}
         </div>
 
-        {/* Primary Filter Tabs: Digital Queue vs Open Tickets */}
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted/50 rounded-xl border border-border/80">
+        {/* 3 Primary Filter Tabs: Order Queue vs Open Tickets vs Other Chats */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-muted/50 rounded-xl border border-border/80 text-center">
           <button
             type="button"
-            onClick={() => onChangeFilter("digital_queue")}
-            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-              activeFilter === "digital_queue" || activeFilter === "queue"
+            onClick={() => onChangeFilter("order_queue")}
+            className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-bold transition-all ${
+              activeFilter === "order_queue" ||
+              activeFilter === "digital_queue" ||
+              activeFilter === "queue"
                 ? "bg-background text-foreground shadow-sm border border-border font-black"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span className="truncate">طابور تجهيز الطلبات الرقمية</span>
+            <span className="truncate">طابور الطلبات</span>
             <span className="bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.2 rounded-full text-[10px] shrink-0 font-mono">
-              {filterCounts.digital_queue}
+              {filterCounts.order_queue}
             </span>
           </button>
 
           <button
             type="button"
             onClick={() => onChangeFilter("open_tickets")}
-            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-bold transition-all ${
               activeFilter === "open_tickets"
                 ? "bg-background text-foreground shadow-sm border border-border font-black"
                 : "text-muted-foreground hover:text-foreground"
@@ -328,6 +366,22 @@ export function CustomerList({
             <span className="truncate">التذاكر المفتوحة</span>
             <span className="bg-primary/15 text-primary px-1.5 py-0.2 rounded-full text-[10px] shrink-0 font-mono">
               {filterCounts.open_tickets}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeFilter("other_chats")}
+            className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-bold transition-all ${
+              activeFilter === "other_chats"
+                ? "bg-background text-foreground shadow-sm border border-border font-black"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Archive className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="truncate">المحادثات الأخرى</span>
+            <span className="bg-muted text-muted-foreground px-1.5 py-0.2 rounded-full text-[10px] shrink-0 font-mono">
+              {filterCounts.other_chats}
             </span>
           </button>
         </div>
@@ -397,10 +451,43 @@ export function CustomerList({
 
             const queueRank =
               isDigitalOrder &&
-              (activeFilter === "digital_queue" || activeFilter === "queue") &&
+              (activeFilter === "order_queue" ||
+                activeFilter === "digital_queue" ||
+                activeFilter === "queue") &&
               !isSnoozed
                 ? index + 1
                 : null;
+
+            // Product Title Extraction
+            const productName =
+              linkedOrder?.items
+                ?.map((i) => i.productTitle || (i as any).title || (i as any).name)
+                .filter(Boolean)
+                .join("، ") ||
+              (t.subject && !t.subject.startsWith("استفسار") ? t.subject : null) ||
+              "منتج رقمي";
+
+            // Status Definition
+            const isResolved =
+              t.status === "closed" || t.mode === "RESOLVED" || linkedOrder?.status === "completed";
+            const isPrep = t.mode === "ORDER_PREPARATION" || t.mode === "ADMIN_ACTIVE";
+            const isWaitingUser = t.mode === "WAITING_FOR_USER" || isSnoozed;
+
+            let statusLabel = "بانتظار التجهيز";
+            let statusColor =
+              "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/20";
+            if (isResolved) {
+              statusLabel = "مكتمل";
+              statusColor =
+                "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20";
+            } else if (isWaitingUser) {
+              statusLabel = "بانتظار العميل";
+              statusColor = "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/20";
+            } else if (isPrep) {
+              statusLabel = "قيد التجهيز";
+              statusColor =
+                "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/20";
+            }
 
             return (
               <div
@@ -412,10 +499,11 @@ export function CustomerList({
                     : "bg-card border-border/30 hover:bg-muted/40 hover:border-border"
                 }`}
               >
+                {/* Header Row: Customer Name, Queue Rank, Time */}
                 <div className="flex items-start justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="relative">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 border border-primary/15">
+                    <div className="relative shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs border border-primary/15">
                         {t.userName ? t.userName.charAt(0).toUpperCase() : "U"}
                       </div>
                       {queueRank !== null && (
@@ -430,6 +518,7 @@ export function CustomerList({
                         </span>
                       )}
                     </div>
+
                     <div className="min-w-0">
                       <div className="font-bold text-xs text-foreground truncate flex items-center gap-1.5">
                         <span>{t.userName || "عميل بدون اسم"}</span>
@@ -442,40 +531,63 @@ export function CustomerList({
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-muted-foreground truncate">
-                        {t.subject || "استفسار جديد"}
+
+                      {/* Order Code & Product Name */}
+                      <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1.5 mt-0.5">
+                        {(t.orderId || linkedOrder) && (
+                          <span className="font-mono font-bold text-primary">
+                            #{linkedOrder?.code || t.orderId?.slice(-6)}
+                          </span>
+                        )}
+                        <span className="truncate text-foreground/80 font-medium">
+                          {productName}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-left shrink-0">
-                    <span className="text-[10px] text-muted-foreground">
+                  <div className="text-left shrink-0 space-y-0.5">
+                    <div className="text-[10px] text-muted-foreground">
                       {formatTime(t.lastMessageAt || t.createdAt)}
+                    </div>
+                    {/* Status Badge */}
+                    <span
+                      className={`inline-block px-1.5 py-0.2 rounded-md text-[9px] font-bold border ${statusColor}`}
+                    >
+                      {statusLabel}
                     </span>
                   </div>
                 </div>
 
+                {/* Queue / Order Details Strip */}
+                <div className="grid grid-cols-2 gap-1.5 my-1.5 py-1 px-2 rounded-lg bg-muted/40 text-[10px] text-muted-foreground border border-border/20">
+                  <div className="flex items-center gap-1 truncate">
+                    <Clock className="w-3 h-3 text-amber-500 shrink-0" />
+                    <span>الانتظار: </span>
+                    <strong className="text-foreground font-semibold truncate">
+                      {getWaitDuration(t)}
+                    </strong>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-1 truncate">
+                    {queueRank !== null ? (
+                      <span className="text-amber-600 dark:text-amber-400 font-bold">
+                        الدور: #{queueRank} {queueRank === 1 ? "(الآن)" : ""}
+                      </span>
+                    ) : (
+                      <span className="truncate">{t.subject || "طلب رقمي"}</span>
+                    )}
+                  </div>
+                </div>
+
                 {/* Preview snippet */}
-                <p className="text-xs text-muted-foreground line-clamp-1 mb-2 pr-10 font-sans">
+                <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5 pr-2 font-sans">
                   {t.lastMessagePreview || "لا توجد رسائل سابقة"}
                 </p>
 
                 {/* Badges footer */}
                 <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-border/30">
                   <div className="flex items-center gap-1.5 overflow-hidden flex-wrap">
-                    {/* Queue rank badge if in queue */}
-                    {queueRank !== null && (
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                          queueRank === 1
-                            ? "bg-amber-500 text-white"
-                            : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                        }`}
-                      >
-                        {queueRank === 1 ? "🔥 دور الآن (#1)" : `طابور #${queueRank}`}
-                      </span>
-                    )}
-
                     {/* Chat Type badge */}
                     {t.chatType && (
                       <span
@@ -498,35 +610,6 @@ export function CustomerList({
                               : "📦 طلب"}
                       </span>
                     )}
-
-                    {/* Mode badge */}
-                    <span
-                      className={`px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                        t.mode === "ORDER_PREPARATION"
-                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
-                          : t.mode === "WAITING_FOR_USER"
-                            ? "bg-blue-500/15 text-blue-700 dark:text-blue-400"
-                            : t.mode === "ESCALATED"
-                              ? "bg-purple-500/15 text-purple-700 dark:text-purple-400"
-                              : t.mode === "RESOLVED" || t.status === "closed"
-                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                                : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {t.mode === "ORDER_PREPARATION"
-                        ? "تجهيز طلب"
-                        : t.mode === "WAITING_FOR_USER"
-                          ? "بانتظار العميل"
-                          : t.mode === "WAITING_FOR_ADMIN"
-                            ? "بانتظار الإدارة"
-                            : t.mode === "ESCALATED"
-                              ? "تصعيد مشرف"
-                              : t.mode === "ADMIN_ACTIVE"
-                                ? "مشرف نشط"
-                                : t.mode === "RESOLVED"
-                                  ? "تم الحل"
-                                  : "تلقائي AI"}
-                    </span>
 
                     {/* Order code badge */}
                     {(t.orderId || linkedOrder) && (

@@ -1396,10 +1396,143 @@ export function ensureUsersSchema(): Promise<void> {
   return usersSchemaPromise;
 }
 
+const COUPONS_TABLE = `CREATE TABLE IF NOT EXISTS coupons (
+  id TEXT PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  discount_type TEXT NOT NULL,
+  discount_value REAL NOT NULL,
+  start_at TEXT,
+  expiration_at TEXT,
+  usage_limit INTEGER,
+  per_user_limit INTEGER DEFAULT 1,
+  eligible_products TEXT DEFAULT '[]',
+  eligible_categories TEXT DEFAULT '[]',
+  eligible_users TEXT DEFAULT '[]',
+  min_order_amount REAL DEFAULT 0,
+  max_discount_amount REAL,
+  is_active INTEGER DEFAULT 1,
+  only_digital_products INTEGER DEFAULT 0,
+  is_stackable INTEGER DEFAULT 0,
+  once_per_user_lifetime INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL
+)`;
+
+const COUPONS_COLUMNS: Record<string, string> = {
+  start_at: "TEXT",
+  expiration_at: "TEXT",
+  usage_limit: "INTEGER",
+  per_user_limit: "INTEGER DEFAULT 1",
+  eligible_products: "TEXT DEFAULT '[]'",
+  eligible_categories: "TEXT DEFAULT '[]'",
+  eligible_users: "TEXT DEFAULT '[]'",
+  min_order_amount: "REAL DEFAULT 0",
+  max_discount_amount: "REAL",
+  is_active: "INTEGER DEFAULT 1",
+  only_digital_products: "INTEGER DEFAULT 0",
+  is_stackable: "INTEGER DEFAULT 0",
+  once_per_user_lifetime: "INTEGER DEFAULT 0",
+};
+
+const COUPON_REDEMPTIONS_TABLE = `CREATE TABLE IF NOT EXISTS coupon_redemptions (
+  id TEXT PRIMARY KEY,
+  coupon_id TEXT NOT NULL,
+  coupon_type TEXT,
+  user_id TEXT NOT NULL,
+  order_id TEXT NOT NULL,
+  discount_amount REAL,
+  target_product_id TEXT,
+  created_at TEXT NOT NULL
+)`;
+
+const COUPON_REDEMPTIONS_COLUMNS: Record<string, string> = {
+  coupon_type: "TEXT",
+  discount_amount: "REAL",
+  target_product_id: "TEXT",
+};
+
+let couponsSchemaPromise: Promise<void> | undefined;
+
+export function ensureCouponsSchema(): Promise<void> {
+  const db = getD1();
+  if (!db) return Promise.resolve();
+  if (!couponsSchemaPromise) {
+    couponsSchemaPromise = (async () => {
+      await db.prepare(COUPONS_TABLE).run();
+      const current = (await db.prepare(`PRAGMA table_info(coupons)`).all()).results ?? [];
+      const names = new Set(current.map((column) => String((column as D1Row)["name"] ?? "")));
+      for (const [column, definition] of Object.entries(COUPONS_COLUMNS)) {
+        if (!names.has(column)) {
+          try {
+            await db.prepare(`ALTER TABLE coupons ADD COLUMN ${column} ${definition}`).run();
+          } catch {
+            // Column may already exist
+          }
+        }
+      }
+      try {
+        await db
+          .prepare(`CREATE UNIQUE INDEX IF NOT EXISTS coupons_code_idx ON coupons (code)`)
+          .run();
+      } catch (_e) {
+        // Ignore index existence conflict
+      }
+
+      await db.prepare(COUPON_REDEMPTIONS_TABLE).run();
+      const redemptionsCols =
+        (await db.prepare(`PRAGMA table_info(coupon_redemptions)`).all()).results ?? [];
+      const redemptionsNames = new Set(
+        redemptionsCols.map((column) => String((column as D1Row)["name"] ?? "")),
+      );
+      for (const [column, definition] of Object.entries(COUPON_REDEMPTIONS_COLUMNS)) {
+        if (!redemptionsNames.has(column)) {
+          try {
+            await db
+              .prepare(`ALTER TABLE coupon_redemptions ADD COLUMN ${column} ${definition}`)
+              .run();
+          } catch (_e) {
+            // Column may already exist
+          }
+        }
+      }
+      try {
+        await db
+          .prepare(
+            `CREATE INDEX IF NOT EXISTS coupon_redemptions_user_idx ON coupon_redemptions (user_id, coupon_type)`,
+          )
+          .run();
+      } catch (_e) {
+        // Ignore index existence conflict
+      }
+      try {
+        await db
+          .prepare(
+            `CREATE INDEX IF NOT EXISTS coupon_redemptions_coupon_idx ON coupon_redemptions (coupon_id)`,
+          )
+          .run();
+      } catch (_e) {
+        // Ignore index existence conflict
+      }
+      try {
+        await db
+          .prepare(
+            `CREATE INDEX IF NOT EXISTS coupon_redemptions_order_idx ON coupon_redemptions (order_id)`,
+          )
+          .run();
+      } catch (_e) {
+        // Ignore index existence conflict
+      }
+    })().catch((error) => {
+      couponsSchemaPromise = undefined;
+      throw error;
+    });
+  }
+  return couponsSchemaPromise;
+}
+
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 12;
+const RUNTIME_SCHEMA_VERSION = 13;
 
 async function runSchemaStatements(
   db: D1Like,
