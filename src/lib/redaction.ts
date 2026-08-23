@@ -1,8 +1,21 @@
-/** Remove internal assistant reasoning/memory before returning a chat message. */
+/**
+ * Remove internal assistant reasoning/memory before returning a chat message.
+ *
+ * Fails closed on a body that is not an object. A corrupt stored document used
+ * to arrive here with `body === undefined`, and `"support" in undefined` throws
+ * — which turned one unreadable row into a 500 for the member's whole
+ * conversation while staff, who skip redaction, saw nothing wrong. Returning an
+ * empty body is both crash-proof and the safe direction: an unrecognisable
+ * shape cannot be proven free of internal fields, so none of it is forwarded.
+ */
 export function redactMessageForMember<T extends { body: Record<string, unknown> }>(message: T): T {
-  if (!("support" in message.body)) return message;
-  const { support: _support, ...body } = message.body;
-  return { ...message, body };
+  const body = message?.body;
+  if (!body || typeof body !== "object") {
+    return { ...message, body: {} as Record<string, unknown> };
+  }
+  if (!("support" in body)) return message;
+  const { support: _support, ...rest } = body;
+  return { ...message, body: rest };
 }
 
 /** Remove staff identity and private notes from an order status audit row. */

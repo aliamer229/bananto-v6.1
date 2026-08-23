@@ -1,4 +1,5 @@
 import { randomAvatar, randomDisplayName } from "./avatars";
+import { readMessageRow } from "./chat-message-row";
 import { DELIVERY_OTP_TTL_MINUTES, deliveryOtpExpiry } from "./delivery-otp";
 import { randomId, hashPassword } from "./crypto.server";
 import {
@@ -1324,6 +1325,15 @@ export async function saveThread(thread: Thread): Promise<Thread> {
 
 /* -------------------------------- messages -------------------------------- */
 
+/**
+ * Reads one stored message document into a `ChatMessage` that is safe to hand
+ * to any caller. See `chat-message-row.ts` for what the repair guarantees and
+ * why a single unreadable row used to 500 the member's whole conversation.
+ */
+function parseMessageRow(raw: unknown, rowId?: string | null, threadId?: string): ChatMessage {
+  return readMessageRow({ doc: raw, rowId, threadId });
+}
+
 export interface PaginatedMessagesResult {
   messages: ChatMessage[];
   hasMore: boolean;
@@ -1356,11 +1366,11 @@ export function normalizeSearchText(text: string): string {
 
 export async function getMessages(threadId: string): Promise<ChatMessage[]> {
   if (await d1Ready()) {
-    const rows = await d1All<{ doc: string }>(
-      `SELECT doc FROM messages WHERE thread_id = ? ORDER BY created_at ASC`,
+    const rows = await d1All<{ id: string; doc: string }>(
+      `SELECT id, doc FROM messages WHERE thread_id = ? ORDER BY created_at ASC`,
       threadId,
     );
-    return rows.map((r) => parse<ChatMessage>(r.doc, {} as ChatMessage));
+    return rows.map((r) => parseMessageRow(r.doc, r.id, threadId));
   }
   return readJson<ChatMessage[]>(`messages/${threadId}.json`, []);
 }
@@ -1474,7 +1484,7 @@ export async function getPaginatedMessages(
         half,
       );
 
-      const slice = rows.map((r) => parse<ChatMessage>(r.doc, {} as ChatMessage));
+      const slice = rows.map((r) => parseMessageRow(r.doc, r.id, threadId));
       const oldest = slice[0];
       const hasMore = Boolean(
         totalCount > slice.length &&
@@ -1494,7 +1504,7 @@ export async function getPaginatedMessages(
     }
   }
 
-  let query = `SELECT doc FROM messages WHERE thread_id = ?`;
+  let query = `SELECT id, doc FROM messages WHERE thread_id = ?`;
   const params: any[] = [threadId];
 
   if (options?.before) {
@@ -1518,14 +1528,14 @@ export async function getPaginatedMessages(
   query += ` ORDER BY created_at DESC, id DESC LIMIT ?`;
   params.push(limit + 1);
 
-  const rows = await d1All<{ doc: string }>(query, ...params);
+  const rows = await d1All<{ id: string; doc: string }>(query, ...params);
   const hasMore = rows.length > limit;
   const fetchedRows = hasMore ? rows.slice(0, limit) : rows;
 
   // They are ordered DESC in SQL, we need them ASC for the chat UI
   fetchedRows.reverse();
 
-  const slice = fetchedRows.map((r) => parse<ChatMessage>(r.doc, {} as ChatMessage));
+  const slice = fetchedRows.map((r) => parseMessageRow(r.doc, r.id, threadId));
   const oldest = slice[0];
 
   return {
@@ -1552,11 +1562,11 @@ export async function searchMessagesInThread(
     // If we have D1, we can just grab the docs, we don't need to load the whole JSON into memory array first,
     // but without FTS we still have to parse and search in JS.
     // However, fetching them from DB limits memory to just the serialized strings initially.
-    const res = await d1All<{ doc: string }>(
-      `SELECT doc FROM messages WHERE thread_id = ? ORDER BY created_at DESC`,
+    const res = await d1All<{ id: string; doc: string }>(
+      `SELECT id, doc FROM messages WHERE thread_id = ? ORDER BY created_at DESC`,
       threadId,
     );
-    rows = res.map((r) => parse<ChatMessage>(r.doc, {} as ChatMessage));
+    rows = res.map((r) => parseMessageRow(r.doc, r.id, threadId));
   } else {
     rows = [...(await getMessages(threadId))].reverse();
   }
@@ -1645,7 +1655,7 @@ export async function appendMessage(
           clientMessageId,
         );
         if (existingRow) {
-          return parse<ChatMessage>(existingRow.doc, {} as ChatMessage);
+          return parseMessageRow(existingRow.doc, null, threadId);
         }
       } catch (err) {
         console.warn(`[db:appendMessage:idempotency_check_failed] threadId=${threadId}`, err);
@@ -1674,7 +1684,7 @@ export async function appendMessage(
             clientMessageId,
           );
           if (existingRow) {
-            return parse<ChatMessage>(existingRow.doc, {} as ChatMessage);
+            return parseMessageRow(existingRow.doc, null, threadId);
           }
         } catch {
           // ignore
