@@ -324,10 +324,18 @@ export const api = {
     }>(`/api/chat?threadId=${encodeURIComponent(threadId)}`),
 
   threadMessages: (
-    threadId: string,
-    options?: { limit?: number; before?: string; around?: string; signal?: AbortSignal },
+    threadId?: string,
+    options?: {
+      orderId?: string;
+      limit?: number;
+      before?: string;
+      around?: string;
+      signal?: AbortSignal;
+    },
   ) => {
-    const params = new URLSearchParams({ threadId });
+    const params = new URLSearchParams();
+    if (threadId) params.set("threadId", threadId);
+    if (options?.orderId) params.set("orderId", options.orderId);
     if (options?.limit) params.set("limit", String(options.limit));
     if (options?.before) params.set("before", options.before);
     if (options?.around) params.set("around", options.around);
@@ -340,6 +348,7 @@ export const api = {
       typers?: { userId: string; userName: string; senderRole: "user" | "admin" }[];
       isOnline?: boolean;
       adminAvailability?: AdminAvailabilityStatus;
+      queueMetrics?: any;
     }>(`/api/chat?${params.toString()}`, { signal: options?.signal });
   },
 

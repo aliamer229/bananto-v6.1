@@ -757,8 +757,8 @@ export default function ChatView({
     if (!initialOrderId) return;
     if (resolvedOrderThreadRef.current === initialOrderId) return;
 
-    const fromOrder = orders.find((order) => order.id === initialOrderId)?.threadId;
-    const fromThreads = threads.find((thread) => thread.orderId === initialOrderId)?.id;
+    const fromOrder = orders.find((order) => order.id === initialOrderId || order.code === initialOrderId)?.threadId;
+    const fromThreads = threads.find((thread) => thread.orderId === initialOrderId || thread.subject?.includes(initialOrderId))?.id;
     const target = fromOrder || fromThreads;
     if (target) {
       resolvedOrderThreadRef.current = initialOrderId;
@@ -769,14 +769,24 @@ export default function ChatView({
     // Direct lookup fallback if query hasn't synced yet
     let active = true;
     api
-      .order(initialOrderId)
+      .threadMessages(undefined, { orderId: initialOrderId })
       .then((res) => {
-        if (active && res?.order?.threadId) {
+        if (active && res?.thread?.id) {
           resolvedOrderThreadRef.current = initialOrderId;
-          setThreadId(res.order.threadId);
+          setThreadId(res.thread.id);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        api
+          .order(initialOrderId)
+          .then((res) => {
+            if (active && res?.order?.threadId) {
+              resolvedOrderThreadRef.current = initialOrderId;
+              setThreadId(res.order.threadId);
+            }
+          })
+          .catch(() => {});
+      });
 
     return () => {
       active = false;
@@ -840,7 +850,7 @@ export default function ChatView({
   }, [currentThread, threadId, initialOrderId, initialThreadId]);
 
   const currentOrder = useMemo(
-    () => (activeOrderId ? orders.find((o) => o.id === activeOrderId) : null),
+    () => (activeOrderId ? orders.find((o) => o.id === activeOrderId || o.code === activeOrderId) : null),
     [activeOrderId, orders],
   );
 
@@ -1159,7 +1169,7 @@ export default function ChatView({
     },
   });
 
-  // Fetch initial paginated messages when threadId changes with strict AbortController and state isolation
+  // Fetch initial paginated messages when threadId or activeOrderId changes with strict AbortController and state isolation
   useEffect(() => {
     // 1. Cancel previous pending fetch if any
     if (activeAbortControllerRef.current) {
@@ -1190,7 +1200,8 @@ export default function ChatView({
     }
     setSupportCountdown(null);
 
-    if (!threadId) {
+    const targetOrderId = activeOrderId || initialOrderId;
+    if (!threadId && !targetOrderId) {
       setIsThreadLoading(false);
       return;
     }
@@ -1201,8 +1212,16 @@ export default function ChatView({
 
     void (async () => {
       try {
-        const res = await api.threadMessages(threadId, { limit: 20, signal: controller.signal });
+        const res = await api.threadMessages(threadId, {
+          orderId: targetOrderId,
+          limit: 20,
+          signal: controller.signal,
+        });
         if (controller.signal.aborted) return;
+
+        if (res.thread?.id && !threadId) {
+          setThreadId(res.thread.id);
+        }
 
         setServerMessages(mapServerMessages(res.messages));
         setHasMore(res.hasMore ?? false);
@@ -1214,14 +1233,17 @@ export default function ChatView({
           setIsOnline(res.isOnline);
         }
         // Mark read
-        void api.markThreadRead(threadId);
+        if (res.thread?.id || threadId) {
+          void api.markThreadRead((res.thread?.id || threadId)!);
+        }
       } catch (err: any) {
         if (err?.name === "AbortError" || controller.signal.aborted) {
           return; // Aborted request, ignore safely
         }
-        // Say so. An empty message list is indistinguishable from a brand new
-        // conversation, which is how a failed load used to read to the customer.
-        console.error("[chat:thread_load_failed]", { threadId }, err);
+        console.error(
+          `[chat:thread_load_failed] conversation_id=${threadId || "none"} order_id=${targetOrderId || "none"} user_id=${user?.id || "guest"} HTTP_status=${err?.status || 500} D1_error=${err?.message || String(err)} endpoint=/api/chat`,
+          err,
+        );
         setThreadLoadError(String(err?.message || err) || "unknown_error");
       } finally {
         if (!controller.signal.aborted) {
@@ -1232,11 +1254,13 @@ export default function ChatView({
 
     // Heartbeat presence interval
     const presenceInterval = setInterval(() => {
-      if (!controller.signal.aborted) {
-        void api.sendPresence(threadId);
+      if (!controller.signal.aborted && (threadId || targetOrderId)) {
+        void api.sendPresence(threadId || targetOrderId!);
       }
     }, 45_000);
-    void api.sendPresence(threadId);
+    if (threadId || targetOrderId) {
+      void api.sendPresence(threadId || targetOrderId);
+    }
 
     return () => {
       controller.abort();
@@ -1245,7 +1269,7 @@ export default function ChatView({
       }
       clearInterval(presenceInterval);
     };
-  }, [threadId, threadReloadKey, mapServerMessages]);
+  }, [threadId, activeOrderId, initialOrderId, threadReloadKey, mapServerMessages, user?.id]);
 
   useChatRealtime({
     threadId: threadId || null,

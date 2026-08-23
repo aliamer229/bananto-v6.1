@@ -6,6 +6,7 @@ import {
   getPaginatedMessages,
   searchMessagesInThread,
   getThread,
+  getOrder,
   listThreads,
   listThreadsByUser,
   saveThread,
@@ -30,7 +31,14 @@ import {
   calculateQueueMetrics,
 } from "@/lib/chat-queue.server";
 
-import type { MessageKind, ThreadMode, ChatType, AdminAvailabilityConfig } from "@/lib/types";
+import type {
+  MessageKind,
+  ThreadMode,
+  ChatType,
+  AdminAvailabilityConfig,
+  Thread,
+  Order,
+} from "@/lib/types";
 import { randomId } from "@/lib/crypto.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import { redactMessageForMember } from "@/lib/redaction";
@@ -53,69 +61,187 @@ export const Route = createFileRoute("/api/chat")({
         guard(async () => {
           const user = await requireUser(request);
           const url = new URL(request.url);
-          const threadId = url.searchParams.get("threadId");
+          const threadId =
+            url.searchParams.get("threadId") || url.searchParams.get("conversationId") || undefined;
+          const orderId =
+            url.searchParams.get("orderId") || url.searchParams.get("initialOrderId") || undefined;
           const streamParam = url.searchParams.get("stream");
           const actionParam = url.searchParams.get("action");
           const surfaceParam =
             url.searchParams.get("surface") === "admin" && user.isAdmin ? "admin" : "store";
-          const availability = await getAdminAvailabilityStatus();
 
-          if (!threadId) {
+          let availability: any = { isAvailable: true, workingHoursText: "" };
+          try {
+            availability = await getAdminAvailabilityStatus();
+          } catch (availErr) {
+            console.warn("[chat:GET:availability_failed]", availErr);
+          }
+
+          if (!threadId && !orderId) {
             // Store chat is always personal: even an admin only sees their own
             // threads here. All-customer inbox lives in the admin dashboard.
-            const threads = await listThreadsByUser(user.id);
-            const filtered = threads;
+            let filtered: Thread[] = [];
+            try {
+              filtered = await listThreadsByUser(user.id);
+            } catch (listErr) {
+              console.error(
+                `[chat:GET:listThreadsByUser_failed] user_id=${user.id} HTTP_status=500 D1_error=${listErr instanceof Error ? listErr.message : String(listErr)} endpoint=/api/chat`,
+                listErr,
+              );
+              filtered = [];
+            }
+
+            let adminAvailabilityConfig: any = undefined;
+            if (user.isAdmin) {
+              try {
+                adminAvailabilityConfig = await getAdminAvailabilityConfig();
+              } catch (configErr) {
+                console.warn("[chat:GET:adminAvailabilityConfig_failed]", configErr);
+              }
+            }
 
             return json({
               threads: filtered,
               adminAvailability: availability,
-              ...(user.isAdmin
-                ? { adminAvailabilityConfig: await getAdminAvailabilityConfig() }
-                : {}),
+              ...(adminAvailabilityConfig ? { adminAvailabilityConfig } : {}),
             });
           }
 
-          const thread = await getThread(threadId);
-          if (
-            !thread ||
-            !canAccessThread({
-              viewerId: user.id,
-              isAdmin: Boolean(user.isAdmin),
-              threadUserId: thread.userId,
-              surface: surfaceParam,
-            })
-          ) {
-            return json({ error: "not_found" }, { status: 404 });
+          // Robust conversation resolution by threadId and/or orderId
+          let thread: Thread | undefined = undefined;
+          let linkedOrder: Order | undefined = undefined;
+
+          // 1. Direct thread lookup
+          if (threadId) {
+            try {
+              thread = await getThread(threadId);
+            } catch (tErr) {
+              console.warn(
+                `[chat:GET:getThread_error] conversation_id=${threadId} user_id=${user.id} D1_error=${tErr instanceof Error ? tErr.message : String(tErr)} endpoint=/api/chat`,
+                tErr,
+              );
+            }
           }
 
-          // Record presence for viewer
-          await chatRealtime.recordPresence(threadId, user.id);
+          // 2. Order lookup (if orderId is provided OR if threadId might be an order code/ID)
+          const targetOrderId = orderId || (!thread && threadId ? threadId : undefined);
+          if (targetOrderId) {
+            try {
+              linkedOrder = await getOrder(targetOrderId);
+              if (linkedOrder && !thread && linkedOrder.threadId) {
+                thread = await getThread(linkedOrder.threadId);
+              }
+            } catch (oErr) {
+              console.warn(
+                `[chat:GET:getOrder_error] order_id=${targetOrderId} user_id=${user.id} D1_error=${oErr instanceof Error ? oErr.message : String(oErr)} endpoint=/api/chat`,
+                oErr,
+              );
+            }
+          }
+
+          // 3. If thread has orderId and linkedOrder wasn't loaded yet, load it to verify ownership
+          if (thread?.orderId && !linkedOrder) {
+            try {
+              linkedOrder = await getOrder(thread.orderId);
+            } catch (orderFetchErr) {
+              console.warn("[chat:GET:fetchLinkedOrder_failed]", orderFetchErr);
+            }
+          }
+
+          // 4. Auto-healing: If an order exists for the user but its support thread row was missing
+          if (!thread && linkedOrder && (linkedOrder.userId === user.id || user.isAdmin)) {
+            const newThreadId = linkedOrder.threadId || `thr_${linkedOrder.id}`;
+            const now = new Date().toISOString();
+            thread = {
+              id: newThreadId,
+              userId: linkedOrder.userId,
+              userName: linkedOrder.userName || user.name,
+              orderId: linkedOrder.id,
+              chatType: "ORDER_SUPPORT",
+              subject: `طلب ${linkedOrder.code}`,
+              status: "open",
+              mode: "ADMIN_ACTIVE",
+              lastMessageAt: linkedOrder.createdAt || now,
+              createdAt: linkedOrder.createdAt || now,
+            };
+            try {
+              await saveThread(thread);
+            } catch (saveErr) {
+              console.warn("[chat:GET:auto_heal_thread_failed]", saveErr);
+            }
+          }
+
+          // 5. Access control verification:
+          // Must be owner of thread OR owner of linked order OR admin
+          const isThreadOwner = thread ? thread.userId === user.id : false;
+          const isOrderOwner = linkedOrder ? linkedOrder.userId === user.id : false;
+          const hasAccess =
+            user.isAdmin ||
+            isThreadOwner ||
+            isOrderOwner ||
+            (thread
+              ? canAccessThread({
+                  viewerId: user.id,
+                  isAdmin: Boolean(user.isAdmin),
+                  threadUserId: thread.userId,
+                  surface: surfaceParam,
+                })
+              : false);
+
+          if (!thread || !hasAccess) {
+            console.warn(
+              `[chat:GET:not_found] conversation_id=${threadId || "none"} order_id=${orderId || linkedOrder?.id || "none"} user_id=${user.id} is_admin=${Boolean(user.isAdmin)} HTTP_status=404 endpoint=/api/chat`,
+            );
+            return json(
+              {
+                error: "not_found",
+                message: "المحادثة غير موجودة أو لا تملك صلاحية الوصول إليها",
+              },
+              { status: 404 },
+            );
+          }
+
+          // Record presence for viewer safely
+          try {
+            await chatRealtime.recordPresence(thread.id, user.id);
+          } catch (pErr) {
+            console.warn("[chat:GET:recordPresence_failed]", pErr);
+          }
 
           // Handle Search Query
           if (actionParam === "search") {
             const q = url.searchParams.get("q") || "";
-            const results = await searchMessagesInThread(threadId, q, 30);
-            return json({ results });
+            try {
+              const results = await searchMessagesInThread(thread.id, q, 30);
+              return json({ results });
+            } catch (sErr) {
+              console.error(
+                `[chat:GET:search_failed] conversation_id=${thread.id} user_id=${user.id}`,
+                sErr,
+              );
+              return json({ results: [] });
+            }
           }
 
           // Handle Server-Sent Events (SSE) Stream
           if (streamParam === "1" || request.headers.get("accept")?.includes("text/event-stream")) {
-            const streamResponse = await chatRealtime.getStreamResponse(threadId, request);
+            const streamResponse = await chatRealtime.getStreamResponse(thread.id, request);
             if (streamResponse) {
               return streamResponse;
             }
 
+            const currentThreadId = thread.id;
             const encoder = new TextEncoder();
             const stream = new ReadableStream({
               start(controller) {
                 // Send initial greeting event
                 controller.enqueue(
                   encoder.encode(
-                    `event: connected\ndata: ${JSON.stringify({ threadId, time: new Date().toISOString() })}\n\n`,
+                    `event: connected\ndata: ${JSON.stringify({ threadId: currentThreadId, time: new Date().toISOString() })}\n\n`,
                   ),
                 );
 
-                const unsubscribe = chatRealtime.subscribe(threadId, (event) => {
+                const unsubscribe = chatRealtime.subscribe(currentThreadId, (event) => {
                   try {
                     controller.enqueue(
                       encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`),
@@ -158,24 +284,80 @@ export const Route = createFileRoute("/api/chat")({
             });
           }
 
-          // Handle Paginated messages (default limit: 10)
-          const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 10, 1), 50);
+          // Handle Paginated messages (default limit: 20) with graceful fallback
+          const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 20, 1), 50);
           const before = url.searchParams.get("before") || undefined;
           const around = url.searchParams.get("around") || undefined;
 
-          const paginated = await getPaginatedMessages(threadId, { limit, before, around });
+          let paginated: {
+            messages: any[];
+            hasMore: boolean;
+            nextCursor: string | null;
+            totalCount: number;
+          };
+          try {
+            paginated = await getPaginatedMessages(thread.id, { limit, before, around });
+          } catch (d1Err: any) {
+            console.error(
+              `[chat:GET:messages_failed] conversation_id=${thread.id} order_id=${thread.orderId || "none"} user_id=${user.id} HTTP_status=500 D1_error=${d1Err?.message || String(d1Err)} endpoint=/api/chat`,
+              d1Err,
+            );
+            // Fallback to simple message read or empty list
+            try {
+              const fallback = await getMessages(thread.id);
+              paginated = {
+                messages: fallback.slice(-limit),
+                hasMore: fallback.length > limit,
+                nextCursor: null,
+                totalCount: fallback.length,
+              };
+            } catch {
+              paginated = {
+                messages: [],
+                hasMore: false,
+                nextCursor: null,
+                totalCount: 0,
+              };
+            }
+          }
+
           const visible = user.isAdmin
             ? paginated.messages
             : paginated.messages.map(redactMessageForMember);
 
-          const typers = (await chatRealtime.getActiveTypers(threadId)).filter(
-            (t) => t.userId !== user.id,
-          );
-          const isOtherOnline = user.isAdmin
-            ? await chatRealtime.isUserOnline(threadId, thread.userId)
-            : true; // In store chat, admin availability config governs
+          let typers: any[] = [];
+          try {
+            typers = (await chatRealtime.getActiveTypers(thread.id)).filter(
+              (t) => t.userId !== user.id,
+            );
+          } catch (typerErr) {
+            console.warn("[chat:GET:typers_failed]", typerErr);
+          }
 
-          const queueMetrics = await calculateQueueMetrics(thread.orderId || thread.id);
+          let isOtherOnline = true;
+          try {
+            isOtherOnline = user.isAdmin
+              ? await chatRealtime.isUserOnline(thread.id, thread.userId)
+              : true; // In store chat, admin availability config governs
+          } catch (onlineErr) {
+            console.warn("[chat:GET:isUserOnline_failed]", onlineErr);
+          }
+
+          let queueMetrics: any = null;
+          try {
+            queueMetrics = await calculateQueueMetrics(thread.orderId || thread.id);
+          } catch (qErr) {
+            console.warn("[chat:calculateQueueMetrics_failed]", qErr);
+          }
+
+          let adminAvailabilityConfig: any = undefined;
+          if (user.isAdmin) {
+            try {
+              adminAvailabilityConfig = await getAdminAvailabilityConfig();
+            } catch (configErr) {
+              console.warn("[chat:GET:adminAvailabilityConfig_failed]", configErr);
+            }
+          }
 
           return json({
             thread,
@@ -187,9 +369,7 @@ export const Route = createFileRoute("/api/chat")({
             queueMetrics,
             typers,
             isOnline: isOtherOnline,
-            ...(user.isAdmin
-              ? { adminAvailabilityConfig: await getAdminAvailabilityConfig() }
-              : {}),
+            ...(adminAvailabilityConfig ? { adminAvailabilityConfig } : {}),
           });
         }),
       POST: async ({ request }) =>
@@ -603,16 +783,30 @@ export const Route = createFileRoute("/api/chat")({
             );
           }
 
-          if (
-            !canAccessThread({
+          let linkedOrder: Order | undefined = undefined;
+          if (thread.orderId) {
+            try {
+              linkedOrder = await getOrder(thread.orderId);
+            } catch (err) {
+              console.warn("[chat:POST:fetchLinkedOrder_failed]", err);
+            }
+          }
+          const isThreadOwner = thread.userId === user.id;
+          const isOrderOwner = linkedOrder ? linkedOrder.userId === user.id : false;
+          const hasPostAccess =
+            user.isAdmin ||
+            isThreadOwner ||
+            isOrderOwner ||
+            canAccessThread({
               viewerId: user.id,
               isAdmin: Boolean(user.isAdmin),
               threadUserId: thread.userId,
               surface: data.surface === "admin" && user.isAdmin ? "admin" : "store",
-            })
-          ) {
+            });
+
+          if (!hasPostAccess) {
             console.error(
-              `[chat:error:access_denied] threadId=${data.threadId} senderId=${user.id} threadOwner=${thread.userId} isAdmin=${Boolean(user.isAdmin)}`,
+              `[chat:POST:access_denied] conversation_id=${data.threadId} order_id=${thread.orderId || "none"} sender_id=${user.id} thread_owner=${thread.userId} is_admin=${Boolean(user.isAdmin)} HTTP_status=403 endpoint=/api/chat`,
             );
             return json(
               {
