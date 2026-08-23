@@ -1227,7 +1227,6 @@ function DiscTradePage() {
                               lang === "ar" ? "ar-EG" : "en-US",
                               { year: "numeric", month: "short", day: "numeric" },
                             )}
-
                           </p>
                         </div>
                         <div className="flex items-center gap-2">

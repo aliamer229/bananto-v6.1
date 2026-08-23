@@ -168,7 +168,6 @@ export async function processAutoScheduledTasks() {
   } catch (err) {
     console.error("[scheduled-jobs] processInactivityAndQueue error:", err);
   }
-
 }
 
 /**
@@ -179,13 +178,9 @@ export async function processAutoScheduledTasks() {
  * once per minute. Cloudflare Cron is at-least-once, so the underlying service
  * uses conditional/idempotent writes.
  */
-export async function processDigitalDeliveryMaintenance(
-  now = new Date().toISOString(),
-) {
+export async function processDigitalDeliveryMaintenance(now = new Date().toISOString()) {
   try {
-    const { processDueDeliveryAutoCompletions } = await import(
-      "./order-delivery-items.server"
-    );
+    const { processDueDeliveryAutoCompletions } = await import("./order-delivery-items.server");
     const result = await processDueDeliveryAutoCompletions(now);
     if (result.completed || result.reconciled || result.errors) {
       console.log("[scheduled-jobs:digital-delivery]", result);

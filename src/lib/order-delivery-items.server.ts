@@ -6,11 +6,7 @@ import {
   type OrderItemMatchTarget,
   type ParsedAccountLine,
 } from "./account-paste";
-import {
-  decryptSecretValue,
-  encryptSecretValue,
-  randomId,
-} from "./crypto.server";
+import { decryptSecretValue, encryptSecretValue, randomId } from "./crypto.server";
 import {
   allExpectedDeliveryItemsDelivered,
   autoCompleteAtFromLastOtp,
@@ -21,14 +17,7 @@ import {
   type DeliveryProgress,
 } from "./digital-delivery-state";
 import { d1All, d1First, d1Run, d1RunChanges, getD1 } from "./d1.server";
-import {
-  appendMessage,
-  d1Batch,
-  getOrder,
-  getThread,
-  saveOrder,
-  saveThread,
-} from "./db.server";
+import { appendMessage, d1Batch, getOrder, getThread, saveOrder, saveThread } from "./db.server";
 import type { Order, OrderItem } from "./types";
 
 const DIGITAL_KINDS = new Set([
@@ -104,9 +93,7 @@ export async function ensureDigitalDeliverySchema(): Promise<void> {
   if (!deliverySchemaPromise) {
     deliverySchemaPromise = (async () => {
       for (const sql of DELIVERY_SCHEMA_STATEMENTS) await d1Run(sql);
-      const orderColumns = await d1All<{ name: string }>(
-        `PRAGMA table_info(orders)`,
-      );
+      const orderColumns = await d1All<{ name: string }>(`PRAGMA table_info(orders)`);
       const existing = new Set(orderColumns.map((column) => column.name));
       for (const definition of ORDER_DELIVERY_COLUMNS) {
         const name = definition.slice(0, definition.indexOf(" "));
@@ -115,8 +102,7 @@ export async function ensureDigitalDeliverySchema(): Promise<void> {
           await d1Run(`ALTER TABLE orders ADD COLUMN ${definition}`);
           existing.add(name);
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : String(error);
+          const message = error instanceof Error ? error.message : String(error);
           if (!/duplicate column|already exists/i.test(message)) throw error;
         }
       }
@@ -137,10 +123,7 @@ function validCanonicalTitle(title: unknown): title is string {
   return Boolean(value && value !== "undefined" && value !== "null");
 }
 
-async function resolveCanonicalTitle(
-  order: Order,
-  item: OrderItem,
-): Promise<string> {
+async function resolveCanonicalTitle(order: Order, item: OrderItem): Promise<string> {
   // Once created, the canonical relation itself is the source of truth. Check
   // both order_id and product_id so an unrelated/stale row can never supply a
   // title merely because an identifier happened to collide.
@@ -163,8 +146,7 @@ async function resolveCanonicalTitle(
       });
       throw new Error("DELIVERY_PRODUCT_RELATION_MISSING");
     }
-    if (validCanonicalTitle(canonical.product_title))
-      return canonical.product_title.trim();
+    if (validCanonicalTitle(canonical.product_title)) return canonical.product_title.trim();
     console.error("[delivery:canonical_title_invalid]", {
       orderId: order.id,
       orderItemId: item.id,
@@ -213,11 +195,7 @@ async function resolveCanonicalTitle(
 export async function ensureOrderDeliveryRecords(order: Order): Promise<void> {
   await ensureDigitalDeliverySchema();
   for (const item of order.items) {
-    if (
-      item.productId === undefined ||
-      item.productId === null ||
-      item.productId === ""
-    ) {
+    if (item.productId === undefined || item.productId === null || item.productId === "") {
       console.error("[delivery:canonical_product_relation_missing]", {
         orderId: order.id,
         orderItemId: item.id,
@@ -226,10 +204,7 @@ export async function ensureOrderDeliveryRecords(order: Order): Promise<void> {
     }
     const canonicalTitle = await resolveCanonicalTitle(order, item);
 
-    const quantity = Math.max(
-      1,
-      Math.min(99, Math.floor(Number(item.quantity) || 1)),
-    );
+    const quantity = Math.max(1, Math.min(99, Math.floor(Number(item.quantity) || 1)));
     await d1Run(
       `INSERT OR IGNORE INTO order_items (
         id, order_id, product_id, product_title, kind, quantity, unit_price,
@@ -455,8 +430,7 @@ async function rowToAdminItem(row: DeliveryRow): Promise<AdminDeliveryItem> {
 export async function getDeliveryOrderState(
   orderOrId: Order | string,
 ): Promise<DeliveryOrderState> {
-  const order =
-    typeof orderOrId === "string" ? await getOrder(orderOrId) : orderOrId;
+  const order = typeof orderOrId === "string" ? await getOrder(orderOrId) : orderOrId;
   if (!order) throw new Error("ORDER_NOT_FOUND");
   await ensureOrderDeliveryRecords(order);
 
@@ -505,10 +479,7 @@ async function fingerprintSupplierLine(
   account: ParsedAccountLine,
 ): Promise<string> {
   const normalized = `${orderId}\n${account.raw.trim().replace(/\s+/g, " ")}\n${account.username.toLowerCase()}`;
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(normalized),
-  );
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalized));
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
@@ -523,10 +494,7 @@ export interface QuickPasteResult {
   duplicates: string[];
 }
 
-export async function saveQuickPaste(
-  orderId: string,
-  rawText: string,
-): Promise<QuickPasteResult> {
+export async function saveQuickPaste(orderId: string, rawText: string): Promise<QuickPasteResult> {
   const order = await getOrder(orderId);
   if (!order) throw new Error("ORDER_NOT_FOUND");
   await ensureOrderDeliveryRecords(order);
@@ -571,14 +539,11 @@ export async function saveQuickPaste(
           !row.archived_at &&
           !used.has(row.id) &&
           (row.status === "draft" || row.status === "ready") &&
-          (!row.username ||
-            row.username.toLowerCase() === account.username.toLowerCase()),
+          (!row.username || row.username.toLowerCase() === account.username.toLowerCase()),
       );
       candidate =
-        candidates.find(
-          (row) =>
-            row.username?.toLowerCase() === account.username.toLowerCase(),
-        ) ?? candidates.find((row) => !row.username);
+        candidates.find((row) => row.username?.toLowerCase() === account.username.toLowerCase()) ??
+        candidates.find((row) => !row.username);
     }
 
     if (candidate) {
@@ -669,8 +634,7 @@ export async function saveDeliveryDraft(input: {
   if (!order) throw new Error("ORDER_NOT_FOUND");
   await ensureOrderDeliveryRecords(order);
   const row = await loadMappedDeliveryRow(order.id, input.deliveryItemId);
-  if (!["draft", "ready"].includes(row.status))
-    throw new Error("DELIVERY_DRAFT_NOT_EDITABLE");
+  if (!["draft", "ready"].includes(row.status)) throw new Error("DELIVERY_DRAFT_NOT_EDITABLE");
   const username = input.username.trim();
   const password = input.password.trim();
   const passwordEnc = password ? await encryptSecretValue(password) : null;
@@ -768,8 +732,7 @@ export async function mapUnmatchedDeliveryItem(input: {
     input.targetDeliveryItemId,
     order.id,
   );
-  if (target?.updated_at !== now)
-    throw new Error("TARGET_DELIVERY_SLOT_NOT_AVAILABLE");
+  if (target?.updated_at !== now) throw new Error("TARGET_DELIVERY_SLOT_NOT_AVAILABLE");
   // Idempotent repair for REST/local adapters that do not expose native batch.
   await d1Run(
     `UPDATE order_delivery_items SET archived_at = COALESCE(archived_at, ?), updated_at = ?
@@ -1014,8 +977,7 @@ function deliveryStateNeedsAdmin(state: DeliveryOrderState): boolean {
     (item) =>
       !item.archivedAt &&
       (item.status === "needs_mapping" ||
-        (Boolean(item.orderItemId) &&
-          ["draft", "ready", "proof_received"].includes(item.status))),
+        (Boolean(item.orderItemId) && ["draft", "ready", "proof_received"].includes(item.status))),
   );
 }
 
@@ -1033,11 +995,7 @@ async function syncThreadToDeliveryState(
   );
   await saveThread({
     ...thread,
-    mode: needsAdmin
-      ? hasProof
-        ? "WAITING_FOR_ADMIN"
-        : "ORDER_PREPARATION"
-      : "WAITING_FOR_USER",
+    mode: needsAdmin ? (hasProof ? "WAITING_FOR_ADMIN" : "ORDER_PREPARATION") : "WAITING_FOR_USER",
     needsAdmin,
     lastAdminMessageAt: now,
     lastMessageAt: now,
@@ -1047,10 +1005,7 @@ async function syncThreadToDeliveryState(
 export async function getNextActionableQueuedOrder(
   excludeOrderId?: string,
   staffId?: string,
-): Promise<
-  | { orderId: string; threadId?: string; code?: string; userName?: string }
-  | undefined
-> {
+): Promise<{ orderId: string; threadId?: string; code?: string; userName?: string } | undefined> {
   const rows = await d1All<{
     order_id: string;
     assigned_staff_id: string | null;
@@ -1066,8 +1021,7 @@ export async function getNextActionableQueuedOrder(
   );
   for (const row of rows) {
     if (excludeOrderId && row.order_id === excludeOrderId) continue;
-    if (row.assigned_staff_id && staffId && row.assigned_staff_id !== staffId)
-      continue;
+    if (row.assigned_staff_id && staffId && row.assigned_staff_id !== staffId) continue;
     const order = await getOrder(row.order_id);
     if (!order) continue;
     if (
@@ -1098,8 +1052,7 @@ async function moveOrderToAwaitingConfirmation(
   order: Order;
   nextOrder?: Awaited<ReturnType<typeof getNextActionableQueuedOrder>>;
 }> {
-  if (await hasOpenDeliveryIssue(order.id))
-    throw new Error("ORDER_HAS_OPEN_DELIVERY_ISSUE");
+  if (await hasOpenDeliveryIssue(order.id)) throw new Error("ORDER_HAS_OPEN_DELIVERY_ISSUE");
   if (!(await strictDeliveryIsComplete(order.id))) return { order };
   const finalOtp = await d1First<{ value: string | null }>(
     `SELECT MAX(otp_sent_at) AS value
@@ -1156,8 +1109,7 @@ async function moveOrderToAwaitingConfirmation(
   if (claimed !== 1) {
     const latest = await getOrder(order.id);
     if (!latest) throw new Error("ORDER_NOT_FOUND");
-    if (latest.status === "delivery_issue")
-      throw new Error("ORDER_HAS_OPEN_DELIVERY_ISSUE");
+    if (latest.status === "delivery_issue") throw new Error("ORDER_HAS_OPEN_DELIVERY_ISSUE");
     return {
       order: latest,
       ...(latest.status === "awaiting_customer_confirmation"
@@ -1232,8 +1184,7 @@ export async function sendDeliveryOtp(input: {
   const row = await loadMappedDeliveryRow(order.id, input.deliveryItemId);
   const code = input.code.trim();
   if (!code) throw new Error("OTP_REQUIRED");
-  if (row.status !== "proof_received")
-    throw new Error("DELIVERY_PROOF_REQUIRED");
+  if (row.status !== "proof_received") throw new Error("DELIVERY_PROOF_REQUIRED");
   const now = new Date().toISOString();
   const changed = await d1RunChanges(
     `UPDATE order_delivery_items
@@ -1297,11 +1248,7 @@ export async function sendDeliveryOtp(input: {
   let nextOrder: Awaited<ReturnType<typeof getNextActionableQueuedOrder>>;
   const allDelivered = await strictDeliveryIsComplete(order.id);
   if (allDelivered) {
-    const completion = await moveOrderToAwaitingConfirmation(
-      order,
-      input.adminId,
-      now,
-    );
+    const completion = await moveOrderToAwaitingConfirmation(order, input.adminId, now);
     order = completion.order;
     nextOrder = completion.nextOrder;
     orderFinished = order.status === "awaiting_customer_confirmation";
@@ -1331,16 +1278,10 @@ export async function sendDigitalDeliveryCode(input: {
   await ensureOrderDeliveryRecords(order);
   const row = await loadMappedDeliveryRow(order.id, input.deliveryItemId);
   if (!CODE_KINDS.has(row.kind)) throw new Error("DELIVERY_ITEM_NOT_CODE");
-  if (row.status !== "ready" || !row.username)
-    throw new Error("DELIVERY_ITEM_NOT_READY");
+  if (row.status !== "ready" || !row.username) throw new Error("DELIVERY_ITEM_NOT_READY");
   const code = row.username.trim();
-  const storedPin = row.password_enc
-    ? await decryptSecretValue(row.password_enc)
-    : "";
-  if (
-    input.code.trim() !== code ||
-    String(input.pin ?? "").trim() !== storedPin
-  ) {
+  const storedPin = row.password_enc ? await decryptSecretValue(row.password_enc) : "";
+  if (input.code.trim() !== code || String(input.pin ?? "").trim() !== storedPin) {
     throw new Error("DELIVERY_DRAFT_OUT_OF_SYNC");
   }
   const now = new Date().toISOString();
@@ -1403,11 +1344,7 @@ export async function sendDigitalDeliveryCode(input: {
   let orderFinished = false;
   let nextOrder: Awaited<ReturnType<typeof getNextActionableQueuedOrder>>;
   if (await strictDeliveryIsComplete(order.id)) {
-    const completion = await moveOrderToAwaitingConfirmation(
-      order,
-      input.adminId,
-      now,
-    );
+    const completion = await moveOrderToAwaitingConfirmation(order, input.adminId, now);
     order = completion.order;
     nextOrder = completion.nextOrder;
     orderFinished = order.status === "awaiting_customer_confirmation";
@@ -1451,10 +1388,8 @@ async function completeDeliveredOrder(
   now = new Date().toISOString(),
 ): Promise<Order> {
   if (order.status === "completed") return order;
-  if (await hasOpenDeliveryIssue(order.id))
-    throw new Error("ORDER_HAS_OPEN_DELIVERY_ISSUE");
-  if (!(await strictDeliveryIsComplete(order.id)))
-    throw new Error("ITEMS_NOT_FULLY_DELIVERED");
+  if (await hasOpenDeliveryIssue(order.id)) throw new Error("ORDER_HAS_OPEN_DELIVERY_ISSUE");
+  if (!(await strictDeliveryIsComplete(order.id))) throw new Error("ITEMS_NOT_FULLY_DELIVERED");
   if (order.threadId) {
     await appendMessage(order.threadId, {
       senderRole: mode === "customer" ? "user" : "system",
@@ -1503,8 +1438,7 @@ async function completeDeliveredOrder(
     events: [
       ...(order.events || []),
       {
-        type:
-          mode === "customer" ? "customer_confirmed" : "order_auto_completed",
+        type: mode === "customer" ? "customer_confirmed" : "order_auto_completed",
         at: now,
         payload: {
           by: actorId,
@@ -1536,9 +1470,7 @@ async function completeDeliveredOrder(
       order.id,
       order.status,
       actorId,
-      mode === "customer"
-        ? "تم تأكيد الاستلام من العميل"
-        : "إكمال تلقائي بعد 60 دقيقة من آخر OTP",
+      mode === "customer" ? "تم تأكيد الاستلام من العميل" : "إكمال تلقائي بعد 60 دقيقة من آخر OTP",
       now,
     );
   } catch (error) {
@@ -1550,10 +1482,7 @@ async function completeDeliveredOrder(
   return next;
 }
 
-export async function confirmDeliveredOrder(
-  orderId: string,
-  userId: string,
-): Promise<Order> {
+export async function confirmDeliveredOrder(orderId: string, userId: string): Promise<Order> {
   const order = await getOrder(orderId);
   if (!order) throw new Error("ORDER_NOT_FOUND");
   await ensureOrderDeliveryRecords(order);
@@ -1605,8 +1534,7 @@ export async function openDeliveryIssue(input: {
   if (order.status !== "awaiting_customer_confirmation") {
     throw new Error("ORDER_NOT_AWAITING_CONFIRMATION");
   }
-  if (input.deliveryItemId)
-    await loadMappedDeliveryRow(order.id, input.deliveryItemId);
+  if (input.deliveryItemId) await loadMappedDeliveryRow(order.id, input.deliveryItemId);
   const now = new Date().toISOString();
   const claimed = await d1RunChanges(
     `UPDATE orders
@@ -1618,8 +1546,7 @@ export async function openDeliveryIssue(input: {
     now,
     order.id,
   );
-  if (claimed !== 1)
-    throw new Error("ORDER_CONFIRMATION_ALREADY_CLAIMED_OR_COMPLETED");
+  if (claimed !== 1) throw new Error("ORDER_CONFIRMATION_ALREADY_CLAIMED_OR_COMPLETED");
   try {
     await d1Run(
       `INSERT INTO order_delivery_issues
@@ -1724,14 +1651,9 @@ export async function maybeAutoCompleteDeliveredOrder(
   const order = await getOrder(orderId);
   if (!order) return undefined;
   await ensureOrderDeliveryRecords(order);
-  if (
-    order.status !== "awaiting_customer_confirmation" ||
-    !order.autoCompleteAt
-  )
-    return order;
+  if (order.status !== "awaiting_customer_confirmation" || !order.autoCompleteAt) return order;
   if (Date.parse(order.autoCompleteAt) > Date.parse(now)) return order;
-  if (order.deliveryIssueOpenedAt || (await hasOpenDeliveryIssue(order.id)))
-    return order;
+  if (order.deliveryIssueOpenedAt || (await hasOpenDeliveryIssue(order.id))) return order;
   const claimed = await d1RunChanges(
     `UPDATE orders
      SET auto_complete_at = NULL, updated_at = ?
@@ -1744,12 +1666,7 @@ export async function maybeAutoCompleteDeliveredOrder(
   );
   if (claimed !== 1) return (await getOrder(order.id)) || order;
   try {
-    return await completeDeliveredOrder(
-      order,
-      "auto",
-      "system:auto_complete",
-      now,
-    );
+    return await completeDeliveredOrder(order, "auto", "system:auto_complete", now);
   } catch (error) {
     await d1Run(
       `UPDATE orders SET auto_complete_at = ?, updated_at = ?
@@ -1800,8 +1717,7 @@ export async function processDueDeliveryAutoCompletions(
     try {
       const before = await getOrder(row.id);
       const after = await maybeAutoCompleteDeliveredOrder(row.id, now);
-      if (before?.status !== "completed" && after?.status === "completed")
-        completed += 1;
+      if (before?.status !== "completed" && after?.status === "completed") completed += 1;
     } catch (error) {
       errors += 1;
       console.error("[delivery:auto_complete_failed]", {
@@ -1839,10 +1755,7 @@ export async function processDueDeliveryAutoCompletions(
       );
       order = transition.order;
       reconciled += 1;
-      if (
-        order.autoCompleteAt &&
-        Date.parse(order.autoCompleteAt) <= Date.parse(now)
-      ) {
+      if (order.autoCompleteAt && Date.parse(order.autoCompleteAt) <= Date.parse(now)) {
         const after = await maybeAutoCompleteDeliveredOrder(order.id, now);
         if (after?.status === "completed") completed += 1;
       }

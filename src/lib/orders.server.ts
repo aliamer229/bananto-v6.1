@@ -732,9 +732,7 @@ export async function completeOrderTask(orderId: string, staffId: string): Promi
     const { getDeliveryOrderState } = await import("./order-delivery-items.server");
     const delivery = await getDeliveryOrderState(order);
     if (delivery.progress.total > 0) {
-      throw new Error(
-        "digital_orders_complete_only_after_customer_confirmation_or_server_timeout",
-      );
+      throw new Error("digital_orders_complete_only_after_customer_confirmation_or_server_timeout");
     }
     await updateOrderStatus({
       orderId,
@@ -841,12 +839,3 @@ export function areAllOrderItemsDelivered(order: Order): boolean {
  * Re-exported here because the API routes already import it from this module.
  */
 export { evaluateOrderAutoCompletion } from "./order-completion.server";
- * Evaluate only the explicit server deadline written when the final delivery
- * item reaches otp_sent. No view time, credential timestamp, or browser timer
- * can complete a digital order.
- */
-export async function evaluateOrderAutoCompletion(order: Order): Promise<Order> {
-  if (order.status === "completed" || order.status === "cancelled") return order;
-  const { maybeAutoCompleteDeliveredOrder } = await import("./order-delivery-items.server");
-  return (await maybeAutoCompleteDeliveredOrder(order.id)) ?? order;
-}

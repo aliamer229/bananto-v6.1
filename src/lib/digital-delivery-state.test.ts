@@ -13,9 +13,7 @@ describe("digital delivery state machine", () => {
     expect(deliveryDraftStatus("user-one", "")).toBe("draft");
     expect(deliveryDraftStatus("user-one", "pass-one")).toBe("ready");
     expect(
-      calculateDeliveryProgress([
-        { id: "delivery-1", orderItemId: "item-1", status: "ready" },
-      ]),
+      calculateDeliveryProgress([{ id: "delivery-1", orderItemId: "item-1", status: "ready" }]),
     ).toEqual({
       total: 1,
       prepared: 1,
@@ -74,8 +72,6 @@ describe("digital delivery state machine", () => {
   });
 
   it("computes the server deadline at exactly 60 minutes after the final OTP", () => {
-    expect(autoCompleteAtFromLastOtp("2026-08-23T12:00:00.000Z")).toBe(
-      "2026-08-23T13:00:00.000Z",
-    );
+    expect(autoCompleteAtFromLastOtp("2026-08-23T12:00:00.000Z")).toBe("2026-08-23T13:00:00.000Z");
   });
 });

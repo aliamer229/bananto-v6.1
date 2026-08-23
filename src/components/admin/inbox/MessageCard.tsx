@@ -459,9 +459,7 @@ function InnerMessageCard({
                       const targetItemId =
                         typeof body.itemId === "string" ? body.itemId : undefined;
                       const targetDeliveryItemId =
-                        typeof body.deliveryItemId === "string"
-                          ? body.deliveryItemId
-                          : undefined;
+                        typeof body.deliveryItemId === "string" ? body.deliveryItemId : undefined;
                       if (!targetItemId && !targetDeliveryItemId) {
                         toast.error("تعذر تحديد عنصر التسليم من إثبات الدخول");
                         return;

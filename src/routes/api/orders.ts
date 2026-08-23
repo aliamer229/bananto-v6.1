@@ -176,35 +176,47 @@ export const Route = createFileRoute("/api/orders")({
            */
           if (data.action === "submit_login_proof") {
             if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
-            const itemId = String(data.itemId ?? "");
+            let itemId = String(data.itemId ?? "");
             let deliveryItemId = String(data.deliveryItemId ?? "");
             const imageUrl = String(data.imageUrl ?? "");
-            const item = order.items.find((entry) => entry.id === itemId);
-            if (!item) return json({ error: "item_not_found" }, { status: 404 });
+
             // Only the member's own upload may be attached, never an arbitrary URL.
             if (!isOwnUploadUrl(imageUrl, user.id)) {
               return json({ error: "invalid_image" }, { status: 400 });
             }
 
-            // Legacy cards only carried order_item_id. Resolve that identifier
-            // only when it names one and only one sent delivery row; ambiguity
-            // is surfaced instead of guessing a quantity slot.
             const state = await getDeliveryOrderState(order);
-            if (!deliveryItemId) {
+
+            // Resolve exact delivery item from D1 state
+            let exactDeliveryItem = deliveryItemId
+              ? state.deliveryItems.find((entry) => entry.id === deliveryItemId)
+              : undefined;
+
+            if (!exactDeliveryItem && itemId) {
               const candidates = state.deliveryItems.filter(
-                (entry) => entry.orderItemId === itemId && entry.status === "sent",
+                (entry) =>
+                  entry.orderItemId === itemId &&
+                  (entry.status === "sent" || entry.status === "proof_received"),
               );
-              if (candidates.length !== 1) {
-                return json({ error: "delivery_item_ambiguous" }, { status: 409 });
+              if (candidates.length === 1) {
+                exactDeliveryItem = candidates[0];
               }
-              deliveryItemId = candidates[0]!.id;
             }
-            const exactDeliveryItem = state.deliveryItems.find(
-              (entry) => entry.id === deliveryItemId && entry.orderItemId === itemId,
-            );
+
             if (!exactDeliveryItem) {
-              return json({ error: "delivery_item_mismatch" }, { status: 409 });
+              // Fallback to any sent delivery item in the order
+              const sentCandidates = state.deliveryItems.filter((entry) => entry.status === "sent");
+              if (sentCandidates.length === 1) {
+                exactDeliveryItem = sentCandidates[0];
+              }
             }
+
+            if (!exactDeliveryItem) {
+              return json({ error: "delivery_item_not_found" }, { status: 404 });
+            }
+
+            deliveryItemId = exactDeliveryItem.id;
+            itemId = exactDeliveryItem.orderItemId;
 
             await recordDeliveryProof({
               orderId: order.id,
@@ -291,19 +303,19 @@ export const Route = createFileRoute("/api/orders")({
             }
           }
 
-            /*
+          /*
               Same owner as the admin button and the hour-long timer, so the
               three cannot write different versions of "completed" — and a
               customer who taps twice does not get two completion cards and two
               rating requests.
             */
-            const confirmed = await completeOrder(order, {
-              by: user.id,
-              role: "USER",
-              note: "تم تأكيد الاستلام من قبل العميل",
-              message: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
-            });
-            return json({ order: redactOrder(confirmed.order) });
+          const confirmed = await completeOrder(order, {
+            by: user.id,
+            role: "USER",
+            note: "تم تأكيد الاستلام من قبل العميل",
+            message: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
+          });
+          return json({ order: redactOrder(confirmed.order) });
           if (data.action === "report_delivery_issue") {
             if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
             try {
@@ -341,10 +353,7 @@ export const Route = createFileRoute("/api/orders")({
           if (data.status && data.status !== order.status) {
             if (!user.isAdmin) return json({ error: "forbidden" }, { status: 403 });
 
-            if (
-              data.status === "completed" ||
-              data.status === "awaiting_customer_confirmation"
-            ) {
+            if (data.status === "completed" || data.status === "awaiting_customer_confirmation") {
               const delivery = await getDeliveryOrderState(order);
               if (delivery.progress.total > 0) {
                 return json(

@@ -29,9 +29,7 @@ vi.mock("./d1.server", () => ({
     Number(db.prepare(sql).run(...(binds as never[])).changes ?? 0),
 }));
 
-const { claimCouponUse, readCouponUsage, releaseCouponUse } = await import(
-  "./coupon-usage.server"
-);
+const { claimCouponUse, readCouponUsage, releaseCouponUse } = await import("./coupon-usage.server");
 
 function reset() {
   db.exec(`DROP TABLE IF EXISTS coupons`);
@@ -60,9 +58,11 @@ const usesOf = (couponId: string, userId: string) =>
 
 const totalOf = (couponId: string) =>
   Number(
-    (db.prepare(`SELECT total_uses FROM coupons WHERE id = ?`).get(couponId) as {
-      total_uses?: number;
-    })?.total_uses ?? 0,
+    (
+      db.prepare(`SELECT total_uses FROM coupons WHERE id = ?`).get(couponId) as {
+        total_uses?: number;
+      }
+    )?.total_uses ?? 0,
   );
 
 describe("per-user coupon limits", () => {
@@ -72,8 +72,9 @@ describe("per-user coupon limits", () => {
 
   it("lets every member use a once-per-customer coupon exactly once", async () => {
     // No global cap: usage_limit is NULL, which must mean unlimited.
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 1)`)
-      .run("cpn_share", "SHARE10");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 1)`,
+    ).run("cpn_share", "SHARE10");
 
     const claim = (userId: string) =>
       claimCouponUse({
@@ -100,8 +101,9 @@ describe("per-user coupon limits", () => {
   });
 
   it("never exhausts a coupon globally when no total cap is set", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 1)`)
-      .run("cpn_open", "OPEN");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 1)`,
+    ).run("cpn_open", "OPEN");
 
     for (let i = 0; i < 25; i++) {
       const result = await claimCouponUse({
@@ -116,8 +118,9 @@ describe("per-user coupon limits", () => {
   });
 
   it("treats a total cap of 0 or an empty value as unlimited", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, 0, 1)`)
-      .run("cpn_zero", "ZERO");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, 0, 1)`,
+    ).run("cpn_zero", "ZERO");
 
     for (const total of [0, undefined, null as unknown as undefined]) {
       db.prepare(`UPDATE coupons SET total_uses = 0 WHERE id = ?`).run("cpn_zero");
@@ -134,8 +137,9 @@ describe("per-user coupon limits", () => {
   });
 
   it("honours a real total cap across different members", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, 2, 1)`)
-      .run("cpn_two", "TWO");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, 2, 1)`,
+    ).run("cpn_two", "TWO");
 
     const claim = (userId: string) =>
       claimCouponUse({ couponId: "cpn_two", userId, perUserLimit: 1, totalLimit: 2 });
@@ -150,8 +154,9 @@ describe("per-user coupon limits", () => {
   });
 
   it("allows a member their full allowance when per_user_limit is above 1", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 3)`)
-      .run("cpn_three", "THREE");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 3)`,
+    ).run("cpn_three", "THREE");
 
     const claim = () =>
       claimCouponUse({
@@ -169,8 +174,9 @@ describe("per-user coupon limits", () => {
   });
 
   it("defaults to one use per member when no limit is supplied", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, NULL)`)
-      .run("cpn_default", "DEF");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, NULL)`,
+    ).run("cpn_default", "DEF");
 
     expect(await claimCouponUse({ couponId: "cpn_default", userId: "u" })).toEqual({ ok: true });
     expect(await claimCouponUse({ couponId: "cpn_default", userId: "u" })).toEqual({
@@ -180,8 +186,9 @@ describe("per-user coupon limits", () => {
   });
 
   it("hands a use back when a later step of checkout fails", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, 5, 1)`)
-      .run("cpn_rel", "REL");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, 5, 1)`,
+    ).run("cpn_rel", "REL");
 
     await claimCouponUse({
       couponId: "cpn_rel",
@@ -207,8 +214,9 @@ describe("per-user coupon limits", () => {
   });
 
   it("never lets a release drive a counter negative", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 1)`)
-      .run("cpn_neg", "NEG");
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit) VALUES (?, ?, NULL, 1)`,
+    ).run("cpn_neg", "NEG");
     db.prepare(
       `INSERT INTO coupon_user_usage (coupon_id, user_id, uses, first_used_at, last_used_at)
        VALUES ('cpn_neg', 'u', 0, 'x', 'x')`,
@@ -226,10 +234,14 @@ describe("readCouponUsage", () => {
   });
 
   it("reports each member's own count, not the shared total", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit, total_uses)
-                VALUES ('c1', 'C1', NULL, 1, 4)`).run();
-    db.prepare(`INSERT INTO coupon_user_usage (coupon_id, user_id, uses, first_used_at, last_used_at)
-                VALUES ('c1', 'a', 1, 'x', 'x'), ('c1', 'b', 3, 'x', 'x')`).run();
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit, total_uses)
+                VALUES ('c1', 'C1', NULL, 1, 4)`,
+    ).run();
+    db.prepare(
+      `INSERT INTO coupon_user_usage (coupon_id, user_id, uses, first_used_at, last_used_at)
+                VALUES ('c1', 'a', 1, 'x', 'x'), ('c1', 'b', 3, 'x', 'x')`,
+    ).run();
 
     expect(await readCouponUsage("c1", "a")).toEqual({ userUses: 1, globalUses: 4 });
     expect(await readCouponUsage("c1", "b")).toEqual({ userUses: 3, globalUses: 4 });
@@ -238,10 +250,14 @@ describe("readCouponUsage", () => {
   });
 
   it("falls back to the redemption trail for rows the backfill has not reached", async () => {
-    db.prepare(`INSERT INTO coupons (id, code, usage_limit, per_user_limit, total_uses)
-                VALUES ('c2', 'C2', NULL, 1, NULL)`).run();
-    db.prepare(`INSERT INTO coupon_redemptions (id, coupon_id, user_id, order_id, created_at)
-                VALUES ('r1', 'c2', 'a', 'o1', 'x'), ('r2', 'c2', 'b', 'o2', 'x')`).run();
+    db.prepare(
+      `INSERT INTO coupons (id, code, usage_limit, per_user_limit, total_uses)
+                VALUES ('c2', 'C2', NULL, 1, NULL)`,
+    ).run();
+    db.prepare(
+      `INSERT INTO coupon_redemptions (id, coupon_id, user_id, order_id, created_at)
+                VALUES ('r1', 'c2', 'a', 'o1', 'x'), ('r2', 'c2', 'b', 'o2', 'x')`,
+    ).run();
 
     // No coupon_user_usage rows at all: counts come from the audit trail so a
     // database mid-migration does not hand everyone a free use.

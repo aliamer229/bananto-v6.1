@@ -60,14 +60,48 @@ export function isAdminThread(t: Thread): boolean {
   return !isPureAutomatedThread(t);
 }
 
+export interface QueueMetrics {
+  isQueueEligible: boolean;
+  position: number;
+  aheadCount: number;
+  estimatedMinutesMin: number;
+  estimatedMinutesMax: number;
+  estimatedMinutesText: string;
+  status: "active" | "queued" | "snoozed" | "serving_now" | "not_queued";
+  adminStatus: "available" | "busy" | "offline";
+  workingHoursText?: string;
+  deliveryStage?:
+    | "in_queue"
+    | "preparing_now"
+    | "awaiting_login_proof"
+    | "proof_received"
+    | "awaiting_otp"
+    | "otp_sent"
+    | "completed"
+    | "general_active";
+  stageLabel?: string;
+  accountSentAt?: string | null;
+  proofReceivedAt?: string | null;
+  otpSentAt?: string | null;
+  lastCustomerActivityAt?: string | null;
+  lastAdminActivityAt?: string | null;
+  activeDeliveryItemId?: string | null;
+  activeOrderItemId?: string | null;
+  proofUrl?: string | null;
+}
+
 // Throttle processInactivityAndQueue so it doesn't run concurrently
 let isProcessing = false;
 let lastProcessedTime = 0;
 
 /**
- * Scans open threads and enforces:
- * 1. 5-minute inactivity rule for regular human chats -> Transfer to AI & close ticket.
- * 2. 5m, 7m, 9m alerts and 10m snooze / move to back of queue for Orders.
+ * Scans open threads and enforces real server-side lifecycle rules:
+ * 1. Suppresses ALL inactivity postponement and warnings whenever:
+ *    - Account credentials have been sent and waiting for user login proof (awaiting_login_proof)
+ *    - Login proof has been uploaded and waiting for admin OTP (proof_received)
+ *    - Admin is actively working on the order or thread (WAITING_FOR_ADMIN, ORDER_PREPARATION)
+ * 2. Does NOT spam multiple 5m/7m/9m warning messages into the chat.
+ * 3. Gracefully closes non-order general support tickets only if inactive for >15 minutes in WAITING_FOR_USER mode.
  */
 export async function processInactivityAndQueue(): Promise<void> {
   const nowMs = Date.now();
@@ -89,16 +123,29 @@ export async function processInactivityAndQueue(): Promise<void> {
         thread.chatType !== "DELIVERY";
 
       if (isGeneralSupport && (thread.mode === "WAITING_FOR_USER" || thread.lastAdminMessageAt)) {
-        const lastActivity = thread.lastAdminMessageAt || thread.lastMessageAt || thread.createdAt;
+        // Only consider inactivity if thread is explicitly WAITING_FOR_USER and not waiting for admin
+        if (
+          thread.needsAdmin ||
+          thread.mode === "WAITING_FOR_ADMIN" ||
+          thread.mode === "ADMIN_ACTIVE"
+        ) {
+          continue;
+        }
+
+        const lastActivity =
+          thread.lastAdminMessageAt ||
+          thread.lastAdminActivityAt ||
+          thread.lastMessageAt ||
+          thread.createdAt;
         const diffMs = nowMs - new Date(lastActivity).getTime();
 
-        // 5 Minutes (300,000 ms) Inactivity Rule
-        if (diffMs >= 5 * 60 * 1000 && thread.mode !== "AI_ACTIVE") {
+        // 15 Minutes Inactivity Rule for general support tickets
+        if (diffMs >= 15 * 60 * 1000 && thread.mode !== "AI_ACTIVE") {
           const autoCloseMsg = await appendMessage(thread.id, {
             senderRole: "system",
             kind: "system",
             body: {
-              text: "تم تحويل المحادثة إلى الدعم الآلي وإغلاق التذكرة لعدم الرد لأكثر من 5 دقائق. يمكنك التحدث مع المساعد الآلي أو طلب الدعم البشري في أي وقت.",
+              text: "تم تحويل المحادثة إلى الدعم الآلي لعدم وجود نشاط. يمكنك التحدث مع المساعد الآلي أو طلب الدعم البشري في أي وقت.",
             },
           });
 
@@ -129,88 +176,60 @@ export async function processInactivityAndQueue(): Promise<void> {
         thread.chatType === "DELIVERY";
 
       if (isOrderSupport && thread.status === "open") {
-        // If last message was from admin or waiting for user
-        const lastAdminTime = thread.lastAdminMessageAt;
+        // Check if there are active delivery items in D1
+        let deliveryItems: Array<{ status: string; sent_at?: string; proof_received_at?: string }> =
+          [];
+        if (thread.orderId && (await d1Ready())) {
+          try {
+            deliveryItems = await d1All<{
+              status: string;
+              sent_at?: string;
+              proof_received_at?: string;
+            }>(
+              `SELECT status, sent_at, proof_received_at FROM order_delivery_items WHERE order_id = ? AND archived_at IS NULL`,
+              thread.orderId,
+            );
+          } catch {
+            deliveryItems = [];
+          }
+        }
+
+        const hasSentAwaitingProof = deliveryItems.some((item) => item.status === "sent");
+        const hasProofReceived = deliveryItems.some((item) => item.status === "proof_received");
+        const hasActiveOtp = deliveryItems.some((item) => item.status === "otp_sent");
+
+        // CRITICAL RULE:
+        // NEVER send inactivity warnings or snooze if:
+        // - Waiting for customer login proof (awaiting_login_proof)
+        // - Waiting for admin OTP (proof_received)
+        // - Waiting for admin action (needsAdmin, WAITING_FOR_ADMIN, ORDER_PREPARATION)
+        // - OTP has been sent and testing (otp_sent)
+        if (
+          hasSentAwaitingProof ||
+          hasProofReceived ||
+          hasActiveOtp ||
+          thread.needsAdmin ||
+          thread.mode === "WAITING_FOR_ADMIN" ||
+          thread.mode === "ORDER_PREPARATION" ||
+          thread.mode === "ADMIN_ACTIVE"
+        ) {
+          continue;
+        }
+
+        // Only if the thread is purely in WAITING_FOR_USER for a custom inquiry and completely silent for > 20 minutes:
+        const lastAdminTime = thread.lastAdminMessageAt || thread.lastAdminActivityAt;
         if (!lastAdminTime) continue;
 
         const diffMs = nowMs - new Date(lastAdminTime).getTime();
         const diffMinutes = Math.floor(diffMs / 60000);
-        const reminders = thread.inactivityReminders || [];
 
-        // 5 Minutes reminder
-        if (diffMinutes >= 5 && !reminders.includes("5m")) {
-          const reminderMsg = await appendMessage(thread.id, {
-            senderRole: "system",
-            kind: "system",
-            body: {
-              text: "⏳ تنبيه (5 دقائق): ننتظر ردك لإكمال تسليم طلبك. سنكون بانتظارك لمتابعة التجهيز.",
-            },
-          });
-
-          await saveThread({
-            ...thread,
-            inactivityReminders: [...reminders, "5m"],
-            lastMessageAt: reminderMsg.createdAt,
-            lastMessagePreview: previewText(reminderMsg),
-          });
-
-          await chatRealtime.broadcast(thread.id, {
-            type: "thread.updated",
-            payload: { threadId: thread.id },
-          });
-        }
-        // 7 Minutes reminder
-        else if (diffMinutes >= 7 && !reminders.includes("7m")) {
-          const reminderMsg = await appendMessage(thread.id, {
-            senderRole: "system",
-            kind: "system",
-            body: {
-              text: "⚠️ تذكير (7 دقائق): يرجى التواجد لتأكيد بيانات الدخول. في حال عدم الرد سيتم تأجيل دورك في طابور التجهيز.",
-            },
-          });
-
-          await saveThread({
-            ...thread,
-            inactivityReminders: [...reminders, "7m"],
-            lastMessageAt: reminderMsg.createdAt,
-            lastMessagePreview: previewText(reminderMsg),
-          });
-
-          await chatRealtime.broadcast(thread.id, {
-            type: "thread.updated",
-            payload: { threadId: thread.id },
-          });
-        }
-        // 9 Minutes reminder
-        else if (diffMinutes >= 9 && !reminders.includes("9m")) {
-          const reminderMsg = await appendMessage(thread.id, {
-            senderRole: "system",
-            kind: "system",
-            body: {
-              text: "🚨 تنبيه نهائي (9 دقائق): سيتم نقل طلبك إلى نهاية الطابور بعد دقيقة واحدة إذا لم يتم الرد لتسهيل خدمة العملاء الآخرين.",
-            },
-          });
-
-          await saveThread({
-            ...thread,
-            inactivityReminders: [...reminders, "9m"],
-            lastMessageAt: reminderMsg.createdAt,
-            lastMessagePreview: previewText(reminderMsg),
-          });
-
-          await chatRealtime.broadcast(thread.id, {
-            type: "thread.updated",
-            payload: { threadId: thread.id },
-          });
-        }
-        // 10 Minutes -> Move to back of the queue (Snoozed / Postponed)
-        else if (diffMinutes >= 10 && thread.queueStatus !== "snoozed") {
+        if (diffMinutes >= 20 && thread.queueStatus !== "snoozed") {
           const nowIso = new Date().toISOString();
           const snoozeMsg = await appendMessage(thread.id, {
             senderRole: "system",
             kind: "system",
             body: {
-              text: "⏸️ تم تأجيل دورك في طابور التجهيز لعدم الرد لأكثر من 10 دقائق. عند عودتك وإرسال أي رسالة، ستنتظر حتى يحين دورك في الطابور مجدداً.",
+              text: "⏸️ تم تأجيل دورك في طابور التجهيز لعدم وجود نشاط. عند عودتك وإرسال أي رسالة، سيتم استئناف خدمتك فوراً.",
             },
           });
 
@@ -219,7 +238,6 @@ export async function processInactivityAndQueue(): Promise<void> {
             queueStatus: "snoozed",
             queueSnoozedAt: nowIso,
             mode: "WAITING_FOR_USER",
-            inactivityReminders: [...reminders, "10m_snoozed"],
             lastMessageAt: snoozeMsg.createdAt,
             lastMessagePreview: previewText(snoozeMsg),
           });
@@ -359,25 +377,101 @@ export function isDigitalOrderPreparationThread(t: Thread): boolean {
   );
 }
 
-export interface QueueMetrics {
-  isQueueEligible: boolean;
-  position: number;
-  aheadCount: number;
-  estimatedMinutesMin: number;
-  estimatedMinutesMax: number;
-  estimatedMinutesText: string;
-  status: "active" | "queued" | "snoozed" | "serving_now" | "not_queued";
-  adminStatus: "available" | "busy" | "offline";
-  workingHoursText?: string;
-}
-
 /**
- * Real-time queue metrics calculation based on true backend state.
- * Strictly calculates queue position and wait times ONLY for active digital orders.
+ * Real-time queue metrics calculation based on true backend state & D1 records.
+ * Strictly calculates queue position, stage, and real timestamps.
  */
 export async function calculateQueueMetrics(threadOrOrderId: string): Promise<QueueMetrics> {
   const availability = await getAdminAvailabilityStatus();
   const allThreads = await listThreads();
+
+  const targetThread = allThreads.find(
+    (t) => t.id === threadOrOrderId || t.orderId === threadOrOrderId,
+  );
+
+  const orderId =
+    targetThread?.orderId ||
+    (threadOrOrderId.startsWith("ord_") || threadOrOrderId.length > 10
+      ? threadOrOrderId
+      : undefined);
+
+  // Read real D1 delivery records for this order if present
+  let deliveryRows: Array<{
+    id: string;
+    order_item_id: string;
+    status: string;
+    sent_at?: string | null;
+    proof_received_at?: string | null;
+    proof_url?: string | null;
+    otp_sent_at?: string | null;
+  }> = [];
+
+  if (orderId && (await d1Ready())) {
+    try {
+      deliveryRows = await d1All<{
+        id: string;
+        order_item_id: string;
+        status: string;
+        sent_at?: string | null;
+        proof_received_at?: string | null;
+        proof_url?: string | null;
+        otp_sent_at?: string | null;
+      }>(
+        `SELECT id, order_item_id, status, sent_at, proof_received_at, proof_url, otp_sent_at
+         FROM order_delivery_items
+         WHERE order_id = ? AND archived_at IS NULL
+         ORDER BY id ASC`,
+        orderId,
+      );
+    } catch {
+      deliveryRows = [];
+    }
+  }
+
+  // Active delivery stage resolution
+  let deliveryStage: QueueMetrics["deliveryStage"] = undefined;
+  let stageLabel: string | undefined = undefined;
+  let accountSentAt: string | null = null;
+  let proofReceivedAt: string | null = null;
+  let otpSentAt: string | null = null;
+  let activeDeliveryItemId: string | null = null;
+  let activeOrderItemId: string | null = null;
+  let proofUrl: string | null = null;
+
+  if (deliveryRows.length > 0) {
+    const sentItem = deliveryRows.find((r) => r.status === "sent");
+    const proofItem = deliveryRows.find((r) => r.status === "proof_received");
+    const otpItem = deliveryRows.find((r) => r.status === "otp_sent");
+    const allCompleted = deliveryRows.every((r) => r.status === "completed");
+
+    if (sentItem) {
+      deliveryStage = "awaiting_login_proof";
+      stageLabel = "بانتظار إثبات تسجيل الدخول";
+      activeDeliveryItemId = sentItem.id;
+      activeOrderItemId = sentItem.order_item_id;
+      accountSentAt = sentItem.sent_at || null;
+    } else if (proofItem) {
+      deliveryStage = "proof_received";
+      stageLabel = "تم استلام الإثبات، بانتظار OTP";
+      activeDeliveryItemId = proofItem.id;
+      activeOrderItemId = proofItem.order_item_id;
+      accountSentAt = proofItem.sent_at || null;
+      proofReceivedAt = proofItem.proof_received_at || null;
+      proofUrl = proofItem.proof_url || null;
+    } else if (otpItem) {
+      deliveryStage = "otp_sent";
+      stageLabel = "تم إرسال كود OTP";
+      activeDeliveryItemId = otpItem.id;
+      activeOrderItemId = otpItem.order_item_id;
+      accountSentAt = otpItem.sent_at || null;
+      proofReceivedAt = otpItem.proof_received_at || null;
+      otpSentAt = otpItem.otp_sent_at || null;
+      proofUrl = otpItem.proof_url || null;
+    } else if (allCompleted) {
+      deliveryStage = "completed";
+      stageLabel = "مكتمل ومسلّم";
+    }
+  }
 
   // Active queue threads: open and strictly digital orders requiring preparation/delivery
   const queueThreads = allThreads.filter((t) => {
@@ -403,11 +497,22 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
       ? "busy"
       : "available";
 
+  const lastCustomerActivityAt =
+    targetThread?.lastUserMessageAt ||
+    targetThread?.lastUserActivityAt ||
+    (targetThread?.senderRole === "user" ? targetThread?.lastMessageAt : null) ||
+    null;
+
+  const lastAdminActivityAt =
+    targetThread?.lastAdminMessageAt ||
+    targetThread?.lastAdminActivityAt ||
+    (targetThread?.senderRole === "admin" ? targetThread?.lastMessageAt : null) ||
+    null;
+
   if (index === -1) {
-    const targetThread = allThreads.find(
-      (t) => t.id === threadOrOrderId || t.orderId === threadOrOrderId,
-    );
-    const isEligible = targetThread ? isDigitalOrderPreparationThread(targetThread) : false;
+    const isEligible = targetThread
+      ? isDigitalOrderPreparationThread(targetThread)
+      : Boolean(orderId);
 
     return {
       isQueueEligible: isEligible,
@@ -419,6 +524,16 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
       status: isEligible ? "active" : "not_queued",
       adminStatus,
       workingHoursText: availability.workingHoursText,
+      deliveryStage: deliveryStage || (isEligible ? "preparing_now" : "general_active"),
+      stageLabel,
+      accountSentAt,
+      proofReceivedAt,
+      otpSentAt,
+      lastCustomerActivityAt,
+      lastAdminActivityAt,
+      activeDeliveryItemId,
+      activeOrderItemId,
+      proofUrl,
     };
   }
 
@@ -442,5 +557,15 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
     status,
     adminStatus,
     workingHoursText: availability.workingHoursText,
+    deliveryStage: deliveryStage || (isFirst ? "preparing_now" : "in_queue"),
+    stageLabel,
+    accountSentAt,
+    proofReceivedAt,
+    otpSentAt,
+    lastCustomerActivityAt,
+    lastAdminActivityAt,
+    activeDeliveryItemId,
+    activeOrderItemId,
+    proofUrl,
   };
 }

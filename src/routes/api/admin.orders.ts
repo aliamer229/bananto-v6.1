@@ -307,10 +307,7 @@ export const Route = createFileRoute("/api/admin/orders")({
               break;
             }
             case "set_status": {
-              if (
-                data.status === "completed" ||
-                data.status === "awaiting_customer_confirmation"
-              ) {
+              if (data.status === "completed" || data.status === "awaiting_customer_confirmation") {
                 const delivery = await getDeliveryOrderState(order);
                 if (delivery.progress.total > 0) {
                   return json(
@@ -647,20 +644,24 @@ export const Route = createFileRoute("/api/admin/orders")({
               let deliveryItemId = data.deliveryItemId;
               if (!deliveryItemId && data.itemId) {
                 const candidates = state.deliveryItems.filter(
-                  (entry) =>
-                    entry.orderItemId === data.itemId && entry.status === "proof_received",
+                  (entry) => entry.orderItemId === data.itemId && entry.status === "proof_received",
                 );
                 if (candidates.length === 1) deliveryItemId = candidates[0]!.id;
                 if (candidates.length > 1) {
                   return json(
-                    { error: "يوجد أكثر من حساب لهذا المنتج؛ اختر الحساب المحدد من تبويبات التسليم" },
+                    {
+                      error: "يوجد أكثر من حساب لهذا المنتج؛ اختر الحساب المحدد من تبويبات التسليم",
+                    },
                     { status: 409 },
                   );
                 }
               }
               if (!deliveryItemId) {
                 return json(
-                  { error: "تعذر تحديد delivery_item_id من إثبات الدخول؛ لن يتم اختيار لعبة عشوائياً" },
+                  {
+                    error:
+                      "تعذر تحديد delivery_item_id من إثبات الدخول؛ لن يتم اختيار لعبة عشوائياً",
+                  },
                   { status: 400 },
                 );
               }

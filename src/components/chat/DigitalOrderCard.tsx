@@ -156,7 +156,15 @@ export function DigitalOrderCard({
         : `${queuePosition - 1} ahead in line • #${queuePosition}`;
     }
     return isAr ? "دورك الآن - قيد التجهيز المباشر ⚡" : "Preparing now ⚡";
-  }, [isCompleted, isAwaitingConfirmation, isDeliveryIssue, adminStatus, aheadCount, queuePosition, isAr]);
+  }, [
+    isCompleted,
+    isAwaitingConfirmation,
+    isDeliveryIssue,
+    adminStatus,
+    aheadCount,
+    queuePosition,
+    isAr,
+  ]);
 
   const estimatedTimeLabel = useMemo(() => {
     if (isCompleted) return isAr ? "مكتمل" : "Completed";
@@ -173,7 +181,15 @@ export function DigitalOrderCard({
       return isAr ? `${minEst} - ${maxEst} دقيقة` : `${minEst} - ${maxEst} mins`;
     }
     return isAr ? "5 - 12 دقيقة" : "5 - 12 mins";
-  }, [isCompleted, isAwaitingConfirmation, isDeliveryIssue, estimatedMinutes, adminStatus, queuePosition, isAr]);
+  }, [
+    isCompleted,
+    isAwaitingConfirmation,
+    isDeliveryIssue,
+    estimatedMinutes,
+    adminStatus,
+    queuePosition,
+    isAr,
+  ]);
 
   const calculatedItemsTotal = useMemo(() => {
     if (typeof total === "number" && total > 0) return total;

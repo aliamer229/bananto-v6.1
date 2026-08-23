@@ -1660,7 +1660,6 @@ export function ensureCouponsSchema(): Promise<void> {
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
 const RUNTIME_SCHEMA_VERSION = 16;
-const RUNTIME_SCHEMA_VERSION = 15;
 
 async function runSchemaStatements(
   db: D1Like,

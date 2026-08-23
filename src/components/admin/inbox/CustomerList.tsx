@@ -191,8 +191,7 @@ export function CustomerList({
           matchesFilter = t.status === "open" && !isClosed && isDigitalOrder && orderIsActive;
           break;
         case "open_tickets":
-          matchesFilter =
-            t.status === "open" && !isClosed && (!isDigitalOrder || isDeliveryIssue);
+          matchesFilter = t.status === "open" && !isClosed && (!isDigitalOrder || isDeliveryIssue);
           break;
         case "other_chats":
           matchesFilter = isClosed || (isDigitalOrder && orderIsCompleted);
@@ -209,8 +208,7 @@ export function CustomerList({
           matchesFilter = isDigitalOrder && orderIsActive && !isClosed;
           break;
         case "active_tickets":
-          matchesFilter =
-            (!isDigitalOrder || isDeliveryIssue) && t.status === "open" && !isClosed;
+          matchesFilter = (!isDigitalOrder || isDeliveryIssue) && t.status === "open" && !isClosed;
           break;
         case "order_preparation":
           matchesFilter = t.mode === "ORDER_PREPARATION";
@@ -249,7 +247,6 @@ export function CustomerList({
       const matchItems = linkedOrder?.items?.some((i) =>
         orderItemTitleOf(i).toLowerCase().includes(q),
       );
-      const matchItems = linkedOrder?.items?.some((i) => i.title.toLowerCase().includes(q));
 
       return (
         matchName || matchSubject || matchPreview || matchOrderId || matchOrderCode || matchItems
@@ -497,13 +494,6 @@ export function CustomerList({
               ? orderTitleSummary(linkedOrder.items)
               : ORDER_ITEM_TITLE_UNAVAILABLE_AR;
             if (linkedOrder) reportUnnamedItems(linkedOrder.id, linkedOrder.items);
-            // Product Title Extraction
-            const productName =
-              linkedOrder?.items
-                ?.map((i) => i.title)
-                .filter(Boolean)
-                .join("، ") ||
-              "تعذر تحميل اسم المنتج من الطلب";
 
             // Status Definition
             const isResolved =

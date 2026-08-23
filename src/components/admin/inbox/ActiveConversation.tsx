@@ -737,9 +737,7 @@ export function ActiveConversation({
                         };
                       };
                       if (!res.ok) {
-                        throw new Error(
-                          result.error || result.message || "فشل إرسال كود OTP",
-                        );
+                        throw new Error(result.error || result.message || "فشل إرسال كود OTP");
                       }
                       void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
                       void queryClient.invalidateQueries({ queryKey: ["admin-threads"] });

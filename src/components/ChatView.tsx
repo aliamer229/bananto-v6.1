@@ -1035,27 +1035,34 @@ export default function ChatView({
   /** Upload the member's sign-in screenshot and attach it to the order line. */
   const submitLoginProof = async (file: File) => {
     const target = proofItemRef.current;
-    const itemId = target?.itemId;
-    const orderId = currentOrder?.id;
-    if (!itemId || !orderId) return;
+    const itemId =
+      target?.itemId || liveQueueMetrics?.activeOrderItemId || currentOrder?.items?.[0]?.id;
+    const deliveryItemId = target?.deliveryItemId || liveQueueMetrics?.activeDeliveryItemId;
+    const orderId = currentOrder?.id || currentThread?.orderId;
+    if (!orderId) {
+      toast.error(tr("تعذر تحديد الطلب لإرسال الإثبات"));
+      return;
+    }
     setDeliveryBusy(true);
     try {
       const { url } = await uploadFileWithProgress(file, "orders");
       await api.orderAction({
         orderId,
         action: "submit_login_proof",
-        itemId,
-        deliveryItemId: target?.deliveryItemId,
+        itemId: itemId || undefined,
+        deliveryItemId: deliveryItemId || undefined,
         imageUrl: url,
       });
+      const resolvedKey = deliveryItemId || itemId || "default";
       setProofSentItems((prev) => ({
         ...prev,
-        [target?.deliveryItemId || itemId]: true,
+        [resolvedKey]: true,
       }));
+      toast.success(tr("تم إرسال صورة إثبات تسجيل الدخول بنجاح! المشرف سيرسل لك كود OTP."));
       await reloadThread();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to submit the sign-in proof", err);
-      toast.error(tr("تعذر إرسال صورة الإثبات، حاول مرة أخرى"));
+      toast.error(err?.message || tr("تعذر إرسال صورة الإثبات، حاول مرة أخرى"));
     } finally {
       setDeliveryBusy(false);
     }
@@ -2069,40 +2076,107 @@ export default function ChatView({
         </div>
       </div>
 
-      {/* Live Queue Realtime Banner for Orders */}
+      {/* Live Realtime Status / Notice Banner for Orders */}
       {isOrderMode && currentOrder?.status !== "completed" && (
         <div
-          className="relative z-20 border-b border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent px-4 py-2 text-xs backdrop-blur-sm shadow-xs"
+          className={`relative z-20 border-b px-4 py-2 text-xs backdrop-blur-sm shadow-xs transition-all ${
+            liveQueueMetrics?.deliveryStage === "awaiting_login_proof"
+              ? "border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-200"
+              : liveQueueMetrics?.deliveryStage === "proof_received"
+                ? "border-blue-500/30 bg-blue-500/10 text-blue-950 dark:text-blue-200"
+                : liveQueueMetrics?.deliveryStage === "otp_sent"
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-200"
+                  : "border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent text-[var(--ink)]"
+          }`}
           dir={isRtl ? "rtl" : "ltr"}
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="flex h-2.5 w-2.5 relative shrink-0">
+                <span
+                  className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                    liveQueueMetrics?.deliveryStage === "proof_received"
+                      ? "bg-blue-400"
+                      : liveQueueMetrics?.deliveryStage === "otp_sent"
+                        ? "bg-emerald-400"
+                        : "bg-amber-400"
+                  }`}
+                />
+                <span
+                  className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                    liveQueueMetrics?.deliveryStage === "proof_received"
+                      ? "bg-blue-500"
+                      : liveQueueMetrics?.deliveryStage === "otp_sent"
+                        ? "bg-emerald-500"
+                        : "bg-amber-500"
+                  }`}
+                />
               </span>
-              <span className="font-bold text-[var(--ink)]">
-                {(liveQueueMetrics?.position || currentQueueIndex) <= 1
-                  ? tr("⚡ دورك الآن — قيد التجهيز المباشر من المشرف")
-                  : `${tr("طابور التجهيز المباشر: الدور")} #${liveQueueMetrics?.position || currentQueueIndex}`}
-              </span>
-              {(liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1) > 0 && (
-                <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300">
-                  {isAr
-                    ? `(أمامك ${liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1} طلبات)`
-                    : `(${liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1} orders ahead)`}
-                </span>
-              )}
+
+              <div className="min-w-0 font-bold">
+                {liveQueueMetrics?.deliveryStage === "awaiting_login_proof" ? (
+                  <span>📷 تم إرسال بيانات الحساب — يرجى تسجيل الدخول وإرفاق صورة الإثبات</span>
+                ) : liveQueueMetrics?.deliveryStage === "proof_received" ? (
+                  <span>
+                    ✅ تم استلام صورة إثبات تسجيل الدخول — بانتظار إرسال كود التحقق (OTP) من المشرف
+                  </span>
+                ) : liveQueueMetrics?.deliveryStage === "otp_sent" ? (
+                  <span>🔑 تم إرسال كود التحقق OTP — يرجى إدخال الكود لتأكيد تشغيل اللعبة</span>
+                ) : (
+                  <>
+                    {(liveQueueMetrics?.position || currentQueueIndex) <= 1
+                      ? tr("⚡ دورك الآن — قيد التجهيز المباشر من المشرف")
+                      : `${tr("طابور التجهيز المباشر: الدور")} #${liveQueueMetrics?.position || currentQueueIndex}`}
+                    {(liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1) > 0 && (
+                      <span className="mr-2 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                        {isAr
+                          ? `(أمامك ${liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1} طلبات)`
+                          : `(${liveQueueMetrics?.aheadCount ?? currentQueueIndex - 1} orders ahead)`}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-ink)] font-medium">
-              <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-              <span>
-                {liveQueueMetrics?.estimatedWaitTime ||
-                  ((liveQueueMetrics?.position || currentQueueIndex) <= 1
-                    ? tr("خلال دقائق معدودة")
-                    : `${Math.max(5, ((liveQueueMetrics?.position || currentQueueIndex) - 1) * 5)} - ${Math.max(10, (liveQueueMetrics?.position || currentQueueIndex) * 7)} ${tr("دقيقة")}`)}
-              </span>
+            {/* Banner Actions & Dynamic Timers */}
+            <div className="flex items-center gap-2 shrink-0">
+              {liveQueueMetrics?.deliveryStage === "awaiting_login_proof" ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    proofInputRef.current?.click();
+                  }}
+                  disabled={deliveryBusy}
+                  className="flex items-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+                >
+                  <Camera className="h-3.5 w-3.5" />
+                  <span>📷 إرفاق إثبات تسجيل الدخول</span>
+                </button>
+              ) : liveQueueMetrics?.deliveryStage === "proof_received" ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    proofInputRef.current?.click();
+                  }}
+                  disabled={deliveryBusy}
+                  className="flex items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 px-2.5 py-1 text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <Camera className="h-3 w-3" />
+                  <span>تعديل الصورة</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted-ink)] font-medium">
+                  <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>
+                    {liveQueueMetrics?.estimatedWaitTime ||
+                      liveQueueMetrics?.estimatedMinutesText ||
+                      ((liveQueueMetrics?.position || currentQueueIndex) <= 1
+                        ? tr("خلال دقائق معدودة")
+                        : `${Math.max(5, ((liveQueueMetrics?.position || currentQueueIndex) - 1) * 5)} - ${Math.max(10, (liveQueueMetrics?.position || currentQueueIndex) * 7)} ${tr("دقيقة")}`)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

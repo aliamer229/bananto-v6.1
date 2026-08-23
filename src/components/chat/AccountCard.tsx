@@ -362,20 +362,24 @@ export function AccountCard({
               type="button"
               disabled={delivery.busy}
               onClick={() => void delivery.onAttachProof(itemId, deliveryItemId || undefined)}
-              className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-foreground px-3 py-2 text-[11px] font-bold text-background disabled:opacity-50 transition-transform active:scale-95 cursor-pointer"
+              className={`flex flex-[2] items-center justify-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all active:scale-98 cursor-pointer shadow-xs ${
+                delivery.proofSent
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
+              } disabled:opacity-50`}
             >
               {delivery.busy ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Camera className="h-3.5 w-3.5" />
+                <Camera className="h-4 w-4" />
               )}
               {delivery.proofSent
                 ? locale === "ar"
-                  ? "إرسال صورة إثبات أخرى"
-                  : "Send another photo"
+                  ? "✅ تم إرسال الإثبات (إرفاق صورة أخرى)"
+                  : "✅ Proof attached (Send another)"
                 : locale === "ar"
-                  ? "إرفاق إثبات التسجيل"
-                  : "Attach sign-in proof"}
+                  ? "📷 إرفاق إثبات تسجيل الدخول"
+                  : "📷 Attach sign-in proof"}
             </button>
             <button
               type="button"
@@ -388,7 +392,7 @@ export function AccountCard({
                     ? "يجب إرفاق صورة تثبت تسجيل الدخول أولاً"
                     : "Attach the sign-in proof first"
               }
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-current/20 px-3 py-2 text-[11px] font-bold disabled:opacity-40 transition-transform active:scale-95 cursor-pointer"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-card hover:bg-muted px-3 py-2 text-xs font-bold disabled:opacity-40 transition-transform active:scale-95 cursor-pointer text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               {locale === "ar" ? "التالي" : "Next"}

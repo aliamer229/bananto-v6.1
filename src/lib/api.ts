@@ -465,11 +465,7 @@ export const api = {
    */
   orderAction: (payload: {
     orderId: string;
-    action:
-      | "submit_login_proof"
-      | "account_next"
-      | "confirm_received"
-      | "report_delivery_issue";
+    action: "submit_login_proof" | "account_next" | "confirm_received" | "report_delivery_issue";
     itemId?: string;
     deliveryItemId?: string;
     imageUrl?: string;

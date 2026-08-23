@@ -286,22 +286,11 @@ const GAME_ALIAS_CLUSTERS: string[][] = [
     "ns运动",
   ],
   // Animal Crossing
-  [
-    "animal crossing",
-    "new horizons",
-    "动森",
-    "动物森友会",
-    "集合啦",
-  ],
+  ["animal crossing", "new horizons", "动森", "动物森友会", "集合啦"],
   // Tomodachi Life. Keep this separate from Animal Crossing: suppliers use
   // unrelated Chinese names and combining both creates a confident false hit
   // whenever an order contains the two games together.
-  [
-    "朋友收集",
-    "梦想生活",
-    "tomodachi",
-    "tomodachi life",
-  ],
+  ["朋友收集", "梦想生活", "tomodachi", "tomodachi life"],
   // Star Wars Outlaws
   ["star wars outlaws", "outlaws", "亡命之徒"],
   // Star Wars Jedi
@@ -561,11 +550,7 @@ export function matchHintToOrderItems(
     }
   }
 
-  if (
-    bestScore >= ACCOUNT_GAME_MATCH_MIN_CONFIDENCE &&
-    bestItem &&
-    bestTitles.size === 1
-  ) {
+  if (bestScore >= ACCOUNT_GAME_MATCH_MIN_CONFIDENCE && bestItem && bestTitles.size === 1) {
     return { item: bestItem, confidence: bestScore };
   }
 

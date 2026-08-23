@@ -364,7 +364,9 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
               );
             }, 350);
           } else {
-            toast.success("اكتمل تسليم الطلب — بانتظار تأكيد العميل. لا توجد طلبات أخرى في الطابور 🎉");
+            toast.success(
+              "اكتمل تسليم الطلب — بانتظار تأكيد العميل. لا توجد طلبات أخرى في الطابور 🎉",
+            );
           }
         }
       }

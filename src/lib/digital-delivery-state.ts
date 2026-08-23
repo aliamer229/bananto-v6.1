@@ -1,11 +1,5 @@
 export type DeliveryItemStatus =
-  | "draft"
-  | "needs_mapping"
-  | "ready"
-  | "sent"
-  | "proof_received"
-  | "otp_sent"
-  | "completed";
+  "draft" | "needs_mapping" | "ready" | "sent" | "proof_received" | "otp_sent" | "completed";
 
 export interface DeliveryProgressItem {
   id: string;
@@ -33,12 +27,7 @@ const PREPARED = new Set<DeliveryItemStatus>([
 // The admin-facing "delivered" counter advances as soon as credentials have
 // actually been sent. Completion is deliberately stricter and still requires
 // the final OTP/code for every expected slot.
-const DELIVERED = new Set<DeliveryItemStatus>([
-  "sent",
-  "proof_received",
-  "otp_sent",
-  "completed",
-]);
+const DELIVERED = new Set<DeliveryItemStatus>(["sent", "proof_received", "otp_sent", "completed"]);
 
 const TERMINAL = new Set<DeliveryItemStatus>(["otp_sent", "completed"]);
 
@@ -53,28 +42,21 @@ export function isDeliveryTerminal(status: DeliveryItemStatus): boolean {
   return TERMINAL.has(status);
 }
 
-export function calculateDeliveryProgress(
-  items: DeliveryProgressItem[],
-): DeliveryProgress {
+export function calculateDeliveryProgress(items: DeliveryProgressItem[]): DeliveryProgress {
   const active = items.filter((item) => !item.archivedAt);
   const expected = active.filter((item) => Boolean(item.orderItemId));
   return {
     total: expected.length,
     prepared: expected.filter((item) => PREPARED.has(item.status)).length,
     delivered: expected.filter((item) => DELIVERED.has(item.status)).length,
-    needsMapping: active.filter((item) => item.status === "needs_mapping")
-      .length,
+    needsMapping: active.filter((item) => item.status === "needs_mapping").length,
     drafts: expected.filter((item) => item.status === "draft").length,
   };
 }
 
-export function allExpectedDeliveryItemsDelivered(
-  items: DeliveryProgressItem[],
-): boolean {
+export function allExpectedDeliveryItemsDelivered(items: DeliveryProgressItem[]): boolean {
   const progress = calculateDeliveryProgress(items);
-  const expected = items.filter(
-    (item) => !item.archivedAt && Boolean(item.orderItemId),
-  );
+  const expected = items.filter((item) => !item.archivedAt && Boolean(item.orderItemId));
   return (
     progress.total > 0 &&
     progress.needsMapping === 0 &&
@@ -88,15 +70,13 @@ export function nextReadyDeliveryItemId(
   currentId: string,
 ): string | undefined {
   const expected = items.filter(
-    (item) =>
-      !item.archivedAt && Boolean(item.orderItemId) && item.status === "ready",
+    (item) => !item.archivedAt && Boolean(item.orderItemId) && item.status === "ready",
   );
   if (!expected.length) return undefined;
   const currentIndex = items.findIndex((item) => item.id === currentId);
   return (
     expected.find(
-      (item) =>
-        items.findIndex((candidate) => candidate.id === item.id) > currentIndex,
+      (item) => items.findIndex((candidate) => candidate.id === item.id) > currentIndex,
     ) ?? expected[0]
   )?.id;
 }

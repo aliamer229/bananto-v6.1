@@ -216,6 +216,42 @@ function CredentialsCard({ message }: { message: ChatMessage; order: Order }) {
           </p>
         ) : null}
       </div>
+
+      <div className="pt-1">
+        <label className="flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 px-3 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-98">
+          <ImagePlus className="h-4 w-4" />
+          <span>📷 إرفاق إثبات تسجيل الدخول</span>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const toastId = toast.loading("جارٍ رفع صورة الإثبات...");
+                const { uploadFileWithProgress } = await import("@/lib/uploads");
+                const { url } = await uploadFileWithProgress(file, "orders");
+                const itemId = String(message.body["itemId"] || order.items[0]?.id || "");
+                const deliveryItemId = message.body["deliveryItemId"]
+                  ? String(message.body["deliveryItemId"])
+                  : undefined;
+                await api.orderAction({
+                  orderId: order.id,
+                  action: "submit_login_proof",
+                  itemId: itemId || undefined,
+                  deliveryItemId,
+                  imageUrl: url,
+                });
+                toast.dismiss(toastId);
+                toast.success("تم إرسال صورة إثبات تسجيل الدخول بنجاح! المشرف سيرسل لك كود OTP.");
+              } catch (err: any) {
+                toast.error(err?.message || "تعذر إرسال صورة الإثبات");
+              }
+            }}
+          />
+        </label>
+      </div>
     </div>
   );
 }
@@ -235,6 +271,26 @@ function MessageBody({ message, order }: { message: ChatMessage; order: Order })
   }
 
   switch (message.kind) {
+    case "login_proof":
+    case "proof": {
+      const mediaUrl = String(message.body["imageUrl"] ?? "");
+      return (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <ShieldCheck className="h-4 w-4" />
+            <span>إثبات تسجيل الدخول</span>
+          </div>
+          {mediaUrl && (
+            <img
+              src={mediaUrl}
+              alt="إثبات تسجيل الدخول"
+              className="max-h-64 rounded-xl object-contain border border-border/50 bg-black/5"
+            />
+          )}
+          {message.body["text"] ? <p className="text-xs">{String(message.body["text"])}</p> : null}
+        </div>
+      );
+    }
     case "video":
     case "image":
     case "payment_receipt": {

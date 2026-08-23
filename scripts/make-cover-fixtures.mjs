@@ -109,7 +109,12 @@ mkdirSync(OUT, { recursive: true });
 const out = (name) => join(OUT, name);
 
 // A box floating in white — the reference-01 case the trim exists for.
-writePNG(out("cover-white-margin.png"), 1000, 1000, boxPainter(290, 203, 710, 797, 0, [255, 255, 255, 255]));
+writePNG(
+  out("cover-white-margin.png"),
+  1000,
+  1000,
+  boxPainter(290, 203, 710, 797, 0, [255, 255, 255, 255]),
+);
 
 // Off-white background with per-pixel noise, as a re-encoded JPEG would have.
 {

@@ -83,10 +83,7 @@ export async function readCouponUsage(
 }
 
 /** How many distinct lifetime uses a member has of any coupon flagged lifetime-only. */
-export async function readLifetimeCouponUses(
-  couponId: string,
-  userId: string,
-): Promise<number> {
+export async function readLifetimeCouponUses(couponId: string, userId: string): Promise<number> {
   const row = await d1First<{ total: number }>(
     `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?`,
     couponId,

@@ -296,9 +296,7 @@ export default {
       event.cron === "* * * * *"
         ? [processDigitalDeliveryMaintenance()]
         : [processBotTrading(), processAutoScheduledTasks(), reconcileTelegramWebhook(true)];
-    (ctx as { waitUntil: (p: Promise<any>) => void }).waitUntil(
-      Promise.all(tasks),
-    );
+    (ctx as { waitUntil: (p: Promise<any>) => void }).waitUntil(Promise.all(tasks));
   },
 
   async queue(batch: { messages: { body: any }[] }, env: unknown, ctx: unknown) {
