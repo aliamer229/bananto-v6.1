@@ -41,6 +41,8 @@ import type { Address, Product, ProductKind, Order } from "@/lib/types";
 import { cartNeedsAddress, cartTotal, useCartStore } from "@/store/useCartStore";
 import type { CartLine } from "@/store/useCartStore";
 import { cdnImage } from "@/lib/img";
+import NintendoCover from "@/components/NintendoCover";
+import { resolvePurchaseImage } from "@/lib/nintendoImages";
 import { playSound } from "@/utils/audio";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getCart, updateCartItem, removeCartItem } from "@/lib/cart.functions";
@@ -129,12 +131,15 @@ function CartItemCard({
       <div className="flex items-start gap-3.5">
         {/* Product Image */}
         <div className="relative shrink-0">
-          {line.image ? (
-            <img
-              src={cdnImage(line.image)}
+          {line.image || line.source ? (
+            /* Square tile, cover fitted whole inside it — the same picture the
+               product page and the add-to-cart toast just showed. */
+            <NintendoCover
+              product={(line.source as Record<string, unknown>) ?? { image: line.image }}
+              usage="cart"
+              ratio={1}
               alt={line.title}
-              className="w-20 h-20 sm:w-22 sm:h-22 object-cover rounded-2xl border border-border/70 bg-muted shadow-sm"
-              loading="lazy"
+              className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl border border-border/70 bg-muted shadow-sm"
             />
           ) : (
             <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl bg-muted/80 border border-border flex items-center justify-center text-muted-foreground shadow-sm">
@@ -296,7 +301,13 @@ function CartPage() {
         return {
           ...l,
           title: l.title || product?.titleEn || product?.english_name || product?.title || "منتج",
-          image: l.image || product?.image || product?.coverImage || product?.cartridgeImage || "",
+          // The catalogue wins over the persisted line. A cart line is stored
+          // in localStorage, so a picture chosen by an older build (or from a
+          // field that has since been corrected) would otherwise be pinned
+          // there forever — which is exactly how the cart ended up disagreeing
+          // with the product page about the same purchase.
+          image: product ? resolvePurchaseImage(product).url : l.image || "",
+          source: product,
           price: l.price || product?.price || 0,
         };
       });
@@ -314,7 +325,8 @@ function CartPage() {
         productId: item.product_id,
         title:
           entity?.titleEn || (entity as any)?.english_name || entity?.title || "منتج غير معروف",
-        image: ((entity?.image || entity?.cartridgeImage || entity?.coverImage) as string) || "",
+        image: resolvePurchaseImage(entity).url,
+        source: entity,
         price: entity?.price || 0,
         kind,
         quantity: item.quantity,
@@ -1123,11 +1135,16 @@ function CartPage() {
 
               {/* Item Preview Card */}
               <div className="bg-muted/40 rounded-2xl p-3 mb-5 flex items-center gap-3 text-right border border-border/60">
-                {itemToDelete.image ? (
-                  <img
-                    src={cdnImage(itemToDelete.image)}
-                    alt=""
-                    className="w-12 h-12 rounded-xl object-cover border border-border shrink-0"
+                {itemToDelete.image || itemToDelete.source ? (
+                  <NintendoCover
+                    product={
+                      (itemToDelete.source as Record<string, unknown>) ?? {
+                        image: itemToDelete.image,
+                      }
+                    }
+                    usage="cart"
+                    ratio={1}
+                    className="w-12 h-12 rounded-xl border border-border shrink-0"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">

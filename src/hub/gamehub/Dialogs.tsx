@@ -15,6 +15,7 @@ import type { CurrencyCode, GameVideo } from "@/hub/types";
 import { useCartStore } from "@/store/useCartStore";
 import { useHub } from "./hubContext";
 import { showAddToCartToast } from "@/utils/cart-toast";
+import { resolvePurchaseImage } from "@/lib/nintendoImages";
 
 /** Cart labels for the admin offer kinds encoded in the offer id. */
 const OFFER_LABELS_AR: Record<string, string> = {
@@ -368,7 +369,9 @@ export function BuySheet({
               ? offerLabelParts.join(" / ")
               : (OFFER_LABELS[offerKind] ?? offerKind);
 
-            const image = game.coverUrl || "";
+            // One source for the picture the cart line and the toast will show.
+            const purchaseArt = resolvePurchaseImage(game.rawProduct ?? { image: game.coverUrl });
+            const image = purchaseArt.isPlaceholder ? "" : purchaseArt.url;
             addToCart(
               {
                 productId: game.id,
@@ -397,7 +400,7 @@ export function BuySheet({
             showAddToCartToast({
               title: "أُضيف إلى السلة",
               message: `${quantity > 1 ? `${quantity} × ` : ""}${game.title}${offerLabel ? ` (${offerLabel})` : ""}`,
-              image,
+              product: game.rawProduct ?? (image ? { image } : null),
               quantity,
               navigate,
               playSoundEffect: false,

@@ -127,10 +127,49 @@ describe("Nintendo Switch Trade Pricing & Import Engine", () => {
     expect(resultNoBox.final_iqd).toBe(29750);
   });
 
-  it("verifies trade lifecycle status transitions", () => {
-    expect(canTransition("waiting_review", "approved")).toBe(true);
-    expect(canTransition("waiting_review", "rejected")).toBe(true);
-    expect(canTransition("approved", "coupon_issued")).toBe(true);
-    expect(canTransition("completed", "waiting_review")).toBe(false);
+  it("walks the trade lifecycle one step at a time", () => {
+    // The seven ordinary states run in a straight line, and each move is legal
+    // only from the state immediately before it — a status is a record of what
+    // happened, so skipping ahead would make the history a lie.
+    const flow = [
+      "awaiting_pricing",
+      "priced",
+      "awaiting_customer_approval",
+      "customer_approved",
+      "awaiting_receipt",
+      "inspecting",
+      "completed",
+    ];
+    for (let i = 0; i < flow.length - 1; i++) {
+      expect(canTransition(flow[i]!, flow[i + 1]!), `${flow[i]} → ${flow[i + 1]}`).toBe(true);
+    }
+    // Two steps at once is refused.
+    expect(canTransition("awaiting_pricing", "awaiting_customer_approval")).toBe(false);
+    expect(canTransition("customer_approved", "completed")).toBe(false);
+  });
+
+  it("lets an admin reject or cancel from anywhere unfinished, and never after completion", () => {
+    for (const from of [
+      "awaiting_pricing",
+      "priced",
+      "awaiting_customer_approval",
+      "customer_approved",
+      "awaiting_receipt",
+      "inspecting",
+    ]) {
+      expect(canTransition(from, "rejected", true), `${from} → rejected`).toBe(true);
+      expect(canTransition(from, "cancelled", true), `${from} → cancelled`).toBe(true);
+    }
+    expect(canTransition("completed", "rejected", true)).toBe(false);
+    expect(canTransition("completed", "awaiting_pricing")).toBe(false);
+  });
+
+  it("maps every legacy status onto the current set", () => {
+    // Requests written by earlier versions have to keep rendering and moving.
+    expect(canTransition("waiting_review", "priced")).toBe(true); // → awaiting_pricing
+    expect(canTransition("offer_sent", "customer_approved")).toBe(true); // → awaiting_customer_approval
+    expect(canTransition("waiting_shipment", "inspecting")).toBe(true); // → awaiting_receipt
+    expect(canTransition("payout_processing", "completed")).toBe(true); // → inspecting
+    expect(canTransition("coupon_issued", "awaiting_pricing")).toBe(false); // → completed
   });
 });

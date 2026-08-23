@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Cartridge, { type CartridgeGame } from "./Cartridge";
 import StaggerItem from "./StaggerItem";
 import { useBatches } from "@/hooks/useBatches";
-import { cdnImage } from "@/lib/img";
+import NintendoCover from "./NintendoCover";
 
 /**
  * Horizontal cartridge shelf. Renders in batches: reaching the end of the strip
@@ -116,12 +116,19 @@ export function ProductStrip({
             }}
           >
             <div className="overflow-hidden rounded-xl mb-3 relative">
-              <img
-                src={cdnImage(product.image)}
-                loading="lazy"
-                decoding="async"
-                className="w-full aspect-[3/4] object-cover object-center group-hover:scale-105 transition-transform duration-300"
+              {/*
+                One frame ratio for the whole row, so a strip of covers is a
+                strip of equal rectangles however mixed the sources are. The
+                artwork is fitted whole rather than cropped to fill, and any
+                empty margin around it has already been trimmed away — so
+                `contain` here cannot reintroduce the letterbox it used to.
+              */}
+              <NintendoCover
+                product={product.source ?? product}
+                usage="listing-card"
                 alt={product.title}
+                className="w-full rounded-xl"
+                imgClassName="group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
               {clickedId === product.id && (

@@ -7,6 +7,7 @@ import { randomId } from "@/lib/crypto.server";
 import {
   computeTradeValue,
   canTransition,
+  initialTradeStatus,
   normalizeTradeStatus,
   type TradeRule,
   type TradeStatus,
@@ -236,15 +237,22 @@ export const Route = createFileRoute("/api/disc-trade")({
             if (!trade || trade.user_id !== user.id)
               return json({ error: "غير مسموح" }, { status: 403 });
 
+            /*
+              The customer accepting the offer is the one transition they own.
+              It is only meaningful while an offer is actually with them.
+            */
             const currentNormStatus = normalizeTradeStatus(trade.status);
-            if (
-              !canTransition(currentNormStatus, "waiting_shipment") &&
-              currentNormStatus !== "waiting_review"
-            )
+            if (!canTransition(currentNormStatus, "customer_approved"))
               return json({ error: "لا يمكن قبول العرض الآن" }, { status: 400 });
 
-            await d1Run(`UPDATE disc_trades SET payout_type = ? WHERE id = ?`, payout, tradeId);
-            await appendStatus(tradeId, "waiting_shipment", user.id, `payout:${payout}`);
+            const acceptedAt = new Date().toISOString();
+            await d1Run(
+              `UPDATE disc_trades SET payout_type = ?, customer_approved_at = ? WHERE id = ?`,
+              payout,
+              acceptedAt,
+              tradeId,
+            );
+            await appendStatus(tradeId, "customer_approved", user.id, `payout:${payout}`);
             await notify(`🔄 المستخدم قبل عرض المقايضة ${tradeId} (${payout})`);
             return json({ success: true });
           }
@@ -260,11 +268,12 @@ export const Route = createFileRoute("/api/disc-trade")({
               valuation_iqd: number | null;
               final_iqd: number | null;
               admin_valuation_iqd: number | null;
+              approved_iqd: number | null;
               payout_credited: number | null;
               preferred_trade: string | null;
               payout_type: string | null;
             }>(
-              `SELECT id, status, user_id, valuation_iqd, final_iqd, admin_valuation_iqd, payout_credited, preferred_trade, payout_type FROM disc_trades WHERE id = ?`,
+              `SELECT id, status, user_id, valuation_iqd, final_iqd, admin_valuation_iqd, approved_iqd, payout_credited, preferred_trade, payout_type FROM disc_trades WHERE id = ?`,
               tradeId,
             );
             if (!trade) return json({ error: "طلب المقايضة غير موجود" }, { status: 404 });
@@ -272,10 +281,24 @@ export const Route = createFileRoute("/api/disc-trade")({
             const actor = String((admin as { email?: string }).email ?? "admin");
             const currentNormStatus = normalizeTradeStatus(trade.status);
 
-            if (data["admin_valuation_iqd"] !== undefined) {
+            /*
+              Setting a price and approving it are different acts.
+
+              `approved_iqd` is written only here, only by an admin, and is what
+              the customer is shown as "السعر النهائي المعتمد" and what the
+              payout uses. `final_iqd` remains the estimate and is never
+              promoted into it silently — a manual-priced request has no
+              estimate at all, and pretending otherwise is what made the two
+              indistinguishable on the card.
+            */
+            const priceInput = data["approved_iqd"] ?? data["admin_valuation_iqd"];
+            if (priceInput !== undefined) {
+              const amount = Math.max(0, Math.round(Number(priceInput) || 0));
               await d1Run(
-                `UPDATE disc_trades SET admin_valuation_iqd = ?, updated_at = ? WHERE id = ?`,
-                Number(data["admin_valuation_iqd"] || 0),
+                `UPDATE disc_trades SET approved_iqd = ?, admin_valuation_iqd = ?, priced_at = COALESCE(priced_at, ?), updated_at = ? WHERE id = ?`,
+                amount,
+                amount,
+                now(),
                 now(),
                 tradeId,
               );
@@ -292,6 +315,37 @@ export const Route = createFileRoute("/api/disc-trade")({
             const rawNext = data["status"] ? String(data["status"]).trim() : "";
             if (rawNext && rawNext !== trade.status && rawNext !== currentNormStatus) {
               const next = normalizeTradeStatus(rawNext);
+              /*
+                A price has to exist before it can be offered. Without this an
+                admin could send "بانتظار موافقة العميل" on a manual request
+                that still had no number, and the customer would be asked to
+                approve nothing.
+              */
+              if (next === "awaiting_customer_approval") {
+                const priced = await d1First<{
+                  approved_iqd: number | null;
+                  final_iqd: number | null;
+                  pricing_mode: string | null;
+                }>(
+                  `SELECT approved_iqd, final_iqd, pricing_mode FROM disc_trades WHERE id = ?`,
+                  tradeId,
+                );
+                const hasPrice =
+                  Number(priced?.approved_iqd ?? 0) > 0 ||
+                  (String(priced?.pricing_mode ?? "auto") !== "manual" &&
+                    Number(priced?.final_iqd ?? 0) > 0);
+                if (!hasPrice) {
+                  return json(
+                    { error: "لا يمكن إرسال العرض قبل إدخال السعر واعتماده" },
+                    { status: 400 },
+                  );
+                }
+                await d1Run(
+                  `UPDATE disc_trades SET approved_at = COALESCE(approved_at, ?) WHERE id = ?`,
+                  now(),
+                  tradeId,
+                );
+              }
               if (!canTransition(currentNormStatus, next, true)) {
                 return json(
                   { error: `انتقال غير مسموح: ${currentNormStatus} → ${next}` },
@@ -306,13 +360,26 @@ export const Route = createFileRoute("/api/disc-trade")({
               );
               await notify(`🔄 تحديث حالة المقايضة ${tradeId}: ${next}`, trade.user_id);
 
-              // If status transitioned to payout_processing, process wallet payout idempotently
-              if (next === "payout_processing" && !trade.payout_credited) {
+              /*
+                Settlement happens when the trade completes. The three former
+                payout statuses (`payout_pending`, `payout_processing`,
+                `approved`) all described the same moment, so the money is now
+                tied to the one status that means the work is finished.
+              */
+              if (next === "completed" && !trade.payout_credited) {
+                /*
+                  Pay the price that was actually approved. The estimate
+                  (`final_iqd`) is explicitly last: paying an estimate that no
+                  admin ever signed off is how a manual-priced trade ends up
+                  settling at a number nobody agreed to.
+                */
                 const creditAmount = Math.max(
                   0,
                   Math.round(
                     Number(
-                      data["admin_valuation_iqd"] ??
+                      data["approved_iqd"] ??
+                        trade.approved_iqd ??
+                        data["admin_valuation_iqd"] ??
                         trade.admin_valuation_iqd ??
                         trade.final_iqd ??
                         trade.valuation_iqd ??
@@ -407,14 +474,28 @@ export const Route = createFileRoute("/api/disc-trade")({
           const storeOfferTotal = quote ? quote.final_iqd + bonusIqd : null;
           const platform = String(data["platform"] || game?.platform || "Nintendo Switch");
 
+          /*
+            Which of the two pricing flows this request follows, decided here and
+            recorded on the row rather than inferred later from whether a number
+            happens to be null.
+
+            An automatic quote is only possible when the catalogue knows the
+            game's trade value — a custom entry, or a game with no trade value
+            set, genuinely has to be priced by a person. Saying so on the record
+            is what lets the card show "تسعير يدوي" and
+            "بانتظار التسعير اليدوي" instead of a bare "غير مسعر".
+          */
+          const pricingMode = quote ? "auto" : "manual";
+          const initialStatus = initialTradeStatus(pricingMode);
+
           const tradeId = randomId("trade");
           const stamp = now();
           await d1Run(
             `INSERT INTO disc_trades
               (id, user_id, game_id, game_name, platform, condition, notes, photo_url, preferred_trade,
                selections, base_iqd, final_iqd, valuation_iqd, store_offer_bonus_iqd, store_offer_total_iqd,
-               status, status_history, created_at, updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+               pricing_mode, priced_at, status, status_history, created_at, updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
             tradeId,
             user.id,
             gameId || null,
@@ -430,8 +511,11 @@ export const Route = createFileRoute("/api/disc-trade")({
             quote?.final_iqd ?? null,
             bonusIqd,
             storeOfferTotal,
-            "waiting_review",
-            JSON.stringify([{ status: "waiting_review", at: stamp, actor: user.id }]),
+            pricingMode,
+            // An automatic estimate exists from this instant; a manual one does not.
+            quote ? stamp : null,
+            initialStatus,
+            JSON.stringify([{ status: initialStatus, at: stamp, actor: user.id }]),
             stamp,
             stamp,
           );

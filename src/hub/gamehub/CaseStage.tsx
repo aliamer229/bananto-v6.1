@@ -1,7 +1,9 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { GameCase3D, type GameCase3DProps } from "./GameCase3D";
 import SafeBoundary from "@/components/SafeBoundary";
+import { useImageTrim } from "@/hooks/useImageTrim";
 import { cn } from "@/hub/utils/cn";
+import { cdnImage } from "@/lib/img";
 import { lazyWithRetry } from "@/lib/lazyRetry";
 import { readPrefs } from "@/lib/prefs";
 
@@ -28,7 +30,19 @@ function hasWebGL(): boolean {
   }
 }
 
-export function CaseStage({ className, ...caseProps }: GameCase3DProps & { className?: string }) {
+export function CaseStage({ className, ...rest }: GameCase3DProps & { className?: string }) {
+  /*
+    One crop for both renderers, resolved here so the CSS case and the WebGL
+    sleeve frame the artwork identically and the file is measured once. A wrap
+    already carries its own framing and is never cropped.
+  */
+  const { trim } = useImageTrim(
+    cdnImage(rest.coverUrl ?? ""),
+    rest.coverTrim,
+    !rest.sleeve?.url && Boolean(rest.coverUrl),
+  );
+  const caseProps: GameCase3DProps = { ...rest, coverTrim: trim ?? rest.coverTrim };
+
   const [modelReady, setModelReady] = useState(false);
   // three + R3F are only worth downloading in a browser that can actually
   // render them, and never during SSR.

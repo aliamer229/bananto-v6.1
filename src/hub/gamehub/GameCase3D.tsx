@@ -4,6 +4,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SwitchMark } from "./nintendoMarks";
 import { cn } from "@/hub/utils/cn";
 import { cdnImage } from "@/lib/img";
+import { isValidTrim, type TrimBox } from "@/lib/imageTrim";
 
 /**
  * 3D Nintendo game case.
@@ -55,6 +56,19 @@ export interface CaseSleeve {
 export interface GameCase3DProps {
   /** Front-only key art. Used when no `sleeve` is available. */
   coverUrl?: string | undefined;
+  /**
+   * Highest-resolution front cover available. The WebGL sleeve samples this;
+   * the CSS case is happy with `coverUrl`.
+   */
+  coverTextureUrl?: string | undefined;
+  /**
+   * Crop rectangle for `coverUrl` — the artwork's real bounds inside the file.
+   *
+   * Store packshots often float the box in a white field. Without this the face
+   * shows that field: a small box adrift in white, which is the whole point of
+   * reference 01 vs 02.
+   */
+  coverTrim?: unknown;
   /** The real printed wrap. Always preferred over `coverUrl`. */
   sleeve?: CaseSleeve | undefined;
   /**
@@ -110,6 +124,7 @@ const WIDTHS = { sm: 118, md: 156, lg: 196 } as const;
 
 export function GameCase3D({
   coverUrl,
+  coverTrim,
   sleeve,
   coverFit = "cover",
   title,
@@ -321,7 +336,7 @@ export function GameCase3D({
                     wide on Switch 2). Drawing one would duplicate it.
                   */}
                   <div className="relative flex h-full w-full flex-col">
-                    <CoverArt url={coverUrl} title={title} fit={coverFit} />
+                    <CoverArt url={coverUrl} trim={coverTrim} title={title} fit={coverFit} />
                   </div>
 
                   {ageRating && (
@@ -532,10 +547,12 @@ export function GameCase3D({
  */
 function CoverArt({
   url,
+  trim,
   title,
   fit,
 }: {
   url?: string | undefined;
+  trim?: unknown;
   title: string;
   fit: "cover" | "contain";
 }) {
@@ -548,16 +565,35 @@ function CoverArt({
       </div>
     );
   }
+
+  /*
+    With a crop the face shows the artwork's own bounds: the image is scaled by
+    1/width and offset so the crop lands on the face, then `object-fit` fills
+    that. Without one it behaves exactly as before.
+  */
+  const box = isValidTrim(trim) ? (trim as TrimBox) : null;
+  const style: React.CSSProperties = box
+    ? {
+        position: "absolute",
+        width: `${(1 / box.width) * 100}%`,
+        height: `${(1 / box.height) * 100}%`,
+        left: `${(-box.left / box.width) * 100}%`,
+        top: `${(-box.top / box.height) * 100}%`,
+        maxWidth: "none",
+        objectFit: fit,
+      }
+    : {
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        objectFit: fit,
+        objectPosition: fit === "cover" ? "right center" : "center",
+      };
+
   return (
     <div className="relative flex-1 overflow-hidden">
-      <img
-        src={cdnImage(url)}
-        alt=""
-        loading="eager"
-        decoding="async"
-        className="absolute inset-0 h-full w-full"
-        style={{ objectFit: fit, objectPosition: fit === "cover" ? "right center" : "center" }}
-      />
+      <img src={cdnImage(url)} alt="" loading="eager" decoding="async" style={style} />
     </div>
   );
 }

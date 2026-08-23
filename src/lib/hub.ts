@@ -5,6 +5,7 @@
  */
 
 import { toAmount } from "./purchasable";
+import { resolveNintendoImage } from "./nintendoImages";
 
 export type OfferKind = "account" | "accountOnline" | "lend" | "disc";
 
@@ -107,6 +108,10 @@ export interface HubGame {
   platform: "switch" | "switch2";
   isSwitch2: boolean;
   coverUrl?: string;
+  /** Highest-resolution front cover available, for the WebGL sleeve texture. */
+  coverTextureUrl?: string;
+  /** Precomputed crop rectangle for `coverUrl`, when the catalogue has one. */
+  coverTrim?: unknown;
   sleeveUrl?: string;
   banners: string[];
   genres: string[];
@@ -137,8 +142,12 @@ export function normalizeHubGame(product: Record<string, unknown>): HubGame {
     .map(str)
     .filter(Boolean);
 
-  const cover =
-    str(p["coverImage"]) || str(p["cartridgeImage"]) || str(p["image"]) || banners[0] || "";
+  // `banners[0]` used to be the last resort here, which is how a wide key art
+  // image ended up standing in for a box cover. The resolver never crosses that
+  // line: a product with only banners gets the placeholder.
+  const front = resolveNintendoImage(p, "front-cover");
+  const cover = front.isPlaceholder ? "" : front.url;
+  const texture = resolveNintendoImage(p, "3d-texture");
 
   const genres = Array.isArray(p["genres"])
     ? (p["genres"] as unknown[]).map(str).filter(Boolean)
@@ -154,6 +163,8 @@ export function normalizeHubGame(product: Record<string, unknown>): HubGame {
     platform,
     isSwitch2: platform === "switch2" || bool(p["switch2Enhanced"]),
     ...(cover ? { coverUrl: cover } : {}),
+    ...(texture.isPlaceholder ? {} : { coverTextureUrl: texture.url }),
+    ...(front.trim ? { coverTrim: front.trim } : {}),
     ...(str(p["sleeveImage"]) ? { sleeveUrl: str(p["sleeveImage"]) } : {}),
     banners: [...new Set(banners)],
     genres,

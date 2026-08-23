@@ -48,9 +48,16 @@ const LIST_FIELDS = [
   "publisher",
   "metacriticRating",
   "metacriticScore",
+  // Canonical front box cover, plus its precomputed crop rectangle — the
+  // listing payload has to carry the crop or every card re-measures the file
+  // in the browser. See src/lib/nintendoImages.ts.
   "cartridgeImage",
+  "cartridgeImageTrim",
+  // Square artwork for compact cards; never a cover substitute.
+  "nintendoCardImage",
   "image",
   "coverImage",
+  "coverImageTrim",
   "coverUrl",
   "box_front_url",
   "banner",

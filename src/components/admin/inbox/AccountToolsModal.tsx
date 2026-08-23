@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { DELIVERY_OTP_TTL_MINUTES } from "@/lib/delivery-otp";
 import {
   Key,
   ShieldCheck,
@@ -398,7 +399,7 @@ export function AccountToolsModal({
 
     onSendVerificationCode({
       code: otpCode.trim(),
-      expiresInMinutes: 60,
+      expiresInMinutes: DELIVERY_OTP_TTL_MINUTES,
       itemId: selectedItemId || undefined,
       title: selectedGameTitle || undefined,
     });

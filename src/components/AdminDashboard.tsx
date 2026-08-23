@@ -83,6 +83,7 @@ import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 import AdminProductEditor from "./AdminProductEditor";
 import KbEditor from "./admin/KbEditor";
 import ServicesManager from "./admin/ServicesManager";
+import ServicesDiscTradesAdminView from "./admin/services/DiscTradesAdminView";
 import TradePriceManager from "./admin/TradePriceManager";
 import ReviewsManager from "./admin/ReviewsManager";
 import BundlesManager from "./admin/BundlesManager";
@@ -497,7 +498,13 @@ export default function AdminDashboard() {
       case activeSidebar.startsWith("services_") ? activeSidebar : "":
         return <ServicesManager activeSubMenu={activeSidebar} />;
       case "disc_trades_admin":
-        return <DiscTradesAdminView discTrades={discTrades} setDiscTrades={setDiscTrades} />;
+        /*
+          There used to be a second, inline trade screen here whose status
+          dropdown only mutated React state — nothing it did reached the server.
+          Both sidebar entries now render the one real view, which persists
+          through the API and drives the status from the primary action.
+        */
+        return <ServicesDiscTradesAdminView />;
       case "messages":
         return (
           <AdminInboxView
@@ -3254,68 +3261,6 @@ function GameRequestsView({
   );
 }
 
-function DiscTradesAdminView({
-  discTrades,
-  setDiscTrades,
-}: {
-  discTrades: any[];
-  setDiscTrades: any;
-}) {
-  const handleStatus = (id: string, status: string) => {
-    setDiscTrades(discTrades.map((t: any) => (t.id === id ? { ...t, status } : t)));
-  };
-
-  return (
-    <div className="animate-in fade-in duration-300">
-      <h1 className="text-[22px] font-bold text-[var(--admin-ink)] mb-6">إدارة مقايضة الأقراص</h1>
-      <div className="border border-border rounded-lg bg-card overflow-hidden shadow-sm">
-        <table className="w-full text-sm text-right">
-          <thead className="bg-muted font-semibold border-b border-border">
-            <tr>
-              <th className="px-4 py-3">اللعبة</th>
-              <th className="px-4 py-3">الحالة المعلنة</th>
-              <th className="px-4 py-3">التقييم المتوقع</th>
-              <th className="px-4 py-3">الحالة</th>
-              <th className="px-4 py-3">إجراء</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {discTrades.map((t: any) => (
-              <tr key={t.id} className="hover:bg-muted">
-                <td className="px-4 py-3 font-medium">{t.game_name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{t.condition}</td>
-                <td className="px-4 py-3 text-muted-foreground">{t.valuation_iqd} د.ع</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${t.status === "completed" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}
-                  >
-                    {t.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleStatus(t.id, "approved")}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      موافقة
-                    </button>
-                    <button
-                      onClick={() => handleStatus(t.id, "completed")}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      إتمام
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
 
 function ProblemSolutionsView({
   problemSolutions,

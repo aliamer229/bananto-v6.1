@@ -730,7 +730,27 @@ export interface OrderItem {
   deliveredAt?: string;
 }
 
-export type OrderStatus = "pending" | "processing" | "delivering" | "completed" | "cancelled";
+/**
+ * `awaiting_customer_confirmation` is the state an order enters the moment the
+ * last delivery item has been handed over. The admin's work is finished at that
+ * point, so the order leaves the preparation queue and the admin moves on; the
+ * customer's "تم استلام الطلب" (or the auto-completion timer) is what takes it
+ * to `completed`, independently and without holding the queue.
+ */
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "delivering"
+  | "awaiting_customer_confirmation"
+  | "completed"
+  | "cancelled";
+
+/** Orders in these states are done as far as the admin queue is concerned. */
+export const ADMIN_FINISHED_ORDER_STATUSES: readonly OrderStatus[] = [
+  "awaiting_customer_confirmation",
+  "completed",
+  "cancelled",
+];
 export type PaymentStatus = "unpaid" | "review" | "paid" | "rejected";
 
 export interface Order {

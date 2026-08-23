@@ -13,6 +13,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { showAddToCartToast } from "@/utils/cart-toast";
+import NintendoCover from "@/components/NintendoCover";
+import { resolvePurchaseImage } from "@/lib/nintendoImages";
 
 interface BundleCardProps {
   bundle: AccountBundle;
@@ -46,10 +48,15 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
 
     try {
       // Local store for fast instant UI update
+      const bundleArt = resolvePurchaseImage(bundle as unknown as Record<string, unknown>);
+      const bundleImage = bundleArt.isPlaceholder
+        ? resolvePurchaseImage(games[0] as Record<string, unknown> | undefined).url
+        : bundleArt.url;
+
       addLocalCart({
         productId: bundle.id,
         title: bundle.titleEn || bundle.title,
-        image: bundle.image || games[0]?.image || "",
+        image: bundleImage,
         price: bundle.price,
         kind: "bundle",
         requiresAddress: false,
@@ -70,7 +77,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
       showAddToCartToast({
         title: "أُضيف إلى السلة",
         message: bundle.titleEn || bundle.title,
-        image: bundle.image || games[0]?.image || "",
+        product: (bundle.image ? bundle : games[0]) as unknown as Record<string, unknown>,
         navigate,
         playSoundEffect: false,
       });
@@ -125,27 +132,27 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                   className="h-full flex-1 relative overflow-hidden border-r border-black/40 last:border-r-0 transform group-hover:scale-105 transition-transform duration-500"
                   style={{ transitionDelay: `${idx * 50}ms` }}
                 >
-                  <img
-                    src={
-                      g.image || (g as any).cartridgeImage || (g as any).coverImage || bundle.image
-                    }
+                  <NintendoCover
+                    product={g as Record<string, unknown>}
+                    usage="bundle-card"
+                    ratio={null}
+                    fit="cover"
                     alt={String(g.titleEn || (g as any).english_name || g.title || "")}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    className="w-full h-full"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
                 </div>
               ))}
             </div>
           ) : (
-            <img
-              src={
-                bundle.image ||
-                "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
-              }
+            <NintendoCover
+              product={(bundle.image ? bundle : games[0]) as unknown as Record<string, unknown>}
+              usage="bundle-card"
+              ratio={null}
+              fit="cover"
               alt={String(bundle.titleEn || bundle.title || "")}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
+              className="w-full h-full"
+              imgClassName="group-hover:scale-105 transition-transform duration-500"
             />
           )}
 
@@ -252,13 +259,13 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                 className="h-full flex-1 relative overflow-hidden border-r border-black/50 last:border-r-0 group-hover:scale-105 transition-transform duration-700"
                 style={{ transitionDelay: `${idx * 75}ms` }}
               >
-                <img
-                  src={
-                    g.image || (g as any).cartridgeImage || (g as any).coverImage || bundle.image
-                  }
+                <NintendoCover
+                  product={g as Record<string, unknown>}
+                  usage="bundle-card"
+                  ratio={null}
+                  fit="cover"
                   alt={String(g.titleEn || (g as any).english_name || g.title || "")}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                  className="w-full h-full"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-2 inset-x-1 text-center">
@@ -270,14 +277,14 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
             ))}
           </div>
         ) : (
-          <img
-            src={
-              bundle.image ||
-              "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
-            }
+          <NintendoCover
+            product={(bundle.image ? bundle : games[0]) as unknown as Record<string, unknown>}
+            usage="bundle-card"
+            ratio={null}
+            fit="cover"
             alt={String(bundle.titleEn || bundle.title || "")}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-            loading="lazy"
+            className="w-full h-full"
+            imgClassName="group-hover:scale-105 transition-transform duration-700"
           />
         )}
 

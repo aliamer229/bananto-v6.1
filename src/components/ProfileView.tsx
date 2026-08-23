@@ -367,7 +367,7 @@ export default function ProfileView() {
                   setLiteMotion(newState);
                   optimisticUpdate({ settings: { liteMotion: newState } });
                 }}
-                className={`w-12 h-6 rounded-full transition-colors relative flex items-center px-1 ${liteMotion ? "bg-amber-500" : "bg-muted"}`}
+                className={`w-12 h-6 shrink-0 rounded-full transition-colors relative flex items-center px-1 ${liteMotion ? "bg-amber-500" : "bg-muted"}`}
               >
                 <div
                   className={`w-4 h-4 rounded-full bg-card transition-transform duration-300 shadow-sm ${liteMotion ? (lang === "en" ? "translate-x-[24px]" : "translate-x-[-24px]") : "translate-x-0"}`}
@@ -383,9 +383,9 @@ export default function ProfileView() {
           </h2>
           <div className="bg-card rounded-3xl p-2 shadow-sm border border-border space-y-1">
             <div className="flex items-center justify-between p-3 hover:bg-muted rounded-2xl transition-colors">
-              <div className="flex items-center gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
                 <div
-                  className={`p-3 rounded-full ${soundEnabled ? "bg-blue-100 text-blue-600" : "bg-muted text-muted-foreground"}`}
+                  className={`shrink-0 p-3 rounded-full ${soundEnabled ? "bg-blue-100 text-blue-600" : "bg-muted text-muted-foreground"}`}
                 >
                   {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
                 </div>
@@ -403,7 +403,7 @@ export default function ProfileView() {
                   const newState = !soundEnabled;
                   setSoundEnabled(newState);
                 }}
-                className={`w-14 h-8 rounded-full transition-colors relative flex items-center px-1 ${soundEnabled ? "bg-blue-600" : "bg-muted"}`}
+                className={`w-14 h-8 shrink-0 rounded-full transition-colors relative flex items-center px-1 ${soundEnabled ? "bg-blue-600" : "bg-muted"}`}
               >
                 <div
                   className={`w-6 h-6 rounded-full bg-card transition-transform duration-300 shadow-sm ${soundEnabled ? (lang === "en" ? "translate-x-[24px]" : "translate-x-[-24px]") : "translate-x-0"}`}
@@ -414,9 +414,9 @@ export default function ProfileView() {
             <div className="w-full h-px bg-muted" />
 
             <div className="flex items-center justify-between p-3 hover:bg-muted rounded-2xl transition-colors">
-              <div className="flex items-center gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
                 <div
-                  className={`p-3 rounded-full ${musicEnabled ? "bg-purple-100 text-purple-600" : "bg-muted text-muted-foreground"}`}
+                  className={`shrink-0 p-3 rounded-full ${musicEnabled ? "bg-purple-100 text-purple-600" : "bg-muted text-muted-foreground"}`}
                 >
                   <Music className="w-5 h-5" />
                 </div>
@@ -461,7 +461,7 @@ export default function ProfileView() {
                   const newState = !musicEnabled;
                   setMusicEnabled(newState);
                 }}
-                className={`w-14 h-8 rounded-full transition-colors relative flex items-center px-1 ${musicEnabled ? "bg-purple-600" : "bg-muted"}`}
+                className={`w-14 h-8 shrink-0 rounded-full transition-colors relative flex items-center px-1 ${musicEnabled ? "bg-purple-600" : "bg-muted"}`}
               >
                 <div
                   className={`w-6 h-6 rounded-full bg-card transition-transform duration-300 shadow-sm ${musicEnabled ? (lang === "en" ? "translate-x-[24px]" : "translate-x-[-24px]") : "translate-x-0"}`}
@@ -533,9 +533,9 @@ export default function ProfileView() {
               }}
               className="w-full flex items-center justify-between p-3 hover:bg-red-50 rounded-2xl transition-colors text-right group"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
                 <div
-                  className={`p-3 rounded-full ${soundEnabled ? "bg-red-100 text-red-500" : "bg-muted text-muted-foreground"}`}
+                  className={`shrink-0 p-3 rounded-full ${soundEnabled ? "bg-red-100 text-red-500" : "bg-muted text-muted-foreground"}`}
                 >
                   <LogOut className="w-5 h-5" />
                 </div>

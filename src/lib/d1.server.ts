@@ -841,6 +841,9 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE coupons ADD COLUMN start_at TEXT`,
   `ALTER TABLE coupons ADD COLUMN is_stackable INTEGER DEFAULT 0`,
   `ALTER TABLE coupons ADD COLUMN once_per_user_lifetime INTEGER DEFAULT 0`,
+  // Global usage counter, so the total cap can be claimed atomically instead of
+  // counted. NULL means "never counted yet" and readers fall back to COUNT(*).
+  `ALTER TABLE coupons ADD COLUMN total_uses INTEGER DEFAULT 0`,
 
   `CREATE TABLE IF NOT EXISTS coupon_redemptions (
     id TEXT PRIMARY KEY, coupon_id TEXT NOT NULL, coupon_type TEXT, user_id TEXT NOT NULL, 
@@ -850,6 +853,22 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE coupon_redemptions ADD COLUMN discount_amount REAL`,
   `ALTER TABLE coupon_redemptions ADD COLUMN target_product_id TEXT`,
   `CREATE INDEX IF NOT EXISTS coupon_redemptions_user_idx ON coupon_redemptions(user_id, coupon_type)`,
+
+  /*
+    Per-member coupon usage.
+
+    The primary key is exactly the pair the "once per customer" rule is about,
+    which is what makes the limit enforceable by claiming a row rather than
+    counting rows and hoping nobody else is checking out at the same moment.
+    `coupon_redemptions` remains the per-order audit trail; this is the counter
+    the rule is decided on.
+  */
+  `CREATE TABLE IF NOT EXISTS coupon_user_usage (
+    coupon_id TEXT NOT NULL, user_id TEXT NOT NULL,
+    uses INTEGER NOT NULL DEFAULT 0,
+    first_used_at TEXT NOT NULL, last_used_at TEXT NOT NULL,
+    PRIMARY KEY (coupon_id, user_id))`,
+  `CREATE INDEX IF NOT EXISTS coupon_user_usage_user_idx ON coupon_user_usage (user_id)`,
 
   `CREATE TABLE IF NOT EXISTS review_cooldowns (
     user_id TEXT PRIMARY KEY, last_rewarded_at TEXT NOT NULL)`,
@@ -1057,6 +1076,21 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE disc_trades ADD COLUMN region TEXT`,
   `ALTER TABLE disc_trades ADD COLUMN accessories TEXT DEFAULT '[]'`,
   `ALTER TABLE disc_trades ADD COLUMN damage TEXT`,
+  /*
+    Pricing model for a trade request.
+
+    `pricing_mode` decides which of the two flows a request follows and which
+    badge its card shows. `final_iqd` stays the *estimate*; `approved_iqd` is
+    the number the business actually committed to, and is only written when an
+    admin approves — which is what lets the card show "السعر التقريبي" and
+    "السعر المعتمد" as two separate, honest lines instead of one ambiguous
+    "غير مسعر".
+  */
+  `ALTER TABLE disc_trades ADD COLUMN pricing_mode TEXT NOT NULL DEFAULT 'auto'`,
+  `ALTER TABLE disc_trades ADD COLUMN approved_iqd INTEGER`,
+  `ALTER TABLE disc_trades ADD COLUMN priced_at TEXT`,
+  `ALTER TABLE disc_trades ADD COLUMN approved_at TEXT`,
+  `ALTER TABLE disc_trades ADD COLUMN customer_approved_at TEXT`,
   `ALTER TABLE disc_trades ADD COLUMN shipping_option TEXT`,
   `ALTER TABLE disc_trades ADD COLUMN payout_credited INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE disc_trades ADD COLUMN payout_credited_at TEXT`,
@@ -1418,6 +1452,7 @@ const COUPONS_TABLE = `CREATE TABLE IF NOT EXISTS coupons (
 )`;
 
 const COUPONS_COLUMNS: Record<string, string> = {
+  total_uses: "INTEGER DEFAULT 0",
   start_at: "TEXT",
   expiration_at: "TEXT",
   usage_limit: "INTEGER",
@@ -1450,6 +1485,15 @@ const COUPON_REDEMPTIONS_COLUMNS: Record<string, string> = {
   target_product_id: "TEXT",
 };
 
+const COUPON_USER_USAGE_TABLE = `CREATE TABLE IF NOT EXISTS coupon_user_usage (
+  coupon_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  uses INTEGER NOT NULL DEFAULT 0,
+  first_used_at TEXT NOT NULL,
+  last_used_at TEXT NOT NULL,
+  PRIMARY KEY (coupon_id, user_id)
+)`;
+
 let couponsSchemaPromise: Promise<void> | undefined;
 
 export function ensureCouponsSchema(): Promise<void> {
@@ -1475,6 +1519,47 @@ export function ensureCouponsSchema(): Promise<void> {
           .run();
       } catch (_e) {
         // Ignore index existence conflict
+      }
+
+      /*
+        Per-member usage counter. Its primary key is the (coupon_id, user_id)
+        pair the "once per customer" rule is about, so the limit can be claimed
+        atomically rather than counted — see coupon-usage.server.ts.
+      */
+      try {
+        await db.prepare(COUPON_USER_USAGE_TABLE).run();
+        await db
+          .prepare(
+            `CREATE INDEX IF NOT EXISTS coupon_user_usage_user_idx ON coupon_user_usage (user_id)`,
+          )
+          .run();
+        /*
+          Backfill from the redemptions already on record, so shipping this does
+          not hand every existing member a fresh set of uses. Idempotent: the
+          conflict clause keeps whichever count is higher, so re-running never
+          double-counts.
+        */
+        await db
+          .prepare(
+            `INSERT INTO coupon_user_usage (coupon_id, user_id, uses, first_used_at, last_used_at)
+             SELECT coupon_id, user_id, COUNT(*), MIN(created_at), MAX(created_at)
+             FROM coupon_redemptions
+             WHERE coupon_id IS NOT NULL AND user_id IS NOT NULL
+             GROUP BY coupon_id, user_id
+             ON CONFLICT(coupon_id, user_id) DO UPDATE SET
+               uses = MAX(coupon_user_usage.uses, excluded.uses),
+               last_used_at = excluded.last_used_at`,
+          )
+          .run();
+        // Derive the global counter from the per-member counters just written,
+        // so the two can never disagree. Idempotent, and safe to re-run.
+        await db
+          .prepare(
+            `UPDATE coupons SET total_uses = COALESCE((SELECT SUM(uses) FROM coupon_user_usage WHERE coupon_user_usage.coupon_id = coupons.id), 0)`,
+          )
+          .run();
+      } catch (_e) {
+        // Backfill is best effort; readers fall back to counting redemptions.
       }
 
       await db.prepare(COUPON_REDEMPTIONS_TABLE).run();
@@ -1532,7 +1617,7 @@ export function ensureCouponsSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 13;
+const RUNTIME_SCHEMA_VERSION = 14;
 
 async function runSchemaStatements(
   db: D1Like,

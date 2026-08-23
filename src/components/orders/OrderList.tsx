@@ -13,7 +13,10 @@ export default function OrderList({ orders, isLoading }: { orders: Order[]; isLo
 
   const filteredOrders = orders.filter((order) => {
     if (filter === "all") return true;
-    if (filter === "active") return ["pending", "processing", "delivering"].includes(order.status);
+    if (filter === "active")
+      return ["pending", "processing", "delivering", "awaiting_customer_confirmation"].includes(
+        order.status,
+      );
     if (filter === "completed") return order.status === "completed";
     return true;
   });

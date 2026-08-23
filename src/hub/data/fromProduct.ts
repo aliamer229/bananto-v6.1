@@ -16,6 +16,7 @@ import {
   bool,
   getTextValue,
 } from "@/lib/hub";
+import { resolveNintendoImage } from "@/lib/nintendoImages";
 import { buildFitFor, buildFeatures } from "./mappers";
 import { toAmount } from "@/lib/purchasable";
 import { gb } from "@/hub/utils/format";
@@ -91,8 +92,14 @@ function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
 }
 
 function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
-  const coverUrl = str(p["coverImage"]) || str(p["image"]) || str(p["cartridgeImage"]) || undefined;
-  const keyArtUrl = str(p["banner"]) || str(p["bannerImage"]) || undefined;
+  // The hub used to read `coverImage → image → cartridgeImage`, while the home
+  // strips read the same three fields in the opposite order — so one product
+  // legitimately showed two different covers. Both now ask the resolver.
+  const front = resolveNintendoImage(p, "front-cover");
+  const coverUrl = front.isPlaceholder ? undefined : front.url;
+  const banner = resolveNintendoImage(p, "banner");
+  const keyArtUrl = banner.isPlaceholder ? undefined : banner.url;
+  const texture = resolveNintendoImage(p, "3d-texture");
 
   const productTitleEng = str(p["titleEn"]) || str(p["english_name"]) || str(p["title"]);
 
@@ -143,6 +150,10 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
   return {
     coverUrl,
     keyArtUrl,
+    /** Highest-resolution front cover available; what the 3D sleeve should sample. */
+    coverTextureUrl: texture.isPlaceholder ? undefined : texture.url,
+    /** Stored crop for `coverUrl`, when the catalogue carries one. */
+    coverTrim: front.trim,
     images: images.length ? images : undefined,
     videos: videos.length ? videos : undefined,
   };
@@ -790,6 +801,8 @@ export function gameFromProduct(
     ...opt("description", core.description),
     ...opt("tagline", core.tagline),
     ...opt("coverUrl", media.coverUrl),
+    ...opt("coverTextureUrl", media.coverTextureUrl),
+    ...opt("coverTrim", media.coverTrim),
     ...opt("keyArtUrl", media.keyArtUrl),
     ...opt("images", media.images),
     ...opt("videos", media.videos),

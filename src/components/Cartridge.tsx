@@ -2,8 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useRef } from "react";
 
 import { playSound } from "../utils/audio";
-import { cdnImage } from "@/lib/img";
-import { getKnownCoverByTitle } from "./HomeView";
+import NintendoCover from "./NintendoCover";
 
 export interface CartridgeGame {
   id: string | number;
@@ -14,6 +13,15 @@ export interface CartridgeGame {
   image?: string;
   rating?: string | number | null;
   platform?: string;
+  /**
+   * The full catalogue record, when the caller has one.
+   *
+   * The label window on a cartridge is near-square, which is what
+   * `nintendo_card_image` exists for. Given the record, the cover layer can
+   * reach that field (and any stored crop) instead of squeezing the vertical
+   * box cover into a square hole.
+   */
+  source?: Record<string, unknown>;
 }
 
 const MOVE_TOLERANCE = 10;
@@ -172,30 +180,22 @@ export default function Cartridge({
           </div>
         )}
         <div className="flex-1 w-full overflow-hidden shrink-0 bg-[var(--surface-3)]">
-          <img
-            src={cdnImage(game.image)}
-            alt={game.title}
-            loading="lazy"
-            decoding="async"
+          {/*
+            The label window is wider than it is tall, so this is the one place
+            that fills rather than fits: a square card asset covers it exactly,
+            and a vertical box cover is centred with its long edge overflowing
+            instead of being squashed. A failed load falls back to the shared
+            placeholder — never to another game's artwork.
+          */}
+          <NintendoCover
+            product={game.source ?? (game as unknown as Record<string, unknown>)}
+            usage="square-card"
+            ratio={null}
+            fit="cover"
+            alt={game.title ?? ""}
+            className="h-full w-full"
+            imgClassName="transition-transform duration-500 group-hover:scale-105"
             fetchPriority="low"
-            width={115}
-            height={90}
-            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              const title = game.titleEn || game.english_name || game.title || "";
-              const known = getKnownCoverByTitle(title);
-              if (
-                known &&
-                !target.src.includes(encodeURIComponent(known)) &&
-                !target.src.endsWith(known)
-              ) {
-                target.src = known;
-              } else if (!target.src.includes("unsplash")) {
-                target.src =
-                  "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=400&h=400&fit=crop";
-              }
-            }}
           />
         </div>
         <div className="px-2 py-1.5 shrink-0 h-[64px] flex flex-col justify-between bg-[var(--cart-shell)]">

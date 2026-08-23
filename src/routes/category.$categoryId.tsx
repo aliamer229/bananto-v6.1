@@ -468,9 +468,18 @@ function CategoryPage() {
           <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col gap-2">
             {/* Top Toolbar Row: Sort, Period, Platform, and Filter Count */}
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+              {/*
+                `min-w-0` is the whole fix for this row. A flex item defaults to
+                `min-width: auto`, so this scroller refused to shrink below its
+                content and instead squeezed the pill group inside it until the
+                labels spilled out past their own rounded border — the clipped
+                "Switch 1 / Switch 2" chips. With `min-w-0` the scroller takes
+                the width that is available and scrolls its own content, which
+                is what `overflow-x-auto` was there to do.
+              */}
+              <div className="flex min-w-0 items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
                 {/* Sort / Period Selector */}
-                <div className="relative flex items-center">
+                <div className="relative flex shrink-0 items-center">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -487,7 +496,7 @@ function CategoryPage() {
                 </div>
 
                 {/* Platform selector pills */}
-                <div className="flex items-center gap-1 bg-card/80 p-0.5 rounded-full border border-border">
+                <div className="flex shrink-0 items-center gap-1 bg-card/80 p-0.5 rounded-full border border-border">
                   {[
                     { id: "all", label: t("الكل") },
                     { id: "switch1", label: "Switch 1" },
@@ -496,7 +505,7 @@ function CategoryPage() {
                     <button
                       key={p.id}
                       onClick={() => setPlatform(p.id as PlatformOption)}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                      className={`shrink-0 whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition-all ${
                         platform === p.id
                           ? "bg-foreground text-background shadow-xs"
                           : "text-muted-foreground hover:text-foreground"
@@ -515,7 +524,7 @@ function CategoryPage() {
             </div>
 
             {/* Bottom Toolbar Row: Game Genres (التصنيف حسب genres اللعبة) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+            <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
               <span className="text-[11px] font-black text-muted-foreground uppercase ps-1 pe-2 shrink-0 flex items-center gap-1">
                 <Tag className="w-3 h-3 text-red-500" />
                 {t("التصنيف")}:
@@ -642,7 +651,7 @@ function CategoryPage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                     >
-                      <ProductCard product={p} forceStandardImage={isNintendoGames} />
+                      <ProductCard product={p} />
                     </motion.div>
                   ))}
                 </div>

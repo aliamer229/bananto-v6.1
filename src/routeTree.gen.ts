@@ -36,6 +36,7 @@ import { Route as ApiBananaRouteImport } from './routes/api/banana'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiContentRouteImport } from './routes/api/content'
 import { Route as ApiDataRouteImport } from './routes/api/data'
+import { Route as ApiDiagnosticsRouteImport } from './routes/api/diagnostics'
 import { Route as ApiDiscTradeRouteImport } from './routes/api/disc-trade'
 import { Route as ApiExchangeRatesRouteImport } from './routes/api/exchange-rates'
 import { Route as ApiGameCatalogRouteImport } from './routes/api/game-catalog'
@@ -235,6 +236,11 @@ const ApiContentRoute = ApiContentRouteImport.update({
 const ApiDataRoute = ApiDataRouteImport.update({
   id: '/api/data',
   path: '/api/data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDiagnosticsRoute = ApiDiagnosticsRouteImport.update({
+  id: '/api/diagnostics',
+  path: '/api/diagnostics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDiscTradeRoute = ApiDiscTradeRouteImport.update({
@@ -602,6 +608,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/content': typeof ApiContentRoute
   '/api/data': typeof ApiDataRoute
+  '/api/diagnostics': typeof ApiDiagnosticsRoute
   '/api/disc-trade': typeof ApiDiscTradeRoute
   '/api/exchange-rates': typeof ApiExchangeRatesRoute
   '/api/game-catalog': typeof ApiGameCatalogRoute
@@ -696,6 +703,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/content': typeof ApiContentRoute
   '/api/data': typeof ApiDataRoute
+  '/api/diagnostics': typeof ApiDiagnosticsRoute
   '/api/disc-trade': typeof ApiDiscTradeRoute
   '/api/exchange-rates': typeof ApiExchangeRatesRoute
   '/api/game-catalog': typeof ApiGameCatalogRoute
@@ -791,6 +799,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/content': typeof ApiContentRoute
   '/api/data': typeof ApiDataRoute
+  '/api/diagnostics': typeof ApiDiagnosticsRoute
   '/api/disc-trade': typeof ApiDiscTradeRoute
   '/api/exchange-rates': typeof ApiExchangeRatesRoute
   '/api/game-catalog': typeof ApiGameCatalogRoute
@@ -887,6 +896,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/content'
     | '/api/data'
+    | '/api/diagnostics'
     | '/api/disc-trade'
     | '/api/exchange-rates'
     | '/api/game-catalog'
@@ -981,6 +991,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/content'
     | '/api/data'
+    | '/api/diagnostics'
     | '/api/disc-trade'
     | '/api/exchange-rates'
     | '/api/game-catalog'
@@ -1075,6 +1086,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/content'
     | '/api/data'
+    | '/api/diagnostics'
     | '/api/disc-trade'
     | '/api/exchange-rates'
     | '/api/game-catalog'
@@ -1170,6 +1182,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiContentRoute: typeof ApiContentRoute
   ApiDataRoute: typeof ApiDataRoute
+  ApiDiagnosticsRoute: typeof ApiDiagnosticsRoute
   ApiDiscTradeRoute: typeof ApiDiscTradeRoute
   ApiExchangeRatesRoute: typeof ApiExchangeRatesRoute
   ApiGameCatalogRoute: typeof ApiGameCatalogRoute
@@ -1421,6 +1434,13 @@ declare module '@tanstack/react-router' {
       path: '/api/data'
       fullPath: '/api/data'
       preLoaderRoute: typeof ApiDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/diagnostics': {
+      id: '/api/diagnostics'
+      path: '/api/diagnostics'
+      fullPath: '/api/diagnostics'
+      preLoaderRoute: typeof ApiDiagnosticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/disc-trade': {
@@ -1948,6 +1968,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiContentRoute: ApiContentRoute,
   ApiDataRoute: ApiDataRoute,
+  ApiDiagnosticsRoute: ApiDiagnosticsRoute,
   ApiDiscTradeRoute: ApiDiscTradeRoute,
   ApiExchangeRatesRoute: ApiExchangeRatesRoute,
   ApiGameCatalogRoute: ApiGameCatalogRoute,

@@ -48,6 +48,11 @@ const statusLabels: Record<OrderStatus, { label: string; color: string; icon: an
     color: "bg-indigo-500/10 text-indigo-700 border-indigo-500/20",
     icon: Truck,
   },
+  awaiting_customer_confirmation: {
+    label: "بانتظار تأكيد العميل",
+    color: "bg-teal-500/10 text-teal-700 border-teal-500/20",
+    icon: CheckCircle2,
+  },
   completed: {
     label: "مكتمل",
     color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
@@ -299,6 +304,7 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
             { id: "pending", label: "قيد الانتظار" },
             { id: "processing", label: "قيد المعالجة" },
             { id: "delivering", label: "قيد التسليم" },
+            { id: "awaiting_customer_confirmation", label: "بانتظار تأكيد العميل" },
             { id: "completed", label: "مكتمل" },
             { id: "cancelled", label: "ملغي" },
           ].map((tab) => (

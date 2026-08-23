@@ -4,11 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import AppShell from "@/components/AppShell";
 import Cartridge, { type CartridgeGame } from "@/components/Cartridge";
-import { getNintendoCardImage } from "@/components/HomeView";
 import StaggerItem from "@/components/StaggerItem";
 import { useBatches } from "@/hooks/useBatches";
 import { useStoreData } from "@/hooks/useStoreData";
 import { GAME_GENRES } from "@/lib/genres";
+import { resolveNintendoImageUrl } from "@/lib/nintendoImages";
 import { filterPurchasable } from "@/lib/purchasable";
 import { playSound } from "@/utils/audio";
 
@@ -56,7 +56,10 @@ function GamesPage() {
           id: p["id"],
           title: p["titleEn"] || p["english_name"] || p["title"],
           subtitle: p["developer"] || p["publisher"] || "Nintendo Switch",
-          image: getNintendoCardImage(p),
+          image: resolveNintendoImageUrl(p, "square-card"),
+          // The cartridge label window reads `nintendo_card_image` when the
+          // record has one, so hand it the whole record rather than a URL.
+          source: p,
           rating: p["metacriticRating"] ?? null,
           platform: p["platform"],
           genres: Array.isArray(p["genres"]) ? (p["genres"] as string[]) : [],

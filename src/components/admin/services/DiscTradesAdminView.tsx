@@ -21,7 +21,10 @@ import {
   Wallet,
 } from "lucide-react";
 import { useI18n } from "@/i18n";
+import { readTradePricing } from "@/lib/trade-pricing";
 import {
+  TRADE_PRICING_MODE_BADGE_STYLE,
+  tradePrimaryAction,
   TRADE_STATUS_LABEL_AR,
   TRADE_STATUS_BADGE_STYLE,
   canTransition,
@@ -209,20 +212,35 @@ export default function DiscTradesAdminView() {
 
 function TradeCard({ trade, isEditing, onEdit, onCancel, onSave, isSaving, t }: any) {
   const normStatus = normalizeTradeStatus(trade.status) as TradeStatus;
+  const pricing = readTradePricing(trade);
+  const primaryAction = tradePrimaryAction(normStatus);
   const [status, setStatus] = useState<string>(normStatus);
   const [adminValuation, setAdminValuation] = useState(
-    trade.admin_valuation_iqd ?? trade.valuation_iqd ?? "",
+    trade.approved_iqd ?? trade.admin_valuation_iqd ?? trade.valuation_iqd ?? "",
   );
   const [adminNotes, setAdminNotes] = useState(trade.admin_notes || "");
   const isCustom = !trade.game_id || trade.game_id === "custom";
 
-  const handleSave = () => {
+  const handleSave = (nextStatus: string = status) => {
     onSave({
-      status,
-      admin_valuation_iqd:
+      status: nextStatus,
+      approved_iqd:
         adminValuation !== "" && adminValuation !== null ? Number(adminValuation) : null,
       admin_notes: adminNotes,
     });
+  };
+
+  /*
+    One button, and it says what happens next.
+
+    The status used to be a dropdown of every reachable state, which put the
+    burden of knowing the workflow on whoever was clicking and let the same
+    stage be recorded three different ways. The status is now a consequence of
+    the action, so it cannot be set to something the work has not reached.
+  */
+  const runPrimaryAction = () => {
+    if (!primaryAction) return;
+    handleSave(primaryAction.next);
   };
 
   const badgeStyle = TRADE_STATUS_BADGE_STYLE[normStatus] || "bg-muted text-muted-foreground";
@@ -234,6 +252,14 @@ function TradeCard({ trade, isEditing, onEdit, onCancel, onSave, isSaving, t }: 
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-bold text-lg text-foreground">{trade.game_name}</h3>
+            {/* Which of the two pricing flows this request is on. */}
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-bold border ${
+                TRADE_PRICING_MODE_BADGE_STYLE[pricing.mode]
+              }`}
+            >
+              {pricing.modeLabel}
+            </span>
             {isCustom && (
               <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
                 <PlusCircle className="w-3 h-3" />
@@ -277,33 +303,35 @@ function TradeCard({ trade, isEditing, onEdit, onCancel, onSave, isSaving, t }: 
       </div>
 
       {/* Grid of Key Values */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 border-y border-border">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-3 border-y border-border">
+        {/*
+          Two numbers, never conflated: what the site estimated, and what the
+          business actually committed to. A manual request with no estimate says
+          so explicitly rather than showing a bare "غير مسعر", which read as an
+          error rather than as "a person still has to price this".
+        */}
         <div>
           <span className="block text-xs font-bold text-muted-foreground mb-1">
-            {t("التقييم التلقائي")}
+            {t("السعر التقريبي")}
           </span>
-          <div className="text-sm font-medium">
-            {trade.base_iqd ? `${Number(trade.base_iqd).toLocaleString()} د.ع` : t("غير مسعر")}
+          <div
+            className={`text-sm font-bold ${
+              pricing.estimateIqd !== null ? "text-primary" : "text-amber-600 dark:text-amber-400"
+            }`}
+          >
+            {pricing.estimateLabel}
           </div>
         </div>
         <div>
           <span className="block text-xs font-bold text-muted-foreground mb-1">
-            {t("القيمة المبدئية")}
+            {t("السعر النهائي المعتمد")}
           </span>
-          <div className="text-sm font-bold text-primary">
-            {trade.valuation_iqd
-              ? `${Number(trade.valuation_iqd).toLocaleString()} د.ع`
-              : t("قيد المراجعة")}
-          </div>
-        </div>
-        <div>
-          <span className="block text-xs font-bold text-muted-foreground mb-1">
-            {t("الرصيد المعتمد (الإدارة)")}
-          </span>
-          <div className="text-sm font-bold text-emerald-500">
-            {trade.admin_valuation_iqd
-              ? `${Number(trade.admin_valuation_iqd).toLocaleString()} د.ع`
-              : t("لم يحدد بعد")}
+          <div
+            className={`text-sm font-bold ${
+              pricing.approvedIqd !== null ? "text-emerald-500" : "text-muted-foreground"
+            }`}
+          >
+            {pricing.approvedLabel}
           </div>
         </div>
         <div>
@@ -394,40 +422,44 @@ function TradeCard({ trade, isEditing, onEdit, onCancel, onSave, isSaving, t }: 
         <div className="bg-muted p-5 rounded-xl space-y-4 animate-in fade-in slide-in-from-top-2 border border-primary/20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold mb-1.5">{t("تغيير الحالة")}</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:border-primary outline-none font-bold"
-              >
-                <option value={normStatus}>
-                  {TRADE_STATUS_LABEL_AR[normStatus] || normStatus} (الحالية)
-                </option>
-                {Object.keys(TRADE_STATUS_LABEL_AR)
-                  .filter((s) => s !== normStatus && canTransition(normStatus, s, true))
-                  .map((s) => (
-                    <option key={s} value={s}>
-                      {TRADE_STATUS_LABEL_AR[s]} (انتقال)
-                    </option>
-                  ))}
-              </select>
-              {!canTransition(normStatus, status, true) && status !== normStatus && (
-                <p className="text-xs text-rose-500 mt-1">
-                  {t("هذا الانتقال غير مسموح برمجياً وقد يفشل.")}
-                </p>
-              )}
+              <label className="block text-xs font-bold mb-1.5">{t("الحالة الحالية")}</label>
+              {/*
+                Read-only. The status follows from the action taken, so there is
+                nothing to choose here — the primary button below is what moves
+                it, and only ever to the next step.
+              */}
+              <div className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm font-bold text-muted-foreground">
+                {TRADE_STATUS_LABEL_AR[normStatus] || normStatus}
+                {primaryAction ? (
+                  <span className="text-xs font-normal text-muted-foreground">
+                    {" "}
+                    ← {primaryAction.label}
+                  </span>
+                ) : null}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-bold mb-1.5 text-emerald-600 dark:text-emerald-400">
-                {t("تسعير الإدارة / الرصيد المعتمد (د.ع)")}
+                {pricing.mode === "manual"
+                  ? t("أدخل السعر يدوياً (د.ع)")
+                  : t("راجع أو عدّل السعر المعتمد (د.ع)")}
               </label>
               <input
                 type="number"
-                placeholder={t("أدخل القيمة المعتمدة بالدينار")}
+                placeholder={
+                  pricing.mode === "manual"
+                    ? t("لا يوجد سعر تلقائي — أدخل القيمة")
+                    : t("القيمة المعتمدة بالدينار")
+                }
                 value={adminValuation}
                 onChange={(e) => setAdminValuation(e.target.value)}
                 className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm focus:border-primary outline-none font-bold"
               />
+              {pricing.needsManualPricing && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  {t("هذا الطلب بانتظار التسعير اليدوي قبل إرساله للعميل.")}
+                </p>
+              )}
             </div>
           </div>
 
@@ -451,17 +483,36 @@ function TradeCard({ trade, isEditing, onEdit, onCancel, onSave, isSaving, t }: 
               {t("إلغاء")}
             </button>
             <button
-              onClick={handleSave}
+              onClick={() => handleSave()}
               disabled={isSaving}
-              className="px-5 py-2 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm"
+              className="px-4 py-2 text-sm font-bold text-foreground border border-border rounded-xl hover:bg-background transition-colors flex items-center gap-2"
             >
               {isSaving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Save className="w-4 h-4" />
               )}{" "}
-              {t("حفظ التحديث والتسعير")}
+              {t("حفظ فقط")}
             </button>
+            {/*
+              The single primary action. Its label is the next step of the
+              workflow, and taking it is what moves the status — there is no
+              way to set a status the work has not reached.
+            */}
+            {primaryAction && (
+              <button
+                onClick={runPrimaryAction}
+                disabled={isSaving || (pricing.needsManualPricing && adminValuation === "")}
+                className="px-5 py-2 text-sm font-bold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-4 h-4" />
+                )}{" "}
+                {t(primaryAction.label)}
+              </button>
+            )}
           </div>
         </div>
       ) : (

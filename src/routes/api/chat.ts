@@ -730,7 +730,40 @@ export const Route = createFileRoute("/api/chat")({
               console.warn("[chat:notify_user_failed]", err);
             }
 
-            return json({ message, clientMessageId: data.clientMessageId });
+            /*
+              An admin can hand over a delivery item straight from the chat
+              composer (this is what the account-tools modal does), so the
+              end-of-delivery transition has to happen here too — not only in
+              the dedicated orders action. Otherwise whether an order ever
+              finished depended on which button the admin pressed.
+            */
+            let orderFinished = false;
+            let nextOrder: unknown;
+            const isDeliveryCard =
+              message.kind === "item_verification_code" || message.kind === "item_credentials";
+            if (isDeliveryCard && current.orderId) {
+              try {
+                const [{ finalizeDeliveryIfComplete }, { getOrder }] = await Promise.all([
+                  import("@/lib/order-delivery.server"),
+                  import("@/lib/db.server"),
+                ]);
+                const linked = await getOrder(current.orderId);
+                if (linked) {
+                  const completion = await finalizeDeliveryIfComplete(linked, user.id);
+                  orderFinished = completion.finished;
+                  nextOrder = completion.next;
+                }
+              } catch (err) {
+                console.warn("[chat:delivery_finalize_failed]", err);
+              }
+            }
+
+            return json({
+              message,
+              clientMessageId: data.clientMessageId,
+              orderFinished,
+              ...(nextOrder ? { nextOrder } : {}),
+            });
           }
 
           // STRICT SERVER-SIDE RULE:

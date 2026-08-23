@@ -247,9 +247,18 @@ export function checkCoupon(
     return { ok: false, reason: "expired" };
   }
 
-  // Global usage limit: Only enforced if usageLimit is specified and > 0
+  /*
+    Global usage cap across all members.
+
+    Only ever enforced when the admin actually set one. An empty "total uses"
+    field means unlimited, so no number of redemptions by any number of members
+    can exhaust the coupon — that is the difference between this rule and the
+    per-member rule below, and conflating the two is what made a
+    one-per-customer coupon stop working for everybody after its first use.
+  */
   if (
     coupon.usageLimit !== undefined &&
+    coupon.usageLimit !== null &&
     coupon.usageLimit > 0 &&
     input.globalUses >= coupon.usageLimit
   ) {
@@ -263,7 +272,23 @@ export function checkCoupon(
     }
   }
 
-  // Per-user limit: Each user can use up to coupon.perUserLimit times (default 1)
+  /*
+    "Once per account, ever."
+
+    The flag was read from the row, mapped, stored and shown in the admin list,
+    but only ever *enforced* for `single_item_percent` — so ticking it on an
+    ordinary percentage or fixed coupon did nothing at all. It caps the member
+    at one use regardless of `perUserLimit`.
+  */
+  if (coupon.oncePerUserLifetime && input.userUses >= 1) {
+    return { ok: false, reason: "per_user_limit" };
+  }
+
+  /*
+    Per-member limit. This is the *only* limit a single member's usage can trip:
+    member A exhausting their allowance says nothing about member B. The global
+    cap above is a separate, optional rule.
+  */
   const maxUserUses = coupon.perUserLimit && coupon.perUserLimit > 0 ? coupon.perUserLimit : 1;
   if (input.userUses >= maxUserUses) {
     return { ok: false, reason: "per_user_limit" };

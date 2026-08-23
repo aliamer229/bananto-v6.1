@@ -1,4 +1,6 @@
 import PageHeader from "@/components/PageHeader";
+import { readTradePricing } from "@/lib/trade-pricing";
+import { TRADE_MAIN_FLOW, TRADE_PRICING_MODE_BADGE_STYLE } from "@/lib/trade-calc";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -72,14 +74,17 @@ export const Route = createFileRoute("/disc_trade")({
   component: DiscTradePage,
 });
 
-const FLOW = [
-  "waiting_review",
-  "waiting_shipment",
-  "received",
-  "inspecting",
-  "approved",
-  "completed",
-];
+/**
+ * The stepper follows the canonical lifecycle, not the editable copy list.
+ *
+ * It used to be its own hardcoded array of the old status keys, and the labels
+ * came from `status_content` in the store settings — so a store whose settings
+ * still held the previous keys rendered raw identifiers like `waiting_review`
+ * straight to the customer. Deriving the steps from `TRADE_MAIN_FLOW` and
+ * falling back to the built-in Arabic labels means the stepper is right even
+ * when the editable copy has not been updated.
+ */
+const FLOW = TRADE_MAIN_FLOW;
 
 interface CatalogGame {
   game_id: string;
@@ -1186,15 +1191,19 @@ function DiscTradePage() {
                   const terminal = normStatus === "rejected" || normStatus === "cancelled";
                   const nodes = FLOW.map((s, i) => {
                     const c = statusCopy(cfg.status_content, s, lang);
+                    // Never show a raw status key: fall back to the canonical
+                    // Arabic label when the editable copy has no entry.
+                    const title = c.title && c.title !== s ? c.title : TRADE_STATUS_LABEL_AR[s];
                     return {
                       status: s,
-                      title: c.title,
+                      title,
                       description: i === idx ? c.description : "",
                       done: idx > i,
                       current: idx === i,
                     };
                   });
-                  const value = tr.admin_valuation_iqd ?? tr.final_iqd ?? 0;
+                  // Approximate vs approved, never merged into one ambiguous figure.
+                  const pricing = readTradePricing(tr);
                   const badgeStyle =
                     TRADE_STATUS_BADGE_STYLE[normStatus] || "bg-primary/10 text-primary";
 
@@ -1206,12 +1215,19 @@ function DiscTradePage() {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <h3 className="font-bold text-foreground text-base">{tr.game_name}</h3>
+                          <span
+                            className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                              TRADE_PRICING_MODE_BADGE_STYLE[pricing.mode]
+                            }`}
+                          >
+                            {pricing.modeLabel}
+                          </span>
                           <p className="text-xs text-muted-foreground mt-1">
                             {new Date(tr.created_at).toLocaleDateString(
                               lang === "ar" ? "ar-EG" : "en-US",
                               { year: "numeric", month: "short", day: "numeric" },
                             )}
-                            {value ? ` · ${formatIqd(Number(value))}` : ""}
+
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1223,13 +1239,49 @@ function DiscTradePage() {
                         </div>
                       </div>
 
+                      {/*
+                        Two lines, always both present. The approved price shows
+                        a dash until an admin has actually committed to one, so
+                        an estimate is never mistaken for a final offer.
+                      */}
+                      <div className="grid grid-cols-2 gap-3 rounded-2xl bg-muted/40 p-3">
+                        <div>
+                          <span className="block text-[11px] font-bold text-muted-foreground">
+                            {lang === "ar" ? "السعر التقريبي" : "Estimated price"}
+                          </span>
+                          <span
+                            className={`text-sm font-black ${
+                              pricing.estimateIqd !== null
+                                ? "text-foreground"
+                                : "text-amber-600 dark:text-amber-400"
+                            }`}
+                          >
+                            {pricing.estimateLabel}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="block text-[11px] font-bold text-muted-foreground">
+                            {lang === "ar" ? "السعر النهائي المعتمد" : "Approved price"}
+                          </span>
+                          <span
+                            className={`text-sm font-black ${
+                              pricing.approvedIqd !== null
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {pricing.approvedLabel}
+                          </span>
+                        </div>
+                      </div>
+
                       {tr.payout_credited === 1 && (
                         <div className="flex items-center justify-between p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
                           <span className="flex items-center gap-1.5">
                             <Wallet className="w-4 h-4" />
                             {lang === "ar"
-                              ? `تم إيداع مبلغ المقايضة (${Number(tr.payout_amount_credited || value).toLocaleString()} د.ع) في محفظتك بنجاح!`
-                              : `Trade payout of ${Number(tr.payout_amount_credited || value).toLocaleString()} IQD credited to your wallet!`}
+                              ? `تم إيداع مبلغ المقايضة (${Number(tr.payout_amount_credited ?? pricing.approvedIqd ?? 0).toLocaleString()} د.ع) في محفظتك بنجاح!`
+                              : `Trade payout of ${Number(tr.payout_amount_credited ?? pricing.approvedIqd ?? 0).toLocaleString()} IQD credited to your wallet!`}
                           </span>
                           <a href="/wallet" className="underline hover:opacity-80">
                             {lang === "ar" ? "عرض المحفظة" : "View Wallet"}
@@ -1257,7 +1309,7 @@ function DiscTradePage() {
                       )}
 
                       {/* User Actions based on status */}
-                      {normStatus === "approved" && (
+                      {normStatus === "awaiting_customer_approval" && (
                         <div className="pt-2 border-t border-border flex flex-wrap items-center justify-end gap-2.5">
                           <button
                             type="button"
@@ -1284,7 +1336,10 @@ function DiscTradePage() {
                         </div>
                       )}
 
-                      {(normStatus === "waiting_review" || normStatus === "waiting_shipment") && (
+                      {(normStatus === "awaiting_pricing" ||
+                        normStatus === "priced" ||
+                        normStatus === "customer_approved" ||
+                        normStatus === "awaiting_receipt") && (
                         <div className="pt-2 border-t border-border flex justify-end">
                           <button
                             type="button"
