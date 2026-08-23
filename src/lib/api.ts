@@ -395,13 +395,10 @@ export const api = {
       orderFinished?: boolean;
       /** The next order in the preparation queue, when this one just finished. */
       nextOrder?: { orderId: string; threadId?: string; code?: string; userName?: string };
-    }>(
-      "/api/chat",
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
-    ),
+    }>("/api/chat", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 
   setThreadMode: (payload: {
     threadId: string;
@@ -618,8 +615,65 @@ export const walletApi = {
     }),
 };
 
+export interface DeliveryLine {
+  itemId: string;
+  productId: string | null;
+  title: string;
+  quantity: number;
+  status: string;
+  username: string;
+  password: string;
+  needsMapping: boolean;
+  sentAt: string | null;
+  proofReceivedAt: string | null;
+  otpSentAt: string | null;
+  completedAt: string | null;
+}
+
 export const adminApi = {
   store: () => request<StoreDoc>("/api/data"),
+
+  /**
+   * Per-line delivery state for one order.
+   *
+   * The delivery tool reads this when it opens and writes it as the admin
+   * types, so nothing typed is lost to a refresh and two admins on the same
+   * order see the same progress.
+   */
+  deliveryItems: (orderId: string) =>
+    request<{
+      success: boolean;
+      orderId: string;
+      items: DeliveryLine[];
+      progress: { total: number; delivered: number; completed: number; label: string };
+    }>(`/api/admin/delivery-items?orderId=${encodeURIComponent(orderId)}`),
+
+  saveDeliveryDraft: (payload: {
+    orderId: string;
+    itemId: string;
+    productId?: string | null;
+    username?: string;
+    password?: string;
+    needsMapping?: boolean;
+  }) =>
+    request<{ success: boolean; item: DeliveryLine | null }>("/api/admin/delivery-items", {
+      method: "POST",
+      body: JSON.stringify({ ...payload, action: "save_draft" }),
+    }),
+
+  /** `sendKey` makes a retry idempotent — the customer never gets two copies. */
+  markDeliverySent: (payload: { orderId: string; itemId: string; sendKey?: string }) =>
+    request<{ success: boolean; item: DeliveryLine; duplicate: boolean }>(
+      "/api/admin/delivery-items",
+      { method: "POST", body: JSON.stringify({ ...payload, action: "mark_sent" }) },
+    ),
+
+  markDeliveryOtpSent: (payload: { orderId: string; itemId: string }) =>
+    request<{ success: boolean; item: DeliveryLine | null }>("/api/admin/delivery-items", {
+      method: "POST",
+      body: JSON.stringify({ ...payload, action: "mark_otp" }),
+    }),
+
   saveStore: (patch: Partial<StoreDoc>) =>
     request<{ success: boolean; data: StoreDoc }>("/api/data", {
       method: "POST",

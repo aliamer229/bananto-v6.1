@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { DELIVERY_OTP_TTL_MINUTES } from "@/lib/delivery-otp";
 import {
   Key,
@@ -36,6 +36,8 @@ import {
   type MatchedAccountResult,
 } from "@/lib/account-paste";
 import { Order, OrderItem } from "@/lib/types";
+import { adminApi, type DeliveryLine } from "@/lib/api";
+import { summarizeDeliveryProgress } from "@/lib/delivery-items";
 import {
   ORDER_ITEM_TITLE_UNAVAILABLE_AR,
   orderItemTitleOf,
@@ -187,20 +189,6 @@ export function AccountToolsModal({
     return slots;
   }, [orderItems]);
 
-  /**
-   * How many of the order's slots have had their credentials sent.
-   *
-   * The admin needs "2 of 4 done" at a glance on a multi-game order; the
-   * ribbon only ever showed how many items existed.
-   */
-  const preparedSlotCount = useMemo(
-    () =>
-      deliverableSlots.filter(
-        (slot) => slot.originalItem.credsSentAt || slot.originalItem.completedAt,
-      ).length,
-    [deliverableSlots],
-  );
-
   // ==========================
   // ACCOUNT MODE STATE
   // ==========================
@@ -222,6 +210,98 @@ export function AccountToolsModal({
 
   // Copied state for feedback
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  /*
+    ============================================================
+    Drafts live in D1, not in this component.
+
+    Everything typed here used to exist only in React state, so a refresh, a
+    closed tab, or a second admin opening the same order lost it — and there
+    was no way to answer "which of these four lines has actually been sent?"
+    except by reading timestamps scattered across the order items. The rows
+    below are the source of truth; this modal renders them and writes back to
+    them as the admin types.
+    ============================================================
+  */
+  const [deliveryLines, setDeliveryLines] = useState<DeliveryLine[]>([]);
+  const draftTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  /**
+   * How many of the order's slots have had their credentials sent.
+   *
+   * The admin needs "2 of 4 done" at a glance on a multi-game order; the
+   * ribbon only ever showed how many items existed.
+   */
+  const preparedSlotCount = useMemo(() => {
+    // Prefer what D1 says; fall back to the order's own timestamps when the
+    // delivery rows have not loaded (or D1 is not bound at all).
+    if (deliveryLines.length > 0) {
+      return summarizeDeliveryProgress(deliveryLines, deliverableSlots.length).delivered;
+    }
+    return deliverableSlots.filter(
+      (slot) => slot.originalItem.credsSentAt || slot.originalItem.completedAt,
+    ).length;
+  }, [deliverableSlots, deliveryLines]);
+
+  const reloadDeliveryLines = useCallback(async () => {
+    if (!order?.id) return;
+    try {
+      const res = await adminApi.deliveryItems(order.id);
+      setDeliveryLines(res.items ?? []);
+    } catch (err) {
+      // The tool still works from the order alone; the draft is just not
+      // restored. Log the id only — a line carries the account password.
+      console.warn("[delivery-tool:draft_load_failed]", { orderId: order.id }, err);
+    }
+  }, [order?.id]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    void reloadDeliveryLines();
+  }, [isOpen, reloadDeliveryLines]);
+
+  /** Autosave one line, debounced, so typing does not write on every keystroke. */
+  const queueDraftSave = useCallback(
+    (itemId: string, draft: { username: string; password: string; needsMapping?: boolean }) => {
+      if (!order?.id || !itemId) return;
+      const timers = draftTimersRef.current;
+      if (timers[itemId]) clearTimeout(timers[itemId]);
+      timers[itemId] = setTimeout(() => {
+        delete timers[itemId];
+        const productId = order.items?.find((entry) => entry.id === itemId)?.productId;
+        void adminApi
+          .saveDeliveryDraft({
+            orderId: order.id,
+            itemId,
+            productId: productId === undefined ? null : String(productId),
+            username: draft.username,
+            password: draft.password,
+            ...(draft.needsMapping === undefined ? {} : { needsMapping: draft.needsMapping }),
+          })
+          .then((res) => {
+            if (!res.item) return;
+            setDeliveryLines((prev) => {
+              const next = prev.filter((line) => line.itemId !== itemId);
+              const existing = prev.find((line) => line.itemId === itemId);
+              return [...next, { ...(existing ?? ({} as DeliveryLine)), ...res.item! }];
+            });
+          })
+          .catch((err) => {
+            console.warn("[delivery-tool:draft_save_failed]", { orderId: order.id, itemId }, err);
+          });
+      }, 700);
+    },
+    [order?.id, order?.items],
+  );
+
+  // Flush nothing on unmount — a pending timer would write after the modal is
+  // gone; the next open reads the last saved state instead.
+  useEffect(() => {
+    const timers = draftTimersRef.current;
+    return () => {
+      for (const id of Object.keys(timers)) clearTimeout(timers[id]!);
+    };
+  }, []);
 
   // ==========================
   // CARD / ACTIVATION CODE STATE
@@ -375,6 +455,20 @@ export function AccountToolsModal({
     setSelectedItemId(item.id);
     setSelectedSlotNumber(slotNumber);
 
+    /*
+      Restore whatever was already prepared for this line. Without it, clicking
+      through the ribbon on a part-finished order shows empty fields for lines
+      that already have credentials waiting — and the admin retypes them.
+    */
+    const saved = deliveryLines.find((line) => line.itemId === item.id);
+    if (saved && (saved.username || saved.password) && !username && !password) {
+      setUsername(saved.username);
+      setPassword(saved.password);
+    } else if (username || password) {
+      // Persist the pairing the admin just made.
+      queueDraftSave(item.id, { username, password, needsMapping: false });
+    }
+
     if (stagedAccounts[selectedAccountIndex]) {
       const copy = [...stagedAccounts];
       copy[selectedAccountIndex] = {
@@ -414,6 +508,29 @@ export function AccountToolsModal({
       itemId: selectedItemId,
       slot: selectedSlotNumber,
     });
+
+    /*
+      Record the transition on the row itself. `sendKey` is derived from the
+      order, the line and the credentials, so a retried request — a
+      double-clicked button, a reconnecting client replaying its last action —
+      is recognised as the same send rather than a second one.
+    */
+    if (order?.id) {
+      void adminApi
+        .markDeliverySent({
+          orderId: order.id,
+          itemId: selectedItemId,
+          sendKey: `${order.id}:${selectedItemId}:${username.trim()}`,
+        })
+        .then(() => reloadDeliveryLines())
+        .catch((err) => {
+          console.warn(
+            "[delivery-tool:mark_sent_failed]",
+            { orderId: order.id, itemId: selectedItemId },
+            err,
+          );
+        });
+    }
 
     // Mark current staged as sent
     if (stagedAccounts[selectedAccountIndex]) {
@@ -501,6 +618,19 @@ export function AccountToolsModal({
       itemId: selectedItemId,
       title: selectedGameTitle || undefined,
     });
+
+    if (order?.id) {
+      void adminApi
+        .markDeliveryOtpSent({ orderId: order.id, itemId: selectedItemId })
+        .then(() => reloadDeliveryLines())
+        .catch((err) => {
+          console.warn(
+            "[delivery-tool:mark_otp_failed]",
+            { orderId: order.id, itemId: selectedItemId },
+            err,
+          );
+        });
+    }
 
     setOtpCode("");
     setIsOtpSectionOpen(false);
@@ -829,6 +959,13 @@ export function AccountToolsModal({
                         };
                         setStagedAccounts(copy);
                       }
+                      if (selectedItemId) {
+                        queueDraftSave(selectedItemId, {
+                          username: e.target.value,
+                          password,
+                          needsMapping: false,
+                        });
+                      }
                     }}
                     placeholder="e.g. user@xiaohu666.com أو login_id"
                     className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-primary/20"
@@ -878,6 +1015,13 @@ export function AccountToolsModal({
                             password: e.target.value,
                           };
                           setStagedAccounts(copy);
+                        }
+                        if (selectedItemId) {
+                          queueDraftSave(selectedItemId, {
+                            username,
+                            password: e.target.value,
+                            needsMapping: false,
+                          });
                         }
                       }}
                       placeholder="e.g. qw83150220"
