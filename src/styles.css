@@ -903,3 +903,28 @@ html {
 .hero-dark .text-nin-soft {
   color: rgba(255, 255, 255, 0.88);
 }
+
+/*
+  Toast container, on a phone, in RTL.
+
+  Sonner's mobile rule pins the container with `left: 16px; right: 16px` *and*
+  `width: 100%`. That is over-constrained: with a definite width one inset has
+  to be ignored, and in RTL it is `left` — so the container sits 16px past the
+  left edge of the screen. The toast inside is over-constrained the same way and
+  happens to land back inside, which is why nothing looked wrong; but a box
+  hanging off the viewport is exactly the shape of bug that makes mobile Safari
+  shrink the page to fit, and it fails the overflow sweep.
+
+  Letting the two insets decide the width fixes it at the cause instead of
+  clipping it: the container is `viewport - 32px`, and the toast fills it.
+*/
+@media (max-width: 600px) {
+  /* Doubled attribute for specificity: Sonner injects its own stylesheet at
+     runtime, so a single-attribute rule here loses the cascade to it. */
+  [data-sonner-toaster][data-sonner-toaster] {
+    width: auto;
+  }
+  [data-sonner-toaster][data-sonner-toaster] [data-sonner-toast] {
+    width: 100%;
+  }
+}

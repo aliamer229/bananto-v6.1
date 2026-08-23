@@ -1005,6 +1005,44 @@ export function validateOrderIntegrity(order: unknown): { ok: boolean; reason?: 
   return { ok: true };
 }
 
+/**
+ * Reasons that make an order impossible to identify or render at all.
+ *
+ * Everything else — a missing item title, a total that does not add up — makes
+ * an order *degraded*, not unreadable, and a degraded order must still be
+ * visible. Every read path used to `.filter(validateOrderIntegrity(o).ok)`, so
+ * one item with an empty title made a paid order vanish from the admin's queue
+ * and from the customer's own list. Nobody could see it to fix it, and nothing
+ * said why: the exact "order stuck and invisible" complaint.
+ *
+ * A degraded order is now returned, and the surfaces render what is wrong with
+ * it — {@link ORDER_ITEM_TITLE_UNAVAILABLE_AR} in place of a name it does not
+ * have, rather than a plausible-looking stand-in.
+ */
+const FATAL_INTEGRITY_REASONS = new Set([
+  "invalid_order_object",
+  "missing_order_id",
+  "missing_user_id",
+]);
+
+export function isOrderReadable(order: unknown): boolean {
+  const check = validateOrderIntegrity(order);
+  if (check.ok) return true;
+  const reason = check.reason ?? "unknown";
+  if (FATAL_INTEGRITY_REASONS.has(reason)) {
+    console.warn("[orders:dropped_unreadable]", {
+      orderId: (order as { id?: unknown } | null)?.id ?? null,
+      reason,
+    });
+    return false;
+  }
+  console.warn("[orders:degraded]", {
+    orderId: (order as { id?: unknown } | null)?.id ?? null,
+    reason,
+  });
+  return true;
+}
+
 export function orderKey(id: string) {
   return `orders/${id}.json`;
 }
@@ -1019,10 +1057,10 @@ export async function getOrder(id: string): Promise<Order | undefined> {
     );
     if (!row) return undefined;
     const parsed = parse<Order | undefined>(row.doc, undefined);
-    return parsed && validateOrderIntegrity(parsed).ok ? parsed : undefined;
+    return parsed && isOrderReadable(parsed) ? parsed : undefined;
   }
   const direct = await readJson<Order | undefined>(orderKey(id), undefined);
-  if (direct && validateOrderIntegrity(direct).ok) return direct;
+  if (direct && isOrderReadable(direct)) return direct;
   const all = await listOrders();
   return all.find((o) => o.id === id || o.code === id);
 }
@@ -1036,13 +1074,11 @@ export async function listOrders(limit?: number): Promise<Order[]> {
             limit,
           )
         : await d1All<{ doc: string }>(`SELECT doc FROM orders ORDER BY created_at DESC`);
-    return rows
-      .map((r) => parse<Order>(r.doc, {} as Order))
-      .filter((o) => o && validateOrderIntegrity(o).ok);
+    return rows.map((r) => parse<Order>(r.doc, {} as Order)).filter((o) => o && isOrderReadable(o));
   }
   const ids = await readJson<string[]>(ORDER_INDEX_KEY, []);
   const orders = await Promise.all(ids.map((id) => getOrder(id)));
-  const all = orders.filter((o): o is Order => !!o && validateOrderIntegrity(o).ok);
+  const all = orders.filter((o): o is Order => !!o && isOrderReadable(o));
   return limit && limit > 0 ? all.slice(0, limit) : all;
 }
 
@@ -1060,21 +1096,31 @@ export async function listOrdersByUser(userId: string, limit = 200): Promise<Ord
       userId,
       limit,
     );
-    return rows
-      .map((r) => parse<Order>(r.doc, {} as Order))
-      .filter((o) => o && validateOrderIntegrity(o).ok);
+    return rows.map((r) => parse<Order>(r.doc, {} as Order)).filter((o) => o && isOrderReadable(o));
   }
   const all = await listOrders();
-  return all
-    .filter((order) => order.userId === userId && validateOrderIntegrity(order).ok)
-    .slice(0, limit);
+  return all.filter((order) => order.userId === userId && isOrderReadable(order)).slice(0, limit);
 }
 
 export async function saveOrder(order: Order): Promise<Order> {
   const check = validateOrderIntegrity(order);
   if (!check.ok) {
-    console.error("[saveOrder:integrity_failed]", { reason: check.reason, order });
-    throw new Error(`order_integrity_violation: ${check.reason}`);
+    const reason = check.reason ?? "unknown";
+    /*
+      Refuse only what cannot be identified. Rejecting every imperfection here
+      would undo the point of keeping degraded orders readable: an admin could
+      finally see the order with the unnameable item, and then no action on it
+      — sending an account, completing it — could ever be saved. Log the flaw
+      loudly and let the work proceed.
+
+      Only ids and the reason are logged; an order carries the credentials it
+      was delivered with.
+    */
+    if (FATAL_INTEGRITY_REASONS.has(reason)) {
+      console.error("[saveOrder:integrity_failed]", { orderId: order?.id ?? null, reason });
+      throw new Error(`order_integrity_violation: ${reason}`);
+    }
+    console.warn("[saveOrder:degraded]", { orderId: order?.id ?? null, reason });
   }
 
   if (await d1Ready()) {

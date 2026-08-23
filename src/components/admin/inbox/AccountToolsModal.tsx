@@ -36,6 +36,12 @@ import {
   type MatchedAccountResult,
 } from "@/lib/account-paste";
 import { Order, OrderItem } from "@/lib/types";
+import {
+  ORDER_ITEM_TITLE_UNAVAILABLE_AR,
+  orderItemTitleOf,
+  resolveOrderTitles,
+  unresolvedTitleIds,
+} from "@/lib/order-item-title";
 
 export interface AccountToolsModalProps {
   isOpen: boolean;
@@ -75,6 +81,14 @@ export interface StagedAccountState {
   matchedItemTitle?: string;
   slotNumber?: number;
   isSent?: boolean;
+  /**
+   * The parser could not tell which game this account is for.
+   *
+   * It stays true until an admin picks the game, and nothing can be sent while
+   * it is. Guessing here is how one account ends up delivered as every game on
+   * a four-game order.
+   */
+  needsMapping?: boolean;
 }
 
 export function AccountToolsModal({
@@ -120,11 +134,30 @@ export function AccountToolsModal({
   const matchTargets: OrderItemMatchTarget[] = useMemo(() => {
     return orderItems.map((item) => ({
       id: item.id,
-      title: item.title,
+      title: orderItemTitleOf(item),
       quantity: item.quantity || 1,
       kind: item.kind,
     }));
   }, [orderItems]);
+
+  /*
+    An order whose items cannot be named is a data problem the admin needs to
+    see before they deliver anything, not something to paper over with a
+    placeholder. Logged with ids only — an order item carries the account it
+    was delivered with.
+  */
+  const unnamedItems = useMemo(
+    () => unresolvedTitleIds(resolveOrderTitles(orderItems)),
+    [orderItems],
+  );
+  useEffect(() => {
+    if (unnamedItems.length > 0) {
+      console.warn("[delivery-tool:order_items_unnamed]", {
+        orderId: order?.id ?? null,
+        unresolved: unnamedItems,
+      });
+    }
+  }, [unnamedItems, order?.id]);
 
   // Expand order items into individual deliverable slots (e.g. quantity 2 = Slot 1 & Slot 2)
   const deliverableSlots = useMemo(() => {
@@ -143,7 +176,7 @@ export function AccountToolsModal({
         slots.push({
           slotKey: `${item.id}-${s}`,
           itemId: item.id,
-          title: item.title,
+          title: orderItemTitleOf(item),
           slotIndex: s,
           totalSlots: qty,
           originalItem: item,
@@ -153,6 +186,20 @@ export function AccountToolsModal({
 
     return slots;
   }, [orderItems]);
+
+  /**
+   * How many of the order's slots have had their credentials sent.
+   *
+   * The admin needs "2 of 4 done" at a glance on a multi-game order; the
+   * ribbon only ever showed how many items existed.
+   */
+  const preparedSlotCount = useMemo(
+    () =>
+      deliverableSlots.filter(
+        (slot) => slot.originalItem.credsSentAt || slot.originalItem.completedAt,
+      ).length,
+    [deliverableSlots],
+  );
 
   // ==========================
   // ACCOUNT MODE STATE
@@ -189,10 +236,10 @@ export function AccountToolsModal({
   useEffect(() => {
     if (orderItems.length > 0) {
       const firstItem = orderItems[0]!;
-      setSelectedGameTitle(firstItem.title);
+      setSelectedGameTitle(orderItemTitleOf(firstItem));
       setSelectedItemId(firstItem.id);
       setSelectedSlotNumber(1);
-      setCardTitle(firstItem.title);
+      setCardTitle(orderItemTitleOf(firstItem));
       setCardItemId(firstItem.id);
 
       // Check if any item already has credentials sent or login proof
@@ -209,15 +256,14 @@ export function AccountToolsModal({
       const acc = stagedAccounts[selectedAccountIndex]!;
       setUsername(acc.username);
       setPassword(acc.password);
-      if (acc.matchedItemTitle) {
-        setSelectedGameTitle(acc.matchedItemTitle);
-      }
-      if (acc.matchedItemId) {
-        setSelectedItemId(acc.matchedItemId);
-      }
-      if (acc.slotNumber) {
-        setSelectedSlotNumber(acc.slotNumber);
-      }
+      /*
+        Clear, do not keep. Leaving the previous account's game on screen when
+        the newly selected one has none is how an admin sends the right
+        credentials under the wrong game.
+      */
+      setSelectedGameTitle(acc.matchedItemTitle ?? "");
+      setSelectedItemId(acc.matchedItemId ?? "");
+      setSelectedSlotNumber(acc.slotNumber ?? 1);
     }
   }, [selectedAccountIndex, stagedAccounts]);
 
@@ -238,49 +284,54 @@ export function AccountToolsModal({
     // Match parsed accounts to order items
     const matched = matchAccountsToOrder(accounts, matchTargets);
 
-    const newStaged: StagedAccountState[] = matched.map((m, idx) => {
-      const targetSlot = deliverableSlots[idx];
-      return {
-        id: `staged-${Date.now()}-${idx}`,
-        username: m.account.username,
-        password: m.account.password,
-        label: m.account.label,
-        matchedItemId:
-          m.matchedItemId ||
-          targetSlot?.itemId ||
-          (orderItems[0]?.id ? orderItems[0].id : undefined),
-        matchedItemTitle:
-          m.matchedItemTitle ||
-          targetSlot?.title ||
-          (orderItems[0]?.title ? orderItems[0].title : undefined),
-        slotNumber: m.slotNumber || targetSlot?.slotIndex || 1,
-        isSent: false,
-      };
-    });
+    /*
+      A failed match stays a failed match.
+
+      This used to fall through `m.matchedItemId || positional slot ||
+      orderItems[0].id`, so when the parser could not tell which game a line
+      was for the tool quietly assigned it anyway — by position, or, on a paste
+      the parser understood least, to the first game for every line. On a
+      four-game order that is one account delivered as all four games. An
+      account with no game is now marked `needsMapping` and the admin picks the
+      game; nothing about it can be sent until they do.
+    */
+    const newStaged: StagedAccountState[] = matched.map((m, idx) => ({
+      id: `staged-${Date.now()}-${idx}`,
+      username: m.account.username,
+      password: m.account.password,
+      label: m.account.label,
+      ...(m.matchedItemId
+        ? {
+            matchedItemId: m.matchedItemId,
+            matchedItemTitle: m.matchedItemTitle,
+            slotNumber: m.slotNumber || 1,
+          }
+        : { needsMapping: true }),
+      isSent: false,
+    }));
 
     setStagedAccounts(newStaged);
-    setSelectedAccountIndex(0);
+    // Start on the first account that still needs a decision, if there is one.
+    const firstUnmapped = newStaged.findIndex((acc) => acc.needsMapping);
+    setSelectedAccountIndex(firstUnmapped === -1 ? 0 : firstUnmapped);
 
-    if (newStaged[0]) {
-      setUsername(newStaged[0].username);
-      setPassword(newStaged[0].password);
-      if (newStaged[0].matchedItemTitle) {
-        setSelectedGameTitle(newStaged[0].matchedItemTitle);
-      }
-      if (newStaged[0].matchedItemId) {
-        setSelectedItemId(newStaged[0].matchedItemId);
-      }
-      if (newStaged[0].slotNumber) {
-        setSelectedSlotNumber(newStaged[0].slotNumber);
-      }
+    const first = newStaged[firstUnmapped === -1 ? 0 : firstUnmapped];
+    if (first) {
+      setUsername(first.username);
+      setPassword(first.password);
+      setSelectedGameTitle(first.matchedItemTitle ?? "");
+      setSelectedItemId(first.matchedItemId ?? "");
+      setSelectedSlotNumber(first.slotNumber ?? 1);
     }
 
-    const matchedCount = newStaged.filter((s) => s.matchedItemId).length;
-    toast.success(
-      `تم استخراج ${newStaged.length} حساب${
-        orderItems.length > 0 ? ` ومطابقة ${matchedCount} مع الطلب` : ""
-      }`,
-    );
+    const unmappedCount = newStaged.filter((acc) => acc.needsMapping).length;
+    if (unmappedCount > 0) {
+      toast.warning(
+        `تم استخراج ${newStaged.length} حساب، و${unmappedCount} منها بحاجة لتحديد اللعبة يدويًا`,
+      );
+    } else {
+      toast.success(`تم استخراج ${newStaged.length} حساب ومطابقتها مع عناصر الطلب`);
+    }
   };
 
   const handlePasteFromClipboard = async () => {
@@ -320,7 +371,7 @@ export function AccountToolsModal({
 
   // Assign an order item / game to current staged account
   const handleAssignGameToActive = (item: OrderItem, slotNumber = 1) => {
-    setSelectedGameTitle(item.title);
+    setSelectedGameTitle(orderItemTitleOf(item));
     setSelectedItemId(item.id);
     setSelectedSlotNumber(slotNumber);
 
@@ -329,8 +380,10 @@ export function AccountToolsModal({
       copy[selectedAccountIndex] = {
         ...copy[selectedAccountIndex]!,
         matchedItemId: item.id,
-        matchedItemTitle: item.title,
+        matchedItemTitle: orderItemTitleOf(item),
         slotNumber,
+        // The admin has now said which game this is.
+        needsMapping: false,
       };
       setStagedAccounts(copy);
     }
@@ -342,12 +395,23 @@ export function AccountToolsModal({
       toast.error("يرجى إدخال اسم المستخدم وكلمة المرور");
       return;
     }
+    /*
+      An account has to belong to a specific item on the order before it can go
+      out. Without this the tool would happily deliver credentials with no
+      `itemId`, which nothing downstream can attribute to a game — the customer
+      gets a login and no idea what it opens, and the order can never be marked
+      complete because no item was.
+    */
+    if (!selectedItemId) {
+      toast.error("اختر اللعبة التي يخص هذا الحساب أولًا");
+      return;
+    }
 
     onSendCredentials({
       title: selectedGameTitle.trim() || undefined,
       email: username.trim(),
       password: password.trim(),
-      itemId: selectedItemId || undefined,
+      itemId: selectedItemId,
       slot: selectedSlotNumber,
     });
 
@@ -373,20 +437,48 @@ export function AccountToolsModal({
   const handleSendAllStagedAccounts = () => {
     if (stagedAccounts.length === 0) return;
 
-    let sentCount = 0;
-    stagedAccounts.forEach((acc, idx) => {
-      if (!acc.username || !acc.password || acc.isSent) return;
+    /*
+      "Send all" means all the ones that are actually ready. An account still
+      waiting on a game is skipped and reported, never sent under whichever
+      game happened to be selected in the form — that is the bug this whole
+      screen is here to stop.
+    */
+    const ready = stagedAccounts.filter(
+      (acc) => acc.username && acc.password && !acc.isSent && acc.matchedItemId,
+    );
+    const blocked = stagedAccounts.filter(
+      (acc) => !acc.isSent && (!acc.matchedItemId || acc.needsMapping),
+    );
+
+    if (ready.length === 0) {
+      toast.error("لا يوجد حساب جاهز للإرسال — حدد اللعبة لكل حساب أولًا");
+      return;
+    }
+
+    const sentIds = new Set<string>();
+    ready.forEach((acc, idx) => {
       onSendCredentials({
-        title: acc.matchedItemTitle || selectedGameTitle || undefined,
+        title: acc.matchedItemTitle || undefined,
         email: acc.username,
         password: acc.password,
-        itemId: acc.matchedItemId || undefined,
+        itemId: acc.matchedItemId!,
         slot: acc.slotNumber || idx + 1,
       });
-      sentCount++;
+      sentIds.add(acc.id);
     });
+    setStagedAccounts((prev) =>
+      prev.map((acc) => (sentIds.has(acc.id) ? { ...acc, isSent: true } : acc)),
+    );
 
-    toast.success(`تم إرسال ${sentCount} حساب للعميل`);
+    if (blocked.length > 0) {
+      toast.warning(`تم إرسال ${ready.length} حساب، وبقي ${blocked.length} بانتظار تحديد اللعبة`);
+      // Stay open: there is still work on this order.
+      const nextUnmapped = stagedAccounts.findIndex((acc) => !acc.isSent && !acc.matchedItemId);
+      if (nextUnmapped !== -1) setSelectedAccountIndex(nextUnmapped);
+      return;
+    }
+
+    toast.success(`تم إرسال ${ready.length} حساب للعميل`);
     onClose();
   };
 
@@ -397,10 +489,16 @@ export function AccountToolsModal({
       return;
     }
 
+    // The code is for one item on the order; unattributed it cannot complete one.
+    if (!selectedItemId) {
+      toast.error("اختر اللعبة التي يخص هذا الكود أولًا");
+      return;
+    }
+
     onSendVerificationCode({
       code: otpCode.trim(),
       expiresInMinutes: DELIVERY_OTP_TTL_MINUTES,
-      itemId: selectedItemId || undefined,
+      itemId: selectedItemId,
       title: selectedGameTitle || undefined,
     });
 
@@ -565,7 +663,9 @@ export function AccountToolsModal({
                       <Gamepad2 className="w-3.5 h-3.5 text-primary" />
                       <span>الألعاب والعناصر في هذا الطلب:</span>
                     </span>
-                    <span className="text-[10px] opacity-75">{deliverableSlots.length} عنصر</span>
+                    <span className="text-[10px] opacity-75">
+                      تم تجهيز {preparedSlotCount} / {deliverableSlots.length}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar">
@@ -641,9 +741,13 @@ export function AccountToolsModal({
                           }`}
                         >
                           <span>الحساب {idx + 1}</span>
-                          {acc.matchedItemTitle && (
+                          {acc.matchedItemTitle ? (
                             <span className="text-[10px] opacity-80 truncate max-w-[100px]">
                               ({acc.matchedItemTitle})
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 shrink-0">
+                              بحاجة لتحديد اللعبة
                             </span>
                           )}
                           {acc.isSent && <Check className="w-3 h-3 shrink-0" />}
@@ -656,28 +760,39 @@ export function AccountToolsModal({
 
               {/* 3 & 4 & 5. Account Details Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {/* 3. Game Title */}
+                {/*
+                  3. Game — shown, not typed.
+
+                  This was a free text field, so the name that went out with the
+                  credentials was whatever the admin had left in the box. It now
+                  reads back the item picked in the ribbon above, resolved from
+                  the order's own items, and says so plainly when nothing is
+                  picked yet.
+                */}
                 <div className="sm:col-span-2 space-y-1.5">
                   <label className="text-xs font-bold text-foreground block">
-                    اسم اللعبة أو المنتج
+                    اللعبة أو المنتج (من عناصر الطلب)
                   </label>
-                  <input
-                    type="text"
-                    value={selectedGameTitle}
-                    onChange={(e) => {
-                      setSelectedGameTitle(e.target.value);
-                      if (stagedAccounts[selectedAccountIndex]) {
-                        const copy = [...stagedAccounts];
-                        copy[selectedAccountIndex] = {
-                          ...copy[selectedAccountIndex]!,
-                          matchedItemTitle: e.target.value,
-                        };
-                        setStagedAccounts(copy);
-                      }
-                    }}
-                    placeholder="مثال: Nintendo Switch Sports أو EA SPORTS FC 26"
-                    className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-                  />
+                  <div
+                    className={`flex items-center gap-2 w-full px-3 py-2 text-xs rounded-xl border ${
+                      selectedItemId
+                        ? "bg-muted/40 border-border text-foreground"
+                        : "bg-amber-500/10 border-amber-500/40 text-amber-700 dark:text-amber-400"
+                    }`}
+                    aria-live="polite"
+                  >
+                    <Gamepad2 className="w-3.5 h-3.5 shrink-0" />
+                    <span className="font-bold truncate">
+                      {selectedItemId
+                        ? selectedGameTitle || ORDER_ITEM_TITLE_UNAVAILABLE_AR
+                        : "اختر اللعبة من الشريط أعلاه"}
+                    </span>
+                    {selectedItemId && selectedSlotNumber > 1 && (
+                      <span className="text-[10px] px-1 rounded-sm bg-muted text-muted-foreground shrink-0">
+                        #{selectedSlotNumber}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* 4. Username / Email */}
@@ -887,7 +1002,7 @@ export function AccountToolsModal({
                       <button
                         type="button"
                         onClick={handleSendOtp}
-                        disabled={!otpCode.trim()}
+                        disabled={!otpCode.trim() || !selectedItemId}
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
                       >
                         <Send className="w-3.5 h-3.5" />
@@ -1061,7 +1176,9 @@ export function AccountToolsModal({
               <button
                 type="button"
                 onClick={handleSendCurrentAccount}
-                disabled={!username.trim() || !password.trim()}
+                // No game picked means nothing downstream can attribute this
+                // delivery to an order item, so the button stays shut.
+                disabled={!username.trim() || !password.trim() || !selectedItemId}
                 className="px-5 py-2.5 bg-foreground hover:bg-foreground/90 disabled:opacity-40 text-background rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
               >
                 <Send className="w-3.5 h-3.5" />
