@@ -72,13 +72,32 @@ export interface ResolvedImage {
  */
 export const NINTENDO_IMAGE_PLACEHOLDER = "/illustrations/cover-placeholder.svg";
 
+/** Product fields that carry a full printed wrap (sleeve: back + spine + front). */
+export const WRAP_COVER_FIELDS = [
+  "full_cover",
+  "fullCover",
+  "box_cover",
+  "boxCover",
+  "sleeveUrl",
+  "sleeve_url",
+  "wrapImage",
+  "wrap_image",
+  "wrapUrl",
+  "wrap_url",
+  "caseSleeve",
+] as const;
+
 /** Product fields that carry a front box cover, best first. */
 export const FRONT_COVER_FIELDS = [
   "cartridgeImage",
   "coverImage",
+  "front_image",
+  "frontImage",
   "coverUrl",
   "box_front_url",
   "boxFrontUrl",
+  "cover_image",
+  "cartridge_image",
   "image",
   "mainImage",
   "imageUrl",
@@ -87,8 +106,20 @@ export const FRONT_COVER_FIELDS = [
 /** Product fields that carry square / near-square card artwork. */
 export const SQUARE_CARD_FIELDS = ["nintendoCardImage", "squareGameImage", "squareImage"] as const;
 
-/** Product fields that carry a print-resolution cover for the 3D sleeve. */
-export const HI_RES_COVER_FIELDS = ["coverHiResImage", "coverHiRes", "textureSourceImage"] as const;
+/** Product fields that carry a print-resolution cover or wrap for the 3D sleeve. */
+export const HI_RES_COVER_FIELDS = [
+  "coverHiResImage",
+  "coverHiRes",
+  "textureSourceImage",
+  "full_cover",
+  "fullCover",
+  "box_cover",
+  "boxCover",
+  "cartridgeImage",
+  "coverImage",
+  "front_image",
+  "frontImage",
+] as const;
 
 /** Product fields that carry wide key art. Never used for a cover. */
 export const BANNER_FIELDS = ["bannerImage", "banner", "keyArtUrl", "regionBanner"] as const;
@@ -211,6 +242,31 @@ export function resolveNintendoImage(
   if (cover) return withTrim(product, cover);
 
   return PLACEHOLDER;
+}
+
+/**
+ * Resolves whether the product has an authentic full wrap sleeve
+ * (back + spine + front printed insert). Returns undefined if only front artwork exists.
+ */
+export function resolveCaseSleeve(
+  product: Record<string, unknown> | null | undefined,
+): { url: string } | undefined {
+  if (!product || typeof product !== "object") return undefined;
+
+  // Direct caseSleeve object
+  if (product["caseSleeve"] && typeof product["caseSleeve"] === "object") {
+    const cs = product["caseSleeve"] as { url?: unknown };
+    if (isUsableImageUrl(cs.url)) {
+      return { url: cs.url.trim() };
+    }
+  }
+
+  const hit = pick(product, WRAP_COVER_FIELDS);
+  if (hit && isUsableImageUrl(hit.url)) {
+    return { url: hit.url.trim() };
+  }
+
+  return undefined;
 }
 
 /** Convenience wrapper for the common case. */

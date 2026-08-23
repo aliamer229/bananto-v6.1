@@ -273,7 +273,12 @@ export function SwitchBox3D({
 
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
-      ctx.fillStyle = "#111317";
+      // Neutral background base instead of harsh black
+      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+      bgGrad.addColorStop(0, "#1c1f26");
+      bgGrad.addColorStop(0.5, "#15181f");
+      bgGrad.addColorStop(1, "#101217");
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
       let artworkDrawn = false;
@@ -411,6 +416,7 @@ export function SwitchBox3D({
       // nothing but the dark base fill, so the case rendered as a black slab.
       // Treat it exactly like having no artwork at all.
       if (!artworkDrawn) {
+        // Spine
         ctx.fillStyle = brandColor;
         ctx.fillRect(spineX, 0, spineW, height);
 
@@ -427,10 +433,19 @@ export function SwitchBox3D({
         ctx.fillText((gameName || "NINTENDO SWITCH").toUpperCase(), 0, 7 * scale);
         ctx.restore();
 
-        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        // Front Header Band
+        ctx.fillStyle = brandColor;
+        ctx.fillRect(frontX, 0, frontW, 70 * scale);
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "left";
+        ctx.font = `900 ${16 * scale}px system-ui, -apple-system, sans-serif`;
+        ctx.fillText("NINTENDO SWITCH", frontX + 24 * scale, 42 * scale);
+
+        // Front Center Title
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
         ctx.textAlign = "center";
-        ctx.font = `bold ${34 * scale}px system-ui, -apple-system, sans-serif`;
-        ctx.fillText(gameName || "Nintendo Switch", frontX + frontW / 2, height / 2);
+        ctx.font = `bold ${32 * scale}px system-ui, -apple-system, sans-serif`;
+        ctx.fillText(gameName || "Nintendo Switch Game", frontX + frontW / 2, height / 2);
       }
 
       if (!isMounted) return;

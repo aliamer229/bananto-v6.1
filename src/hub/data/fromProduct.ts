@@ -16,7 +16,7 @@ import {
   bool,
   getTextValue,
 } from "@/lib/hub";
-import { resolveNintendoImage } from "@/lib/nintendoImages";
+import { resolveNintendoImage, resolveCaseSleeve } from "@/lib/nintendoImages";
 import { buildFitFor, buildFeatures } from "./mappers";
 import { toAmount } from "@/lib/purchasable";
 import { gb } from "@/hub/utils/format";
@@ -148,9 +148,12 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
     }, []),
   ];
 
+  const caseSleeve = resolveCaseSleeve(p);
+
   return {
     coverUrl,
     keyArtUrl,
+    caseSleeve,
     /** Highest-resolution front cover available; what the 3D sleeve should sample. */
     coverTextureUrl: texture.isPlaceholder ? undefined : texture.url,
     /** Stored crop for `coverUrl`, when the catalogue carries one. */
@@ -846,6 +849,11 @@ export function gameFromProduct(
     platforms,
     ...opt("description", core.description),
     ...opt("tagline", core.tagline),
+    ...opt("caseSleeve", media.caseSleeve),
+    ...opt(
+      "nintendoGameCode",
+      str(p["nintendoGameCode"]) || str(p["gameCode"]) || str(p["game_code"]) || undefined,
+    ),
     ...opt("coverUrl", media.coverUrl),
     ...opt("coverTextureUrl", media.coverTextureUrl),
     ...opt("coverTrim", media.coverTrim),

@@ -558,10 +558,14 @@ function CoverArt({
 }) {
   if (!url) {
     return (
-      <div className="flex flex-1 items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950 p-3">
-        <span className="text-center text-[9px] font-bold leading-tight text-white/70">
+      <div className="flex flex-1 flex-col justify-between bg-gradient-to-b from-[#20232b] to-[#14161c] p-2 text-white">
+        <div className="flex items-center gap-1 bg-[#d60012] -mx-2 -mt-2 px-2 py-1">
+          <span className="text-[7px] font-black tracking-wider">SWITCH</span>
+        </div>
+        <span className="my-auto text-center text-[9px] font-bold leading-tight text-white/90">
           {title}
         </span>
+        <div className="text-center text-[6px] text-white/40">Nintendo</div>
       </div>
     );
   }

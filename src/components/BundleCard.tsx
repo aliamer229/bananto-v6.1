@@ -101,36 +101,34 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
   if (layout === "compact") {
     return (
       <motion.div
-        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        whileHover={{ y: -3, transition: { duration: 0.18 } }}
         whileTap={{ scale: 0.98 }}
         onClick={handleCardClick}
-        className="w-[280px] sm:w-[320px] shrink-0 bg-[var(--card)] rounded-2xl p-3.5 border border-border shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden"
+        className="w-[200px] sm:w-[230px] md:w-[250px] shrink-0 bg-[var(--card)] rounded-2xl p-2.5 sm:p-3 border border-border/80 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden"
       >
         {/* Top badges */}
-        <div className="flex items-center justify-between gap-2 mb-2.5">
-          <div className="flex items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20">
-              <Layers className="w-3 h-3" />
-              {games.length || bundle.gameIds.length} ألعاب بحساب واحد
-            </span>
-          </div>
+        <div className="flex items-center justify-between gap-1.5 mb-2">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+            <Layers className="w-2.5 h-2.5" />
+            {games.length || bundle.gameIds.length} ألعاب
+          </span>
 
           {savingsPercent > 0 && (
-            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-2xs">
               توفير {savingsPercent}%
             </span>
           )}
         </div>
 
         {/* Visual Game Collage / Cover */}
-        <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-slate-900 mb-3 border border-border/50 group-hover:border-red-500/30 transition-colors">
+        <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-slate-900 mb-2 border border-border/40 group-hover:border-red-500/30 transition-colors">
           {games.length >= 2 ? (
             <div className="absolute inset-0 flex">
               {games.slice(0, 3).map((g, idx) => (
                 <div
                   key={g.id || idx}
-                  className="h-full flex-1 relative overflow-hidden border-r border-black/40 last:border-r-0 transform group-hover:scale-105 transition-transform duration-500"
-                  style={{ transitionDelay: `${idx * 50}ms` }}
+                  className="h-full flex-1 relative overflow-hidden border-r border-black/30 last:border-r-0 transform group-hover:scale-105 transition-transform duration-300"
+                  style={{ transitionDelay: `${idx * 40}ms` }}
                 >
                   <NintendoCover
                     product={g as Record<string, unknown>}
@@ -140,7 +138,7 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
                     alt={String(g.titleEn || (g as any).english_name || g.title || "")}
                     className="w-full h-full"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 </div>
               ))}
             </div>
@@ -152,16 +150,16 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
               fit="cover"
               alt={String(bundle.titleEn || bundle.title || "")}
               className="w-full h-full"
-              imgClassName="group-hover:scale-105 transition-transform duration-500"
+              imgClassName="group-hover:scale-105 transition-transform duration-300"
             />
           )}
 
-          <div className="absolute bottom-2 right-2 left-2 flex items-center justify-between text-white drop-shadow-md">
-            <span className="text-[10px] font-medium bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/10">
+          <div className="absolute bottom-1.5 right-1.5 left-1.5 flex items-center justify-between text-white drop-shadow-xs">
+            <span className="text-[9px] font-medium bg-black/60 backdrop-blur-xs px-1.5 py-0.5 rounded border border-white/10">
               {accountInfo.label}
             </span>
             {bundle.badge && (
-              <span className="text-[10px] font-bold bg-amber-500 text-black px-2 py-0.5 rounded-md">
+              <span className="text-[9px] font-bold bg-amber-500 text-black px-1.5 py-0.5 rounded">
                 {bundle.badge}
               </span>
             )}
@@ -169,48 +167,48 @@ export function BundleCard({ bundle, products, layout = "grid", onSelect }: Bund
         </div>
 
         {/* Content */}
-        <div className="space-y-2 flex-1 flex flex-col justify-between">
+        <div className="space-y-1.5 flex-1 flex flex-col justify-between">
           <div>
             <h4
-              className="font-bold text-sm sm:text-base text-foreground line-clamp-1 group-hover:text-red-500 transition-colors"
+              className="font-bold text-xs sm:text-sm text-foreground line-clamp-1 group-hover:text-red-500 transition-colors"
               dir="ltr"
             >
               {bundle.titleEn || bundle.title}
             </h4>
-            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+            <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
               {games.map((g) => g.titleEn || g.english_name || g.title).join(" • ") ||
                 bundle.description}
             </p>
           </div>
 
-          <div className="pt-2 border-t border-border/60 flex items-center justify-between mt-auto">
+          <div className="pt-2 border-t border-border/50 flex items-center justify-between mt-auto">
             <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-extrabold text-base sm:text-lg text-foreground">
+              <div className="flex items-baseline gap-1">
+                <span className="font-extrabold text-sm sm:text-base text-foreground">
                   {formatGenericPrice(bundle.price)}
                 </span>
                 {bundle.originalPrice && bundle.originalPrice > bundle.price && (
-                  <span className="text-xs line-through text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs line-through text-muted-foreground">
                     {formatGenericPrice(bundle.originalPrice)}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block">
-                تسليم فوري عبر المحادثة
+              <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold block">
+                تسليم فوري
               </span>
             </div>
 
             <button
               onClick={handleAddToCart}
               disabled={isAdding}
-              className={`p-2.5 rounded-xl transition-all flex items-center justify-center ${
+              className={`p-2 rounded-lg transition-all flex items-center justify-center ${
                 added
                   ? "bg-emerald-500 text-white"
-                  : "bg-red-500 hover:bg-red-600 text-white shadow-xs hover:shadow-md"
+                  : "bg-red-500 hover:bg-red-600 text-white shadow-2xs hover:shadow-xs"
               }`}
               title="إضافة للسلة"
             >
-              {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
+              {added ? <Check className="w-3.5 h-3.5" /> : <ShoppingCart className="w-3.5 h-3.5" />}
             </button>
           </div>
         </div>

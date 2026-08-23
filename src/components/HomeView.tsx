@@ -231,7 +231,67 @@ export default function HomeView({
           <StoreServices />
         </Suspense>
 
-        {/* Section 4: Latest Nintendo Games Added by Release Date - MOVED UP AS REQUESTED */}
+        {/* Section 1: Cartridge Shelf (Nintendo Switch Games) */}
+        <section className="relative mt-2 pb-2 w-full max-w-full">
+          <div className="mb-3 px-4 sm:px-8 flex items-center justify-between">
+            <h3 className="truncate text-xl font-bold text-foreground">
+              {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
+                ? "ألعاب نينتندو سويتش"
+                : t("home.nintendoSwitchGames")}
+            </h3>
+            <Link
+              to="/category/$categoryId"
+              params={{ categoryId: "nintendo_games" }}
+              className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
+            >
+              {t("common.viewAll")}
+            </Link>
+          </div>
+
+          <div className="relative mb-6 mt-2 min-h-[200px] w-full max-w-full">
+            {isPending && adminProducts.length === 0 ? (
+              <CartridgeSkeleton />
+            ) : (
+              <CartridgeStrip
+                games={adminProducts
+                  .filter((p) => isGameProduct(p))
+                  .map((p) => ({
+                    id: p.id,
+                    slug: p.slug,
+                    title: p.titleEn || p.english_name || p.title,
+                    price: p.price,
+                    image: resolveNintendoImageUrl(p, "listing-card"),
+                    source: p,
+                    subtitle: p.developer || p.publisher || "Nintendo Switch",
+                    rating: p.metacriticRating ?? null,
+                    platform: p.platform,
+                  }))}
+                clickedId={clickedCartridgeId}
+                onSelect={(game: any) => {
+                  if (clickedCartridgeId != null) return;
+                  setClickedCartridgeId(game.id);
+                  setTimeout(() => {
+                    onGameClick(game, true);
+                  }, 400);
+                  setTimeout(() => setClickedCartridgeId(null), 6000);
+                }}
+              />
+            )}
+
+            <div className="absolute bottom-[-18px] left-0 right-0 flex flex-col z-0">
+              <div className="h-[6px] w-full bg-gradient-to-b from-[var(--gray-1)] to-[var(--gray-2)]"></div>
+              <div className="h-[12px] w-full bg-gradient-to-b from-[var(--gray-3)] to-[var(--gray-4)] shadow-[0_15px_25px_rgba(0,0,0,0.15)]"></div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 2: Account Bundles (Horizontal Strip) */}
+        <BundleStrip
+          bundles={(store?.bundles ?? []) as AccountBundle[]}
+          products={store?.products ?? []}
+        />
+
+        {/* Section 3: Latest Nintendo Games Added by Release Date */}
         <LazySection>
           <section className="mt-2 w-full max-w-full">
             <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
@@ -368,146 +428,87 @@ export default function HomeView({
           </section>
         </LazySection>
 
-        {/* Dynamic Categories */}
-        {adminCategories.map((category, index) => {
-          const mapGame = (p: any) => ({
-            id: p.id,
-            slug: p.slug,
-            title: p.titleEn || p.english_name || p.title,
-            price: p.price,
-            image: resolveNintendoImageUrl(p, "listing-card"),
-            source: p,
-            subtitle: p.developer || p.publisher || category.title,
-            rating: p.metacriticRating ?? null,
-            platform: p.platform,
-          });
+        {/* Dynamic / Custom Categories (excluding standard sections handled above and below) */}
+        {adminCategories
+          .filter((category) => {
+            const catId = String(category.id || category.key || "").toLowerCase();
+            const catTitle = String(category.title || category.name || "").toLowerCase();
+            // Skip categories that correspond to known standard sections to prevent duplicate rendering
+            if (
+              catId === "nintendo-switch-games" ||
+              catId === "cat_nintendo" ||
+              catId === "nintendo_games" ||
+              catId === "cat_1" ||
+              catId === "hardware" ||
+              catId === "cat_hardware" ||
+              catId === "accessories" ||
+              catId === "cat_accessories" ||
+              catId === "amiibo" ||
+              catId === "cat_amiibo" ||
+              catId === "gift-cards" ||
+              catId === "cat_gift_cards" ||
+              catId === "used" ||
+              catId === "cat_used" ||
+              catId === "bundles" ||
+              catTitle.includes("nintendo switch") ||
+              catTitle.includes("هاردوير") ||
+              catTitle.includes("إكسسوار") ||
+              catTitle.includes("amiibo") ||
+              catTitle.includes("تعبئة") ||
+              catTitle.includes("مستخدم")
+            ) {
+              return false;
+            }
+            return true;
+          })
+          .map((category) => {
+            const mapGame = (p: any) => ({
+              id: p.id,
+              slug: p.slug,
+              title: p.titleEn || p.english_name || p.title,
+              price: p.price,
+              image: resolveNintendoImageUrl(p, "listing-card"),
+              source: p,
+              subtitle: p.developer || p.publisher || category.title || category.name,
+              rating: p.metacriticRating ?? null,
+              platform: p.platform,
+            });
 
-          // First section is the cartridge shelf: it shows games ONLY.
-          const isCartridgeSection = index === 0;
-          const categoryProducts = (
-            isCartridgeSection
-              ? adminProducts.filter((p) => isGameProduct(p))
-              : adminProducts.filter((p) => {
-                  const resolved = getProductCategory(p);
-                  if (
-                    category.id === "nintendo-switch-games" ||
-                    category.id === "cat_nintendo" ||
-                    category.id === "nintendo_games"
-                  ) {
-                    return resolved === "game";
-                  }
-                  if (category.id === "hardware" || category.id === "cat_hardware") {
-                    return resolved === "hardware";
-                  }
-                  if (category.id === "amiibo" || category.id === "cat_amiibo") {
-                    return resolved === "amiibo";
-                  }
-                  if (category.id === "accessories" || category.id === "cat_accessories") {
-                    return resolved === "accessory";
-                  }
-                  if (category.id === "gift-cards" || category.id === "cat_gift_cards") {
-                    return resolved === "gift_card";
-                  }
-                  if (category.id === "used" || category.id === "cat_used") {
-                    return resolved === "used";
-                  }
-                  return p.category === category.id || p.categoryId === category.id;
-                })
-          ).map(mapGame);
+            const categoryProducts = adminProducts
+              .filter((p) => p.category === category.id || p.categoryId === category.id)
+              .map(mapGame);
 
-          if (categoryProducts.length === 0) return null;
+            if (categoryProducts.length === 0) return null;
 
-          // Handle Nintendo Switch Games section visibility
-          const isNintendoGames =
-            category.id === "nintendo-switch-games" ||
-            category.id === "nintendo_games" ||
-            category.id === "cat_nintendo" ||
-            category.title?.toLowerCase().includes("nintendo switch");
-
-          if (index === 0) {
             return (
-              <React.Fragment key={category.id}>
-                <section className="relative mt-2 pb-6 w-full max-w-full">
-                  <div className="mb-3 px-4 sm:px-8 flex items-center justify-between">
-                    <h3 className="truncate text-xl font-bold text-foreground">
-                      {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
-                        ? "ألعاب نينتندو سويتش"
-                        : t("home.nintendoSwitchGames")}
+              <LazySection key={category.id}>
+                <section className="mt-6 w-full max-w-full">
+                  <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
+                    <h3 className="text-xl font-bold text-foreground">
+                      {t(category.title || category.name)}
                     </h3>
                     <Link
                       to="/category/$categoryId"
-                      params={{ categoryId: "nintendo_games" }}
+                      params={{ categoryId: category.id }}
                       className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
                     >
                       {t("common.viewAll")}
                     </Link>
                   </div>
-
-                  <div className="relative mb-8 mt-2 min-h-[200px] w-full max-w-full">
-                    {isPending && adminProducts.length === 0 ? (
-                      <CartridgeSkeleton />
-                    ) : (
-                      <CartridgeStrip
-                        games={categoryProducts}
-                        clickedId={clickedCartridgeId}
-                        onSelect={(game: any) => {
-                          if (clickedCartridgeId != null) return;
-                          setClickedCartridgeId(game.id);
-                          setTimeout(() => {
-                            onGameClick(game, true);
-                          }, 400);
-                          setTimeout(() => setClickedCartridgeId(null), 6000);
-                        }}
-                      />
-                    )}
-
-                    <div className="absolute bottom-[-18px] left-0 right-0 flex flex-col z-0">
-                      <div className="h-[6px] w-full bg-gradient-to-b from-[var(--gray-1)] to-[var(--gray-2)]"></div>
-                      <div className="h-[12px] w-full bg-gradient-to-b from-[var(--gray-3)] to-[var(--gray-4)] shadow-[0_15px_25px_rgba(0,0,0,0.15)]"></div>
-                    </div>
-                  </div>
+                  <ProductStrip
+                    products={categoryProducts}
+                    onSelect={(product: any) => onGameClick(product)}
+                    formatPrice={formatGenericPrice}
+                    onPress={() => playSound("bumper_end", 0.6)}
+                    ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                    loading={isPending}
+                  />
                 </section>
-
-                {/* Section 2: Account Bundles (Horizontal Strip) */}
-                <BundleStrip
-                  bundles={(store?.bundles ?? []) as AccountBundle[]}
-                  products={store?.products ?? []}
-                />
-              </React.Fragment>
+              </LazySection>
             );
-          }
+          })}
 
-          return (
-            <LazySection key={category.id}>
-              <section className="mt-4 w-full max-w-full">
-                <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-                  <h3 className="text-xl font-bold text-foreground">{t(category.title)}</h3>
-                  {isNintendoGames && (
-                    <Link
-                      to="/category/$categoryId"
-                      params={{
-                        categoryId: category.id === "cat_nintendo" ? "nintendo_games" : category.id,
-                      }}
-                      className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
-                    >
-                      {t("common.viewAll")}
-                    </Link>
-                  )}
-                </div>
-                <ProductStrip
-                  products={categoryProducts}
-                  onSelect={(product: any) => onGameClick(product)}
-                  formatPrice={formatGenericPrice}
-                  onPress={() => playSound("bumper_end", 0.6)}
-                  ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-                  loading={isPending}
-                />
-              </section>
-            </LazySection>
-          );
-        })}
-
-        {/* Section 5: Hardware */}
+        {/* Section 5: Hardware & Accessories (Single Unified Section) */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
             <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
@@ -522,18 +523,23 @@ export default function HomeView({
             </div>
             <ProductStrip
               products={adminProducts
-                .filter(
-                  (p) =>
-                    getProductCategory(p) === "hardware" ||
+                .filter((p) => {
+                  const resolved = getProductCategory(p);
+                  return (
+                    resolved === "hardware" ||
+                    resolved === "accessory" ||
                     p.category === "hardware" ||
-                    p.categoryId === "hardware",
-                )
-                .slice(0, 8)
+                    p.category === "accessories" ||
+                    p.categoryId === "hardware" ||
+                    p.categoryId === "accessories"
+                  );
+                })
+                .slice(0, 12)
                 .map((p) => ({
                   id: p.id,
                   slug: p.slug,
                   title: p.titleEn || p.english_name || p.title,
-                  subtitle: p.developer || "Hardware",
+                  subtitle: p.developer || p.publisher || "Hardware & Accessories",
                   price: p.price,
                   image: resolveNintendoImageUrl(p, "listing-card"),
                   source: p,
@@ -569,7 +575,7 @@ export default function HomeView({
                     p.category === "amiibo" ||
                     p.categoryId === "amiibo",
                 )
-                .slice(0, 8)
+                .slice(0, 12)
                 .map((p) => ({
                   id: p.id,
                   slug: p.slug,
@@ -589,48 +595,7 @@ export default function HomeView({
           </section>
         </LazySection>
 
-        {/* Section 7: Accessories */}
-        <LazySection>
-          <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-              <h3 className="text-xl font-bold text-foreground">الإكسسوارات</h3>
-              <Link
-                to="/category/$categoryId"
-                params={{ categoryId: "accessories" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline"
-              >
-                عرض الكل
-              </Link>
-            </div>
-            <ProductStrip
-              products={adminProducts
-                .filter(
-                  (p) =>
-                    getProductCategory(p) === "accessory" ||
-                    p.category === "accessories" ||
-                    p.categoryId === "accessories",
-                )
-                .slice(0, 8)
-                .map((p) => ({
-                  id: p.id,
-                  slug: p.slug,
-                  title: p.titleEn || p.english_name || p.title,
-                  subtitle: p.developer || "Accessory",
-                  price: p.price,
-                  image: resolveNintendoImageUrl(p, "listing-card"),
-                  source: p,
-                  rating: p.metacriticRating,
-                }))}
-              onSelect={(product: any) => onGameClick(product)}
-              formatPrice={formatGenericPrice}
-              onPress={() => playSound("bumper_end", 0.6)}
-              ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-              loading={isPending}
-            />
-          </section>
-        </LazySection>
-
-        {/* Section 8: Gift Cards */}
+        {/* Section 7: Gift Cards */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
             <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
@@ -653,7 +618,7 @@ export default function HomeView({
                     p.category === "gift-cards" ||
                     p.categoryId === "gift-cards",
                 )
-                .slice(0, 8)
+                .slice(0, 12)
                 .map((p) => ({
                   id: p.id,
                   slug: p.slug,
@@ -673,7 +638,7 @@ export default function HomeView({
           </section>
         </LazySection>
 
-        {/* Section 9: Used Parts & Games */}
+        {/* Section 8: Used Parts & Games */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
             <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
@@ -694,7 +659,7 @@ export default function HomeView({
                     p.category === "used" ||
                     p.categoryId === "used",
                 )
-                .slice(0, 8)
+                .slice(0, 12)
                 .map((p) => ({
                   id: p.id,
                   slug: p.slug,
