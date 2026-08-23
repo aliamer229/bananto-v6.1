@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import CodeValidity from "@/components/CodeValidity";
 import { isVideoUrl } from "@/lib/uploads";
 import {
   Check,
@@ -299,6 +300,8 @@ function MessageBody({ message, order }: { message: ChatMessage; order: Order })
               )}
             </button>
           </div>
+          {/* Real remaining time from the server-stamped expiry, not a local timer. */}
+          <CodeValidity expiresAt={message.body["expiresAt"] as string | undefined} />
         </div>
       );
     }

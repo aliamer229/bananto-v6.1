@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { readCouponUsage } from "./coupon-usage.server";
 import { z } from "zod";
 import {
   d1All,
@@ -178,16 +179,10 @@ export const validateCoupon = createServerFn({ method: "POST" })
     // The row is snake_case; reading it as a `Coupon` shape
     const coupon = rowToCoupon(row);
 
-    const [globalUsage, userUsage, lifetimeSingleItem] = await Promise.all([
-      d1First<{ total: number }>(
-        `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?`,
-        coupon.id,
-      ),
-      d1First<{ total: number }>(
-        `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?`,
-        coupon.id,
-        userId,
-      ),
+    // Same counters checkout reads, so the cart can never promise a discount
+    // checkout will then refuse.
+    const [usage, lifetimeSingleItem] = await Promise.all([
+      readCouponUsage(coupon.id, userId),
       d1First<{ total: number }>(
         `SELECT COUNT(*) as total FROM coupon_redemptions WHERE user_id = ? AND (coupon_type = 'single_item_percent' OR coupon_type = 'single_game_50')`,
         userId,
@@ -199,8 +194,8 @@ export const validateCoupon = createServerFn({ method: "POST" })
       userId,
       orderAmount: data.orderAmount,
       items: data.items,
-      globalUses: Number(globalUsage?.total ?? 0),
-      userUses: Number(userUsage?.total ?? 0),
+      globalUses: usage.globalUses,
+      userUses: usage.userUses,
       lifetimeSingleItemUses: Number(lifetimeSingleItem?.total ?? 0),
       targetProductId: data.targetProductId,
     });

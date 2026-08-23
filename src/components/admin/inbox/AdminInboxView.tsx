@@ -339,30 +339,32 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
           ),
         );
 
-        // Auto-advance admin to next digital order in queue upon sending OTP
-        if (newMsgData.kind === "item_verification_code" || (newMsgData.body as any)?.code) {
-          const orderMap = new Map(orders.map((o) => [o.id, o]));
-          const nextOrderThread = threads.find((t) => {
-            if (t.id === selectedThreadId || t.id === newMsgData.threadId) return false;
-            if (t.status !== "open" || t.mode === "RESOLVED") return false;
-            const ord = t.orderId ? orderMap.get(t.orderId) : undefined;
-            if (ord) {
-              return (
-                ord.status === "processing" ||
-                ord.status === "pending" ||
-                ord.status === "delivering"
-              );
-            }
-            return t.chatType === "ORDER_SUPPORT" || t.chatType === "DELIVERY";
-          });
+        /*
+          Advance only when the *server* says the order is finished.
 
-          if (nextOrderThread) {
+          This used to fire on any verification code, so an order with three
+          games threw the admin out after the first one. It also guessed the
+          "next" order from whatever `threads` happened to hold in memory rather
+          than the real queue. The server now decides both — see
+          `finalizeDeliveryIfComplete` — and reports the next order in queue
+          order; the client just follows.
+        */
+        if (res?.orderFinished) {
+          // The queue moved: everyone's position and the order list are stale.
+          void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+          void queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+          const nextThreadId = res.nextOrder?.threadId;
+          if (nextThreadId) {
             setTimeout(() => {
-              setSelectedThreadId(nextOrderThread.id);
-              toast.success("تم إرسال كود التحقق بنجاح والانتقال للطلب التالي في الطابور ⏭️");
+              setSelectedThreadId(nextThreadId);
+              toast.success(
+                `اكتمل تسليم الطلب — بانتظار تأكيد العميل. تم الانتقال للطلب التالي ${
+                  res.nextOrder?.code ? `#${res.nextOrder.code}` : ""
+                } ⏭️`,
+              );
             }, 350);
           } else {
-            toast.success("تم إرسال كود التحقق (OTP) بنجاح - تم إكمال تجهيز جميع الطلبات الحالية 🎉");
+            toast.success("اكتمل تسليم الطلب — بانتظار تأكيد العميل. لا توجد طلبات أخرى في الطابور 🎉");
           }
         }
       }

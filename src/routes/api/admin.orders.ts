@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { DELIVERY_OTP_TTL_MINUTES, deliveryOtpExpiry } from "@/lib/delivery-otp";
 
 import {
   appendMessage,
@@ -182,6 +183,11 @@ export const Route = createFileRoute("/api/admin/orders")({
           if (!order) return json({ error: "الطلب غير موجود" }, { status: 404 });
           const now = new Date().toISOString();
           let next: Order = order;
+          // Set when a delivery action finished the order, so the response can
+          // tell the admin UI where to go next.
+          let deliveryCompletion:
+            | import("@/lib/order-delivery.server").DeliveryCompletion
+            | undefined;
 
           switch (data.action) {
             case "delete_order": {
@@ -609,7 +615,9 @@ export const Route = createFileRoute("/api/admin/orders")({
               if (targetThreadId) {
                 const otpClientMsgId =
                   data.clientMessageId || `otp-${targetItemId}-${code}-${now.slice(0, 16)}`;
-                const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+                // Server stamps the absolute expiry; every surface derives its
+                // countdown from this instant, so a refresh shows real time left.
+                const expiresAt = deliveryOtpExpiry(now);
                 await appendMessage(targetThreadId, {
                   senderRole: "admin",
                   senderName: adminName,
@@ -620,7 +628,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                     code,
                     verificationCode: code,
                     title: itemTitle,
-                    expiresInMinutes: 60,
+                    expiresInMinutes: DELIVERY_OTP_TTL_MINUTES,
                     expiresAt,
                     sentAt: now,
                     clientMessageId: otpClientMsgId,
@@ -646,26 +654,16 @@ export const Route = createFileRoute("/api/admin/orders")({
                 deliveredAt: now,
               });
 
-              // Check if all order items are delivered / completed
-              const { areAllOrderItemsDelivered } = await import("@/lib/orders.server");
-              if (areAllOrderItemsDelivered(next)) {
-                // Free the admin and move order to awaiting_customer_confirmation immediately
-                next = {
-                  ...next,
-                  status: "awaiting_customer_confirmation",
-                  updatedAt: now,
-                };
-                try {
-                  const { d1Run } = await import("@/lib/db.server");
-                  await d1Run(
-                    `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-                    now,
-                    order.id,
-                  );
-                } catch {
-                  // Fallback
-                }
-              }
+              /*
+                If that was the last item, the admin is done with this order:
+                it leaves the queue, moves to awaiting_customer_confirmation and
+                the response carries the next order to work on. Shared with the
+                /api/chat path so both ways of sending a code behave the same.
+              */
+              const { finalizeDeliveryIfComplete } = await import("@/lib/order-delivery.server");
+              const completion = await finalizeDeliveryIfComplete(next, admin.id, now);
+              next = completion.order;
+              deliveryCompletion = completion;
 
               // Safe audit log & status history in D1
               try {
@@ -682,11 +680,13 @@ export const Route = createFileRoute("/api/admin/orders")({
                   now,
                 );
                 await d1Run(
-                  `INSERT INTO order_status_history (id, order_id, status, comment, created_at)
-                   VALUES (?, ?, ?, ?, ?)`,
+                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
                   randomId("osh"),
                   order.id,
                   order.status,
+                  next.status,
+                  admin.id,
                   `تم إرسال كود التحقق (OTP) للمنتج: ${itemTitle}`,
                   now,
                 );
@@ -705,7 +705,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                 );
                 if (link?.telegram_chat_id) {
                   const { sendTelegramMessage } = await import("@/lib/telegram.server");
-                  const otpText = `🔐 *كود التحقق الخاص بطلبك #${order.code}*\n\nالخدمة: ${itemTitle}\nالكود: \`${code}\`\n\nصالح لمدة 60 دقيقة. استخدمه لإكمال تسجيل الدخول.`;
+                  const otpText = `🔐 *كود التحقق الخاص بطلبك #${order.code}*\n\nالخدمة: ${itemTitle}\nالكود: \`${code}\`\n\nصالح لمدة ${DELIVERY_OTP_TTL_MINUTES} دقيقة. استخدمه لإكمال تسجيل الدخول.`;
                   await sendTelegramMessage(String(link.telegram_chat_id), otpText);
                 }
               } catch {
@@ -791,7 +791,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                   randomId("osh"),
                   order.id,
                   order.status,
-                  user.id,
+                  admin.id,
                   now,
                 );
 
@@ -802,7 +802,7 @@ export const Route = createFileRoute("/api/admin/orders")({
                   randomId("oshv2"),
                   order.id,
                   order.status,
-                  user.id,
+                  admin.id,
                   now,
                 );
               } catch (err) {
@@ -896,7 +896,15 @@ export const Route = createFileRoute("/api/admin/orders")({
             console.warn("Failed to notify user on order update", err);
           }
 
-          return json({ success: true, message: "تمت العملية بنجاح", order: redactOrder(next) });
+          return json({
+            success: true,
+            message: "تمت العملية بنجاح",
+            order: redactOrder(next),
+            // Present only when this action completed the delivery. The admin UI
+            // advances on `orderFinished`, never on "an OTP was sent".
+            orderFinished: Boolean(deliveryCompletion?.finished),
+            ...(deliveryCompletion?.next ? { nextOrder: deliveryCompletion.next } : {}),
+          });
         }),
     },
   },

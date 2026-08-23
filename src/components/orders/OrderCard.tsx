@@ -39,6 +39,12 @@ const statusConfig: Record<string, StatusInfo> = {
     color: "text-purple-600",
     bgColor: "bg-purple-50",
   },
+  awaiting_customer_confirmation: {
+    label: "بانتظار تأكيدك",
+    icon: CheckCircle2,
+    color: "text-teal-600",
+    bgColor: "bg-teal-50",
+  },
   completed: {
     label: "مكتمل",
     icon: CheckCircle2,

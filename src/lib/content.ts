@@ -599,33 +599,39 @@ export const DEFAULT_CONTENT: ContentDoc = {
     history_empty_title_ar: "لا توجد مقايضات بعد",
     history_empty_description_ar: "ابدأ بتقييم لعبتك الأولى وسيظهر سجل الطلبات هنا.",
     status_content: [
+      // One entry per state in the current lifecycle, in order. The previous
+      // list carried three payout synonyms and two review states, so a customer
+      // could see "بانتظار المراجعة" twice with no idea which was which.
       {
-        status: "waiting_review",
-        title_ar: "بانتظار المراجعة",
-        description_ar: "وصل طلبك ونراجع بيانات اللعبة والتقييم.",
+        status: "awaiting_pricing",
+        title_ar: "بانتظار التسعير",
+        description_ar: "وصل طلبك، وفريقنا يحدد السعر يدوياً لهذه اللعبة.",
       },
       {
-        status: "waiting_shipment",
-        title_ar: "بانتظار تسليم اللعبة",
-        description_ar: "تمت الموافقة المبدئية وننتظر وصول اللعبة.",
+        status: "priced",
+        title_ar: "تم التسعير",
+        description_ar: "تم تحديد السعر ونراجعه قبل إرسال العرض إليك.",
       },
-      { status: "received", title_ar: "تم الاستلام", description_ar: "وصلت اللعبة إلينا بنجاح." },
+      {
+        status: "awaiting_customer_approval",
+        title_ar: "بانتظار موافقتك",
+        description_ar: "العرض جاهز — راجع السعر النهائي ووافق للمتابعة.",
+      },
+      {
+        status: "customer_approved",
+        title_ar: "تمت الموافقة",
+        description_ar: "شكراً لك، سنبدأ بترتيب استلام اللعبة.",
+      },
+      {
+        status: "awaiting_receipt",
+        title_ar: "بانتظار الاستلام",
+        description_ar: "ننتظر وصول اللعبة إلينا.",
+      },
       {
         status: "inspecting",
         title_ar: "قيد الفحص",
         description_ar: "نفحص القرص أو الشريحة والعلبة والحالة الفعلية.",
       },
-      {
-        status: "approved",
-        title_ar: "تم اعتماد التقييم",
-        description_ar: "اكتمل الفحص وتم اعتماد القيمة.",
-      },
-      {
-        status: "coupon_issued",
-        title_ar: "تم إضافة رصيد المتجر",
-        description_ar: "تم إصدار الرصيد المستحق.",
-      },
-      { status: "cash_paid", title_ar: "تم الدفع", description_ar: "تم تنفيذ الدفع النقدي." },
       { status: "completed", title_ar: "مكتملة", description_ar: "اكتملت عملية الاستبدال بنجاح." },
       {
         status: "rejected",

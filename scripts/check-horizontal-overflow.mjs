@@ -45,6 +45,18 @@ const PATHS = (
   )
 ).split(",");
 const SETTLE = Number(args.settle ?? 5000);
+/**
+ * Extra cookies, so authenticated surfaces (the admin dashboard, the inbox, the
+ * wallet) can be swept too — those are exactly the dense screens where a stray
+ * fixed width shows up first. Format: `name=value; name2=value2`.
+ */
+const EXTRA_COOKIE = args.cookie ?? process.env.SWEEP_COOKIE ?? "";
+/**
+ * CSS selectors to click before measuring, one per page load. Used to open
+ * dialogs and drawers: a modal that renders off-screen is invisible to a sweep
+ * that never opens it.
+ */
+const OPEN_SELECTORS = (args.open ?? "").split("|").filter(Boolean);
 
 /** Runs in the page. Keep it self-contained — it is serialised across. */
 const PROBE = () => {
@@ -120,9 +132,31 @@ for (const path of PATHS) {
       locale: "ar",
       extraHTTPHeaders: {
         "accept-language": "ar,en;q=0.8",
-        cookie: "bananto_lang=ar; bananto_lang_manual=1",
+        cookie: `bananto_lang=ar; bananto_lang_manual=1${EXTRA_COOKIE ? `; ${EXTRA_COOKIE}` : ""}`,
       },
     });
+    /*
+      Set the session as a real cookie rather than only a request header: the
+      app's own client-side fetches use the browser's cookie jar, so a
+      header-only session renders the shell but leaves every authenticated
+      query 401 — and an empty page cannot overflow, which would make this
+      sweep quietly meaningless on admin screens.
+    */
+    if (EXTRA_COOKIE) {
+      const jar = EXTRA_COOKIE.split(";")
+        .map((pair) => pair.trim())
+        .filter(Boolean)
+        .map((pair) => {
+          const eq = pair.indexOf("=");
+          return {
+            name: pair.slice(0, eq).trim(),
+            value: pair.slice(eq + 1).trim(),
+            url: BASE,
+          };
+        });
+      await context.addCookies(jar);
+    }
+
     const page = await context.newPage();
     try {
       await page.goto(BASE + path, { waitUntil: "domcontentloaded", timeout: 60_000 });
@@ -137,6 +171,19 @@ for (const path of PATHS) {
         window.scrollTo(0, 0);
       });
       await page.waitForTimeout(1200);
+
+      // Open any dialogs the caller asked for, then let them settle.
+      for (const selector of OPEN_SELECTORS) {
+        try {
+          const target = page.locator(selector).first();
+          if (await target.count()) {
+            await target.click({ timeout: 4000, force: true });
+            await page.waitForTimeout(900);
+          }
+        } catch {
+          // A selector that is not on this page is not a failure.
+        }
+      }
 
       const probe = await page.evaluate(PROBE);
       const scrolls = probe.scrollWidth > probe.innerWidth + 1;

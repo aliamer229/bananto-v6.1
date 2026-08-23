@@ -14,6 +14,7 @@ import {
 } from "./db.server";
 import { sendTelegramMessage } from "./telegram.server";
 import { checkCoupon, couponDiscount, rowToCoupon, type CouponRow } from "./coupons";
+import { claimCouponUse, readCouponUsage, releaseCouponUse } from "./coupon-usage.server";
 import type {
   Address,
   Order,
@@ -227,6 +228,9 @@ export async function createOrderForUser(
   let discountAmount = 0;
   let appliedCoupon: Coupon | null = null;
   let appliedTargetProductId: string | null = null;
+  // Set once a coupon use has actually been claimed, so it can be handed back
+  // if a later step of checkout fails.
+  let couponClaimed: { couponId: string; userId: string } | null = null;
 
   if (couponCode) {
     const row = await d1First<CouponRow>(
@@ -238,16 +242,8 @@ export async function createOrderForUser(
     // Mapped through the same reader the validator uses, so what the member was
     // told at the cart is exactly what checkout applies.
     const coupon = rowToCoupon(row);
-    const [globalUsage, userUsage, lifetimeSingleItem] = await Promise.all([
-      d1First<{ total: number }>(
-        "SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?",
-        coupon.id,
-      ),
-      d1First<{ total: number }>(
-        "SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ? AND user_id = ?",
-        coupon.id,
-        user.id,
-      ),
+    const [usage, lifetimeSingleItem] = await Promise.all([
+      readCouponUsage(coupon.id, user.id),
       d1First<{ total: number }>(
         "SELECT COUNT(*) as total FROM coupon_redemptions WHERE user_id = ? AND (coupon_type = 'single_item_percent' OR coupon_type = 'single_game_50')",
         user.id,
@@ -259,12 +255,30 @@ export async function createOrderForUser(
       userId: user.id,
       orderAmount: itemsTotal,
       items,
-      globalUses: Number(globalUsage?.total ?? 0),
-      userUses: Number(userUsage?.total ?? 0),
+      globalUses: usage.globalUses,
+      userUses: usage.userUses,
       lifetimeSingleItemUses: Number(lifetimeSingleItem?.total ?? 0),
       targetProductId,
     });
     if (!verdict.ok) throw new Error("coupon_invalid");
+
+    /*
+      The read above is advisory; this is the decision.
+
+      Between reading the counters and writing the order, another checkout by
+      the same member can pass the same read. Claiming the use atomically is
+      what makes "one per customer" actually mean one — and it is also where a
+      global cap, when one is set, is spent.
+    */
+    const claim = await claimCouponUse({
+      couponId: coupon.id,
+      userId: user.id,
+      perUserLimit: coupon.perUserLimit,
+      totalLimit: coupon.usageLimit,
+      now,
+    });
+    if (!claim.ok) throw new Error("coupon_invalid");
+    couponClaimed = { couponId: coupon.id, userId: user.id };
 
     const discountRes = couponDiscount(coupon, itemsTotal, items, targetProductId);
     discountAmount = discountRes.discount;
@@ -282,6 +296,11 @@ export async function createOrderForUser(
   );
 
   if (needsWalletPayment && (user.walletBalance || 0) < finalItemsTotal) {
+    // The coupon use was claimed a moment ago; give it back rather than
+    // burning a member's single use on an order that never happened.
+    if (couponClaimed) {
+      await releaseCouponUse({ ...couponClaimed, releaseGlobal: true }).catch(() => {});
+    }
     throw new Error("insufficient_balance");
   }
 
@@ -367,6 +386,9 @@ export async function createOrderForUser(
       },
     ]);
     if (Number(payment[0]?.meta?.changes ?? 0) !== 1) {
+      if (couponClaimed) {
+        await releaseCouponUse({ ...couponClaimed, releaseGlobal: true }).catch(() => {});
+      }
       throw new Error("insufficient_balance");
     }
   }

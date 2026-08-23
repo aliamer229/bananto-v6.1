@@ -387,7 +387,15 @@ export const api = {
     pageContext?: { path?: string; productId?: string; productTitle?: string };
     viewHistory?: { productId: string; title: string }[];
   }) =>
-    request<{ message: ChatMessage; assistant?: ChatMessage | null; clientMessageId?: string }>(
+    request<{
+      message: ChatMessage;
+      assistant?: ChatMessage | null;
+      clientMessageId?: string;
+      /** True when this message was the final delivery item on its order. */
+      orderFinished?: boolean;
+      /** The next order in the preparation queue, when this one just finished. */
+      nextOrder?: { orderId: string; threadId?: string; code?: string; userName?: string };
+    }>(
       "/api/chat",
       {
         method: "POST",

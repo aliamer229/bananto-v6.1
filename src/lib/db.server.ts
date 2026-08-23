@@ -1,4 +1,5 @@
 import { randomAvatar, randomDisplayName } from "./avatars";
+import { DELIVERY_OTP_TTL_MINUTES, deliveryOtpExpiry } from "./delivery-otp";
 import { randomId, hashPassword } from "./crypto.server";
 import {
   d1All as d1RawAll,
@@ -1604,6 +1605,24 @@ export async function appendMessage(
   const body = { ...(message.body || {}) };
   if (clientMessageId) {
     body["clientMessageId"] = clientMessageId;
+  }
+
+  /*
+    Every verification code gets its expiry stamped here, by the server, at the
+    moment it is persisted.
+
+    There are several ways to send one — the dedicated admin action, the account
+    tools modal, a quick reply — and each used to decide the lifetime for itself
+    (or not at all). Stamping it at the single point they all funnel through is
+    what makes the 60 minutes a property of the code rather than a label the
+    sender happened to attach, and it is what lets a refreshed card compute the
+    real time remaining instead of restarting a local timer.
+  */
+  if (message.kind === "item_verification_code") {
+    const createdAt = message.createdAt || new Date().toISOString();
+    if (!body["expiresAt"]) body["expiresAt"] = deliveryOtpExpiry(createdAt);
+    body["expiresInMinutes"] = DELIVERY_OTP_TTL_MINUTES;
+    if (!body["sentAt"]) body["sentAt"] = createdAt;
   }
 
   const full: ChatMessage = {

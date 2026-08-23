@@ -1,4 +1,6 @@
 import React, { useState, Component, type ErrorInfo, type ReactNode } from "react";
+import CodeValidity from "@/components/CodeValidity";
+import { DELIVERY_OTP_TTL_MINUTES } from "@/lib/delivery-otp";
 import { isVideoUrl } from "@/lib/uploads";
 import {
   Key,
@@ -239,7 +241,7 @@ function InnerMessageCard({
           <VerificationOtpCard
             code={body.code || body.verificationCode || ""}
             title={body.title || body.gameName || null}
-            expiresInMinutes={body.expiresInMinutes || 10}
+            expiresInMinutes={body.expiresInMinutes || DELIVERY_OTP_TTL_MINUTES}
             locale="ar"
           />
         </div>
@@ -372,10 +374,8 @@ function InnerMessageCard({
                 </div>
               )}
 
-              {body.expiresInMinutes ? (
-                <div className="text-[10px] opacity-80 text-center">
-                  صالح لمدة {body.expiresInMinutes} دقيقة
-                </div>
+              {body.expiresAt || body.expiresInMinutes ? (
+                <CodeValidity expiresAt={body.expiresAt as string | undefined} />
               ) : null}
 
               {body.instructions && (
