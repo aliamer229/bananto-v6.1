@@ -16,6 +16,8 @@ import {
 import { toast } from "sonner";
 
 import { normalizeAccountCard, isRenderableAccountCard } from "@/lib/account-cards";
+import CodeValidity from "@/components/CodeValidity";
+import { DELIVERY_OTP_TTL_MINUTES } from "@/lib/delivery-otp";
 
 interface AccountCardProps {
   kind: string;
@@ -136,11 +138,14 @@ function CopyField({
 export function VerificationOtpCard({
   code,
   title,
-  expiresInMinutes = 10,
+  expiresAt,
+  expiresInMinutes = DELIVERY_OTP_TTL_MINUTES,
   locale = "ar",
 }: {
   code: string;
   title?: string | null;
+  /** Server-stamped instant the code dies. Preferred over any minute count. */
+  expiresAt?: string | null | undefined;
   expiresInMinutes?: number;
   locale?: "ar" | "en";
 }) {
@@ -210,13 +215,25 @@ export function VerificationOtpCard({
         </button>
       </div>
 
-      {/* 4. Small Expiration Subtitle */}
-      <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 font-medium">
-        <Clock className="h-3 w-3 shrink-0 opacity-70" />
-        <span>
-          {isAr ? `صالح لمدة ${expiresInMinutes} دقائق` : `Valid for ${expiresInMinutes} minutes`}
-        </span>
-      </div>
+      {/*
+        4. How long the code is good for.
+
+        `expiresAt` is a fact the server stamped on the message, so prefer it:
+        it counts down for real and a code that died while the tab was closed
+        comes back already marked expired. The minute count is only the
+        fallback for a card sent before that stamp existed — and its default is
+        the real TTL, never the 10 minutes this used to claim.
+      */}
+      {expiresAt ? (
+        <CodeValidity expiresAt={expiresAt} className="text-start" />
+      ) : (
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground/80 font-medium">
+          <Clock className="h-3 w-3 shrink-0 opacity-70" />
+          <span>
+            {isAr ? `صالح لمدة ${expiresInMinutes} دقيقة` : `Valid for ${expiresInMinutes} minutes`}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -234,11 +251,16 @@ export function AccountCard({
   // DEDICATED CLEAN OTP CARD
   if (card.type === "verification" && card.verificationCode) {
     const rawExpires =
-      typeof body?.["expiresInMinutes"] === "number" ? body["expiresInMinutes"] : 10;
+      typeof body?.["expiresInMinutes"] === "number" && body["expiresInMinutes"] > 0
+        ? (body["expiresInMinutes"] as number)
+        : DELIVERY_OTP_TTL_MINUTES;
+    const expiresAt =
+      typeof body?.["expiresAt"] === "string" ? (body["expiresAt"] as string) : null;
     return (
       <VerificationOtpCard
         code={card.verificationCode}
         title={card.title}
+        expiresAt={expiresAt}
         expiresInMinutes={rawExpires}
         locale={locale}
       />

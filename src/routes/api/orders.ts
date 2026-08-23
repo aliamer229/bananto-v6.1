@@ -24,6 +24,7 @@ import { requireUser } from "@/lib/session.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import type { Address, Order, OrderItem } from "@/lib/types";
 import { redactMessageForMember, redactOrderHistoryForMember } from "@/lib/redaction";
+import { completeOrder } from "@/lib/order-completion.server";
 import { isOwnUploadUrl } from "@/lib/uploads";
 
 function redactItems(items: OrderItem[]) {
@@ -258,98 +259,19 @@ export const Route = createFileRoute("/api/orders")({
               );
             }
 
-            if (order.status !== "completed") {
-              const now = new Date().toISOString();
-              try {
-                // 1. Remove from active queue
-                await d1Run(
-                  `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-                  now,
-                  order.id,
-                );
-
-                // 2. Add history records
-                await d1Run(
-                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-                   VALUES (?, ?, ?, 'completed', ?, 'تم تأكيد الاستلام من قبل العميل', ?)`,
-                  randomId("osh"),
-                  order.id,
-                  order.status,
-                  user.id,
-                  now,
-                );
-
-                await d1Run(
-                  `INSERT INTO order_status_history_v2 (
-                    id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
-                  ) VALUES (?, ?, ?, 'completed', ?, 'USER', 'Customer confirmed order receipt', ?)`,
-                  randomId("oshv2"),
-                  order.id,
-                  order.status,
-                  user.id,
-                  now,
-                );
-
-                // 3. Append confirmation system message
-                if (order.threadId) {
-                  await appendMessage(order.threadId, {
-                    senderRole: "user",
-                    kind: "order_completed",
-                    body: {
-                      text: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
-                      code: order.code,
-                      confirmedByCustomer: true,
-                    },
-                  });
-
-                  // 4. Inject Rating Card request if not sent already
-                  if (!order.ratingCardSentAt) {
-                    await appendMessage(order.threadId, {
-                      senderRole: "assistant",
-                      senderName: "الدعم الآلي",
-                      kind: "review_request",
-                      body: {
-                        orderId: order.id,
-                        orderCode: order.code,
-                        items: order.items.map((i) => ({
-                          id: i.id,
-                          title: i.title,
-                          image: i.image,
-                          productId: i.productId,
-                        })),
-                        text: "نسعد جداً بتقييمك لتجربة الشراء وجودة الخدمة ⭐",
-                      },
-                    });
-                  }
-                }
-              } catch (err) {
-                console.error("[order:confirm_received_history_failed]", err);
-              }
-
-              const updatedItems = order.items.map((entry) => ({
-                ...entry,
-                completedAt: entry.completedAt || now,
-                deliveredAt: entry.deliveredAt || now,
-              }));
-
-              const next: Order = {
-                ...order,
-                status: "completed",
-                completedAt: now,
-                customerConfirmedAt: now,
-                ratingCardSentAt: order.ratingCardSentAt || now,
-                items: updatedItems,
-                updatedAt: now,
-                events: [
-                  ...order.events,
-                  { type: "customer_confirmed", at: now, payload: { by: user.id } },
-                  { type: "order_completed", at: now, payload: { by: user.id } },
-                ],
-              };
-              await saveOrder(next);
-              return json({ order: redactOrder(next) });
-            }
-            return json({ order: redactOrder(order) });
+            /*
+              Same owner as the admin button and the hour-long timer, so the
+              three cannot write different versions of "completed" — and a
+              customer who taps twice does not get two completion cards and two
+              rating requests.
+            */
+            const confirmed = await completeOrder(order, {
+              by: user.id,
+              role: "USER",
+              note: "تم تأكيد الاستلام من قبل العميل",
+              message: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
+            });
+            return json({ order: redactOrder(confirmed.order) });
           }
 
           // Staff Actions

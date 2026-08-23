@@ -34,6 +34,7 @@ import { d1All, d1First, d1Run } from "./d1.server";
 import { getOrder, saveOrder } from "./db.server";
 import { areAllOrderItemsDelivered } from "./orders.server";
 import { randomId } from "./crypto.server";
+import { withDeliveryDeadline } from "./order-completion.server";
 import type { Order } from "./types";
 
 export interface NextQueuedOrder {
@@ -122,15 +123,24 @@ export async function finalizeDeliveryIfComplete(
     return { finished: false, order };
   }
 
-  const next: Order = {
-    ...order,
-    status: "awaiting_customer_confirmation",
-    updatedAt: now,
-    events: [
-      ...(order.events ?? []),
-      { type: "delivery_completed", at: now, payload: { by: adminId } },
-    ],
-  };
+  /*
+    Stamp when the last item actually went out and when the order will close
+    itself. Storing both makes the state legible — the customer's screen can
+    say "completes in N minutes", and the auto-completion pass does not have to
+    re-derive the clock from item timestamps on every read.
+  */
+  const next: Order = withDeliveryDeadline(
+    {
+      ...order,
+      status: "awaiting_customer_confirmation",
+      updatedAt: now,
+      events: [
+        ...(order.events ?? []),
+        { type: "delivery_completed", at: now, payload: { by: adminId } },
+      ],
+    },
+    now,
+  );
 
   await saveOrder(next);
 

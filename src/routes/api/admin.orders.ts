@@ -20,6 +20,7 @@ import {
 import { decryptSecretValue } from "@/lib/crypto.server";
 import { body, guard, json } from "@/lib/http.server";
 import { stageCredentials, evaluateOrderAutoCompletion } from "@/lib/orders.server";
+import { completeOrder, withDeliveryDeadline } from "@/lib/order-completion.server";
 import {
   claimNextAccount,
   getBatchProgress,
@@ -186,8 +187,7 @@ export const Route = createFileRoute("/api/admin/orders")({
           // Set when a delivery action finished the order, so the response can
           // tell the admin UI where to go next.
           let deliveryCompletion:
-            | import("@/lib/order-delivery.server").DeliveryCompletion
-            | undefined;
+            import("@/lib/order-delivery.server").DeliveryCompletion | undefined;
 
           switch (data.action) {
             case "delete_order": {
@@ -763,86 +763,28 @@ export const Route = createFileRoute("/api/admin/orders")({
               break;
             }
             case "complete_order": {
-              const updatedItems = order.items.map((it) => ({
-                ...it,
-                completedAt: it.completedAt || now,
-                deliveredAt: it.deliveredAt || now,
-              }));
+              /*
+                One owner, and idempotent.
 
-              next = {
-                ...order,
-                status: "completed",
-                completedAt: now,
-                items: updatedItems,
-                updatedAt: now,
-              };
-
-              // 1. Mark task in order queue completed
-              try {
-                await d1Run(
-                  `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-                  now,
-                  order.id,
-                );
-
-                await d1Run(
-                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-                   VALUES (?, ?, ?, 'completed', ?, 'تم تأكيد اكتمال الطلب من قبل الإدارة', ?)`,
-                  randomId("osh"),
-                  order.id,
-                  order.status,
-                  admin.id,
-                  now,
-                );
-
-                await d1Run(
-                  `INSERT INTO order_status_history_v2 (
-                    id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
-                  ) VALUES (?, ?, ?, 'completed', ?, 'ADMIN', 'Admin finalized order completion', ?)`,
-                  randomId("oshv2"),
-                  order.id,
-                  order.status,
-                  admin.id,
-                  now,
-                );
-              } catch (err) {
-                console.error("[admin:complete_order:history_failed]", err);
-              }
-
-              // 2. Append order_completed message
-              await appendMessage(order.threadId, {
-                senderRole: "admin",
-                senderName: adminName,
-                kind: "order_completed",
-                body: {
-                  code: order.code,
-                  text: data.text || "تم تسليم وإكمال الطلب بنجاح ✅",
-                },
+                This used to write `completedAt: now` and post both the
+                completion card and the rating request every time it ran, so a
+                double-click sent the customer the same two messages twice and
+                moved the completion time. `completeOrder` returns the order
+                untouched when it is already finished.
+              */
+              const result = await completeOrder(order, {
+                by: admin.id,
+                role: "ADMIN",
+                note: "تم تأكيد اكتمال الطلب من قبل الإدارة",
+                message: data.text || "تم تسليم وإكمال الطلب بنجاح ✅",
+                now,
               });
+              next = result.order;
 
-              // 3. Inject Rating Card request if not sent already
-              if (!order.ratingCardSentAt) {
-                await appendMessage(order.threadId, {
-                  senderRole: "assistant",
-                  senderName: "الدعم الآلي",
-                  kind: "review_request",
-                  body: {
-                    orderId: order.id,
-                    orderCode: order.code,
-                    items: order.items.map((i) => ({
-                      id: i.id,
-                      title: i.title,
-                      image: i.image,
-                      productId: i.productId,
-                    })),
-                    text: "نسعد جداً بتقييمك لتجربة الشراء وجودة الخدمة ⭐",
-                  },
-                });
-                next.ratingCardSentAt = now;
+              if (result.changed) {
+                const thread = await getThread(order.threadId);
+                if (thread) await saveThread({ ...thread, status: "closed" });
               }
-
-              const thread = await getThread(order.threadId);
-              if (thread) await saveThread({ ...thread, status: "closed" });
               break;
             }
             case "send_discount": {

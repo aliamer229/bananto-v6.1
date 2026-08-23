@@ -773,6 +773,15 @@ export interface Order {
   completedAt?: string;
   customerConfirmedAt?: string;
   autoCompletedAt?: string;
+  /**
+   * When the last item on this order was handed over.
+   *
+   * Stamped once every item has been delivered, and the only thing the
+   * auto-completion hour runs from — see `order-completion.ts`.
+   */
+  lastOtpSentAt?: string;
+  /** `lastOtpSentAt` + 60 minutes: when the order closes itself. */
+  autoCompleteAt?: string;
   deliveryViewedAt?: string;
   ratingCardSentAt?: string;
   createdAt: string;
