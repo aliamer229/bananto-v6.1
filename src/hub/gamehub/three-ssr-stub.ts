@@ -60,6 +60,13 @@ export const BackSide = 1;
 export const SRGBColorSpace = "srgb";
 export const LinearSRGBColorSpace = "srgb-linear";
 
+// Texture filtering / wrapping constants used by the sleeve texture.
+export const LinearFilter = 1006;
+export const LinearMipmapLinearFilter = 1008;
+export const NearestFilter = 1003;
+export const ClampToEdgeWrapping = 1001;
+export const RepeatWrapping = 1000;
+
 // three/examples/jsm/loaders/GLTFLoader.js
 export class GLTFLoader extends Empty {}
 

@@ -2,42 +2,35 @@ import React from "react";
 import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 
-import { cdnImage } from "@/lib/img";
-import { getNintendoCardImage } from "./HomeView";
+import NintendoCover from "./NintendoCover";
 
-export function ProductCard({
-  product,
-  forceStandardImage,
-}: {
-  product: any;
-  forceStandardImage?: boolean;
-}) {
-  const displayImage = getNintendoCardImage(product);
-
+/**
+ * Grid card for the category pages.
+ *
+ * The artwork used to be rendered at `w-[200%]` with `margin-left: -100%` and a
+ * gradient mask that hid the left half. That assumed every source file was a
+ * double-wide back│front spread, which almost none of them are — so an ordinary
+ * front cover had its left half thrown away and the right half blown up to
+ * twice size. It also meant each card held an element twice as wide as itself,
+ * contained only by the parent's `overflow-hidden`.
+ *
+ * Both are gone. `NintendoCover` frames the real artwork at the shared cover
+ * ratio, and nothing in the card is wider than the card.
+ */
+export function ProductCard({ product }: { product: any }) {
   return (
     <Link
       to="/product/$productId"
       params={{ productId: product.id }}
       className="bg-card rounded-2xl p-2 shadow-sm border border-border cursor-pointer hover:shadow-md transition-all group block"
     >
-      <div className="overflow-hidden rounded-xl mb-3 relative aspect-[3/4] bg-muted/20">
-        <img
-          src={cdnImage(
-            displayImage ||
-              "https://images.unsplash.com/photo-1612404730960-5c71577fca11?q=80&w=400&h=400&fit=crop",
-          )}
-          loading="lazy"
-          decoding="async"
-          className="w-[200%] max-w-none h-full object-cover object-right group-hover:scale-105 transition-transform duration-300"
-          style={{
-            marginLeft: "-100%",
-            maskImage: "linear-gradient(to right, transparent 50%, black 50%)",
-            WebkitMaskImage: "linear-gradient(to right, transparent 50%, black 50%)",
-          }}
-          alt={product.title}
-        />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
-      </div>
+      <NintendoCover
+        product={product}
+        usage="listing-card"
+        alt={product.title}
+        className="mb-3 rounded-xl bg-muted/20"
+        imgClassName="group-hover:scale-105 transition-transform duration-300"
+      />
       <h4 className="font-bold text-sm sm:text-base text-foreground truncate" dir="ltr">
         {product.titleEn || product.english_name || product.title}
       </h4>

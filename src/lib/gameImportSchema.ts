@@ -211,24 +211,66 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "الوصف بالعربية",
   },
 
-  // IMAGES
+  /*
+    IMAGES
+
+    `cartridgeImage` is the canonical FRONT BOX COVER: a clean, vertical,
+    rectangular retail packshot, high resolution, tight to the box, with no
+    mockup scene behind it. The key keeps its old name so every existing row and
+    template stays valid, but `front_cover_image` is the name to write in new
+    templates because it says what the field actually is.
+
+    `nintendoCardImage` is the separate square / near-square artwork for compact
+    platform cards. It is NOT a cover and never substitutes for one — see
+    `src/lib/nintendoImages.ts` for the resolver that enforces that.
+  */
+  {
+    key: "front_cover_image",
+    type: "url",
+    target: "cartridgeImage",
+    description: "صورة الغلاف الأمامي للعلبة (مستطيلة، عمودية، بدون هوامش بيضاء)",
+  },
   {
     key: "cartridge_image",
     type: "url",
     target: "cartridgeImage",
-    description: "صورة الكارتلج (تظهر في الرئيسية)",
+    description: "صورة الغلاف الأمامي للعلبة (الاسم القديم لـ front_cover_image)",
   },
   {
     key: "cartridge",
     type: "url",
     target: "cartridgeImage",
-    description: "صورة الكارتلج",
+    description: "صورة الغلاف الأمامي للعلبة",
   },
   {
     key: "cartridge_url",
     type: "url",
     target: "cartridgeImage",
-    description: "رابط صورة الكارتلج",
+    description: "رابط صورة الغلاف الأمامي للعلبة",
+  },
+  {
+    key: "nintendo_card_image",
+    type: "url",
+    target: "nintendoCardImage",
+    description: "صورة مربعة لبطاقات الألعاب المصغّرة (ليست غلاف العلبة)",
+  },
+  {
+    key: "square_game_image",
+    type: "url",
+    target: "nintendoCardImage",
+    description: "صورة مربعة لبطاقات الألعاب المصغّرة",
+  },
+  {
+    key: "front_cover_hires_url",
+    type: "url",
+    target: "coverHiResImage",
+    description: "غلاف أمامي بدقة عالية (يُستخدم لنسيج المجسم ثلاثي الأبعاد)",
+  },
+  {
+    key: "cover_texture_url",
+    type: "url",
+    target: "coverHiResImage",
+    description: "غلاف أمامي بدقة عالية لنسيج المجسم ثلاثي الأبعاد",
   },
   {
     key: "cover_image",

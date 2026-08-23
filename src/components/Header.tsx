@@ -21,6 +21,7 @@ import { useAuth } from "../hooks/useAuth";
 import LanguageCurrencyModal from "./LanguageCurrencyModal";
 import FlowerMenu from "./FlowerMenu";
 import { cdnImage } from "@/lib/img";
+import NintendoCover from "@/components/NintendoCover";
 import { useSettingsStore } from "../store/useSettingsStore";
 import { LANG_COOKIE, THEME_COOKIE, langFromPhone, readCookie, writeCookie } from "../lib/prefs";
 
@@ -245,10 +246,11 @@ export default function Header({
                       }}
                       className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0 text-left"
                     >
-                      <img
-                        src={cdnImage(p.image || p.coverImage || p.cartridgeImage)}
-                        className="w-10 h-10 rounded-lg object-cover bg-white/10 shrink-0"
-                        alt=""
+                      <NintendoCover
+                        product={p as Record<string, unknown>}
+                        usage="listing-card"
+                        ratio={1}
+                        className="w-10 h-10 rounded-lg bg-white/10 shrink-0"
                       />
                       <div className="flex-1 min-w-0" dir="ltr">
                         <div className="text-white font-bold text-sm truncate">

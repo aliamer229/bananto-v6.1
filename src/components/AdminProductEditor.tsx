@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { CanonicalGamePricing } from "./admin/CanonicalGameLink";
 
 import { safeStringify } from "../utils/safeJson";
+import { cdnImage } from "@/lib/img";
+import { measureTrim } from "@/lib/imageTrim.browser";
+import { isUsableImageUrl, TRIM_FIELDS } from "@/lib/nintendoImages";
 import {
   CheckCircle2,
   CircleDashed,
@@ -273,15 +276,23 @@ export default function AdminProductEditor({
         trade_enabled: product.trade_enabled !== undefined ? Boolean(product.trade_enabled) : true,
         trade_value_locked: Boolean(product.trade_value_locked),
         // Media
+        /*
+          The front-cover field only ever accepts front-cover sources. It used
+          to fall back to `regionBanner`/`bannerImage`, so simply opening and
+          saving a product wrote a wide banner into the canonical cover column
+          — a data corruption that then propagated to every surface reading it.
+        */
         cartridgeImage:
           product.cartridgeImage ||
-          product.regionBanner ||
-          product.bannerImage ||
           product.packagingFrontImage ||
-          product.packagingBackImage ||
           product.boxImage ||
           product.image ||
           "",
+        cartridgeImageTrim: product.cartridgeImageTrim,
+        /** Square artwork for compact cards. Never a cover; no cover fallback. */
+        nintendoCardImage: product.nintendoCardImage || product.squareGameImage || "",
+        /** Print-resolution cover for the 3D sleeve only. */
+        coverHiResImage: product.coverHiResImage || "",
         coverImage:
           product.coverImage || product.cardArtwork || product.mainImage || product.image || "",
         bannerImages:
@@ -308,6 +319,8 @@ export default function AdminProductEditor({
       descriptionEn: "",
       descriptionKu: "",
       cartridgeImage: "",
+      nintendoCardImage: "",
+      coverHiResImage: "",
       coverImage: "",
       bannerImages: [""],
       gallery: [],
@@ -691,11 +704,40 @@ export default function AdminProductEditor({
       displayOrder: Number(formData.displayOrder) || 0,
       image: formData.coverImage || formData.cartridgeImage || formData.image || "",
       banner: formData.bannerImages?.[0] || formData.banner || "",
+      nintendoCardImage: formData.nintendoCardImage || "",
+      coverHiResImage: formData.coverHiResImage || "",
       // Records the section explicitly, so the storefront renders this product's
       // own details page instead of guessing from the category name.
       schemaId: activeSchema?.id ?? "",
       kind: formData.kind || activeSchema?.kind || "account",
     };
+
+    /*
+      Measure the cover once, here, and store the crop with the record.
+
+      This is the import-time half of the normalisation: with
+      `cartridgeImageTrim` present, every visitor gets the tight framing from
+      the server-rendered HTML and no browser ever decodes the file to work it
+      out. Products saved before this existed still render correctly — the
+      storefront falls back to a cached client-side measurement.
+
+      Failure here is not failure to save. Artwork framing is a presentation
+      detail; losing the product edit over it would be absurd.
+    */
+    try {
+      for (const [field, trimField] of Object.entries(TRIM_FIELDS)) {
+        const url = cleanedData[field];
+        if (!isUsableImageUrl(url)) {
+          delete cleanedData[trimField];
+          continue;
+        }
+        const record = await measureTrim(cdnImage(url));
+        if (record?.trim) cleanedData[trimField] = record.trim;
+        else delete cleanedData[trimField];
+      }
+    } catch (err) {
+      console.warn("[AdminProductEditor] cover normalisation skipped", err);
+    }
 
     try {
       setIsSaving(true);
@@ -1210,14 +1252,42 @@ export default function AdminProductEditor({
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Cartridge Image */}
+                {/*
+                  The canonical front cover. Same database column as before
+                  (`cartridgeImage`), with its meaning pinned down: a clean
+                  rectangular front box cover. Every Nintendo surface reads this
+                  through `resolveNintendoImage` — see src/lib/nintendoImages.ts.
+                */}
                 <ImageUploadField
-                  label="صورة الكارتلج للواجهة الرئيسية (Cartridge Image)"
+                  label="غلاف العلبة الأمامي (Front Box Cover)"
                   value={formData.cartridgeImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="cartridge"
                   folder="cartridges"
-                  helperText="تظهر في واجهة المتجر الرئيسية وشريط الألعاب."
+                  helperText="الصورة الأساسية: علبة أمامية مستطيلة عمودية بدقة عالية. تظهر في الرئيسية، البندلات، السلة وصفحة المنتج. تُقصّ الهوامش البيضاء تلقائياً."
+                />
+
+                {/*
+                  Separate field, separate meaning: square artwork for the
+                  compact cartridge cards only. Never a substitute for the cover.
+                */}
+                <ImageUploadField
+                  label="صورة مربعة للبطاقات المصغّرة (Square Card Image)"
+                  value={formData.nintendoCardImage || ""}
+                  onChange={(url) => handleChange("nintendoCardImage", url)}
+                  aspect="square"
+                  folder="cards"
+                  helperText="اختيارية. تُستخدم فقط في بطاقات الكارتلج المربّعة، وليست بديلاً عن غلاف العلبة."
+                />
+
+                {/* Print-resolution cover, sampled only by the 3D sleeve. */}
+                <ImageUploadField
+                  label="غلاف بدقة عالية للمجسم ثلاثي الأبعاد (3D Texture Source)"
+                  value={formData.coverHiResImage || ""}
+                  onChange={(url) => handleChange("coverHiResImage", url)}
+                  aspect="cartridge"
+                  folder="cartridges"
+                  helperText="اختيارية. نسخة عالية الدقة من الغلاف الأمامي، تُستخدم كنسيج للمجسم فقط."
                 />
 
                 {/* Cover Image */}
@@ -2019,12 +2089,19 @@ export default function AdminProductEditor({
                   folder="giftcards"
                   helperText="صورة بطاقة التعبئة والقيمة المالية."
                 />
+                {/*
+                  A wide region banner, which is not a front box cover — it used
+                  to be written into `cartridgeImage` and so appeared wherever a
+                  cover was expected. It has its own key now; the read still
+                  falls back to the old column so existing gift cards keep
+                  rendering.
+                */}
                 <ImageUploadField
                   label="بانر الريجون التوضيحي (Region Banner)"
                   value={
-                    formData.cartridgeImage || formData.regionBanner || formData.bannerImage || ""
+                    formData.regionBanner || formData.bannerImage || formData.cartridgeImage || ""
                   }
-                  onChange={(url) => handleChange("cartridgeImage", url)}
+                  onChange={(url) => handleChange("regionBanner", url)}
                   aspect="banner"
                   folder="giftcards"
                   helperText="شعار الدولة أو الريجون التابع للبطاقة."
@@ -2512,14 +2589,10 @@ export default function AdminProductEditor({
                 newData.coverImage =
                   newData.cardArtwork || newData.mainImage || prev.coverImage || "";
               }
+              // Front-cover sources only. A banner is never promoted here.
               if (!newData.cartridgeImage) {
                 newData.cartridgeImage =
-                  newData.regionBanner ||
-                  newData.bannerImage ||
-                  newData.packagingFrontImage ||
-                  newData.boxImage ||
-                  prev.cartridgeImage ||
-                  "";
+                  newData.packagingFrontImage || newData.boxImage || prev.cartridgeImage || "";
               }
 
               return newData;
@@ -2620,12 +2693,11 @@ export default function AdminProductEditor({
                   normalized.cardArtwork || normalized.mainImage || prev.coverImage || "";
               }
 
+              // Front-cover sources only. A banner, or the *back* of the box,
+              // is never promoted into the canonical front-cover field.
               if (!normalized.cartridgeImage) {
                 normalized.cartridgeImage =
-                  normalized.regionBanner ||
-                  normalized.bannerImage ||
                   normalized.packagingFrontImage ||
-                  normalized.packagingBackImage ||
                   normalized.boxImage ||
                   prev.cartridgeImage ||
                   "";

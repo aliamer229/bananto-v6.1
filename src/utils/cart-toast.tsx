@@ -1,12 +1,25 @@
 import { toast } from "sonner";
 import { Check, ShoppingBag, X } from "lucide-react";
 import { playSound } from "@/utils/audio";
+import NintendoCover from "@/components/NintendoCover";
+import { resolvePurchaseImage } from "@/lib/nintendoImages";
 
 let lastCartToastTime = 0;
 
 export interface AddToCartToastProps {
   title?: string;
   message?: string;
+  /**
+   * The product that was added.
+   *
+   * The toast resolves its own thumbnail from this via `resolvePurchaseImage`,
+   * so it shows the same front cover the cart is about to show. Callers used to
+   * hand over whatever URL they happened to have — one passed `view.images[0]`,
+   * a *gallery screenshot* — and the toast and the cart disagreed about the
+   * purchase the customer had just made.
+   */
+  product?: Record<string, unknown> | null | undefined;
+  /** Fallback only, for surfaces with no catalogue record to hand. */
   image?: string;
   quantity?: number;
   navigate?: (opts: { to: string }) => void;
@@ -24,11 +37,15 @@ export interface AddToCartToastProps {
 export function showAddToCartToast({
   title = "أُضيف إلى السلة",
   message,
+  product,
   image,
   quantity,
   navigate,
   playSoundEffect = true,
 }: AddToCartToastProps) {
+  const artwork = product ? resolvePurchaseImage(product) : null;
+  const thumbSource: Record<string, unknown> | null =
+    artwork && !artwork.isPlaceholder ? (product ?? null) : image ? { image } : null;
   const now = Date.now();
   // Prevent duplicate accidental triggers in rapid succession (within 350ms)
   if (now - lastCartToastTime < 350) {
@@ -84,9 +101,16 @@ export function showAddToCartToast({
 
         {/* Content area (Icon + Product Image + Text) */}
         <div className="relative z-10 flex min-w-0 flex-1 items-center gap-3">
-          {image ? (
+          {thumbSource ? (
             <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-white/15 bg-slate-800 shadow-sm">
-              <img src={image} alt="" className="h-full w-full object-cover" loading="eager" />
+              {/* Same resolver, same picture as the cart line this creates. */}
+              <NintendoCover
+                product={thumbSource}
+                usage="toast"
+                ratio={1}
+                loading="eager"
+                className="h-full w-full"
+              />
               <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-slate-950 shadow-md">
                 <Check className="h-2.5 w-2.5 stroke-[3.5]" />
               </div>

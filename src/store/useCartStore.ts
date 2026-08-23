@@ -6,7 +6,17 @@ import type { ProductKind } from "@/lib/types";
 export interface CartLine {
   productId: string | number;
   title: string;
+  /**
+   * Snapshot of the picture at the time of adding.
+   *
+   * Only a last resort for a line whose product has since left the catalogue.
+   * Lines persist to localStorage, so a URL written here by an older build
+   * outlives any correction to the product — the cart resolves from the live
+   * record via `resolvePurchaseImage()` whenever it can find one.
+   */
   image?: string;
+  /** The live catalogue record, attached at render time. Never persisted. */
+  source?: Record<string, unknown> | undefined;
   price: number;
   kind: ProductKind;
   quantity: number;

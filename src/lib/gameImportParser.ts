@@ -1,4 +1,5 @@
 import { GAME_IMPORT_SCHEMA, FieldDef } from "./gameImportSchema";
+import { validateImageUrlShape } from "./imageValidation";
 import { getTextValue } from "./utils";
 import { str } from "./hub";
 
@@ -161,10 +162,19 @@ function setValueByPath(
   }
 
   if (typedValue === undefined && value !== "") {
+    /*
+      A malformed image URL is reported and the field dropped — never fatal.
+      Blocking the run would mean one dead thumbnail in a forty-game batch
+      rejects the other thirty-nine, and the product still imports perfectly
+      well with its artwork missing.
+    */
+    const isImageField = def.type === "url";
     result.errors.push({
       key: `${baseKey}${indices.length ? "." + indices.join(".") : ""}`,
-      message: `قيمة غير صالحة للنوع ${def.type}`,
-      severity: "error",
+      message: isImageField
+        ? `تم تجاهل رابط صورة غير صالح: "${value.slice(0, 60)}"`
+        : `قيمة غير صالحة للنوع ${def.type}`,
+      severity: isImageField ? "warning" : "error",
     });
     return;
   }
@@ -274,11 +284,24 @@ function convertType(value: string, type: string): any {
     case "date":
       if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
       return value;
-    case "url":
+    case "url": {
+      /*
+        Deliberately permissive about *shape* — feeds legitimately carry
+        protocol-relative and bare-domain URLs — but never permissive about the
+        values that mean "something upstream broke": `[object Object]` from a
+        stringified nested value, the literal `undefined`/`null` from template
+        interpolation, and whitespace-only cells. Those used to be stored
+        verbatim and rendered as a broken image on every surface.
+      */
       if (/^https?:\/\/.+/i.test(value) || value.startsWith("/")) return value;
-      // Soften URL validation as requested to accept more formats
-      if (value.startsWith("data:") || (value.includes(".") && !value.includes(" "))) return value;
+      if (value.startsWith("data:image/")) return value;
+      if (!validateImageUrlShape(value).ok) {
+        // Accept a bare `cdn.example.com/art.png`, reject the rest.
+        if (/^[\w.-]+\.[a-z]{2,}\/\S+$/i.test(value)) return value;
+        return undefined;
+      }
       return value;
+    }
     case "array":
       return value; // Handled by setValueByPath
     default:

@@ -38,6 +38,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { useServerFn } from "@tanstack/react-start";
 import { addToCart as addToCartFn } from "@/lib/cart.functions";
 import { showAddToCartToast } from "@/utils/cart-toast";
+import NintendoCover from "@/components/NintendoCover";
 
 export const Route = createFileRoute("/bundles/$bundleId")({
   head: () => ({
@@ -135,7 +136,7 @@ function BundleDetailPage() {
         showAddToCartToast({
           title: "أُضيف إلى السلة",
           message: bundle.titleEn || bundle.title,
-          image: bundle.image || games[0]?.image || "",
+          product: (bundle.image ? bundle : games[0]) as unknown as Record<string, unknown>,
           navigate,
           playSoundEffect: false,
         });
@@ -223,15 +224,13 @@ function BundleDetailPage() {
                         key={g.id || idx}
                         className="h-full flex-1 relative overflow-hidden border-r border-black/60 last:border-r-0"
                       >
-                        <img
-                          src={
-                            g.image ||
-                            (g as any).cartridgeImage ||
-                            (g as any).coverImage ||
-                            bundle.image
-                          }
+                        <NintendoCover
+                          product={g as Record<string, unknown>}
+                          usage="bundle-card"
+                          ratio={null}
+                          fit="cover"
                           alt={String(g.titleEn || (g as any).english_name || g.title || "")}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                         <div className="absolute bottom-3 inset-x-2 text-center">
@@ -243,13 +242,15 @@ function BundleDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <img
-                    src={
-                      bundle.image ||
-                      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
+                  <NintendoCover
+                    product={
+                      (bundle.image ? bundle : games[0]) as unknown as Record<string, unknown>
                     }
+                    usage="bundle-card"
+                    ratio={null}
+                    fit="cover"
                     alt={String(bundle.titleEn || bundle.title || "")}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full"
                   />
                 )}
 
@@ -478,16 +479,12 @@ function BundleDetailPage() {
               >
                 {/* Game Thumbnail / Cartridge */}
                 <div className="w-16 h-20 rounded-xl overflow-hidden bg-slate-900 shrink-0 relative border border-border/50 group-hover:scale-105 transition-transform duration-300">
-                  <img
-                    src={
-                      (game as any).cartridgeImage ||
-                      game.image ||
-                      (game as any).coverImage ||
-                      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600&auto=format&fit=crop"
-                    }
+                  <NintendoCover
+                    product={game as Record<string, unknown>}
+                    usage="bundle-card"
+                    ratio={null}
                     alt={String(game.titleEn || (game as any).english_name || game.title || "")}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
+                    className="w-full h-full"
                   />
                   <div className="absolute top-1 right-1 bg-black/70 rounded-md p-0.5">
                     <Gamepad2 className="w-3 h-3 text-red-400" />

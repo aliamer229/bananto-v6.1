@@ -29,6 +29,7 @@ import type { ProductSchema } from "@/lib/productImport/types";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProductKind } from "@/lib/types";
 import { showAddToCartToast } from "@/utils/cart-toast";
+import { resolvePurchaseImage } from "@/lib/nintendoImages";
 
 import { ProductGallery } from "./ProductGallery";
 import { BulletList, Section, SpecTable } from "./Section";
@@ -94,7 +95,14 @@ function DetailsBody({
       return;
     }
     const labelParts = [selectedOption?.name, selectedVariant?.name].filter(Boolean);
-    const itemImage = selectedVariant?.image || selectedOption?.image || view.images[0] || "";
+    /*
+      The variant / option picture is a genuine per-selection override; anything
+      else has to be the product's canonical front cover. This used to fall
+      through to `view.images[0]`, which is the first *gallery* frame — so a
+      screenshot ended up in the cart line and in the toast.
+    */
+    const variantImage = selectedVariant?.image || selectedOption?.image || "";
+    const itemImage = variantImage || resolvePurchaseImage(product).url;
     addToCart(
       {
         productId: String(product["id"] ?? ""),
@@ -112,7 +120,7 @@ function DetailsBody({
     showAddToCartToast({
       title: t("product.addedToCart") || "أُضيف إلى السلة",
       message: `${quantity > 1 ? `${quantity} × ` : ""}${view.title}${labelParts.length ? ` (${labelParts.join(" / ")})` : ""}`,
-      image: itemImage,
+      product: variantImage ? { image: variantImage } : product,
       quantity,
       navigate,
     });

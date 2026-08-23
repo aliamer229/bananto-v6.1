@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { BananaIcon } from "./Icons";
+import { resolveNintendoImageUrl } from "@/lib/nintendoImages";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { useI18n, tr } from "../i18n";
@@ -30,10 +31,9 @@ export default function DetailsView({ game }: { game: any }) {
   const title = game?.title || game?.name || "لعبة غير معنونة";
   const description =
     game?.description || game?.desc || "لا يوجد وصف تفصيلي متاح لهذه اللعبة حالياً.";
-  const coverImg =
-    game?.coverImage ||
-    game?.image ||
-    "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?q=80&w=800&h=800&fit=crop";
+  // Same resolver as every other surface, so this view cannot drift back into
+  // its own fallback chain (it used to end at a stock photo of a games shelf).
+  const coverImg = resolveNintendoImageUrl(game, "front-cover");
 
   const bannerImages =
     Array.isArray(game?.bannerImages) && game.bannerImages.length > 0 && game.bannerImages[0] !== ""

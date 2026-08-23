@@ -547,6 +547,19 @@ export interface Game {
 
   coverUrl?: string;
   /**
+   * Highest-resolution front cover available, for the WebGL sleeve texture.
+   *
+   * Separate from `coverUrl` because a listing thumbnail is fine on a card and
+   * visibly soft once it is stretched across a 3D face — see
+   * `resolveNintendoImage(product, "3d-texture")`.
+   */
+  coverTextureUrl?: string;
+  /**
+   * Crop rectangle for `coverUrl`, as fractions of the source image, when the
+   * catalogue carries a precomputed one. See `@/lib/imageTrim`.
+   */
+  coverTrim?: unknown;
+  /**
    * The printed retail sleeve, back │ spine │ front in one image.
    *
    * When present the 3D case samples this directly, so the Nintendo band, the

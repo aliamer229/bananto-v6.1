@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import NintendoCover from "@/components/NintendoCover";
 import {
   Layers,
   Plus,
@@ -652,13 +653,13 @@ export default function BundlesManager({
                         </div>
 
                         <div className="w-8 h-10 rounded-md overflow-hidden bg-slate-800 shrink-0">
-                          {game.image || (game as any).cartridgeImage ? (
-                            <img
-                              src={(game as any).cartridgeImage || game.image}
-                              alt={game.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : null}
+                          <NintendoCover
+                            product={game as unknown as Record<string, unknown>}
+                            usage="listing-card"
+                            ratio={null}
+                            alt={game.title}
+                            className="w-full h-full"
+                          />
                         </div>
 
                         <div className="flex-1 min-w-0">
