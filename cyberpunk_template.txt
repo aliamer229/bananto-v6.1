@@ -148,6 +148,39 @@ performance_notes<<EOF_PERF
 CD PROJEKT RED provides two graphics modes. Performance mode targets up to 40 FPS at 1080p in TV mode and up to 40 FPS at 720p in handheld mode. Quality mode runs at 30 FPS at 1080p in both TV and handheld modes. Handheld mode uses Variable Refresh Rate (VRR) to improve smoothness. Actual performance can vary with scene complexity, particularly in demanding areas of Phantom Liberty.
 EOF_PERF
 
+# =========================================
+# DEVICE PERFORMANCE
+# Source of truth for the game ↔ hardware relationship. These are published
+# game results, not Nintendo Switch 2 maximum hardware capabilities.
+# =========================================
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=BEE-001
+device_performance.1.information_status=available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=Quality: 1080p / Performance: up to 720p
+device_performance.1.handheld.fps=30-40
+device_performance.1.handheld.vrr=true
+device_performance.1.handheld.notes=Quality mode targets 1080p at 30 FPS. Performance mode targets up to 720p at up to 40 FPS and uses VRR.
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Quality: 1080p / Performance: up to 1080p
+device_performance.1.tv.fps=30-40
+device_performance.1.tv.notes=Quality mode targets 1080p at 30 FPS. Performance mode targets up to 1080p at up to 40 FPS.
+device_performance.1.mode.1.name=Quality Mode
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.2.name=Performance Mode
+device_performance.1.mode.2.handheld_resolution=up to 720p
+device_performance.1.mode.2.handheld_fps=up to 40
+device_performance.1.mode.2.tv_resolution=up to 1080p
+device_performance.1.mode.2.tv_fps=up to 40
+device_performance.1.source_name=CD PROJEKT RED Support — Nintendo Switch 2 Performance & Resolution
+device_performance.1.source_url=https://support.cdprojektred.com/en/cyberpunk/nintendo-switch-2/sp-technical/issue/2816/performance-resolution
+device_performance.1.verification_status=official
+device_performance.1.performance_notes=Actual performance can vary with scene complexity, particularly in demanding areas of Phantom Liberty.
+
 storage_download_size_gb=60.6
 storage_required_space_gb=60.6
 storage_micro_sd_recommended=false

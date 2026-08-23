@@ -74,6 +74,7 @@ export interface GameCompatibilityItem {
 export interface BoxContentItem {
   name: string;
   quantity?: number;
+  image?: string;
   notes?: string;
 }
 
@@ -340,6 +341,7 @@ export function buildProductView(
         const item: BoxContentItem = { name: str(b["name"]) };
         const qty = Number(b["quantity"]);
         if (Number.isFinite(qty) && qty > 0) item.quantity = qty;
+        if (b["image"]) item.image = str(b["image"]);
         if (b["notes"]) item.notes = str(b["notes"]);
         return item;
       })

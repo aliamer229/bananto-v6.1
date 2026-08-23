@@ -11,6 +11,33 @@ import {
 } from "@/lib/product-identity";
 import { claimProductIdentity, reindexProductIdentities } from "@/lib/product-identity.server";
 import type { Product } from "@/lib/types";
+import {
+  deactivateGameDevicePerformance,
+  syncGameDevicePerformance,
+} from "@/lib/devicePerformance.server";
+import { validateGameDevicePerformance } from "@/lib/devicePerformance";
+import { resolveCategoryType } from "@/lib/productSection";
+
+function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
+  const categoryId = String(product.categoryId || product.category || "");
+  const category = categories.find((entry) => String(entry.id || "") === categoryId);
+  return resolveCategoryType(
+    categoryId,
+    String(category?.title || category?.name || ""),
+    String(product.kind || ""),
+    String(product.schemaId || ""),
+  );
+}
+
+function performanceValidation(product: Partial<Product>, categories: Record<string, unknown>[]) {
+  return productSection(product, categories) === "game"
+    ? validateGameDevicePerformance(product as Record<string, unknown>)
+    : [];
+}
+
+function hardwareProducts(products: Product[], categories: Record<string, unknown>[]) {
+  return products.filter((product) => productSection(product, categories) === "hardware");
+}
 
 export function sanitizeSlug(input: string, fallbackId: string): string {
   const cleaned = input
@@ -219,6 +246,21 @@ export const Route = createFileRoute("/api/admin/products")({
             categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
           };
 
+          const performanceIssues = performanceValidation(
+            productToSave,
+            currentStore.categories || [],
+          );
+          if (performanceIssues.length) {
+            return json(
+              {
+                error: performanceIssues.map((issue) => issue.message).join("\n"),
+                code: "DEVICE_PERFORMANCE_REQUIRED",
+                issues: performanceIssues,
+              },
+              { status: 400 },
+            );
+          }
+
           // 8. Auto-translate ONLY this single product
           try {
             productToSave = await autoTranslateProduct(productToSave);
@@ -249,6 +291,12 @@ export const Route = createFileRoute("/api/admin/products")({
 
             const saved =
               (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+            if (productSection(saved, updated.categories || []) === "game") {
+              await syncGameDevicePerformance(
+                saved,
+                hardwareProducts(updated.products || [], updated.categories || []),
+              );
+            }
             return json({ success: true, product: saved });
           } catch (dbErr: any) {
             console.error("[SaveProduct:DatabaseError]", dbErr);
@@ -395,6 +443,21 @@ export const Route = createFileRoute("/api/admin/products")({
             categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
           };
 
+          const performanceIssues = performanceValidation(
+            productToSave,
+            currentStore.categories || [],
+          );
+          if (performanceIssues.length) {
+            return json(
+              {
+                error: performanceIssues.map((issue) => issue.message).join("\n"),
+                code: "DEVICE_PERFORMANCE_REQUIRED",
+                issues: performanceIssues,
+              },
+              { status: 400 },
+            );
+          }
+
           try {
             productToSave = await autoTranslateProduct(productToSave);
           } catch (transErr) {
@@ -420,6 +483,12 @@ export const Route = createFileRoute("/api/admin/products")({
 
             const saved =
               (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+            if (productSection(saved, updated.categories || []) === "game") {
+              await syncGameDevicePerformance(
+                saved,
+                hardwareProducts(updated.products || [], updated.categories || []),
+              );
+            }
             return json({ success: true, product: saved });
           } catch (dbErr: any) {
             console.error("[UpdateProduct:DatabaseError]", dbErr);
@@ -454,6 +523,7 @@ export const Route = createFileRoute("/api/admin/products")({
             ...store,
             products: (store.products || []).filter((p) => String(p.id) !== targetId),
           }));
+          await deactivateGameDevicePerformance(targetId);
 
           return json({ success: true, id: targetId });
         }),

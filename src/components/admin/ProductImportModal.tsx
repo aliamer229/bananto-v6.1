@@ -118,6 +118,18 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
         { label: t("admin.import.sourcesCount"), value: stats.sources },
       ]
     : [];
+  const previewGroups = useMemo(() => {
+    if (!result) return [];
+    const groups = new Map<string, Array<[string, unknown]>>();
+    for (const [key, value] of Object.entries(result.data)) {
+      const field = schema.fields.find((candidate) => candidate.target === key);
+      const group = field?.group || "Basic Info";
+      const entries = groups.get(group) || [];
+      entries.push([field?.description || key, value]);
+      groups.set(group, entries);
+    }
+    return [...groups.entries()].map(([name, entries]) => ({ name, entries }));
+  }, [result, schema.fields]);
 
   return (
     <div
@@ -300,32 +312,32 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
                         )}
                     </div>
                   ) : (
-                    <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-start text-[10px]">
-                          <thead className="bg-muted font-bold text-muted-foreground">
-                            <tr>
-                              <th className="border-b px-3 py-2 text-start">{t("common.name")}</th>
-                              <th className="border-b px-3 py-2 text-start">{t("common.value")}</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border/50">
-                            {Object.entries(result.data).map(([key, value]) => (
-                              <tr key={key} className="transition-colors hover:bg-muted/30">
-                                <td
-                                  className="px-3 py-2 font-mono font-bold text-primary"
-                                  dir="ltr"
-                                >
-                                  {key}
-                                </td>
-                                <td className="max-w-[220px] truncate px-3 py-2 text-muted-foreground">
-                                  {summarize(value)}
-                                </td>
-                              </tr>
+                    <div className="space-y-3">
+                      {previewGroups.map((group) => (
+                        <section
+                          key={group.name}
+                          className="overflow-hidden rounded-xl border border-border bg-background shadow-sm"
+                        >
+                          <h3 className="border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-bold">
+                            {group.name}
+                          </h3>
+                          <dl className="divide-y divide-border/60">
+                            {group.entries.map(([label, value], index) => (
+                              <div
+                                key={`${label}-${index}`}
+                                className="grid min-w-0 gap-1 px-4 py-3 sm:grid-cols-[minmax(120px,2fr)_minmax(0,3fr)]"
+                              >
+                                <dt className="text-[10px] font-bold text-primary [overflow-wrap:anywhere]">
+                                  {label}
+                                </dt>
+                                <dd className="min-w-0 text-[10px] text-muted-foreground [overflow-wrap:anywhere]">
+                                  <PreviewValue value={value} />
+                                </dd>
+                              </div>
                             ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          </dl>
+                        </section>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -428,8 +440,35 @@ function IssueList({
   );
 }
 
-function summarize(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.length}]`;
-  if (value && typeof value === "object") return "{…}";
-  return String(value);
+function PreviewValue({ value }: { value: unknown }): React.ReactNode {
+  if (Array.isArray(value)) {
+    return (
+      <div className="space-y-2">
+        {value.map((item, index) => (
+          <div key={index} className="min-w-0 rounded-lg border border-border/70 bg-muted/20 p-2">
+            <span className="mb-1 block text-[9px] font-bold text-muted-foreground">
+              #{index + 1}
+            </span>
+            <PreviewValue value={item} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (value && typeof value === "object") {
+    return (
+      <dl className="space-y-1.5">
+        {Object.entries(value as Record<string, unknown>).map(([key, nested]) => (
+          <div key={key} className="grid min-w-0 grid-cols-[minmax(90px,1fr)_minmax(0,2fr)] gap-2">
+            <dt className="font-mono font-bold text-foreground">{key}</dt>
+            <dd className="min-w-0 [overflow-wrap:anywhere]">
+              <PreviewValue value={nested} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+  if (typeof value === "boolean") return value ? "Yes / Supported" : "No / Not Supported";
+  return String(value ?? "");
 }

@@ -1,4 +1,4 @@
-import { encryptSecretValue, randomId } from "./crypto.server";
+import { randomId } from "./crypto.server";
 import {
   appendMessage,
   findUserById,
@@ -467,6 +467,20 @@ export async function createOrderForUser(
     console.error("[order:snapshot_failed]", err);
   }
 
+  // Create the canonical order_items relation and one independent D1 delivery
+  // row per quantity slot. The admin API retries this idempotently if checkout
+  // was interrupted after payment, so a paid order is never dependent on a
+  // browser-side draft or a chat message.
+  try {
+    const { ensureOrderDeliveryRecords } = await import("./order-delivery-items.server");
+    await ensureOrderDeliveryRecords(order);
+  } catch (err) {
+    console.error("[order:delivery_records_create_failed]", {
+      orderId: order.id,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+
   // Reward Banana Calculation (Safe)
   try {
     const bananaEligible = items.every((item) => !["hardware", "device"].includes(item.kind));
@@ -685,36 +699,6 @@ export async function createOrderForUser(
   return order;
 }
 
-export async function stageCredentials(
-  order: Order,
-  itemId: string,
-  email: string,
-  password?: string,
-): Promise<Order> {
-  const items = await Promise.all(
-    order.items.map(async (item) => {
-      if (item.id !== itemId) return item;
-      if (item.credsSentAt) throw new Error("credentials_already_sent");
-      return {
-        ...item,
-        deliveryEmail: email,
-        ...(password ? { deliveryPasswordEnc: await encryptSecretValue(password) } : {}),
-      };
-    }),
-  );
-  const next: Order = {
-    ...order,
-    items,
-    updatedAt: new Date().toISOString(),
-    events: [
-      ...order.events,
-      { type: "credentials_staged", at: new Date().toISOString(), payload: { itemId } },
-    ],
-  };
-  await saveOrder(next);
-  return next;
-}
-
 export async function claimOrderTask(orderId: string, staffId: string): Promise<boolean> {
   const now = new Date().toISOString();
   await d1Run(
@@ -743,14 +727,15 @@ export async function completeOrderTask(orderId: string, staffId: string): Promi
     throw new Error("Task not assigned to this staff member");
   }
 
-  await d1Run(
-    `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-    now,
-    orderId,
-  );
-
   const order = await getOrder(orderId);
   if (order) {
+    const { getDeliveryOrderState } = await import("./order-delivery-items.server");
+    const delivery = await getDeliveryOrderState(order);
+    if (delivery.progress.total > 0) {
+      throw new Error(
+        "digital_orders_complete_only_after_customer_confirmation_or_server_timeout",
+      );
+    }
     await updateOrderStatus({
       orderId,
       newStatus: "completed",
@@ -759,6 +744,12 @@ export async function completeOrderTask(orderId: string, staffId: string): Promi
       reason: "Order completed by staff",
     });
   }
+
+  await d1Run(
+    `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
+    now,
+    orderId,
+  );
 
   return true;
 }
@@ -834,15 +825,11 @@ export function areAllOrderItemsDelivered(order: Order): boolean {
   return order.items.every((item) => {
     if (item.completedAt || item.deliveredAt) return true;
     if (item.kind === "hardware") return Boolean(item.shippedAt || item.deliveredAt);
-    // For account / digital / bundle items
-    return Boolean(
-      item.deliveryEmail ||
-      item.credsSentAt ||
-      item.verificationCodeSentAt ||
-      item.verificationCode ||
-      (item as any).cardCode ||
-      (item as any).codeSentAt,
-    );
+    // Shared legacy OrderItem fields cannot prove delivery of quantity > 1.
+    // This compatibility helper is intentionally conservative; the canonical
+    // async decision lives in order_delivery_items.
+    if (Math.max(1, Number(item.quantity) || 1) > 1) return false;
+    return Boolean(item.verificationCodeSentAt || item.completedAt);
   });
 }
 
@@ -854,3 +841,12 @@ export function areAllOrderItemsDelivered(order: Order): boolean {
  * Re-exported here because the API routes already import it from this module.
  */
 export { evaluateOrderAutoCompletion } from "./order-completion.server";
+ * Evaluate only the explicit server deadline written when the final delivery
+ * item reaches otp_sent. No view time, credential timestamp, or browser timer
+ * can complete a digital order.
+ */
+export async function evaluateOrderAutoCompletion(order: Order): Promise<Order> {
+  if (order.status === "completed" || order.status === "cancelled") return order;
+  const { maybeAutoCompleteDeliveredOrder } = await import("./order-delivery-items.server");
+  return (await maybeAutoCompleteDeliveredOrder(order.id)) ?? order;
+}

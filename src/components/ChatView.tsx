@@ -902,7 +902,7 @@ export default function ChatView({
 
   /* ------------------------- order delivery steps ------------------------- */
   const proofInputRef = useRef<HTMLInputElement | null>(null);
-  const proofItemRef = useRef<string>("");
+  const proofItemRef = useRef<{ itemId: string; deliveryItemId?: string } | null>(null);
   const [deliveryBusy, setDeliveryBusy] = useState(false);
   const [proofSentItems, setProofSentItems] = useState<Record<string, boolean>>({});
 
@@ -1034,14 +1034,24 @@ export default function ChatView({
 
   /** Upload the member's sign-in screenshot and attach it to the order line. */
   const submitLoginProof = async (file: File) => {
-    const itemId = proofItemRef.current;
+    const target = proofItemRef.current;
+    const itemId = target?.itemId;
     const orderId = currentOrder?.id;
     if (!itemId || !orderId) return;
     setDeliveryBusy(true);
     try {
       const { url } = await uploadFileWithProgress(file, "orders");
-      await api.orderAction({ orderId, action: "submit_login_proof", itemId, imageUrl: url });
-      setProofSentItems((prev) => ({ ...prev, [itemId]: true }));
+      await api.orderAction({
+        orderId,
+        action: "submit_login_proof",
+        itemId,
+        deliveryItemId: target?.deliveryItemId,
+        imageUrl: url,
+      });
+      setProofSentItems((prev) => ({
+        ...prev,
+        [target?.deliveryItemId || itemId]: true,
+      }));
       await reloadThread();
     } catch (err) {
       console.error("Failed to submit the sign-in proof", err);
@@ -1074,26 +1084,10 @@ export default function ChatView({
   };
 
   const [isConfirmingReceipt, setIsConfirmingReceipt] = useState(false);
+  const [isReportingDeliveryIssue, setIsReportingDeliveryIssue] = useState(false);
 
   const canConfirmOrderReceipt = useMemo(() => {
-    if (
-      !currentOrder ||
-      currentOrder.status === "completed" ||
-      currentOrder.status === "cancelled"
-    ) {
-      return false;
-    }
-    if (!currentOrder.items || currentOrder.items.length === 0) return false;
-    return currentOrder.items.every((it) => {
-      if (it.completedAt || it.deliveredAt) return true;
-      return Boolean(
-        it.deliveryEmail ||
-        it.credsSentAt ||
-        it.verificationCodeSentAt ||
-        it.verificationCode ||
-        (it as any).cardCode,
-      );
-    });
+    return currentOrder?.status === "awaiting_customer_confirmation";
   }, [currentOrder]);
 
   const handleConfirmOrderReceipt = async () => {
@@ -1119,6 +1113,29 @@ export default function ChatView({
       toast.error(err?.message || tr("فشل تأكيد استلام الطلب"));
     } finally {
       setIsConfirmingReceipt(false);
+    }
+  };
+
+  const handleReportDeliveryIssue = async () => {
+    if (!currentOrder || isReportingDeliveryIssue) return;
+    const reason = window.prompt(tr("صف مشكلة التسليم باختصار ليتم تحويلها للإدارة:"));
+    if (reason === null) return;
+    setIsReportingDeliveryIssue(true);
+    try {
+      const res = await api.orderAction({
+        orderId: currentOrder.id,
+        action: "report_delivery_issue",
+        reason: reason.trim() || undefined,
+      });
+      toast.success(tr("تم إيقاف الإكمال التلقائي وتحويل الطلب للمراجعة"));
+      await reloadThread();
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["order", currentOrder.id] });
+    } catch (err: any) {
+      console.error("Failed to report delivery issue", err);
+      toast.error(err?.message || tr("تعذر فتح بلاغ التسليم"));
+    } finally {
+      setIsReportingDeliveryIssue(false);
     }
   };
 
@@ -1913,6 +1930,7 @@ export default function ChatView({
       // memo runs on every render the ReferenceError took the whole page down
       // before it could paint — "Error: threadOrderId is not defined".
       orderId: activeOrderId,
+      orderId: activeOrderId || currentThread?.orderId,
       orderStatus: currentOrder?.status,
       paymentStatus: currentOrder?.paymentStatus,
       lastMessageText: lastText,
@@ -2457,6 +2475,8 @@ export default function ChatView({
                       canConfirmReceived={canConfirmOrderReceipt}
                       onConfirmReceived={handleConfirmOrderReceipt}
                       isConfirmingReceived={isConfirmingReceipt}
+                      onReportIssue={handleReportDeliveryIssue}
+                      isReportingIssue={isReportingDeliveryIssue}
                       onOpenInvoice={() => {
                         if (currentOrder) setSelectedInvoiceOrder(currentOrder);
                       }}
@@ -2508,15 +2528,20 @@ export default function ChatView({
                       {...(currentOrder && String(msg.payload["kind"] ?? "") === "item_credentials"
                         ? {
                             delivery: {
-                              onAttachProof: (itemId: string) => {
-                                proofItemRef.current = itemId;
+                              onAttachProof: (itemId: string, deliveryItemId?: string) => {
+                                proofItemRef.current = { itemId, deliveryItemId };
                                 proofInputRef.current?.click();
                               },
                               onNext: requestNextAccount,
                               proofSent: Boolean(
                                 proofSentItems[
                                   String(
-                                    (msg.payload["body"] as Record<string, unknown>)?.["itemId"] ??
+                                    (msg.payload["body"] as Record<string, unknown>)?.[
+                                      "deliveryItemId"
+                                    ] ??
+                                      (msg.payload["body"] as Record<string, unknown>)?.[
+                                        "itemId"
+                                      ] ??
                                       "",
                                   )
                                 ],

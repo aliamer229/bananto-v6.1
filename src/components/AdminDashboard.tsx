@@ -97,6 +97,8 @@ import { adminApi, fileToDataUrl } from "@/lib/api";
 import mascot from "@/assets/bananto_logo.webp.asset.json";
 import { useAuth } from "@/hooks/useAuth";
 import { getDefaultRadioTracks } from "@/config/publicAssets";
+import { resolveCategoryType } from "@/lib/productSection";
+import { requiresPerformanceReview } from "@/lib/devicePerformance";
 
 interface BannerDraft {
   imageUrl: string;
@@ -1291,15 +1293,37 @@ function ListingsView({
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [onlyUnpriced, setOnlyUnpriced] = useState(false);
+  const [onlyMissingPerformance, setOnlyMissingPerformance] = useState(false);
 
   const unpricedCount = products.filter((p: any) => !isProductPriced(p)).length;
+  const isGameProduct = (product: any) => {
+    const categoryId = product.category || product.categoryId;
+    const category = categories.find((item: any) => item.id === categoryId);
+    return (
+      resolveCategoryType(categoryId, category?.title, product.kind, product.schemaId) === "game"
+    );
+  };
+  const missingPerformanceCount = products.filter(
+    (product: any) => isGameProduct(product) && requiresPerformanceReview(product),
+  ).length;
+  const hardwareProducts = products.filter((product: any) => {
+    const categoryId = product.category || product.categoryId;
+    const category = categories.find((item: any) => item.id === categoryId);
+    return (
+      resolveCategoryType(categoryId, category?.title, product.kind, product.schemaId) ===
+      "hardware"
+    );
+  });
 
   const filteredProducts = products.filter((p: any) => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
     const pCat = p.category || p.categoryId;
     const matchesCategory = initialCategoryId ? pCat === initialCategoryId : true;
     const matchesPricing = onlyUnpriced ? !isProductPriced(p) : true;
-    return matchesSearch && matchesCategory && matchesPricing;
+    const matchesPerformance = onlyMissingPerformance
+      ? isGameProduct(p) && requiresPerformanceReview(p)
+      : true;
+    return matchesSearch && matchesCategory && matchesPricing && matchesPerformance;
   });
 
   // Sort by order or date so the newest imports appear on top/correctly
@@ -1385,6 +1409,7 @@ function ListingsView({
       <AdminProductEditor
         product={isAdding ? null : editingProduct}
         categories={categories}
+        hardwareProducts={hardwareProducts}
         initialCategoryId={initialCategoryId}
         onSave={handleSave}
         onCancel={() => {
@@ -1413,7 +1438,7 @@ function ListingsView({
       </div>
 
       <div className="border border-border rounded-lg overflow-hidden bg-card shadow-sm">
-        <div className="p-3 border-b border-border flex justify-between items-center bg-card">
+        <div className="p-3 border-b border-border flex flex-wrap justify-between items-center gap-2 bg-card">
           <div className="relative w-full max-w-sm">
             <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -1429,6 +1454,12 @@ function ListingsView({
             className={`whitespace-nowrap rounded-md border px-3 py-1.5 text-[12px] font-bold transition-colors ${onlyUnpriced ? "border-[var(--brand-red-dark)] bg-[var(--bad-bg)] text-[var(--brand-red-dark)]" : "border-border text-muted-foreground hover:border-black"}`}
           >
             {t("admin.unpriced")} ({unpricedCount})
+          </button>
+          <button
+            onClick={() => setOnlyMissingPerformance((value) => !value)}
+            className={`whitespace-nowrap rounded-md border px-3 py-1.5 text-[12px] font-bold transition-colors ${onlyMissingPerformance ? "border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-black"}`}
+          >
+            Missing Performance Data ({missingPerformanceCount})
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -1452,6 +1483,11 @@ function ListingsView({
                     {!isProductPriced(p) && (
                       <span className="ms-2 inline-block rounded-md bg-[var(--bad-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--brand-red-dark)]">
                         مخفي — بحاجة سعر/تكلفة
+                      </span>
+                    )}
+                    {isGameProduct(p) && requiresPerformanceReview(p) && (
+                      <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                        Performance review required
                       </span>
                     )}
                   </td>
@@ -3260,7 +3296,6 @@ function GameRequestsView({
     </div>
   );
 }
-
 
 function ProblemSolutionsView({
   problemSolutions,

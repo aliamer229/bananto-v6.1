@@ -121,6 +121,9 @@ interface ActiveConversationProps {
   onResumeQueue?: () => void;
   onSendQueueReminder?: (text?: string) => void;
   onRetryMessage?: (message: any) => void;
+  onDeliveryFinished?: (payload: {
+    nextOrder?: { orderId: string; threadId?: string; code?: string; userName?: string };
+  }) => void;
   isSending?: boolean;
 }
 
@@ -145,6 +148,7 @@ export function ActiveConversation({
   onResumeQueue,
   onSendQueueReminder,
   onRetryMessage,
+  onDeliveryFinished,
   isSending = false,
 }: ActiveConversationProps) {
   const [inputText, setInputText] = useState("");
@@ -162,13 +166,6 @@ export function ActiveConversation({
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const handleAdminCompleteOrder = async (orderId: string) => {
-    await api.adminOrderAction(orderId, "complete_order");
-    void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-    void queryClient.invalidateQueries({ queryKey: ["orders"] });
-    void queryClient.invalidateQueries({ queryKey: ["threads"] });
-    void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
-  };
   const [smartSuggestions, setSmartSuggestions] = useState<AdminReplySuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
@@ -723,16 +720,34 @@ export function ActiveConversation({
                           threadId: thread?.id,
                           action: "send_verification_code",
                           itemId: payload.itemId,
+                          deliveryItemId: payload.deliveryItemId,
                           code: payload.code,
                           title: payload.title,
                         }),
                       });
-                      if (!res.ok) {
-                        const err = (await res.json().catch(() => ({}))) as {
-                          error?: string;
-                          message?: string;
+                      const result = (await res.json().catch(() => ({}))) as {
+                        error?: string;
+                        message?: string;
+                        orderFinished?: boolean;
+                        nextOrder?: {
+                          orderId: string;
+                          threadId?: string;
+                          code?: string;
+                          userName?: string;
                         };
-                        throw new Error(err.error || err.message || "فشل إرسال كود OTP");
+                      };
+                      if (!res.ok) {
+                        throw new Error(
+                          result.error || result.message || "فشل إرسال كود OTP",
+                        );
+                      }
+                      void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+                      void queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+                      void queryClient.invalidateQueries({
+                        queryKey: ["thread-messages", thread?.id],
+                      });
+                      if (result.orderFinished) {
+                        onDeliveryFinished?.({ nextOrder: result.nextOrder });
                       }
                       return;
                     }
@@ -893,28 +908,15 @@ export function ActiveConversation({
             onClose={() => setIsAccountToolsOpen(false)}
             order={linkedOrder}
             defaultTab={accountToolsDefaultTab}
-            onSendCredentials={(payload) => {
-              onSendMessage({
-                kind: "item_credentials",
-                body: payload,
-              });
-              setIsAccountToolsOpen(false);
+            onDeliveryFinished={onDeliveryFinished}
+            onStateChanged={() => {
+              void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+              void queryClient.invalidateQueries({ queryKey: ["orders"] });
+              void queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+              if (thread?.id) {
+                void queryClient.invalidateQueries({ queryKey: ["thread-messages", thread.id] });
+              }
             }}
-            onSendVerificationCode={(payload) => {
-              onSendMessage({
-                kind: "item_verification_code",
-                body: payload,
-              });
-              setIsAccountToolsOpen(false);
-            }}
-            onSendCardCode={(payload) => {
-              onSendMessage({
-                kind: "item_credentials",
-                body: payload,
-              });
-              setIsAccountToolsOpen(false);
-            }}
-            onCompleteOrder={handleAdminCompleteOrder}
           />
         )}
 

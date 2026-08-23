@@ -2,6 +2,7 @@ import { GAME_IMPORT_SCHEMA, FieldDef } from "./gameImportSchema";
 import { validateImageUrlShape } from "./imageValidation";
 import { getTextValue } from "./utils";
 import { str } from "./hub";
+import { validateGameDevicePerformance } from "./devicePerformance";
 
 export interface ParseResult {
   data: Record<string, any>;
@@ -104,6 +105,11 @@ export function parseGameImport(rawText: string): ParseResult {
   // string[]. Keeping them as `[{ value }]` is what surfaced as "[object Object]".
   flattenValueOnlyGroups(structuredData);
 
+  // Platform/compatibility-aware validation belongs to the parser as well as
+  // the save endpoint, so an import preview explains exactly what is missing
+  // instead of failing later with a generic save error.
+  result.errors.push(...validateGameDevicePerformance(structuredData));
+
   result.data = structuredData;
   return result;
 }
@@ -131,9 +137,20 @@ function flattenValueOnlyGroups(data: Record<string, any>) {
 }
 
 function findFieldDef(key: string): FieldDef | null {
-  const { baseKey } = parseKeyPath(key);
+  const { baseKey, indices } = parseKeyPath(key);
   const searchKey = baseKey.toLowerCase();
-  return GAME_IMPORT_SCHEMA.find((f) => f.key.toLowerCase() === searchKey) || null;
+  const candidates = GAME_IMPORT_SCHEMA.filter((f) => f.key.toLowerCase() === searchKey);
+  if (candidates.length <= 1) return candidates[0] || null;
+
+  // `edition=` (the product's edition label) predates the repeatable
+  // `edition.1.*` group. Choose by path shape so both old and new files work.
+  return (
+    (indices.length
+      ? candidates.find((field) => field.repeatable || field.type === "object")
+      : candidates.find((field) => !field.repeatable && field.type !== "object")) ||
+    candidates[0] ||
+    null
+  );
 }
 
 function parseKeyPath(key: string): { baseKey: string; indices: string[] } {
@@ -151,113 +168,137 @@ function setValueByPath(
   def: FieldDef,
   result: ParseResult,
 ) {
-  if (value === "" && !def.required) return; // Skip empty optional fields
+  assignField(obj, def, indices, value, baseKey, result);
+}
 
+/** Recursively assigns object groups at any depth (`device.N.mode.N.*`). */
+function assignField(
+  container: Record<string, any>,
+  def: FieldDef,
+  segments: string[],
+  value: string,
+  fullKey: string,
+  result: ParseResult,
+) {
+  if (value === "" && !def.required) return;
+
+  if (def.repeatable) {
+    if (!Array.isArray(container[def.target])) container[def.target] = [];
+    const list = container[def.target] as any[];
+    const indexRaw = segments[0];
+
+    if (def.type === "array" && !indexRaw && value.includes(",")) {
+      list.push(
+        ...value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+      );
+      return;
+    }
+
+    const index = indexRaw ? Number.parseInt(indexRaw, 10) - 1 : list.length;
+    if (!Number.isFinite(index) || index < 0) {
+      result.errors.push({
+        key: fullKey,
+        message: `يجب تحديد رقم العنصر (مثلاً ${def.key}.1${def.type === "object" ? ".name" : ""})`,
+        severity: "error",
+      });
+      return;
+    }
+
+    if (def.type === "object") {
+      const entry = list[index] && typeof list[index] === "object" ? list[index] : {};
+      list[index] = entry;
+      assignObjectMember(entry, def, segments.slice(1), value, fullKey, result);
+      return;
+    }
+
+    const typedValue = typed(value, def, fullKey, result);
+    if (typedValue !== undefined) list[index] = typedValue;
+    return;
+  }
+
+  if (def.type === "object") {
+    const entry =
+      container[def.target] && typeof container[def.target] === "object"
+        ? container[def.target]
+        : {};
+    container[def.target] = entry;
+    assignObjectMember(entry, def, segments, value, fullKey, result);
+    return;
+  }
+
+  if (segments.length) {
+    result.unknownFields.push(fullKey);
+    return;
+  }
+
+  const typedValue = typed(value, def, fullKey, result);
+  if (typedValue !== undefined) container[def.target] = typedValue;
+}
+
+function assignObjectMember(
+  entry: Record<string, any>,
+  def: FieldDef,
+  segments: string[],
+  value: string,
+  fullKey: string,
+  result: ParseResult,
+) {
+  const subKey = segments[0];
+  const subDef = subKey ? def.itemFields?.[subKey] : undefined;
+  if (!subKey) {
+    const members = Object.values(def.itemFields || {});
+    // Backward-compatible shorthand: `feature.1=text` is equivalent to
+    // `feature.1.value=text`; the same applies to one-label nested groups.
+    if (members.length === 1 && members[0]) {
+      assignField(entry, members[0], [], value, fullKey, result);
+      return;
+    }
+  }
+  if (!subDef) {
+    result.unknownFields.push(fullKey);
+    return;
+  }
+  assignField(entry, subDef, segments.slice(1), value, fullKey, result);
+}
+
+function typed(value: string, def: FieldDef, key: string, result: ParseResult): any {
   let typedValue = convertType(value, def.type);
-
-  // If we expect a string but got something else (like an object from repeating logic),
-  // ensure we convert it back to string to avoid [object Object]
   if (def.type === "string" || def.type === "multiline") {
     typedValue = getTextValue(typedValue);
   }
-
   if (typedValue === undefined && value !== "") {
-    /*
-      A malformed image URL is reported and the field dropped — never fatal.
-      Blocking the run would mean one dead thumbnail in a forty-game batch
-      rejects the other thirty-nine, and the product still imports perfectly
-      well with its artwork missing.
-    */
     const isImageField = def.type === "url";
     result.errors.push({
-      key: `${baseKey}${indices.length ? "." + indices.join(".") : ""}`,
+      key,
       message: isImageField
         ? `تم تجاهل رابط صورة غير صالح: "${value.slice(0, 60)}"`
         : `قيمة غير صالحة للنوع ${def.type}`,
       severity: isImageField ? "warning" : "error",
     });
-    return;
+    return undefined;
   }
 
-  // For optional number/integer/date/url, if value is empty, don't set it (unless required)
-  if (value === "" && !def.required) return;
-
-  // Validation
   if (def.validation) {
     const num = Number(typedValue);
     if (def.validation.min !== undefined && num < def.validation.min) {
       result.errors.push({
-        key: baseKey,
+        key,
         message: `القيمة يجب أن تكون أكبر من أو تساوي ${def.validation.min}`,
         severity: "error",
       });
     }
     if (def.validation.max !== undefined && num > def.validation.max) {
       result.errors.push({
-        key: baseKey,
+        key,
         message: `القيمة يجب أن تكون أصغر من أو تساوي ${def.validation.max}`,
         severity: "error",
       });
     }
   }
-
-  if (def.type === "array" || (def.repeatable && def.type !== "object")) {
-    if (!obj[def.target]) obj[def.target] = [];
-    if (indices.length === 0 && typeof value === "string" && value.includes(",")) {
-      const items = value
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      obj[def.target].push(...items);
-    } else {
-      const indexStr = indices[0];
-      const idx = indexStr ? parseInt(indexStr) - 1 : obj[def.target].length;
-      if (!isNaN(idx) && idx >= 0) {
-        obj[def.target][idx] = typedValue;
-      } else {
-        obj[def.target].push(typedValue);
-      }
-    }
-  } else if (def.type === "object" && def.repeatable) {
-    if (!obj[def.target]) obj[def.target] = [];
-    const indexStr = indices[0];
-    const objIdx = indexStr ? parseInt(indexStr) - 1 : -1;
-    if (objIdx < 0) {
-      result.errors.push({
-        key: `${def.key}.${indices.join(".")}`,
-        message: "يجب تحديد رقم العنصر (مثلاً edition.1.name)",
-        severity: "error",
-      });
-      return;
-    }
-    if (!obj[def.target][objIdx]) obj[def.target][objIdx] = {};
-
-    const subKey = indices[1];
-    if (subKey && def.itemFields && def.itemFields[subKey]) {
-      const subDef = def.itemFields[subKey];
-      let subTypedValue = convertType(value, subDef.type);
-
-      // Prevention of [object Object] for strings
-      if (subDef.type === "string" || subDef.type === "multiline") {
-        subTypedValue = getTextValue(subTypedValue);
-      }
-
-      if (subDef.repeatable) {
-        if (!obj[def.target][objIdx][subDef.target]) obj[def.target][objIdx][subDef.target] = [];
-        const subIndexStr = indices[2];
-        const subIdx = subIndexStr ? parseInt(subIndexStr) - 1 : -1;
-        if (!isNaN(subIdx) && subIdx >= 0) {
-          obj[def.target][objIdx][subDef.target][subIdx] = subTypedValue;
-        } else {
-          obj[def.target][objIdx][subDef.target].push(subTypedValue);
-        }
-      } else {
-        obj[def.target][objIdx][subDef.target] = subTypedValue;
-      }
-    }
-  } else {
-    obj[def.target] = typedValue;
-  }
+  return typedValue;
 }
 
 function convertType(value: string, type: string): any {

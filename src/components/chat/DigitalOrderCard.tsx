@@ -50,6 +50,8 @@ export interface DigitalOrderCardProps {
   canConfirmReceived?: boolean;
   onConfirmReceived?: () => void | Promise<void>;
   isConfirmingReceived?: boolean;
+  onReportIssue?: () => void | Promise<void>;
+  isReportingIssue?: boolean;
   onOpenInvoice?: (orderId?: string) => void;
 }
 
@@ -73,6 +75,8 @@ export function DigitalOrderCard({
   canConfirmReceived = false,
   onConfirmReceived,
   isConfirmingReceived = false,
+  onReportIssue,
+  isReportingIssue = false,
   onOpenInvoice,
 }: DigitalOrderCardProps) {
   const [copied, setCopied] = useState(false);
@@ -81,6 +85,8 @@ export function DigitalOrderCard({
   const isAr = locale === "ar";
   const isPaid = paymentStatus === "paid";
   const isCompleted = status === "completed";
+  const isAwaitingConfirmation = status === "awaiting_customer_confirmation";
+  const isDeliveryIssue = status === "delivery_issue";
 
   const onCopy = async () => {
     try {
@@ -127,6 +133,12 @@ export function DigitalOrderCard({
     if (isCompleted) {
       return isAr ? "تم التسليم بنجاح ✨" : "Delivered Successfully";
     }
+    if (isAwaitingConfirmation) {
+      return isAr ? "تم التسليم • بانتظار تأكيدك" : "Delivered • Awaiting confirmation";
+    }
+    if (isDeliveryIssue) {
+      return isAr ? "تم إيقاف الإكمال • قيد المراجعة" : "Completion paused • Under review";
+    }
     if (adminStatus === "offline") {
       return isAr ? "خارج ساعات العمل" : "Outside Working Hours";
     }
@@ -144,10 +156,12 @@ export function DigitalOrderCard({
         : `${queuePosition - 1} ahead in line • #${queuePosition}`;
     }
     return isAr ? "دورك الآن - قيد التجهيز المباشر ⚡" : "Preparing now ⚡";
-  }, [isCompleted, adminStatus, aheadCount, queuePosition, isAr]);
+  }, [isCompleted, isAwaitingConfirmation, isDeliveryIssue, adminStatus, aheadCount, queuePosition, isAr]);
 
   const estimatedTimeLabel = useMemo(() => {
     if (isCompleted) return isAr ? "مكتمل" : "Completed";
+    if (isAwaitingConfirmation) return isAr ? "حتى 60 دقيقة للتأكيد" : "Up to 60 min to confirm";
+    if (isDeliveryIssue) return isAr ? "قيد مراجعة الإدارة" : "Under support review";
     if (estimatedMinutes) return estimatedMinutes;
     if (adminStatus === "offline") {
       return isAr ? "سيتم التجهيز فور بدء ساعات العمل" : "Will prepare at opening";
@@ -159,12 +173,36 @@ export function DigitalOrderCard({
       return isAr ? `${minEst} - ${maxEst} دقيقة` : `${minEst} - ${maxEst} mins`;
     }
     return isAr ? "5 - 12 دقيقة" : "5 - 12 mins";
-  }, [isCompleted, estimatedMinutes, adminStatus, queuePosition, isAr]);
+  }, [isCompleted, isAwaitingConfirmation, isDeliveryIssue, estimatedMinutes, adminStatus, queuePosition, isAr]);
 
   const calculatedItemsTotal = useMemo(() => {
     if (typeof total === "number" && total > 0) return total;
     return items.reduce((acc, it) => acc + (it.unitPrice || 0) * (it.quantity || 1), 0);
   }, [total, items]);
+
+  const statusBadge = isCompleted
+    ? {
+        className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+        dot: "bg-emerald-500",
+        label: isAr ? "تم التسليم" : "Delivered",
+      }
+    : isAwaitingConfirmation
+      ? {
+          className: "bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-500/20",
+          dot: "bg-teal-500",
+          label: isAr ? "بانتظار تأكيدك" : "Awaiting confirmation",
+        }
+      : isDeliveryIssue
+        ? {
+            className: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
+            dot: "bg-red-500",
+            label: isAr ? "قيد المراجعة" : "Under review",
+          }
+        : {
+            className: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+            dot: "bg-amber-500 animate-pulse",
+            label: isAr ? "قيد التجهيز" : "Processing",
+          };
 
   return (
     <>
@@ -185,24 +223,10 @@ export function DigitalOrderCard({
                   {code}
                 </span>
                 <span
-                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                    isCompleted
-                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-                      : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                  }`}
+                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusBadge.className}`}
                 >
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      isCompleted ? "bg-emerald-500" : "bg-amber-500 animate-pulse"
-                    }`}
-                  />
-                  {isCompleted
-                    ? isAr
-                      ? "تم التسليم"
-                      : "Delivered"
-                    : isAr
-                      ? "قيد التجهيز"
-                      : "Processing"}
+                  <span className={`h-1.5 w-1.5 rounded-full ${statusBadge.dot}`} />
+                  {statusBadge.label}
                 </span>
               </div>
               <div className="text-xs text-[var(--muted-ink)] flex items-center gap-1 mt-0.5">
@@ -406,6 +430,32 @@ export function DigitalOrderCard({
               )}
               <span>{isAr ? "✅ تم استلام الطلب بنجاح" : "Confirm Order Received"}</span>
             </button>
+            {onReportIssue && (
+              <button
+                type="button"
+                onClick={onReportIssue}
+                disabled={isReportingIssue || isConfirmingReceived}
+                className="w-full py-2 px-4 bg-red-500/10 hover:bg-red-500/15 disabled:opacity-50 text-red-700 dark:text-red-300 border border-red-500/25 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                {isReportingIssue ? (
+                  <Clock className="w-4 h-4 animate-spin" />
+                ) : (
+                  <AlertCircle className="w-4 h-4" />
+                )}
+                <span>{isAr ? "لدي مشكلة في التسليم" : "Report a delivery issue"}</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {status === "delivery_issue" && (
+          <div className="mt-3 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-300 text-xs font-bold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>
+              {isAr
+                ? "تم إيقاف الإكمال التلقائي وتحويل الطلب للمراجعة."
+                : "Auto-completion is paused while support reviews the issue."}
+            </span>
           </div>
         )}
 

@@ -168,4 +168,29 @@ export async function processAutoScheduledTasks() {
   } catch (err) {
     console.error("[scheduled-jobs] processInactivityAndQueue error:", err);
   }
+
+}
+
+/**
+ * Minute-granular digital-delivery maintenance.
+ *
+ * Keep this separate from reviews, trade cleanup, and chat inactivity so the
+ * one-hour delivery deadline does not make every heavier scheduled scan run
+ * once per minute. Cloudflare Cron is at-least-once, so the underlying service
+ * uses conditional/idempotent writes.
+ */
+export async function processDigitalDeliveryMaintenance(
+  now = new Date().toISOString(),
+) {
+  try {
+    const { processDueDeliveryAutoCompletions } = await import(
+      "./order-delivery-items.server"
+    );
+    const result = await processDueDeliveryAutoCompletions(now);
+    if (result.completed || result.reconciled || result.errors) {
+      console.log("[scheduled-jobs:digital-delivery]", result);
+    }
+  } catch (err) {
+    console.error("[scheduled-jobs] digital delivery maintenance error:", err);
+  }
 }

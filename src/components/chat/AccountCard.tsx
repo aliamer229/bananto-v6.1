@@ -32,8 +32,8 @@ interface AccountCardProps {
    * prove the sign-in and ask for the following one.
    */
   delivery?: {
-    onAttachProof: (itemId: string) => void | Promise<void>;
-    onNext: (itemId: string) => void | Promise<void>;
+    onAttachProof: (itemId: string, deliveryItemId?: string) => void | Promise<void>;
+    onNext: (itemId: string, deliveryItemId?: string) => void | Promise<void>;
     /** True once this account's proof has been sent. */
     proofSent?: boolean;
     busy?: boolean;
@@ -269,6 +269,8 @@ export function AccountCard({
 
   // Which order line this account belongs to; the delivery controls act on it.
   const itemId = typeof body?.["itemId"] === "string" ? (body["itemId"] as string) : "";
+  const deliveryItemId =
+    typeof body?.["deliveryItemId"] === "string" ? (body["deliveryItemId"] as string) : "";
   const t = LABELS[locale];
 
   const heading = card.type === "credentials" ? t.credentials : t.instructions;
@@ -359,7 +361,7 @@ export function AccountCard({
             <button
               type="button"
               disabled={delivery.busy}
-              onClick={() => void delivery.onAttachProof(itemId)}
+              onClick={() => void delivery.onAttachProof(itemId, deliveryItemId || undefined)}
               className="flex flex-[2] items-center justify-center gap-1.5 rounded-xl bg-foreground px-3 py-2 text-[11px] font-bold text-background disabled:opacity-50 transition-transform active:scale-95 cursor-pointer"
             >
               {delivery.busy ? (
@@ -378,7 +380,7 @@ export function AccountCard({
             <button
               type="button"
               disabled={delivery.busy || !delivery.proofSent}
-              onClick={() => void delivery.onNext(itemId)}
+              onClick={() => void delivery.onNext(itemId, deliveryItemId || undefined)}
               title={
                 delivery.proofSent
                   ? undefined

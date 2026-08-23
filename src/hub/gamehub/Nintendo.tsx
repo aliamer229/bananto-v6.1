@@ -469,7 +469,8 @@ export function PerformanceSection() {
   const { game } = useHub();
   const profiles = game.performance ?? [];
 
-  if (profiles.length === 0) return null;
+  const expectedOnSwitch2 = game.nintendo?.runsOn.includes("switch2") ?? false;
+  if (profiles.length === 0 && !expectedOnSwitch2) return null;
 
   return (
     <Section
@@ -479,28 +480,107 @@ export function PerformanceSection() {
       weight="support"
     >
       <Reveal>
+        {profiles.length === 0 ? (
+          <Panel className="p-6 text-center text-sm muted">
+            Performance information for this device has not been published yet.
+          </Panel>
+        ) : null}
         <div className="grid gap-3 lg:grid-cols-3">
           {profiles.map((profile) => (
-            <Panel key={profile.platform} className="lg:col-span-3 p-5">
-              <p className="mb-4 flex items-center gap-2 text-sm font-extrabold">
-                <Gauge className="h-4 w-4 text-nin-soft" />
-                {t("performance.title")}
-              </p>
+            <Panel
+              key={profile.hardwareId || profile.deviceSlug || profile.platform}
+              className="lg:col-span-3 p-5"
+            >
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="flex items-center gap-2 text-sm font-extrabold">
+                  <Gauge className="h-4 w-4 text-nin-soft" />
+                  Tested on
+                  {profile.deviceSlug ? (
+                    <a
+                      href={`/hardware/${profile.deviceSlug}`}
+                      className="text-nin-soft hover:underline"
+                    >
+                      {profile.deviceName ||
+                        (profile.platform === "switch2" ? "Nintendo Switch 2" : "Nintendo Switch")}
+                    </a>
+                  ) : (
+                    <span>
+                      {profile.deviceName ||
+                        (profile.platform === "switch2" ? "Nintendo Switch 2" : "Nintendo Switch")}
+                    </span>
+                  )}
+                </p>
+                {profile.verifiedAt ? (
+                  <span className="rounded-full bg-white/[0.05] px-3 py-1 text-[10px] font-bold muted">
+                    Performance verified: {profile.verifiedAt.slice(0, 7)}
+                  </span>
+                ) : null}
+              </div>
+
+              {profile.informationStatus === "not_published" ||
+              profile.informationStatus === "not_tested" ? (
+                <div className="inset p-4 text-sm muted">
+                  Performance information for this device has not been published yet.
+                  {profile.unavailableReason ? (
+                    <p className="mt-2 text-xs leading-relaxed">{profile.unavailableReason}</p>
+                  ) : null}
+                </div>
+              ) : null}
 
               {profile.modes?.length ? (
-                <div className="space-y-3.5 text-xs">
+                <div className="grid gap-3.5 text-xs md:grid-cols-2">
                   {profile.modes.map((mode, index) => (
                     <div key={index} className="inset p-3">
-                      <p className="mb-2 text-[10px] font-bold uppercase tracking-wider muted">
+                      <p className="mb-3 text-[10px] font-bold uppercase tracking-wider muted">
                         {mode.label ??
                           t(`nintendo.${mode.mode === "pc-preset" ? "tv" : mode.mode}`)}
                       </p>
-                      <Row label={t("performance.resolution")}>
-                        <FactValue fact={mode.resolution} showBadge={false} />
-                      </Row>
-                      <Row label={t("performance.frameRate")}>
-                        <FactValue fact={mode.frameRate} showBadge={false} />
-                      </Row>
+                      {mode.supported === false ? (
+                        <span className="inline-flex rounded-full bg-white/[0.06] px-3 py-1.5 text-xs font-bold muted">
+                          Not Supported
+                        </span>
+                      ) : (
+                        <>
+                          <div className="mb-3 flex flex-wrap gap-2">
+                            {mode.resolution?.value ? (
+                              <span className="rounded-full bg-nin/15 px-3 py-1.5 font-extrabold text-nin-soft">
+                                {mode.resolution.value}
+                              </span>
+                            ) : null}
+                            {mode.frameRate?.value ? (
+                              <span className="rounded-full bg-good/10 px-3 py-1.5 font-extrabold text-good">
+                                {mode.frameRate.value}
+                                {/fps/i.test(String(mode.frameRate.value)) ? "" : " FPS"}
+                              </span>
+                            ) : null}
+                            {mode.hdr?.value === true ? (
+                              <span className="rounded-full bg-warn/10 px-3 py-1.5 font-extrabold text-warn">
+                                HDR
+                              </span>
+                            ) : null}
+                            {mode.vrr?.value === true ? (
+                              <span className="rounded-full bg-white/[0.08] px-3 py-1.5 font-extrabold">
+                                VRR
+                              </span>
+                            ) : null}
+                          </div>
+                          {mode.renderingResolution ? (
+                            <Row label="Rendering Resolution">
+                              <FactValue fact={mode.renderingResolution} showBadge={false} />
+                            </Row>
+                          ) : null}
+                          {mode.outputResolution ? (
+                            <Row label="Output Resolution">
+                              <FactValue fact={mode.outputResolution} showBadge={false} />
+                            </Row>
+                          ) : null}
+                          {mode.refreshRate ? (
+                            <Row label="Refresh Rate">
+                              <FactValue fact={mode.refreshRate} showBadge={false} />
+                            </Row>
+                          ) : null}
+                        </>
+                      )}
                       {mode.notes && <p className="mt-1.5 leading-relaxed muted">{mode.notes}</p>}
                     </div>
                   ))}
@@ -519,6 +599,106 @@ export function PerformanceSection() {
                   {profile.notes && <p className="leading-relaxed muted">{profile.notes}</p>}
                 </div>
               )}
+
+              {profile.performanceModes?.length ? (
+                <div className="mt-4">
+                  <p className="eyebrow mb-3">Performance Modes</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {profile.performanceModes.map((mode, index) => (
+                      <div key={`${mode.name}-${index}`} className="inset p-4">
+                        <p className="font-extrabold">{mode.name}</p>
+                        <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-bold">
+                          {mode.handheldResolution ? (
+                            <span className="rounded-full bg-white/[0.06] px-2.5 py-1">
+                              Handheld {mode.handheldResolution}
+                            </span>
+                          ) : null}
+                          {mode.handheldFps ? (
+                            <span className="rounded-full bg-white/[0.06] px-2.5 py-1">
+                              {mode.handheldFps} FPS
+                            </span>
+                          ) : null}
+                          {mode.tvResolution ? (
+                            <span className="rounded-full bg-white/[0.06] px-2.5 py-1">
+                              TV {mode.tvResolution}
+                            </span>
+                          ) : null}
+                          {mode.tvFps ? (
+                            <span className="rounded-full bg-white/[0.06] px-2.5 py-1">
+                              {mode.tvFps} FPS
+                            </span>
+                          ) : null}
+                          {mode.hdr ? (
+                            <span className="rounded-full bg-warn/10 px-2.5 py-1 text-warn">
+                              HDR
+                            </span>
+                          ) : null}
+                          {mode.vrr ? (
+                            <span className="rounded-full bg-white/[0.08] px-2.5 py-1">VRR</span>
+                          ) : null}
+                        </div>
+                        {mode.notes ? (
+                          <p className="mt-2 text-xs leading-relaxed muted">{mode.notes}</p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {profile.upscaling ||
+              profile.rayTracing !== undefined ||
+              profile.gameVersion ||
+              profile.patchVersion ? (
+                <div className="mt-4 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                  {profile.upscaling ? (
+                    <div className="inset p-3">
+                      <span className="block text-[10px] muted">Upscaling</span>
+                      <strong>{profile.upscaling}</strong>
+                    </div>
+                  ) : null}
+                  {profile.rayTracing !== undefined ? (
+                    <div className="inset p-3">
+                      <span className="block text-[10px] muted">Ray Tracing</span>
+                      <strong>
+                        {profile.rayTracing
+                          ? profile.rayTracingMode || "Supported"
+                          : "Not Supported"}
+                      </strong>
+                    </div>
+                  ) : null}
+                  {profile.gameVersion ? (
+                    <div className="inset p-3">
+                      <span className="block text-[10px] muted">Game Version</span>
+                      <strong>{profile.gameVersion}</strong>
+                    </div>
+                  ) : null}
+                  {profile.patchVersion ? (
+                    <div className="inset p-3">
+                      <span className="block text-[10px] muted">Patch</span>
+                      <strong>{profile.patchVersion}</strong>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {profile.sourceName || profile.sourceUrl ? (
+                <p className="mt-4 text-xs muted">
+                  Source:{" "}
+                  {profile.sourceUrl ? (
+                    <a
+                      href={profile.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="font-bold text-nin-soft hover:underline"
+                    >
+                      {profile.sourceName || profile.sourceUrl}
+                    </a>
+                  ) : (
+                    <strong>{profile.sourceName}</strong>
+                  )}
+                </p>
+              ) : null}
             </Panel>
           ))}
         </div>

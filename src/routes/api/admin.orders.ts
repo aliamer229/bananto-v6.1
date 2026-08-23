@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DELIVERY_OTP_TTL_MINUTES, deliveryOtpExpiry } from "@/lib/delivery-otp";
-
 import {
   appendMessage,
   getOrder,
@@ -17,16 +15,18 @@ import {
   d1Run,
   randomId,
 } from "@/lib/db.server";
-import { decryptSecretValue } from "@/lib/crypto.server";
 import { body, guard, json } from "@/lib/http.server";
 import { stageCredentials, evaluateOrderAutoCompletion } from "@/lib/orders.server";
 import { completeOrder, withDeliveryDeadline } from "@/lib/order-completion.server";
 import {
-  claimNextAccount,
-  getBatchProgress,
-  markAccountRegistered,
-  stageAccountBatch,
-} from "@/lib/account-batch.server";
+  getDeliveryOrderState,
+  mapUnmatchedDeliveryItem,
+  saveDeliveryDraft,
+  saveQuickPaste,
+  sendDeliveryCredentials,
+  sendDeliveryOtp,
+  sendDigitalDeliveryCode,
+} from "@/lib/order-delivery-items.server";
 import { requireAdmin } from "@/lib/session.server";
 import type { Order, OrderItem, OrderStatus, PaymentStatus } from "@/lib/types";
 import { redactOrder } from "./orders";
@@ -43,6 +43,12 @@ type Action =
   | "stage_credentials"
   | "send_credentials"
   | "send_verification_code"
+  | "delivery_quick_paste"
+  | "save_delivery_draft"
+  | "map_delivery_item"
+  | "send_delivery_credentials"
+  | "send_delivery_otp"
+  | "send_delivery_code"
   | "send_instructions"
   | "mark_logged_in"
   | "mark_shipped"
@@ -55,9 +61,14 @@ interface AdminOrderBody {
   threadId?: string;
   action?: Action;
   itemId?: string;
+  deliveryItemId?: string;
+  sourceDeliveryItemId?: string;
+  targetDeliveryItemId?: string;
   email?: string;
   password?: string;
   code?: string;
+  pin?: string;
+  rawText?: string;
   text?: string;
   title?: string;
   clientMessageId?: string;
@@ -65,42 +76,6 @@ interface AdminOrderBody {
   accounts?: { email?: string; password?: string }[];
   status?: OrderStatus;
   paymentStatus?: PaymentStatus;
-}
-
-async function resolveThreadId(order: Order, explicitThreadId?: string): Promise<string> {
-  if (explicitThreadId) return explicitThreadId;
-  if (order.threadId) return order.threadId;
-  try {
-    const { listThreadsByUser } = await import("@/lib/db.server");
-    const threads = await listThreadsByUser(order.userId);
-    const found = threads.find((t) => t.orderId === order.id || t.orderId === order.code);
-    return found?.id || "";
-  } catch {
-    return "";
-  }
-}
-
-/**
- * Claim the next staged account and post it to the buyer as a credentials card,
- * exactly as a single hand-delivered account would arrive.
- */
-async function deliverNextAccount(order: Order, itemId: string, adminName: string) {
-  const account = await claimNextAccount(order.id, itemId);
-  if (!account) return undefined;
-  const item = order.items.find((entry) => entry.id === itemId);
-  await appendMessage(order.threadId, {
-    senderRole: "admin",
-    senderName: adminName,
-    kind: "item_credentials",
-    body: {
-      itemId,
-      title: item?.title ?? "",
-      email: account.email,
-      ...(account.password ? { password: account.password } : {}),
-      sequence: account.seq,
-    },
-  });
-  return account;
 }
 
 function patchItem(order: Order, itemId: string, patch: Partial<OrderItem>): Order {
@@ -117,6 +92,30 @@ export const Route = createFileRoute("/api/admin/orders")({
       GET: async ({ request }) =>
         guard(async () => {
           await requireAdmin(request);
+          const url = new URL(request.url);
+          const deliveryOrderId = url.searchParams.get("orderId");
+          if (deliveryOrderId && url.searchParams.get("delivery") === "1") {
+            try {
+              return json({ state: await getDeliveryOrderState(deliveryOrderId) });
+            } catch (error) {
+              const code = error instanceof Error ? error.message : "DELIVERY_STATE_FAILED";
+              console.error("[admin.orders:delivery_state_failed]", {
+                orderId: deliveryOrderId,
+                code,
+              });
+              return json(
+                {
+                  error:
+                    code === "DELIVERY_PRODUCT_TITLE_MISSING" ||
+                    code === "DELIVERY_PRODUCT_RELATION_MISSING"
+                      ? "تعذر تحميل اسم لعبة موثوق من عناصر الطلب. تم تسجيل الخطأ للمراجعة."
+                      : "تعذر تحميل بيانات تجهيز الطلب من D1.",
+                  code,
+                },
+                { status: code === "ORDER_NOT_FOUND" ? 404 : 500 },
+              );
+            }
+          }
           // Background auto-cleanup for expired cancelled orders (cancelled >= 7 days ago)
           void cleanupExpiredCancelledOrders().catch((e) =>
             console.warn("[admin.orders:cleanup_warn]", e),
@@ -190,6 +189,78 @@ export const Route = createFileRoute("/api/admin/orders")({
             import("@/lib/order-delivery.server").DeliveryCompletion | undefined;
 
           switch (data.action) {
+            case "delivery_quick_paste": {
+              if (!data.rawText?.trim()) {
+                return json({ error: "نص اللصق السريع مطلوب" }, { status: 400 });
+              }
+              const result = await saveQuickPaste(order.id, data.rawText);
+              return json({ success: true, ...result });
+            }
+            case "save_delivery_draft": {
+              if (!data.deliveryItemId) {
+                return json({ error: "معرف عنصر التسليم مطلوب" }, { status: 400 });
+              }
+              const state = await saveDeliveryDraft({
+                orderId: order.id,
+                deliveryItemId: data.deliveryItemId,
+                username: String(data.email ?? ""),
+                password: String(data.password ?? ""),
+              });
+              return json({ success: true, state });
+            }
+            case "map_delivery_item": {
+              if (!data.sourceDeliveryItemId || !data.targetDeliveryItemId) {
+                return json({ error: "عنصر المصدر وخانة اللعبة مطلوبان" }, { status: 400 });
+              }
+              const state = await mapUnmatchedDeliveryItem({
+                orderId: order.id,
+                sourceDeliveryItemId: data.sourceDeliveryItemId,
+                targetDeliveryItemId: data.targetDeliveryItemId,
+              });
+              return json({ success: true, state });
+            }
+            case "send_delivery_credentials": {
+              if (!data.deliveryItemId) {
+                return json({ error: "معرف عنصر التسليم مطلوب" }, { status: 400 });
+              }
+              const result = await sendDeliveryCredentials({
+                orderId: order.id,
+                deliveryItemId: data.deliveryItemId,
+                adminId: admin.id,
+                adminName,
+                threadId: data.threadId,
+              });
+              return json({ success: true, ...result });
+            }
+            case "send_delivery_otp": {
+              if (!data.deliveryItemId || !data.code?.trim()) {
+                return json({ error: "عنصر التسليم وكود OTP مطلوبان" }, { status: 400 });
+              }
+              const result = await sendDeliveryOtp({
+                orderId: order.id,
+                deliveryItemId: data.deliveryItemId,
+                code: data.code,
+                adminId: admin.id,
+                adminName,
+                threadId: data.threadId,
+              });
+              return json({ success: true, ...result });
+            }
+            case "send_delivery_code": {
+              if (!data.deliveryItemId || !data.code?.trim()) {
+                return json({ error: "عنصر التسليم والكود مطلوبان" }, { status: 400 });
+              }
+              const result = await sendDigitalDeliveryCode({
+                orderId: order.id,
+                deliveryItemId: data.deliveryItemId,
+                code: data.code,
+                pin: data.pin,
+                adminId: admin.id,
+                adminName,
+                threadId: data.threadId,
+              });
+              return json({ success: true, ...result });
+            }
             case "delete_order": {
               if (order.paymentStatus === "paid" && order.status !== "cancelled") {
                 return json(
@@ -236,6 +307,21 @@ export const Route = createFileRoute("/api/admin/orders")({
               break;
             }
             case "set_status": {
+              if (
+                data.status === "completed" ||
+                data.status === "awaiting_customer_confirmation"
+              ) {
+                const delivery = await getDeliveryOrderState(order);
+                if (delivery.progress.total > 0) {
+                  return json(
+                    {
+                      error:
+                        "حالة الطلب الرقمي بعد التسليم تُحدد فقط من آخر OTP ثم تأكيد العميل أو مهلة الساعة",
+                    },
+                    { status: 409 },
+                  );
+                }
+              }
               next = { ...order, status: data.status ?? order.status, updatedAt: now };
               break;
             }
@@ -448,129 +534,108 @@ export const Route = createFileRoute("/api/admin/orders")({
               return json({ order: redactOrder(next), success: true });
             }
             case "direct_send_credentials": {
-              if (!data.itemId || !data.email) {
-                return json({ error: "البريد الإلكتروني ومعرف العنصر مطلوبان" }, { status: 400 });
-              }
-              const { stageCredentials } = await import("@/lib/orders.server");
-              // 1. Save delivery info (staging)
-              next = await stageCredentials(order, data.itemId, data.email, data.password);
-
-              // 2. Send the message immediately
-              const item = next.items.find((i) => i.id === data.itemId);
-              if (item) {
-                const targetThreadId = await resolveThreadId(order, data.threadId);
-                if (targetThreadId) {
-                  await appendMessage(targetThreadId, {
-                    senderRole: "admin",
-                    senderName: adminName,
-                    kind: "item_credentials",
-                    body: {
-                      itemId: item.id,
-                      title: item.title,
-                      email: data.email,
-                      ...(data.password ? { password: data.password } : {}),
-                    },
-                  });
-                }
-                next = patchItem(next, item.id, { credsSentAt: now });
-                if (next.status === "processing") {
-                  next = { ...next, status: "delivering" };
-                }
-              }
-
-              await saveOrder(next);
-              return json({ order: redactOrder(next) });
-            }
-            case "stage_credentials": {
-              if (!data.itemId || !data.email)
-                return json({ error: "البريد الإلكتروني ومعرف العنصر مطلوبان" }, { status: 400 });
-              next = await stageCredentials(order, data.itemId, data.email, data.password);
-              return json({ order: redactOrder(next) });
-            }
-            case "send_credentials": {
-              const item = order.items.find((i) => i.id === data.itemId);
-              if (!item || !item.deliveryEmail)
-                return json({ error: "لم يتم تجهيز بيانات هذا العنصر بعد" }, { status: 400 });
-              if (item.credsSentAt)
-                return json({ error: "تم إرسال البيانات مسبقاً" }, { status: 409 });
-              let password: string | undefined;
-              if (item.deliveryPasswordEnc) {
-                try {
-                  password = await decryptSecretValue(item.deliveryPasswordEnc);
-                } catch {
-                  password = undefined;
-                }
-              }
-              const targetThreadId = await resolveThreadId(order, data.threadId);
-              if (targetThreadId) {
-                await appendMessage(targetThreadId, {
-                  senderRole: "admin",
-                  senderName: adminName,
-                  kind: "item_credentials",
-                  body: {
-                    itemId: item.id,
-                    title: item.title,
-                    email: item.deliveryEmail,
-                    ...(password ? { password: password } : {}),
-                  },
-                });
-              }
-              next = patchItem(order, item.id, { credsSentAt: now });
-              next = { ...next, status: "delivering" };
-              break;
-            }
-            /* ----------------------- batch account prep ----------------------- */
-            case "stage_account_batch": {
-              if (!data.itemId || !Array.isArray(data.accounts)) {
-                return json({ error: "الحسابات المجهزة ومعرف العنصر مطلوبان" }, { status: 400 });
-              }
-              if (data.accounts.length > 50) {
-                return json({ error: "الحد الأقصى للتجهيز الدفعي هو 50 حساباً" }, { status: 400 });
-              }
-              const added = await stageAccountBatch(
-                order.id,
-                data.itemId,
-                data.accounts.map((entry) => ({
-                  email: String(entry?.email ?? ""),
-                  ...(entry?.password ? { password: String(entry.password) } : {}),
-                })),
-              );
-              return json({
-                added,
-                progress: await getBatchProgress(order.id, data.itemId),
-              });
-            }
-
-            case "release_next_account": {
-              if (!data.itemId) return json({ error: "معرف العنصر مطلوب" }, { status: 400 });
-              const released = await deliverNextAccount(order, data.itemId, adminName);
-              if (!released) {
+              if (!data.itemId || !data.email || !data.password) {
                 return json(
-                  {
-                    error: "لا توجد حسابات مجهزة للتسليم في هذه الدفعة",
-                    progress: await getBatchProgress(order.id, data.itemId),
-                  },
+                  { error: "اسم المستخدم وكلمة المرور ومعرف عنصر الطلب مطلوبة" },
+                  { status: 400 },
+                );
+              }
+              const state = await getDeliveryOrderState(order);
+              const candidates = state.deliveryItems.filter(
+                (entry) =>
+                  entry.orderItemId === data.itemId &&
+                  ["draft", "ready"].includes(entry.status) &&
+                  (!entry.username || entry.username === data.email),
+              );
+              if (candidates.length !== 1) {
+                return json(
+                  { error: "اختر delivery_item_id المحدد؛ لا يمكن تخمين خانة الكمية" },
                   { status: 409 },
                 );
               }
-              next = patchItem(order, data.itemId, {
-                deliveryEmail: released.email,
-                ...(order.items.find((i) => i.id === data.itemId)?.credsSentAt
-                  ? {}
-                  : { credsSentAt: now }),
+              await saveDeliveryDraft({
+                orderId: order.id,
+                deliveryItemId: candidates[0]!.id,
+                username: data.email,
+                password: data.password,
               });
-              next = { ...next, status: "delivering", updatedAt: now };
-              await saveOrder(next);
-              return json({
-                released: released.seq,
-                order: redactOrder(next),
-                progress: await getBatchProgress(order.id, data.itemId),
+              const result = await sendDeliveryCredentials({
+                orderId: order.id,
+                deliveryItemId: candidates[0]!.id,
+                adminId: admin.id,
+                adminName,
+                threadId: data.threadId,
               });
+              return json({ success: true, ...result });
+            }
+            case "stage_credentials": {
+              if (!data.itemId || !data.email || !data.password) {
+                return json(
+                  { error: "اسم المستخدم وكلمة المرور ومعرف عنصر الطلب مطلوبة" },
+                  { status: 400 },
+                );
+              }
+              const state = await getDeliveryOrderState(order);
+              const candidates = state.deliveryItems.filter(
+                (entry) =>
+                  entry.orderItemId === data.itemId &&
+                  ["draft", "ready"].includes(entry.status) &&
+                  (!entry.username || entry.username === data.email),
+              );
+              if (candidates.length !== 1) {
+                return json(
+                  { error: "اختر delivery_item_id المحدد؛ لا يمكن تخمين خانة الكمية" },
+                  { status: 409 },
+                );
+              }
+              const nextState = await saveDeliveryDraft({
+                orderId: order.id,
+                deliveryItemId: candidates[0]!.id,
+                username: data.email,
+                password: data.password,
+              });
+              return json({ success: true, state: nextState });
+            }
+            case "send_credentials": {
+              const state = await getDeliveryOrderState(order);
+              const candidates = state.deliveryItems.filter(
+                (entry) => entry.orderItemId === data.itemId && entry.status === "ready",
+              );
+              if (candidates.length !== 1) {
+                return json(
+                  { error: "اختر حسابًا جاهزًا واحدًا عبر delivery_item_id" },
+                  { status: 409 },
+                );
+              }
+              const result = await sendDeliveryCredentials({
+                orderId: order.id,
+                deliveryItemId: candidates[0]!.id,
+                adminId: admin.id,
+                adminName,
+                threadId: data.threadId,
+              });
+              return json({ success: true, ...result });
+            }
+            /* ----------------------- batch account prep ----------------------- */
+            case "stage_account_batch": {
+              return json(
+                {
+                  error:
+                    "تم إيقاف الدفعة المشتركة لهذا المسار؛ استخدم Quick Paste لإنشاء delivery_item مستقل لكل حساب",
+                },
+                { status: 409 },
+              );
+            }
+
+            case "release_next_account": {
+              return json(
+                { error: "إطلاق الحسابات يتم الآن من سجل delivery_item الجاهز فقط" },
+                { status: 409 },
+              );
             }
 
             case "batch_status": {
-              if (!data.itemId) return json({ error: "معرف العنصر مطلوب" }, { status: 400 });
-              return json({ progress: await getBatchProgress(order.id, data.itemId) });
+              return json({ state: await getDeliveryOrderState(order) });
             }
 
             case "send_verification_code": {
@@ -578,141 +643,36 @@ export const Route = createFileRoute("/api/admin/orders")({
               if (!code) {
                 return json({ error: "يرجى إدخال كود التحقق (OTP)" }, { status: 400 });
               }
-
-              let item = order.items.find((i) => i.id === data.itemId);
-              if (!item && data.itemId) {
-                item = order.items.find(
-                  (i) =>
-                    i.id.endsWith(data.itemId!) ||
-                    i.id.includes(data.itemId!) ||
-                    data.itemId!.includes(i.id),
+              const state = await getDeliveryOrderState(order);
+              let deliveryItemId = data.deliveryItemId;
+              if (!deliveryItemId && data.itemId) {
+                const candidates = state.deliveryItems.filter(
+                  (entry) =>
+                    entry.orderItemId === data.itemId && entry.status === "proof_received",
                 );
-              }
-              if (!item) {
-                item = order.items.find((i) => i.credsSentAt && !i.loggedInAt) || order.items[0];
-              }
-              const targetItemId = item?.id;
-              if (!targetItemId) {
-                return json({ error: "تعذر تحديد عنصر الطلب المستهدف" }, { status: 400 });
-              }
-
-              const itemTitle = data.title || item?.title || "الحساب";
-
-              // Cooldown prevention: Check if OTP was sent in the last 4 seconds for this item
-              if (item?.verificationCodeSentAt) {
-                const diff = Date.now() - new Date(item.verificationCodeSentAt).getTime();
-                if (diff < 4000) {
+                if (candidates.length === 1) deliveryItemId = candidates[0]!.id;
+                if (candidates.length > 1) {
                   return json(
-                    {
-                      error: "تم إرسال كود التحقق للتو، يرجى الانتظار بضع ثوانٍ قبل إعادة المحاولة",
-                    },
-                    { status: 429 },
+                    { error: "يوجد أكثر من حساب لهذا المنتج؛ اختر الحساب المحدد من تبويبات التسليم" },
+                    { status: 409 },
                   );
                 }
               }
-
-              const targetThreadId = await resolveThreadId(order, data.threadId);
-              if (targetThreadId) {
-                const otpClientMsgId =
-                  data.clientMessageId || `otp-${targetItemId}-${code}-${now.slice(0, 16)}`;
-                // Server stamps the absolute expiry; every surface derives its
-                // countdown from this instant, so a refresh shows real time left.
-                const expiresAt = deliveryOtpExpiry(now);
-                await appendMessage(targetThreadId, {
-                  senderRole: "admin",
-                  senderName: adminName,
-                  kind: "item_verification_code",
-                  clientMessageId: otpClientMsgId,
-                  body: {
-                    itemId: targetItemId,
-                    code,
-                    verificationCode: code,
-                    title: itemTitle,
-                    expiresInMinutes: DELIVERY_OTP_TTL_MINUTES,
-                    expiresAt,
-                    sentAt: now,
-                    clientMessageId: otpClientMsgId,
-                  },
-                });
-
-                const thread = await getThread(targetThreadId);
-                if (thread) {
-                  await saveThread({
-                    ...thread,
-                    lastMessageAt: now,
-                    lastMessagePreview: `كود التحقق: ${code}`,
-                    lastAdminMessageAt: now,
-                    mode: "WAITING_FOR_USER",
-                    needsAdmin: false,
-                  });
-                }
+              if (!deliveryItemId) {
+                return json(
+                  { error: "تعذر تحديد delivery_item_id من إثبات الدخول؛ لن يتم اختيار لعبة عشوائياً" },
+                  { status: 400 },
+                );
               }
-
-              next = patchItem(order, targetItemId, {
-                verificationCodeSentAt: now,
-                verificationCode: code,
-                deliveredAt: now,
+              const result = await sendDeliveryOtp({
+                orderId: order.id,
+                deliveryItemId,
+                code,
+                adminId: admin.id,
+                adminName,
+                threadId: data.threadId,
               });
-
-              /*
-                If that was the last item, the admin is done with this order:
-                it leaves the queue, moves to awaiting_customer_confirmation and
-                the response carries the next order to work on. Shared with the
-                /api/chat path so both ways of sending a code behave the same.
-              */
-              const { finalizeDeliveryIfComplete } = await import("@/lib/order-delivery.server");
-              const completion = await finalizeDeliveryIfComplete(next, admin.id, now);
-              next = completion.order;
-              deliveryCompletion = completion;
-
-              // Safe audit log & status history in D1
-              try {
-                const { d1Run, randomId } = await import("@/lib/db.server");
-                await d1Run(
-                  `INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                  randomId("aud"),
-                  admin.id,
-                  "send_verification_code",
-                  "order",
-                  order.id,
-                  JSON.stringify({ itemId: targetItemId, itemTitle, sentAt: now }),
-                  now,
-                );
-                await d1Run(
-                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                  randomId("osh"),
-                  order.id,
-                  order.status,
-                  next.status,
-                  admin.id,
-                  `تم إرسال كود التحقق (OTP) للمنتج: ${itemTitle}`,
-                  now,
-                );
-              } catch {
-                // Safe fallback
-              }
-
-              // Safe forward to customer Telegram if linked
-              try {
-                const { d1First } = await import("@/lib/d1.server");
-                const link = await d1First<{ telegram_chat_id: number }>(
-                  `SELECT telegram_chat_id FROM telegram_links
-                   WHERE user_id = ? AND telegram_chat_id IS NOT NULL AND verified = 1
-                   ORDER BY linked_at DESC LIMIT 1`,
-                  order.userId,
-                );
-                if (link?.telegram_chat_id) {
-                  const { sendTelegramMessage } = await import("@/lib/telegram.server");
-                  const otpText = `🔐 *كود التحقق الخاص بطلبك #${order.code}*\n\nالخدمة: ${itemTitle}\nالكود: \`${code}\`\n\nصالح لمدة ${DELIVERY_OTP_TTL_MINUTES} دقيقة. استخدمه لإكمال تسجيل الدخول.`;
-                  await sendTelegramMessage(String(link.telegram_chat_id), otpText);
-                }
-              } catch {
-                // Telegram notification failure should not block chat OTP
-              }
-
-              break;
+              return json({ success: true, ...result });
             }
             case "send_instructions": {
               await appendMessage(order.threadId, {
@@ -724,20 +684,13 @@ export const Route = createFileRoute("/api/admin/orders")({
               break;
             }
             case "mark_logged_in": {
-              if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
-              next = patchItem(order, data.itemId, { loggedInAt: now });
-              if (await markAccountRegistered(order.id, data.itemId)) {
-                const released = await deliverNextAccount(next, data.itemId, adminName);
-                if (released) {
-                  next = patchItem(next, data.itemId, {
-                    deliveryEmail: released.email,
-                    credsSentAt: now,
-                    loggedInAt: undefined,
-                  });
-                  next = { ...next, status: "delivering" };
-                }
-              }
-              break;
+              return json(
+                {
+                  error:
+                    "تسجيل الدخول يُثبت الآن بصورة مرتبطة بـ delivery_item_id، ولا يطلق حسابًا مشتركًا",
+                },
+                { status: 409 },
+              );
             }
             case "mark_shipped": {
               if (!data.itemId) return json({ error: "missing_fields" }, { status: 400 });
@@ -765,6 +718,61 @@ export const Route = createFileRoute("/api/admin/orders")({
             case "complete_order": {
               /*
                 One owner, and idempotent.
+              const delivery = await getDeliveryOrderState(order);
+              if (delivery.progress.total > 0) {
+                return json(
+                  {
+                    error:
+                      "لا يمكن إكمال طلب رقمي يدويًا؛ أرسل OTP لكل العناصر ثم انتظر تأكيد العميل أو الإكمال التلقائي",
+                  },
+                  { status: 409 },
+                );
+              }
+              const updatedItems = order.items.map((it) => ({
+                ...it,
+                completedAt: it.completedAt || now,
+                deliveredAt: it.deliveredAt || now,
+              }));
+
+              next = {
+                ...order,
+                status: "completed",
+                completedAt: now,
+                items: updatedItems,
+                updatedAt: now,
+              };
+
+              // 1. Mark task in order queue completed
+              try {
+                await d1Run(
+                  `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
+                  now,
+                  order.id,
+                );
+
+                await d1Run(
+                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+                   VALUES (?, ?, ?, 'completed', ?, 'تم تأكيد اكتمال الطلب من قبل الإدارة', ?)`,
+                  randomId("osh"),
+                  order.id,
+                  order.status,
+                  admin.id,
+                  now,
+                );
+
+                await d1Run(
+                  `INSERT INTO order_status_history_v2 (
+                    id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
+                  ) VALUES (?, ?, ?, 'completed', ?, 'ADMIN', 'Admin finalized order completion', ?)`,
+                  randomId("oshv2"),
+                  order.id,
+                  order.status,
+                  admin.id,
+                  now,
+                );
+              } catch (err) {
+                console.error("[admin:complete_order:history_failed]", err);
+              }
 
                 This used to write `completedAt: now` and post both the
                 completion card and the rating request every time it ran, so a
@@ -842,10 +850,6 @@ export const Route = createFileRoute("/api/admin/orders")({
             success: true,
             message: "تمت العملية بنجاح",
             order: redactOrder(next),
-            // Present only when this action completed the delivery. The admin UI
-            // advances on `orderFinished`, never on "an OTP was sent".
-            orderFinished: Boolean(deliveryCompletion?.finished),
-            ...(deliveryCompletion?.next ? { nextOrder: deliveryCompletion.next } : {}),
           });
         }),
     },

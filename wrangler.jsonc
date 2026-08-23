@@ -79,7 +79,9 @@
   },
 
   "triggers": {
-    "crons": ["*/30 * * * *"], // Every 30 minutes
+    // Server-side delivery deadlines are minute-granular. The handler is
+    // idempotent because Cloudflare Cron has at-least-once delivery semantics.
+    "crons": ["* * * * *", "*/30 * * * *"],
   },
 
   "queues": {

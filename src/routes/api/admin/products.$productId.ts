@@ -5,6 +5,23 @@ import { requireAdmin } from "@/lib/session.server";
 import { autoTranslateProduct } from "@/lib/translate.server";
 import type { Product } from "@/lib/types";
 import { sanitizeSlug } from "./products";
+import {
+  deactivateGameDevicePerformance,
+  syncGameDevicePerformance,
+} from "@/lib/devicePerformance.server";
+import { validateGameDevicePerformance } from "@/lib/devicePerformance";
+import { resolveCategoryType } from "@/lib/productSection";
+
+function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
+  const categoryId = String(product.categoryId || product.category || "");
+  const category = categories.find((entry) => String(entry.id || "") === categoryId);
+  return resolveCategoryType(
+    categoryId,
+    String(category?.title || category?.name || ""),
+    String(product.kind || ""),
+    String(product.schemaId || ""),
+  );
+}
 
 export const Route = createFileRoute("/api/admin/products/$productId")({
   server: {
@@ -103,6 +120,22 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
             categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
           };
 
+          if (productSection(productToSave, currentStore.categories || []) === "game") {
+            const performanceIssues = validateGameDevicePerformance(
+              productToSave as Record<string, unknown>,
+            );
+            if (performanceIssues.length) {
+              return json(
+                {
+                  error: performanceIssues.map((issue) => issue.message).join("\n"),
+                  code: "DEVICE_PERFORMANCE_REQUIRED",
+                  issues: performanceIssues,
+                },
+                { status: 400 },
+              );
+            }
+          }
+
           try {
             productToSave = await autoTranslateProduct(productToSave);
           } catch (transErr) {
@@ -128,6 +161,12 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
 
             const saved =
               (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+            if (productSection(saved, updated.categories || []) === "game") {
+              const hardware = (updated.products || []).filter(
+                (item) => productSection(item, updated.categories || []) === "hardware",
+              );
+              await syncGameDevicePerformance(saved, hardware);
+            }
             return json({ success: true, product: saved });
           } catch (dbErr: any) {
             console.error("[UpdateProduct:DatabaseError]", dbErr);
@@ -156,6 +195,7 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
             ...store,
             products: (store.products || []).filter((p) => String(p.id) !== productId),
           }));
+          await deactivateGameDevicePerformance(productId);
 
           return json({ success: true, id: productId });
         }),

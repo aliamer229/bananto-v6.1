@@ -17,6 +17,7 @@ import { GAME_IMPORT_SCHEMA } from "../../lib/gameImportSchema";
 import { getTextValue } from "../../lib/utils";
 import { toast } from "sonner";
 import { useTranslation } from "../../i18n";
+import { normalizeDevicePerformance, performanceSummary } from "@/lib/devicePerformance";
 
 interface AdminImportModalProps {
   onClose: () => void;
@@ -91,6 +92,29 @@ export default function AdminImportModal({ onClose, onImport }: AdminImportModal
 
   const renderImportFieldValue = (key: string, value: any): React.ReactNode => {
     if (value == null) return "";
+    if (key === "devicePerformance" || key === "device_performance") {
+      const records = (Array.isArray(value) ? value : [value])
+        .map(normalizeDevicePerformance)
+        .filter(Boolean);
+      return (
+        <div className="space-y-2">
+          {records.map((record: any, index: number) => (
+            <div
+              key={`${record.deviceSlug}-${index}`}
+              className="rounded-lg border border-border p-2"
+            >
+              <strong className="block">{record.device || record.deviceSlug}</strong>
+              <span className="block text-[10px] text-muted-foreground">
+                {performanceSummary(record) ||
+                  (record.informationStatus === "not_published"
+                    ? "Performance information not officially published"
+                    : "Performance fields are incomplete")}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
     if (key === "sources" || key === "dataSources") {
       const list = Array.isArray(value) ? value : [value];
       return (

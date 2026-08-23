@@ -32,6 +32,7 @@ import { showAddToCartToast } from "@/utils/cart-toast";
 import { resolvePurchaseImage } from "@/lib/nintendoImages";
 
 import { ProductGallery } from "./ProductGallery";
+import { HardwareProductDetails } from "./HardwareProductDetails";
 import { BulletList, Section, SpecTable } from "./Section";
 
 export function ProductDetails({
@@ -45,6 +46,9 @@ export function ProductDetails({
   const { t, locale, dir } = useTranslation();
   const view = useMemo(() => buildProductView(product, locale, schema), [product, locale, schema]);
   if (!view) return null;
+  if (view.schema.id === "hardware") {
+    return <HardwareProductDetails product={product} schema={view.schema} />;
+  }
   return (
     <DetailsBody
       product={product}

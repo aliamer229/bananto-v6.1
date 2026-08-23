@@ -214,7 +214,7 @@ export interface ParsedAccountPaste {
   accounts: ParsedAccountLine[];
   /** Lines that carried something but no usable pair */
   skipped: { line: number; raw: string }[];
-  /** Logins that appeared more than once */
+  /** Logins that appeared more than once (kept when the supplier lines differ). */
   duplicates: string[];
 }
 
@@ -223,7 +223,8 @@ export function parseAccountPaste(input: string): ParsedAccountPaste {
   const accounts: ParsedAccountLine[] = [];
   const skipped: { line: number; raw: string }[] = [];
   const duplicates: string[] = [];
-  const seen = new Set<string>();
+  const seenLogins = new Set<string>();
+  const seenLines = new Set<string>();
 
   input.split(/\r?\n/).forEach((raw, index) => {
     const trimmed = raw.trim();
@@ -234,12 +235,20 @@ export function parseAccountPaste(input: string): ParsedAccountPaste {
       skipped.push({ line: index + 1, raw: trimmed });
       return;
     }
-    const key = parsed.username.toLowerCase();
-    if (seen.has(key)) {
+    const loginKey = parsed.username.toLowerCase();
+    // Passwords are case-sensitive, so the exact-line key must preserve case.
+    const lineKey = parsed.raw.trim().replace(/\s+/g, " ");
+    if (seenLogins.has(loginKey)) {
       duplicates.push(parsed.username);
+    }
+    // A repeated username can be valid for two different products. Preserve
+    // those independent supplier lines; only an exact repeated line is ignored
+    // so it cannot collide with the server's source-fingerprint uniqueness.
+    if (seenLines.has(lineKey)) {
       return;
     }
-    seen.add(key);
+    seenLogins.add(loginKey);
+    seenLines.add(lineKey);
     accounts.push(parsed);
   });
 
@@ -269,7 +278,6 @@ const GAME_ALIAS_CLUSTERS: string[][] = [
   [
     "switch sports",
     "nintendo switch sports",
-    "sports",
     "运动",
     "体感",
     "switch运动",
@@ -277,20 +285,27 @@ const GAME_ALIAS_CLUSTERS: string[][] = [
     "体感运动",
     "ns运动",
   ],
-  // Animal Crossing & Tomodachi
+  // Animal Crossing
   [
     "animal crossing",
     "new horizons",
     "动森",
     "动物森友会",
     "集合啦",
+  ],
+  // Tomodachi Life. Keep this separate from Animal Crossing: suppliers use
+  // unrelated Chinese names and combining both creates a confident false hit
+  // whenever an order contains the two games together.
+  [
     "朋友收集",
     "梦想生活",
     "tomodachi",
     "tomodachi life",
   ],
-  // Star Wars
-  ["star wars", "outlaws", "星球大战", "亡命之徒", "绝地", "jedi", "survivor", "fallen order"],
+  // Star Wars Outlaws
+  ["star wars outlaws", "outlaws", "亡命之徒"],
+  // Star Wars Jedi
+  ["star wars jedi", "绝地", "jedi", "survivor", "fallen order"],
   // EA FC / FIFA
   [
     "fc 26",
@@ -456,48 +471,66 @@ export interface MatchedAccountResult {
 }
 
 /**
+ * A match below this threshold is deliberately left for a human.
+ *
+ * Supplier text is noisy and a false positive leaks one account to the wrong
+ * game.  A missed match only asks the admin to choose a chip, which is the safe
+ * side of that trade-off.
+ */
+export const ACCOUNT_GAME_MATCH_MIN_CONFIDENCE = 0.7;
+
+/**
  * Match a game hint against a list of order items using alias clusters and string similarity.
  */
 export function matchHintToOrderItems(
   hint: string,
   orderItems: OrderItemMatchTarget[],
 ): { item: OrderItemMatchTarget | null; confidence: number } {
-  if (!hint || orderItems.length === 0) {
-    if (orderItems.length === 1) {
-      return { item: orderItems[0]!, confidence: 0.6 };
-    }
-    return { item: null, confidence: 0 };
-  }
+  if (!hint || orderItems.length === 0) return { item: null, confidence: 0 };
 
   const normalizedHint = hint.toLowerCase().trim();
 
-  // 1. Direct contains check
-  for (const item of orderItems) {
+  // 1. Direct contains check, with the same ambiguity guard used below.
+  const directCandidates = orderItems.filter((item) => {
     const normTitle = item.title.toLowerCase();
-    if (normTitle.includes(normalizedHint) || normalizedHint.includes(normTitle)) {
-      return { item, confidence: 0.95 };
-    }
+    return normTitle.includes(normalizedHint) || normalizedHint.includes(normTitle);
+  });
+  if (directCandidates.length === 1) {
+    return { item: directCandidates[0]!, confidence: 0.95 };
+  }
+  if (
+    directCandidates.length > 1 &&
+    new Set(directCandidates.map((item) => item.title.toLowerCase().trim())).size === 1
+  ) {
+    return { item: directCandidates[0]!, confidence: 0.95 };
   }
 
-  // 2. Alias clusters check
+  // 2. Alias clusters check. A cluster is only confident when it identifies
+  // one game title (or duplicate slots of the exact same title). Franchise
+  // clusters must never pick the first of two different products.
   for (const cluster of GAME_ALIAS_CLUSTERS) {
     const hintMatchesCluster = cluster.some((alias) =>
       normalizedHint.includes(alias.toLowerCase()),
     );
     if (!hintMatchesCluster) continue;
 
-    for (const item of orderItems) {
+    const candidates = orderItems.filter((item) => {
       const normTitle = item.title.toLowerCase();
-      const titleMatchesCluster = cluster.some((alias) => normTitle.includes(alias.toLowerCase()));
-      if (titleMatchesCluster) {
-        return { item, confidence: 0.9 };
-      }
+      return cluster.some((alias) => normTitle.includes(alias.toLowerCase()));
+    });
+    if (candidates.length === 1) return { item: candidates[0]!, confidence: 0.9 };
+    if (
+      candidates.length > 1 &&
+      new Set(candidates.map((item) => item.title.toLowerCase().trim())).size === 1
+    ) {
+      return { item: candidates[0]!, confidence: 0.9 };
     }
   }
 
   // 3. Token-based word overlap
   let bestItem: OrderItemMatchTarget | null = null;
   let bestScore = 0;
+  let bestTitles = new Set<string>();
 
   const hintTokens = normalizedHint
     .replace(/[^\w\u4e00-\u9fa5]/g, " ")
@@ -522,16 +555,18 @@ export function matchHintToOrderItems(
     if (score > bestScore) {
       bestScore = score;
       bestItem = item;
+      bestTitles = new Set([item.title.toLowerCase().trim()]);
+    } else if (score > 0 && score === bestScore) {
+      bestTitles.add(item.title.toLowerCase().trim());
     }
   }
 
-  if (bestScore >= 0.4 && bestItem) {
+  if (
+    bestScore >= ACCOUNT_GAME_MATCH_MIN_CONFIDENCE &&
+    bestItem &&
+    bestTitles.size === 1
+  ) {
     return { item: bestItem, confidence: bestScore };
-  }
-
-  // If there's only 1 item in the order, default to it with low confidence if unsure
-  if (orderItems.length === 1) {
-    return { item: orderItems[0]!, confidence: 0.5 };
   }
 
   return { item: null, confidence: 0 };
@@ -550,9 +585,15 @@ export function matchAccountsToOrder(
 
   return parsedAccounts.map((account) => {
     const hint = account.label || "";
-    const { item, confidence } = matchHintToOrderItems(hint, orderItems);
+    // Remove filled targets before matching. This makes quantity a hard
+    // capacity and also lets two separate order lines with the same title each
+    // receive exactly one matching account.
+    const availableItems = orderItems.filter(
+      (item) => (assignedCounts[item.id] ?? 0) < Math.max(1, item.quantity || 1),
+    );
+    const { item, confidence } = matchHintToOrderItems(hint, availableItems);
 
-    if (item && confidence >= 0.5) {
+    if (item && confidence >= ACCOUNT_GAME_MATCH_MIN_CONFIDENCE) {
       const currentCount = assignedCounts[item.id] || 0;
       const nextCount = currentCount + 1;
       assignedCounts[item.id] = nextCount;

@@ -413,7 +413,13 @@ export const api = {
 
   adminOrders: () => request<{ orders: Order[] }>("/api/admin/orders"),
   adminOrderAction: (payload: Record<string, unknown>) =>
-    request<{ order: Order }>("/api/admin/orders", {
+    request<{
+      order?: Order;
+      state?: unknown;
+      orderFinished?: boolean;
+      nextReadyDeliveryItemId?: string;
+      nextOrder?: { orderId: string; threadId?: string; code?: string; userName?: string };
+    }>("/api/admin/orders", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
@@ -459,9 +465,15 @@ export const api = {
    */
   orderAction: (payload: {
     orderId: string;
-    action: "submit_login_proof" | "account_next" | "confirm_received";
+    action:
+      | "submit_login_proof"
+      | "account_next"
+      | "confirm_received"
+      | "report_delivery_issue";
     itemId?: string;
+    deliveryItemId?: string;
     imageUrl?: string;
+    reason?: string;
   }) =>
     request<{
       order?: Order;

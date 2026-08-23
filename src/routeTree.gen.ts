@@ -57,6 +57,7 @@ import { Route as BundleBundleIdRouteImport } from './routes/bundle.$bundleId'
 import { Route as BundlesIndexRouteImport } from './routes/bundles.index'
 import { Route as BundlesBundleIdRouteImport } from './routes/bundles.$bundleId'
 import { Route as CategoryCategoryIdRouteImport } from './routes/category.$categoryId'
+import { Route as HardwareSlugRouteImport } from './routes/hardware/$slug'
 import { Route as OrdersIndexRouteImport } from './routes/orders.index'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
@@ -78,6 +79,7 @@ import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/product
 import { Route as ApiAdminPurgeRouteImport } from './routes/api/admin/purge'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
+import { Route as ApiHardwareSlugRouteImport } from './routes/api/hardware/$slug'
 import { Route as ApiOauthProviderRouteImport } from './routes/api/oauth.$provider'
 import { Route as ApiPublicDebugProductsRouteImport } from './routes/api/public/debug-products'
 import { Route as ApiPublicImgProxyRouteImport } from './routes/api/public/img-proxy'
@@ -88,6 +90,8 @@ import { Route as ApiPublicTestTelegramRouteImport } from './routes/api/public/t
 import { Route as ApiAdminProductsProductIdRouteImport } from './routes/api/admin/products.$productId'
 import { Route as ApiAdminSystemHealthRouteImport } from './routes/api/admin/system/health'
 import { Route as ApiFilesLegacyMediaIdRouteImport } from './routes/api/files.legacy.$mediaId'
+import { Route as ApiGamesSlugPerformanceRouteImport } from './routes/api/games/$slug/performance'
+import { Route as ApiHardwareSlugGamesRouteImport } from './routes/api/hardware/$slug/games'
 import { Route as ApiOauthProviderCallbackRouteImport } from './routes/api/oauth.$provider.callback'
 import { Route as ApiPublicHooksContestsDrawRouteImport } from './routes/api/public/hooks/contests-draw'
 import { Route as ApiPublicHooksTradeCatalogSyncRouteImport } from './routes/api/public/hooks/trade-catalog-sync'
@@ -344,6 +348,11 @@ const CategoryCategoryIdRoute = CategoryCategoryIdRouteImport.update({
   path: '/category/$categoryId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HardwareSlugRoute = HardwareSlugRouteImport.update({
+  id: '/hardware/$slug',
+  path: '/hardware/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrdersIndexRoute = OrdersIndexRouteImport.update({
   id: '/orders/',
   path: '/orders/',
@@ -449,6 +458,11 @@ const ApiFilesSplatRoute = ApiFilesSplatRouteImport.update({
   path: '/api/files/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHardwareSlugRoute = ApiHardwareSlugRouteImport.update({
+  id: '/api/hardware/$slug',
+  path: '/api/hardware/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiOauthProviderRoute = ApiOauthProviderRouteImport.update({
   id: '/api/oauth/$provider',
   path: '/api/oauth/$provider',
@@ -499,6 +513,16 @@ const ApiFilesLegacyMediaIdRoute = ApiFilesLegacyMediaIdRouteImport.update({
   id: '/api/files/legacy/$mediaId',
   path: '/api/files/legacy/$mediaId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGamesSlugPerformanceRoute = ApiGamesSlugPerformanceRouteImport.update({
+  id: '/api/games/$slug/performance',
+  path: '/api/games/$slug/performance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHardwareSlugGamesRoute = ApiHardwareSlugGamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => ApiHardwareSlugRoute,
 } as any)
 const ApiOauthProviderCallbackRoute =
   ApiOauthProviderCallbackRouteImport.update({
@@ -634,6 +658,7 @@ export interface FileRoutesByFullPath {
   '/bundle/$bundleId': typeof BundleBundleIdRoute
   '/bundles/$bundleId': typeof BundlesBundleIdRoute
   '/category/$categoryId': typeof CategoryCategoryIdRoute
+  '/hardware/$slug': typeof HardwareSlugRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/telegram/account': typeof TelegramAccountRoute
@@ -657,6 +682,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/purge': typeof ApiAdminPurgeRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
+  '/api/hardware/$slug': typeof ApiHardwareSlugRouteWithChildren
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
@@ -667,6 +693,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
+  '/api/games/$slug/performance': typeof ApiGamesSlugPerformanceRoute
+  '/api/hardware/$slug/games': typeof ApiHardwareSlugGamesRoute
   '/api/oauth/$provider/callback': typeof ApiOauthProviderCallbackRoute
   '/api/public/hooks/contests-draw': typeof ApiPublicHooksContestsDrawRoute
   '/api/public/hooks/trade-catalog-sync': typeof ApiPublicHooksTradeCatalogSyncRoute
@@ -730,6 +758,7 @@ export interface FileRoutesByTo {
   '/bundle/$bundleId': typeof BundleBundleIdRoute
   '/bundles/$bundleId': typeof BundlesBundleIdRoute
   '/category/$categoryId': typeof CategoryCategoryIdRoute
+  '/hardware/$slug': typeof HardwareSlugRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/telegram/account': typeof TelegramAccountRoute
@@ -753,6 +782,7 @@ export interface FileRoutesByTo {
   '/api/admin/purge': typeof ApiAdminPurgeRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
+  '/api/hardware/$slug': typeof ApiHardwareSlugRouteWithChildren
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
@@ -763,6 +793,8 @@ export interface FileRoutesByTo {
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
+  '/api/games/$slug/performance': typeof ApiGamesSlugPerformanceRoute
+  '/api/hardware/$slug/games': typeof ApiHardwareSlugGamesRoute
   '/api/oauth/$provider/callback': typeof ApiOauthProviderCallbackRoute
   '/api/public/hooks/contests-draw': typeof ApiPublicHooksContestsDrawRoute
   '/api/public/hooks/trade-catalog-sync': typeof ApiPublicHooksTradeCatalogSyncRoute
@@ -827,6 +859,7 @@ export interface FileRoutesById {
   '/bundle/$bundleId': typeof BundleBundleIdRoute
   '/bundles/$bundleId': typeof BundlesBundleIdRoute
   '/category/$categoryId': typeof CategoryCategoryIdRoute
+  '/hardware/$slug': typeof HardwareSlugRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
   '/telegram/account': typeof TelegramAccountRoute
@@ -850,6 +883,7 @@ export interface FileRoutesById {
   '/api/admin/purge': typeof ApiAdminPurgeRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
+  '/api/hardware/$slug': typeof ApiHardwareSlugRouteWithChildren
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
@@ -860,6 +894,8 @@ export interface FileRoutesById {
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
+  '/api/games/$slug/performance': typeof ApiGamesSlugPerformanceRoute
+  '/api/hardware/$slug/games': typeof ApiHardwareSlugGamesRoute
   '/api/oauth/$provider/callback': typeof ApiOauthProviderCallbackRoute
   '/api/public/hooks/contests-draw': typeof ApiPublicHooksContestsDrawRoute
   '/api/public/hooks/trade-catalog-sync': typeof ApiPublicHooksTradeCatalogSyncRoute
@@ -925,6 +961,7 @@ export interface FileRouteTypes {
     | '/bundle/$bundleId'
     | '/bundles/$bundleId'
     | '/category/$categoryId'
+    | '/hardware/$slug'
     | '/orders/$orderId'
     | '/product/$productId'
     | '/telegram/account'
@@ -948,6 +985,7 @@ export interface FileRouteTypes {
     | '/api/admin/purge'
     | '/api/admin/users'
     | '/api/files/$'
+    | '/api/hardware/$slug'
     | '/api/oauth/$provider'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
@@ -958,6 +996,8 @@ export interface FileRouteTypes {
     | '/api/admin/products/$productId'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
+    | '/api/games/$slug/performance'
+    | '/api/hardware/$slug/games'
     | '/api/oauth/$provider/callback'
     | '/api/public/hooks/contests-draw'
     | '/api/public/hooks/trade-catalog-sync'
@@ -1021,6 +1061,7 @@ export interface FileRouteTypes {
     | '/bundle/$bundleId'
     | '/bundles/$bundleId'
     | '/category/$categoryId'
+    | '/hardware/$slug'
     | '/orders/$orderId'
     | '/product/$productId'
     | '/telegram/account'
@@ -1044,6 +1085,7 @@ export interface FileRouteTypes {
     | '/api/admin/purge'
     | '/api/admin/users'
     | '/api/files/$'
+    | '/api/hardware/$slug'
     | '/api/oauth/$provider'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
@@ -1054,6 +1096,8 @@ export interface FileRouteTypes {
     | '/api/admin/products/$productId'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
+    | '/api/games/$slug/performance'
+    | '/api/hardware/$slug/games'
     | '/api/oauth/$provider/callback'
     | '/api/public/hooks/contests-draw'
     | '/api/public/hooks/trade-catalog-sync'
@@ -1117,6 +1161,7 @@ export interface FileRouteTypes {
     | '/bundle/$bundleId'
     | '/bundles/$bundleId'
     | '/category/$categoryId'
+    | '/hardware/$slug'
     | '/orders/$orderId'
     | '/product/$productId'
     | '/telegram/account'
@@ -1140,6 +1185,7 @@ export interface FileRouteTypes {
     | '/api/admin/purge'
     | '/api/admin/users'
     | '/api/files/$'
+    | '/api/hardware/$slug'
     | '/api/oauth/$provider'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
@@ -1150,6 +1196,8 @@ export interface FileRouteTypes {
     | '/api/admin/products/$productId'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
+    | '/api/games/$slug/performance'
+    | '/api/hardware/$slug/games'
     | '/api/oauth/$provider/callback'
     | '/api/public/hooks/contests-draw'
     | '/api/public/hooks/trade-catalog-sync'
@@ -1214,6 +1262,7 @@ export interface RootRouteChildren {
   BundleBundleIdRoute: typeof BundleBundleIdRoute
   BundlesBundleIdRoute: typeof BundlesBundleIdRoute
   CategoryCategoryIdRoute: typeof CategoryCategoryIdRoute
+  HardwareSlugRoute: typeof HardwareSlugRoute
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
   TelegramAccountRoute: typeof TelegramAccountRoute
@@ -1237,6 +1286,7 @@ export interface RootRouteChildren {
   ApiAdminPurgeRoute: typeof ApiAdminPurgeRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiFilesSplatRoute: typeof ApiFilesSplatRoute
+  ApiHardwareSlugRoute: typeof ApiHardwareSlugRouteWithChildren
   ApiOauthProviderRoute: typeof ApiOauthProviderRouteWithChildren
   ApiPublicDebugProductsRoute: typeof ApiPublicDebugProductsRoute
   ApiPublicImgProxyRoute: typeof ApiPublicImgProxyRoute
@@ -1246,6 +1296,7 @@ export interface RootRouteChildren {
   ApiPublicTestTelegramRoute: typeof ApiPublicTestTelegramRoute
   ApiAdminSystemHealthRoute: typeof ApiAdminSystemHealthRoute
   ApiFilesLegacyMediaIdRoute: typeof ApiFilesLegacyMediaIdRoute
+  ApiGamesSlugPerformanceRoute: typeof ApiGamesSlugPerformanceRoute
   ApiPublicHooksContestsDrawRoute: typeof ApiPublicHooksContestsDrawRoute
   ApiPublicHooksTradeCatalogSyncRoute: typeof ApiPublicHooksTradeCatalogSyncRoute
   ApiPublicTelegramDiagnosticRoute: typeof ApiPublicTelegramDiagnosticRoute
@@ -1596,6 +1647,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoryCategoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hardware/$slug': {
+      id: '/hardware/$slug'
+      path: '/hardware/$slug'
+      fullPath: '/hardware/$slug'
+      preLoaderRoute: typeof HardwareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orders/': {
       id: '/orders/'
       path: '/orders'
@@ -1743,6 +1801,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFilesSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/hardware/$slug': {
+      id: '/api/hardware/$slug'
+      path: '/api/hardware/$slug'
+      fullPath: '/api/hardware/$slug'
+      preLoaderRoute: typeof ApiHardwareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/oauth/$provider': {
       id: '/api/oauth/$provider'
       path: '/api/oauth/$provider'
@@ -1812,6 +1877,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/files/legacy/$mediaId'
       preLoaderRoute: typeof ApiFilesLegacyMediaIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/games/$slug/performance': {
+      id: '/api/games/$slug/performance'
+      path: '/api/games/$slug/performance'
+      fullPath: '/api/games/$slug/performance'
+      preLoaderRoute: typeof ApiGamesSlugPerformanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/hardware/$slug/games': {
+      id: '/api/hardware/$slug/games'
+      path: '/games'
+      fullPath: '/api/hardware/$slug/games'
+      preLoaderRoute: typeof ApiHardwareSlugGamesRouteImport
+      parentRoute: typeof ApiHardwareSlugRoute
     }
     '/api/oauth/$provider/callback': {
       id: '/api/oauth/$provider/callback'
@@ -1950,6 +2029,18 @@ const ApiAdminProductsRouteChildren: ApiAdminProductsRouteChildren = {
 const ApiAdminProductsRouteWithChildren =
   ApiAdminProductsRoute._addFileChildren(ApiAdminProductsRouteChildren)
 
+interface ApiHardwareSlugRouteChildren {
+  ApiHardwareSlugGamesRoute: typeof ApiHardwareSlugGamesRoute
+}
+
+const ApiHardwareSlugRouteChildren: ApiHardwareSlugRouteChildren = {
+  ApiHardwareSlugGamesRoute: ApiHardwareSlugGamesRoute,
+}
+
+const ApiHardwareSlugRouteWithChildren = ApiHardwareSlugRoute._addFileChildren(
+  ApiHardwareSlugRouteChildren,
+)
+
 interface ApiOauthProviderRouteChildren {
   ApiOauthProviderCallbackRoute: typeof ApiOauthProviderCallbackRoute
 }
@@ -2008,6 +2099,7 @@ const rootRouteChildren: RootRouteChildren = {
   BundleBundleIdRoute: BundleBundleIdRoute,
   BundlesBundleIdRoute: BundlesBundleIdRoute,
   CategoryCategoryIdRoute: CategoryCategoryIdRoute,
+  HardwareSlugRoute: HardwareSlugRoute,
   OrdersOrderIdRoute: OrdersOrderIdRoute,
   ProductProductIdRoute: ProductProductIdRoute,
   TelegramAccountRoute: TelegramAccountRoute,
@@ -2031,6 +2123,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminPurgeRoute: ApiAdminPurgeRoute,
   ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiFilesSplatRoute: ApiFilesSplatRoute,
+  ApiHardwareSlugRoute: ApiHardwareSlugRouteWithChildren,
   ApiOauthProviderRoute: ApiOauthProviderRouteWithChildren,
   ApiPublicDebugProductsRoute: ApiPublicDebugProductsRoute,
   ApiPublicImgProxyRoute: ApiPublicImgProxyRoute,
@@ -2040,6 +2133,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTestTelegramRoute: ApiPublicTestTelegramRoute,
   ApiAdminSystemHealthRoute: ApiAdminSystemHealthRoute,
   ApiFilesLegacyMediaIdRoute: ApiFilesLegacyMediaIdRoute,
+  ApiGamesSlugPerformanceRoute: ApiGamesSlugPerformanceRoute,
   ApiPublicHooksContestsDrawRoute: ApiPublicHooksContestsDrawRoute,
   ApiPublicHooksTradeCatalogSyncRoute: ApiPublicHooksTradeCatalogSyncRoute,
   ApiPublicTelegramDiagnosticRoute: ApiPublicTelegramDiagnosticRoute,

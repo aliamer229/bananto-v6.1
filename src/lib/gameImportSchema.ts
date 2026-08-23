@@ -12,6 +12,49 @@ export interface FieldDef {
   description?: string;
 }
 
+const DEVICE_MODE_FIELDS: Record<string, FieldDef> = {
+  supported: { key: "supported", type: "boolean", target: "supported" },
+  resolution: { key: "resolution", type: "string", target: "resolution" },
+  resolution_dynamic: {
+    key: "resolution_dynamic",
+    type: "string",
+    target: "resolutionDynamic",
+  },
+  rendering_resolution: {
+    key: "rendering_resolution",
+    type: "string",
+    target: "renderingResolution",
+  },
+  output_resolution: {
+    key: "output_resolution",
+    type: "string",
+    target: "outputResolution",
+  },
+  fps: { key: "fps", type: "string", target: "fps" },
+  fps_min: { key: "fps_min", type: "string", target: "fpsMin" },
+  fps_max: { key: "fps_max", type: "string", target: "fpsMax" },
+  refresh_rate: { key: "refresh_rate", type: "string", target: "refreshRate" },
+  hdr: { key: "hdr", type: "boolean", target: "hdr" },
+  vrr: { key: "vrr", type: "boolean", target: "vrr" },
+  mode: { key: "mode", type: "string", target: "mode" },
+  notes: { key: "notes", type: "multiline", target: "notes" },
+};
+
+const PERFORMANCE_MODE_FIELDS: Record<string, FieldDef> = {
+  name: { key: "name", type: "string", target: "name", required: true },
+  handheld_resolution: {
+    key: "handheld_resolution",
+    type: "string",
+    target: "handheldResolution",
+  },
+  handheld_fps: { key: "handheld_fps", type: "string", target: "handheldFps" },
+  tv_resolution: { key: "tv_resolution", type: "string", target: "tvResolution" },
+  tv_fps: { key: "tv_fps", type: "string", target: "tvFps" },
+  hdr: { key: "hdr", type: "boolean", target: "hdr" },
+  vrr: { key: "vrr", type: "boolean", target: "vrr" },
+  notes: { key: "notes", type: "multiline", target: "notes" },
+};
+
 export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   // Versioning
   { key: "schema_version", type: "number", target: "schema_version", required: true },
@@ -33,6 +76,13 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     target: "platform",
     required: true,
     description: "المنصة: switch1 / switch2 / both",
+  },
+  {
+    key: "compatibility",
+    type: "array",
+    target: "compatibility",
+    repeatable: true,
+    description: "الأجهزة المتوافقة (بديل إضافي للمنصة، عدد غير محدود)",
   },
   {
     key: "edition",
@@ -615,6 +665,76 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     type: "multiline",
     target: "perfNotes",
     description: "ملاحظات الأداء",
+  },
+
+  // DEVICE PERFORMANCE — the game record is the source of truth. Hardware
+  // products only describe maximum capabilities and never populate these.
+  {
+    key: "device_performance",
+    type: "object",
+    target: "devicePerformance",
+    repeatable: true,
+    itemFields: {
+      device: { key: "device", type: "string", target: "device" },
+      device_slug: { key: "device_slug", type: "string", target: "deviceSlug" },
+      device_model: { key: "device_model", type: "string", target: "deviceModel" },
+      hardware_id: { key: "hardware_id", type: "string", target: "hardwareId" },
+      information_status: {
+        key: "information_status",
+        type: "string",
+        target: "informationStatus",
+      },
+      unavailable_reason: {
+        key: "unavailable_reason",
+        type: "multiline",
+        target: "unavailableReason",
+      },
+      handheld: {
+        key: "handheld",
+        type: "object",
+        target: "handheld",
+        itemFields: DEVICE_MODE_FIELDS,
+      },
+      tv: {
+        key: "tv",
+        type: "object",
+        target: "tv",
+        itemFields: DEVICE_MODE_FIELDS,
+      },
+      mode: {
+        key: "mode",
+        type: "object",
+        target: "modes",
+        repeatable: true,
+        itemFields: PERFORMANCE_MODE_FIELDS,
+      },
+      upscaling: { key: "upscaling", type: "string", target: "upscaling" },
+      ray_tracing: { key: "ray_tracing", type: "boolean", target: "rayTracing" },
+      ray_tracing_mode: {
+        key: "ray_tracing_mode",
+        type: "string",
+        target: "rayTracingMode",
+      },
+      loading_time: { key: "loading_time", type: "string", target: "loadingTime" },
+      loading_notes: { key: "loading_notes", type: "multiline", target: "loadingNotes" },
+      game_version: { key: "game_version", type: "string", target: "gameVersion" },
+      patch_version: { key: "patch_version", type: "string", target: "patchVersion" },
+      tested_date: { key: "tested_date", type: "date", target: "testedDate" },
+      source_name: { key: "source_name", type: "string", target: "sourceName" },
+      source_url: { key: "source_url", type: "url", target: "sourceUrl" },
+      verified_at: { key: "verified_at", type: "date", target: "verifiedAt" },
+      verification_status: {
+        key: "verification_status",
+        type: "string",
+        target: "verificationStatus",
+      },
+      performance_notes: {
+        key: "performance_notes",
+        type: "multiline",
+        target: "performanceNotes",
+      },
+    },
+    description: "أداء اللعبة الفعلي على جهاز محدد (عدد أجهزة وأنماط غير محدود)",
   },
 
   // STORAGE

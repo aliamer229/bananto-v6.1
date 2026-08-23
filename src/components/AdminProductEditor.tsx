@@ -65,7 +65,10 @@ import { ImageUploadField } from "./admin/ImageUploadField";
 import { StepsEditor } from "./admin/StepsEditor";
 import { safeRandomUUID } from "@/lib/polyfills";
 import { ProductOptionsEditor } from "./admin/ProductOptionsEditor";
+import { GamePerformanceEditor } from "./admin/GamePerformanceEditor";
+import { HardwareAdminEditor } from "./admin/HardwareAdminEditor";
 import { useCurrency } from "../context/CurrencyContext";
+import { productSupportsSwitch2, validateGameDevicePerformance } from "@/lib/devicePerformance";
 
 export type CategoryDefinition = {
   type: CategoryType;
@@ -158,6 +161,7 @@ export default function AdminProductEditor({
   onSave,
   onCancel,
   initialCategoryId,
+  hardwareProducts = [],
 }: any) {
   const { convertFromIQD, usdIqdRate } = useCurrency();
   const { t } = useTranslation();
@@ -205,9 +209,10 @@ export default function AdminProductEditor({
         storageCapacity: product.storageCapacity || product.storage || "",
         screenSpecs: product.screenSpecs || product.screen || "",
         batteryLife: product.batteryLife || product.battery || "",
-        boxContents:
-          boxContentsToText(product.boxContents) ||
+        boxContents: Array.isArray(product.boxContents) ? product.boxContents : [],
+        boxContentsText:
           boxContentsToText(product.boxContentsText) ||
+          boxContentsToText(product.boxContents) ||
           boxContentsToText(product.includedItems) ||
           "",
 
@@ -339,7 +344,8 @@ export default function AdminProductEditor({
       storageCapacity: "",
       screenSpecs: "",
       batteryLife: "",
-      boxContents: "",
+      boxContents: [],
+      boxContentsText: "",
       warrantyCondition: "",
       connectivity: "",
       // Amiibo
@@ -418,6 +424,9 @@ export default function AdminProductEditor({
     CATEGORY_DEFINITIONS.find((def) => def.type === categoryType) || CATEGORY_DEFINITIONS[0];
 
   const isGameCategory = categoryType === "game";
+  // The prior compact editor is retained below for compatibility/reference,
+  // while the schema-driven tabbed editor is the active hardware surface.
+  const showLegacyHardwareEditor = false;
 
   const activeSchema = schemaForSection(categoryType) || detectSchema(formData);
 
@@ -683,6 +692,16 @@ export default function AdminProductEditor({
     if (!formData.titleEn && !formData.title) {
       toast.error("يرجى إدخال اسم المنتج باللغة الإنجليزية");
       return;
+    }
+
+    if (isGameCategory) {
+      const performanceIssues = validateGameDevicePerformance(formData);
+      if (performanceIssues.length) {
+        toast.error(performanceIssues.map((issue) => issue.message).join("\n"), {
+          duration: 9000,
+        });
+        return;
+      }
     }
 
     const stableId = formData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
@@ -1483,10 +1502,24 @@ export default function AdminProductEditor({
           </motion.div>
         )}
 
+        {categoryType === "game" && (
+          <GamePerformanceEditor
+            value={formData.devicePerformance}
+            platform={formData.platform}
+            requiresSwitch2={productSupportsSwitch2(formData)}
+            hardwareProducts={hardwareProducts}
+            onChange={(records) => handleChange("devicePerformance", records)}
+          />
+        )}
+
         {/* ========================================================================= */}
         {/* 2. HARDWARE & CONSOLES SECTION */}
         {/* ========================================================================= */}
         {categoryType === "hardware" && (
+          <HardwareAdminEditor value={formData} onChange={setFormData} />
+        )}
+
+        {categoryType === "hardware" && showLegacyHardwareEditor && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -2577,7 +2610,7 @@ export default function AdminProductEditor({
               if (newData.boxContents !== undefined) {
                 if (Array.isArray(newData.boxContents))
                   newData.boxContentsList = newData.boxContents;
-                newData.boxContents = boxContentsToText(newData.boxContents);
+                newData.boxContentsText = boxContentsToText(newData.boxContents);
               }
               const importedSteps = toStepList(newData.redemptionSteps ?? newData.redemptionGuide);
               if (importedSteps.length) {
@@ -2658,16 +2691,13 @@ export default function AdminProductEditor({
                   }));
               }
 
-              // The console panel edits single text/URL inputs, while the import
-              // produces structured lists — flatten them so the boxes show text
-              // instead of "[object Object]" or staying empty.
               if (Array.isArray(normalized.boxContents)) {
                 normalized.boxContentsList = normalized.boxContents;
               }
-              normalized.boxContents =
+              normalized.boxContentsText =
                 boxContentsToText(normalized.boxContents) ||
                 boxContentsToText(normalized.boxContentsText) ||
-                boxContentsToText(prev.boxContents) ||
+                boxContentsToText(prev.boxContentsText ?? prev.boxContents) ||
                 "";
 
               if (!normalized.warrantyCondition) {
