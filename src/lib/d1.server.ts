@@ -1116,6 +1116,20 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE orders ADD COLUMN payment_reference TEXT`,
   `ALTER TABLE orders ADD COLUMN source TEXT`,
   `ALTER TABLE orders ADD COLUMN created_by TEXT`,
+  /*
+    The catalogue lives in a JSON document, so a read-then-write duplicate check
+    in the API can be raced by two concurrent saves. This table is the atomic
+    half: one row per product identity, with the uniqueness the JSON blob
+    cannot enforce. It holds keys only — the product itself stays where it is.
+  */
+  `CREATE TABLE IF NOT EXISTS product_identity (
+    product_id TEXT PRIMARY KEY,
+    normalized_title TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    title TEXT,
+    updated_at TEXT NOT NULL)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS product_identity_key_idx
+     ON product_identity (normalized_title, platform)`,
   `CREATE INDEX IF NOT EXISTS orders_cancelled_idx ON orders (status, cancelled_at)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS orders_idempotency_idx ON orders (idempotency_key) WHERE idempotency_key IS NOT NULL`,
 ];
@@ -1617,7 +1631,7 @@ export function ensureCouponsSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 15;
+const RUNTIME_SCHEMA_VERSION = 16;
 
 async function runSchemaStatements(
   db: D1Like,
