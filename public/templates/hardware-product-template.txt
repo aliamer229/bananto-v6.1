@@ -10,8 +10,8 @@
 # اترك أي حقل فارغاً إذا لم تكن لديك المعلومة — لن يفشل الاستيراد.
 # =========================================
 
-# إصدار المخطط الحالي: 1
-schema_version=1
+# إصدار المخطط الحالي: 2
+schema_version=2
 
 # =========================================
 # الأساسيات
@@ -311,6 +311,165 @@ sensor.2=
 sensor.3=
 
 # =========================================
+# الشاشة والرسوميات
+# =========================================
+
+# الدقة الأصلية للشاشة
+native_resolution=
+
+# نوع لوحة الشاشة
+panel_type=
+
+# دعم اللمس (true/false)
+touch_support=
+
+# دعم HDR للشاشة
+hdr=
+
+# صيغة HDR (HDR10، Dolby Vision…)
+hdr_format=
+
+# دعم VRR للشاشة
+vrr=
+
+# نطاق VRR
+vrr_range=
+
+# أقصى FPS في الوضع المحمول
+maximum_handheld_fps=
+
+# أقصى دقة خرج للتلفاز
+tv_max_resolution=
+
+# أقصى معدل تحديث للتلفاز
+tv_max_refresh_rate=
+
+# أقصى FPS لخرج التلفاز
+tv_max_fps=
+
+# دعم HDR في خرج التلفاز
+tv_hdr=
+
+# دعم VRR في خرج التلفاز
+tv_vrr=
+
+# إصدار HDMI لخرج التلفاز
+hdmi_version=
+
+# ملاحظات خرج التلفاز
+tv_output_notes<<EOF
+
+EOF
+
+# الدقات المدعومة للخرج (عدد غير محدود)
+supported_output_resolution.1=
+supported_output_resolution.2=
+supported_output_resolution.3=
+
+# معدلات الإطارات المدعومة (عدد غير محدود)
+supported_frame_rate.1=
+supported_frame_rate.2=
+supported_frame_rate.3=
+
+# =========================================
+# الأداء
+# =========================================
+
+# SoC / المعالج الرئيسي
+soc=
+
+# معمارية CPU
+cpu_architecture=
+
+# أنوية CPU
+cpu_cores=
+
+# معمارية GPU
+gpu_architecture=
+
+# أنوية GPU
+gpu_cores=
+
+# سعة RAM
+ram=
+
+# نوع RAM
+ram_type=
+
+# عرض نطاق الذاكرة
+memory_bandwidth=
+
+# =========================================
+# التخزين
+# =========================================
+
+# تقنية/نوع التخزين
+storage_type=
+
+# التخزين الداخلي
+internal_storage=
+
+# المساحة القابلة للاستخدام
+usable_storage=
+
+# نوع بطاقة التخزين المدعومة
+storage_card_type=
+
+# أقصى سعة توسعة
+storage_max_capacity=
+
+# ملاحظات تثبيت وتخزين الألعاب
+game_storage_notes<<EOF
+
+EOF
+
+# =========================================
+# قدرات الألعاب
+# =========================================
+
+# أقصى دقة في الوضع المحمول
+handheld_max_resolution=
+
+# أقصى تحديث محمول
+handheld_max_refresh_rate=
+
+# أقصى FPS محمول
+handheld_max_fps=
+
+# HDR في الوضع المحمول
+handheld_hdr=
+
+# VRR في الوضع المحمول
+handheld_vrr=
+
+# القدرات القصوى للجهاز — لا تمثل أداء لعبة بعينها
+# أقصى دقة
+gaming_capability.handheld.max_resolution=
+# أقصى معدل تحديث
+gaming_capability.handheld.max_refresh_rate=
+# أقصى FPS
+gaming_capability.handheld.max_fps=
+# HDR
+gaming_capability.handheld.hdr=
+# VRR
+gaming_capability.handheld.vrr=
+# أقصى دقة
+gaming_capability.tv.max_resolution=
+# أقصى معدل تحديث
+gaming_capability.tv.max_refresh_rate=
+# أقصى FPS
+gaming_capability.tv.max_fps=
+# HDR
+gaming_capability.tv.hdr=
+# VRR
+gaming_capability.tv.vrr=
+# دعم Ray Tracing
+gaming_capability.ray_tracing=
+# تقنيات رفع الدقة
+gaming_capability.upscaling.1=
+gaming_capability.upscaling.2=
+
+# =========================================
 # الاتصال والمنافذ
 # =========================================
 
@@ -529,6 +688,25 @@ color=
 available_color.1=
 available_color.2=
 available_color.3=
+
+# أبعاد أجزاء الجهاز المستقلة مثل وحدات التحكم (عدد غير محدود)
+# اسم الجزء
+component_dimension.1.name=
+# الأبعاد
+component_dimension.1.dimensions=
+# الوزن
+component_dimension.1.weight=
+# ملاحظات
+component_dimension.1.notes=
+
+# اسم الجزء
+component_dimension.2.name=
+# الأبعاد
+component_dimension.2.dimensions=
+# الوزن
+component_dimension.2.weight=
+# ملاحظات
+component_dimension.2.notes=
 
 # =========================================
 # المواصفات الديناميكية

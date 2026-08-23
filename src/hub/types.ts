@@ -98,16 +98,50 @@ export interface Switch2Enhancement {
 
 export interface PerformanceProfile {
   platform: PlatformId;
+  deviceName?: string;
+  deviceSlug?: string;
+  deviceModel?: string;
+  hardwareId?: string;
+  informationStatus?: "available" | "not_published" | "not_tested";
+  unavailableReason?: string;
   /** Per play mode where the platform distinguishes them. */
   modes?: Array<{
     mode: PlayMode | "pc-preset";
     label?: string;
+    supported?: boolean;
     resolution?: Fact<string>;
+    renderingResolution?: Fact<string>;
+    outputResolution?: Fact<string>;
     frameRate?: Fact<string>;
+    frameRateMin?: Fact<string>;
+    frameRateMax?: Fact<string>;
+    refreshRate?: Fact<string>;
+    hdr?: Fact<boolean>;
+    vrr?: Fact<boolean>;
+    notes?: string;
+  }>;
+  performanceModes?: Array<{
+    name: string;
+    handheldResolution?: string;
+    handheldFps?: string;
+    tvResolution?: string;
+    tvFps?: string;
+    hdr?: boolean;
+    vrr?: boolean;
     notes?: string;
   }>;
   loadingTime?: Fact<string>;
   hdr?: Fact<boolean>;
+  upscaling?: string;
+  rayTracing?: boolean;
+  rayTracingMode?: string;
+  gameVersion?: string;
+  patchVersion?: string;
+  testedDate?: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  verifiedAt?: string;
+  verificationStatus?: "verified" | "official" | "technical_analysis" | "unverified";
   notes?: string;
 }
 

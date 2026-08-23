@@ -31,6 +31,9 @@ import type { FieldDef, ProductSchema } from "./types";
 const CONNECTIVITY = "الاتصال والمنافذ";
 const POWER = "الطاقة والبطارية";
 const PERFORMANCE = "الأداء";
+const DISPLAY = "الشاشة والرسوميات";
+const STORAGE = "التخزين";
+const GAMING = "قدرات الألعاب";
 const REQUIREMENTS = "المتطلبات";
 
 const connectivity: FieldDef[] = [
@@ -235,6 +238,176 @@ const performance: FieldDef[] = [
   },
 ];
 
+const displayAndProcessor: FieldDef[] = [
+  f.str("native_resolution", "nativeResolution", "الدقة الأصلية للشاشة", {
+    specKey: "nativeResolution",
+    group: DISPLAY,
+  }),
+  f.str("panel_type", "panelType", "نوع لوحة الشاشة", { specKey: "panelType", group: DISPLAY }),
+  f.bool("touch_support", "touchSupport", "دعم اللمس (true/false)", {
+    specKey: "touchSupport",
+    group: DISPLAY,
+  }),
+  f.bool("hdr", "hdr", "دعم HDR للشاشة", { specKey: "hdr", group: DISPLAY }),
+  f.str("hdr_format", "hdrFormat", "صيغة HDR (HDR10، Dolby Vision…)", {
+    specKey: "hdrFormat",
+    group: DISPLAY,
+  }),
+  f.bool("vrr", "vrr", "دعم VRR للشاشة", { specKey: "vrr", group: DISPLAY }),
+  f.str("vrr_range", "vrrRange", "نطاق VRR", { specKey: "vrrRange", group: DISPLAY }),
+  f.str("maximum_handheld_fps", "maximumHandheldFps", "أقصى FPS في الوضع المحمول", {
+    specKey: "maximumHandheldFps",
+    group: DISPLAY,
+  }),
+  f.str("tv_max_resolution", "tvMaxResolution", "أقصى دقة خرج للتلفاز", {
+    specKey: "tvMaxResolution",
+    group: DISPLAY,
+  }),
+  f.str("tv_max_refresh_rate", "tvMaxRefreshRate", "أقصى معدل تحديث للتلفاز", {
+    specKey: "tvMaxRefreshRate",
+    group: DISPLAY,
+  }),
+  f.str("tv_max_fps", "tvMaxFps", "أقصى FPS لخرج التلفاز", {
+    specKey: "tvMaxFps",
+    group: DISPLAY,
+  }),
+  f.bool("tv_hdr", "tvHdr", "دعم HDR في خرج التلفاز", { specKey: "tvHdr", group: DISPLAY }),
+  f.bool("tv_vrr", "tvVrr", "دعم VRR في خرج التلفاز", { specKey: "tvVrr", group: DISPLAY }),
+  f.str("hdmi_version", "hdmiVersion", "إصدار HDMI لخرج التلفاز", {
+    specKey: "hdmiVersion",
+    group: DISPLAY,
+  }),
+  f.text("tv_output_notes", "tvOutputNotes", "ملاحظات خرج التلفاز", { group: DISPLAY }),
+  {
+    key: "supported_output_resolution",
+    type: "string",
+    target: "supportedOutputResolutions",
+    repeatable: true,
+    templateCount: 3,
+    description: "الدقات المدعومة للخرج (عدد غير محدود)",
+    group: DISPLAY,
+  },
+  {
+    key: "supported_frame_rate",
+    type: "string",
+    target: "supportedFrameRates",
+    repeatable: true,
+    templateCount: 3,
+    description: "معدلات الإطارات المدعومة (عدد غير محدود)",
+    group: DISPLAY,
+  },
+  f.str("soc", "soc", "SoC / المعالج الرئيسي", { specKey: "soc", group: PERFORMANCE }),
+  f.str("cpu_architecture", "cpuArchitecture", "معمارية CPU", {
+    specKey: "cpuArchitecture",
+    group: PERFORMANCE,
+  }),
+  f.str("cpu_cores", "cpuCores", "أنوية CPU", { specKey: "cpuCores", group: PERFORMANCE }),
+  f.str("gpu_architecture", "gpuArchitecture", "معمارية GPU", {
+    specKey: "gpuArchitecture",
+    group: PERFORMANCE,
+  }),
+  f.str("gpu_cores", "gpuCores", "أنوية GPU", { specKey: "gpuCores", group: PERFORMANCE }),
+  f.str("ram", "ram", "سعة RAM", { specKey: "ram", group: PERFORMANCE }),
+  f.str("ram_type", "ramType", "نوع RAM", { specKey: "ramType", group: PERFORMANCE }),
+  f.str("memory_bandwidth", "memoryBandwidth", "عرض نطاق الذاكرة", {
+    specKey: "memoryBandwidth",
+    group: PERFORMANCE,
+  }),
+  f.str("storage_type", "storageType", "تقنية/نوع التخزين", {
+    specKey: "storageType",
+    group: STORAGE,
+  }),
+  f.str("internal_storage", "internalStorage", "التخزين الداخلي", {
+    specKey: "internalStorage",
+    group: STORAGE,
+  }),
+  f.str("usable_storage", "usableStorage", "المساحة القابلة للاستخدام", {
+    specKey: "usableStorage",
+    group: STORAGE,
+  }),
+  f.str("storage_card_type", "storageCardType", "نوع بطاقة التخزين المدعومة", {
+    specKey: "storageCardType",
+    group: STORAGE,
+  }),
+  f.str("storage_max_capacity", "storageMaxCapacity", "أقصى سعة توسعة", {
+    specKey: "storageMaxCapacity",
+    group: STORAGE,
+  }),
+  f.text("game_storage_notes", "gameStorageNotes", "ملاحظات تثبيت وتخزين الألعاب", {
+    group: STORAGE,
+  }),
+];
+
+const gamingCapabilities: FieldDef[] = [
+  f.str("handheld_max_resolution", "handheldMaxResolution", "أقصى دقة في الوضع المحمول", {
+    group: GAMING,
+  }),
+  f.str("handheld_max_refresh_rate", "handheldMaxRefreshRate", "أقصى تحديث محمول", {
+    group: GAMING,
+  }),
+  f.str("handheld_max_fps", "handheldMaxFps", "أقصى FPS محمول", { group: GAMING }),
+  f.bool("handheld_hdr", "handheldHdr", "HDR في الوضع المحمول", { group: GAMING }),
+  f.bool("handheld_vrr", "handheldVrr", "VRR في الوضع المحمول", { group: GAMING }),
+  {
+    key: "gaming_capability",
+    type: "group",
+    target: "gamingCapability",
+    description: "القدرات القصوى للجهاز — لا تمثل أداء لعبة بعينها",
+    group: GAMING,
+    itemFields: {
+      handheld: {
+        key: "handheld",
+        type: "group",
+        target: "handheld",
+        itemFields: {
+          max_resolution: f.str("max_resolution", "maxResolution", "أقصى دقة"),
+          max_refresh_rate: f.str("max_refresh_rate", "maxRefreshRate", "أقصى معدل تحديث"),
+          max_fps: f.str("max_fps", "maxFps", "أقصى FPS"),
+          hdr: f.bool("hdr", "hdr", "HDR"),
+          vrr: f.bool("vrr", "vrr", "VRR"),
+        },
+      },
+      tv: {
+        key: "tv",
+        type: "group",
+        target: "tv",
+        itemFields: {
+          max_resolution: f.str("max_resolution", "maxResolution", "أقصى دقة"),
+          max_refresh_rate: f.str("max_refresh_rate", "maxRefreshRate", "أقصى معدل تحديث"),
+          max_fps: f.str("max_fps", "maxFps", "أقصى FPS"),
+          hdr: f.bool("hdr", "hdr", "HDR"),
+          vrr: f.bool("vrr", "vrr", "VRR"),
+        },
+      },
+      ray_tracing: f.bool("ray_tracing", "rayTracing", "دعم Ray Tracing"),
+      upscaling: {
+        key: "upscaling",
+        type: "string",
+        target: "upscaling",
+        repeatable: true,
+        templateCount: 2,
+        description: "تقنيات رفع الدقة",
+      },
+    },
+  },
+];
+
+const componentDimensions: FieldDef = {
+  key: "component_dimension",
+  type: "group",
+  target: "componentDimensions",
+  repeatable: true,
+  templateCount: 2,
+  description: "أبعاد أجزاء الجهاز المستقلة مثل وحدات التحكم (عدد غير محدود)",
+  group: "الأبعاد والوزن",
+  itemFields: {
+    name: f.str("name", "name", "اسم الجزء"),
+    dimensions: f.str("dimensions", "dimensions", "الأبعاد"),
+    weight: f.str("weight", "weight", "الوزن"),
+    notes: f.str("notes", "notes", "ملاحظات"),
+  },
+};
+
 const requirements: FieldDef[] = [
   f.text("minimum_requirements", "minimumRequirements", "الحد الأدنى للمتطلبات", {
     group: REQUIREMENTS,
@@ -313,7 +486,7 @@ const consoleBasics: FieldDef[] = [
 
 export const HARDWARE_SCHEMA: ProductSchema = {
   id: "hardware",
-  version: 1,
+  version: 2,
   label: "الأجهزة والملحقات",
   labelKey: "category.hardware",
   categoryId: "cat_hardware",
@@ -325,10 +498,13 @@ export const HARDWARE_SCHEMA: ProductSchema = {
     ...warrantyFields(),
     ...descriptionFields(),
     ...performance,
+    ...displayAndProcessor,
+    ...gamingCapabilities,
     ...connectivity,
     ...power,
     ...requirements,
     ...physicalFields(),
+    componentDimensions,
     specGroupField(),
     compatibilityField("التوافق مع الأجهزة والمنصات (Nintendo Switch، PC، PlayStation…)"),
     boxContentField(),

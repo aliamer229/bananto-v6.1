@@ -163,6 +163,37 @@ source.1.type=manufacturer
     expect(result.stats.videos).toBe(1);
     expect(result.stats.sources).toBe(1);
   });
+
+  it("imports gaming capabilities and very high dynamic indices without code limits", () => {
+    const expanded = parseProductImport(
+      `schema_version=2
+name=Nintendo Switch 2
+handheld_max_resolution=1920x1080
+tv_max_resolution=3840x2160
+gaming_capability.handheld.max_fps=120
+gaming_capability.handheld.vrr=true
+gaming_capability.tv.max_fps=60
+gaming_capability.tv.hdr=true
+gaming_capability.upscaling.12=DLSS
+supported_output_resolution.50=3840x2160
+spec_group.50.name=Future Specifications
+spec_group.50.spec.75.name=Future Field
+spec_group.50.spec.75.value=Future Value`,
+      HARDWARE_SCHEMA,
+    );
+    expect(errorsOf(expanded)).toEqual([]);
+    expect(expanded.unknownFields).toEqual([]);
+    expect(expanded.data["gamingCapability"]).toMatchObject({
+      handheld: { maxFps: "120", vrr: true },
+      tv: { maxFps: "60", hdr: true },
+      upscaling: ["DLSS"],
+    });
+    expect(expanded.data["supportedOutputResolutions"]).toEqual(["3840x2160"]);
+    expect((expanded.data["specGroups"] as any[])[0]?.specs?.[0]).toMatchObject({
+      name: "Future Field",
+      value: "Future Value",
+    });
+  });
 });
 
 describe("validation", () => {

@@ -20,6 +20,7 @@ import { resolveNintendoImage } from "@/lib/nintendoImages";
 import { buildFitFor, buildFeatures } from "./mappers";
 import { toAmount } from "@/lib/purchasable";
 import { gb } from "@/hub/utils/format";
+import { getDevicePerformanceList } from "@/lib/devicePerformance";
 import type {
   Game,
   GameImage,
@@ -267,40 +268,85 @@ function buildNintendo(
 function buildPerformance(
   p: Record<string, unknown>,
   platform: PlatformId,
-  locale: "ar" | "en",
+  _locale: "ar" | "en",
 ): PerformanceProfile[] | undefined {
-  const docked = str(p["perfResolutionDocked"]);
-  const handheld = str(p["perfResolutionHandheld"]);
-  const fps = str(p["perfFps"]);
-  const hasHdrField = "perfHdr" in p;
-  const notes = localizedValue(p, "perfNotes", "perfNotesEn", locale);
+  const records = getDevicePerformanceList(p);
+  if (!records.length) return undefined;
 
-  if (!docked && !handheld && !fps && !hasHdrField && !notes) return undefined;
-
-  const modes: NonNullable<PerformanceProfile["modes"]> = [];
-  if (docked || fps) {
-    modes.push({
-      mode: "tv",
-      ...(docked ? { resolution: confirmed(docked) } : {}),
-      ...(fps ? { frameRate: confirmed(fps) } : {}),
+  return records.map((record) => {
+    const status =
+      record.verificationStatus === "technical_analysis"
+        ? "measured"
+        : record.verificationStatus === "unverified"
+          ? "unconfirmed"
+          : "confirmed";
+    const source = record.sourceName || record.sourceUrl || "Game performance record";
+    const fact = <T>(value: T): Fact<T> => ({
+      value,
+      status,
+      source,
+      ...(record.verifiedAt ? { capturedAt: record.verifiedAt } : {}),
     });
-  }
-  if (handheld) {
-    modes.push({
-      mode: "handheld",
-      resolution: confirmed(handheld),
-      ...(fps ? { frameRate: confirmed(fps) } : {}),
-    });
-  }
+    const mapMode = (
+      mode: "handheld" | "tv",
+      values: typeof record.handheld,
+    ): NonNullable<PerformanceProfile["modes"]>[number] | undefined => {
+      if (!values) return undefined;
+      const resolution = values.outputResolution || values.resolution || values.resolutionDynamic;
+      return {
+        mode,
+        ...(values.supported !== undefined ? { supported: values.supported } : {}),
+        ...(resolution ? { resolution: fact(resolution) } : {}),
+        ...(values.renderingResolution
+          ? { renderingResolution: fact(values.renderingResolution) }
+          : {}),
+        ...(values.outputResolution ? { outputResolution: fact(values.outputResolution) } : {}),
+        ...(values.fps ? { frameRate: fact(values.fps) } : {}),
+        ...(values.fpsMin ? { frameRateMin: fact(values.fpsMin) } : {}),
+        ...(values.fpsMax ? { frameRateMax: fact(values.fpsMax) } : {}),
+        ...(values.refreshRate ? { refreshRate: fact(values.refreshRate) } : {}),
+        ...(values.hdr !== undefined ? { hdr: fact(values.hdr) } : {}),
+        ...(values.vrr !== undefined ? { vrr: fact(values.vrr) } : {}),
+        ...(values.notes ? { notes: values.notes } : {}),
+      };
+    };
+    const modes = [mapMode("handheld", record.handheld), mapMode("tv", record.tv)].filter(
+      Boolean,
+    ) as NonNullable<PerformanceProfile["modes"]>;
+    const mappedPlatform: PlatformId =
+      record.deviceSlug === "nintendo-switch-2"
+        ? "switch2"
+        : record.deviceSlug === "nintendo-switch"
+          ? "switch"
+          : platform;
 
-  return [
-    {
-      platform,
+    return {
+      platform: mappedPlatform,
+      deviceName: record.device,
+      deviceSlug: record.deviceSlug,
+      ...(record.deviceModel ? { deviceModel: record.deviceModel } : {}),
+      ...(record.hardwareId ? { hardwareId: record.hardwareId } : {}),
+      ...(record.informationStatus ? { informationStatus: record.informationStatus } : {}),
+      ...(record.unavailableReason ? { unavailableReason: record.unavailableReason } : {}),
       ...(modes.length ? { modes } : {}),
-      ...(hasHdrField ? { hdr: confirmed(bool(p["perfHdr"])) } : {}),
-      ...(notes ? { notes } : {}),
-    },
-  ];
+      ...(record.modes?.length ? { performanceModes: record.modes } : {}),
+      ...(record.loadingTime ? { loadingTime: fact(record.loadingTime) } : {}),
+      ...(record.handheld?.hdr !== undefined || record.tv?.hdr !== undefined
+        ? { hdr: fact(record.handheld?.hdr === true || record.tv?.hdr === true) }
+        : {}),
+      ...(record.upscaling ? { upscaling: record.upscaling } : {}),
+      ...(record.rayTracing !== undefined ? { rayTracing: record.rayTracing } : {}),
+      ...(record.rayTracingMode ? { rayTracingMode: record.rayTracingMode } : {}),
+      ...(record.gameVersion ? { gameVersion: record.gameVersion } : {}),
+      ...(record.patchVersion ? { patchVersion: record.patchVersion } : {}),
+      ...(record.testedDate ? { testedDate: record.testedDate } : {}),
+      ...(record.sourceName ? { sourceName: record.sourceName } : {}),
+      ...(record.sourceUrl ? { sourceUrl: record.sourceUrl } : {}),
+      ...(record.verifiedAt ? { verifiedAt: record.verifiedAt } : {}),
+      ...(record.verificationStatus ? { verificationStatus: record.verificationStatus } : {}),
+      ...(record.performanceNotes ? { notes: record.performanceNotes } : {}),
+    };
+  });
 }
 
 function buildStorage(p: Record<string, unknown>): StorageInfo | undefined {

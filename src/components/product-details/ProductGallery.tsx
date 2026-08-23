@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, ChevronRight, ImageOff, Maximize2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { useTranslation } from "@/i18n";
 import { playSound } from "@/utils/audio";
@@ -15,6 +15,18 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
   const { t, dir } = useTranslation();
   const [active, setActive] = useState(0);
   const [broken, setBroken] = useState<Set<number>>(new Set());
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFullscreen(false);
+      if (event.key === "ArrowLeft") step(-1);
+      if (event.key === "ArrowRight") step(1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   const usable = images.filter((_, index) => !broken.has(index));
   const current = images[active];
@@ -79,6 +91,15 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
             </div>
           </>
         )}
+        <button
+          type="button"
+          onClick={() => setFullscreen(true)}
+          aria-label="Fullscreen image viewer"
+          className="absolute top-2 rounded-full bg-background/80 p-2 shadow-sm backdrop-blur transition hover:bg-background"
+          style={{ insetInlineEnd: "0.5rem" }}
+        >
+          <Maximize2 className="h-4 w-4" />
+        </button>
       </div>
 
       {images.length > 1 && (
@@ -110,6 +131,60 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
           )}
         </div>
       )}
+
+      {fullscreen && current ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${alt} fullscreen viewer`}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4"
+          onClick={() => setFullscreen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setFullscreen(false)}
+            className="absolute top-4 rounded-full bg-white/10 p-3 text-white hover:bg-white/20"
+            style={{ insetInlineEnd: "1rem" }}
+            aria-label="Close fullscreen viewer"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          {images.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  step(-1);
+                }}
+                className="absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20"
+                style={{ insetInlineStart: "1rem" }}
+                aria-label={t("common.previous")}
+              >
+                <PrevIcon className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  step(1);
+                }}
+                className="absolute top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white hover:bg-white/20"
+                style={{ insetInlineEnd: "1rem" }}
+                aria-label={t("common.next")}
+              >
+                <NextIcon className="h-6 w-6" />
+              </button>
+            </>
+          ) : null}
+          <img
+            src={current}
+            alt={alt}
+            onClick={(event) => event.stopPropagation()}
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

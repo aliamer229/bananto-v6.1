@@ -98,6 +98,7 @@ export function GameHub({
           {/* 1 — Nintendo: the platform this storefront exists for. */}
           <NintendoSection />
           <Switch2Section />
+          <PerformanceSection />
 
           {/* 2 — Essentials: everything you need to know, before the money talk. */}
           <GlanceSection />
@@ -116,7 +117,6 @@ export function GameHub({
           <FeaturesSection />
 
           {/* 5 — Reference detail. */}
-          <PerformanceSection />
           <StorageSection />
           <LanguagesSection />
           <MultiplayerSection />
@@ -168,6 +168,10 @@ function buildNavItems(game: Game, t: ReturnType<typeof useI18n>["t"]): NavItem[
     ],
     [Boolean(game.nintendo), { id: "nintendo", label: t("nav.nintendo") }],
     [Boolean(game.nintendo?.switch2Enhanced?.available), { id: "switch2", label: "2 Switch" }],
+    [
+      (game.performance?.length ?? 0) > 0 || Boolean(game.nintendo?.runsOn.includes("switch2")),
+      { id: "performance", label: t("performance.title") },
+    ],
     [true, { id: "overview", label: t("nav.overview") }],
     [(game.editions?.length ?? 0) > 0, { id: "editions", label: t("nav.editions") }],
     [(game.gameplayPillars?.length ?? 0) > 0, { id: "gameplay", label: t("nav.gameplay") }],
