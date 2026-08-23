@@ -55,7 +55,7 @@ function ErrorComponent({ error: rootError, reset }: { error: any; reset: () => 
           : String(error);
 
   const is404 = (error as any)?.status === 404 || message.includes("404");
-  const isChunkError = isScriptImportError(message);
+  const isChunkError = isScriptImportError(error) || isScriptImportError(message);
 
   console.error(error);
   const router = useRouter();

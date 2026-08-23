@@ -8,6 +8,7 @@ import { BananaIcon } from "./Icons";
 import { Headset, CreditCard, Wallet, Star, Trophy } from "lucide-react";
 import { playSound, preloadSound } from "../utils/audio";
 import { filterPurchasable } from "@/lib/purchasable";
+import { getProductCategory, isGameProduct } from "@/lib/productSection";
 import { CartridgeStrip, ProductStrip, CartridgeSkeleton } from "./ProductStrips";
 import { BundleStrip } from "./BundleStrip";
 import type { AccountBundle } from "@/lib/types";
@@ -371,6 +372,7 @@ export default function HomeView({
         {adminCategories.map((category, index) => {
           const mapGame = (p: any) => ({
             id: p.id,
+            slug: p.slug,
             title: p.titleEn || p.english_name || p.title,
             price: p.price,
             image: resolveNintendoImageUrl(p, "listing-card"),
@@ -380,13 +382,37 @@ export default function HomeView({
             platform: p.platform,
           });
 
-          // First section is the cartridge shelf: it shows every game on the
-          // platform, not only the ones tagged with this category id.
+          // First section is the cartridge shelf: it shows games ONLY.
           const isCartridgeSection = index === 0;
           const categoryProducts = (
             isCartridgeSection
-              ? adminProducts
-              : adminProducts.filter((p) => p.category === category.id)
+              ? adminProducts.filter((p) => isGameProduct(p))
+              : adminProducts.filter((p) => {
+                  const resolved = getProductCategory(p);
+                  if (
+                    category.id === "nintendo-switch-games" ||
+                    category.id === "cat_nintendo" ||
+                    category.id === "nintendo_games"
+                  ) {
+                    return resolved === "game";
+                  }
+                  if (category.id === "hardware" || category.id === "cat_hardware") {
+                    return resolved === "hardware";
+                  }
+                  if (category.id === "amiibo" || category.id === "cat_amiibo") {
+                    return resolved === "amiibo";
+                  }
+                  if (category.id === "accessories" || category.id === "cat_accessories") {
+                    return resolved === "accessory";
+                  }
+                  if (category.id === "gift-cards" || category.id === "cat_gift_cards") {
+                    return resolved === "gift_card";
+                  }
+                  if (category.id === "used" || category.id === "cat_used") {
+                    return resolved === "used";
+                  }
+                  return p.category === category.id || p.categoryId === category.id;
+                })
           ).map(mapGame);
 
           if (categoryProducts.length === 0) return null;
@@ -395,6 +421,7 @@ export default function HomeView({
           const isNintendoGames =
             category.id === "nintendo-switch-games" ||
             category.id === "nintendo_games" ||
+            category.id === "cat_nintendo" ||
             category.title?.toLowerCase().includes("nintendo switch");
 
           if (index === 0) {
@@ -404,9 +431,16 @@ export default function HomeView({
                   <div className="mb-3 px-4 sm:px-8 flex items-center justify-between">
                     <h3 className="truncate text-xl font-bold text-foreground">
                       {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
-                        ? "nintendo games"
+                        ? "ألعاب نينتندو سويتش"
                         : t("home.nintendoSwitchGames")}
                     </h3>
+                    <Link
+                      to="/category/$categoryId"
+                      params={{ categoryId: "nintendo_games" }}
+                      className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
+                    >
+                      {t("common.viewAll")}
+                    </Link>
                   </div>
 
                   <div className="relative mb-8 mt-2 min-h-[200px] w-full max-w-full">
@@ -476,22 +510,28 @@ export default function HomeView({
         {/* Section 5: Hardware */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
+            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">أجهزة الهاردوير وملحقاتها</h3>
               <Link
                 to="/category/$categoryId"
                 params={{ categoryId: "hardware" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline me-auto"
+                className="text-[#EA8918] text-sm font-bold hover:underline"
               >
                 عرض الكل
               </Link>
             </div>
             <ProductStrip
               products={adminProducts
-                .filter((p) => p.category === "hardware")
+                .filter(
+                  (p) =>
+                    getProductCategory(p) === "hardware" ||
+                    p.category === "hardware" ||
+                    p.categoryId === "hardware",
+                )
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
+                  slug: p.slug,
                   title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Hardware",
                   price: p.price,
@@ -511,22 +551,28 @@ export default function HomeView({
         {/* Section 6: Amiibo */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
+            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">مجسمات amiibo</h3>
               <Link
                 to="/category/$categoryId"
                 params={{ categoryId: "amiibo" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline me-auto"
+                className="text-[#EA8918] text-sm font-bold hover:underline"
               >
                 عرض الكل
               </Link>
             </div>
             <ProductStrip
               products={adminProducts
-                .filter((p) => p.category === "amiibo")
+                .filter(
+                  (p) =>
+                    getProductCategory(p) === "amiibo" ||
+                    p.category === "amiibo" ||
+                    p.categoryId === "amiibo",
+                )
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
+                  slug: p.slug,
                   title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Amiibo",
                   price: p.price,
@@ -546,22 +592,28 @@ export default function HomeView({
         {/* Section 7: Accessories */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
+            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">الإكسسوارات</h3>
               <Link
                 to="/category/$categoryId"
                 params={{ categoryId: "accessories" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline me-auto"
+                className="text-[#EA8918] text-sm font-bold hover:underline"
               >
                 عرض الكل
               </Link>
             </div>
             <ProductStrip
               products={adminProducts
-                .filter((p) => p.category === "accessories")
+                .filter(
+                  (p) =>
+                    getProductCategory(p) === "accessory" ||
+                    p.category === "accessories" ||
+                    p.categoryId === "accessories",
+                )
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
+                  slug: p.slug,
                   title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Accessory",
                   price: p.price,
@@ -581,17 +633,30 @@ export default function HomeView({
         {/* Section 8: Gift Cards */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
+            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">
                 كروت التعبئة Nintendo Gift Cards
               </h3>
+              <Link
+                to="/category/$categoryId"
+                params={{ categoryId: "gift-cards" }}
+                className="text-[#EA8918] text-sm font-bold hover:underline"
+              >
+                عرض الكل
+              </Link>
             </div>
             <ProductStrip
               products={adminProducts
-                .filter((p) => p.category === "gift-cards")
+                .filter(
+                  (p) =>
+                    getProductCategory(p) === "gift_card" ||
+                    p.category === "gift-cards" ||
+                    p.categoryId === "gift-cards",
+                )
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
+                  slug: p.slug,
                   title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Gift Card",
                   price: p.price,
@@ -611,22 +676,28 @@ export default function HomeView({
         {/* Section 9: Used Parts & Games */}
         <LazySection>
           <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
+            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
               <h3 className="text-xl font-bold text-foreground">القطع والألعاب المستخدمة</h3>
               <Link
                 to="/category/$categoryId"
                 params={{ categoryId: "used" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline me-auto"
+                className="text-[#EA8918] text-sm font-bold hover:underline"
               >
                 عرض الكل
               </Link>
             </div>
             <ProductStrip
               products={adminProducts
-                .filter((p) => p.category === "used")
+                .filter(
+                  (p) =>
+                    getProductCategory(p) === "used" ||
+                    p.category === "used" ||
+                    p.categoryId === "used",
+                )
                 .slice(0, 8)
                 .map((p) => ({
                   id: p.id,
+                  slug: p.slug,
                   title: p.titleEn || p.english_name || p.title,
                   subtitle: p.developer || "Used",
                   price: p.price,

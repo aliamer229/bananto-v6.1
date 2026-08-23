@@ -131,9 +131,12 @@ function DetailsBody({
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16" dir={dir}>
+    <div
+      className="mx-auto max-w-6xl px-4 pt-20 pb-16 sm:pt-24 sm:px-6 lg:px-8 [overflow-wrap:anywhere]"
+      dir={dir}
+    >
       {/* ------------------------------ hero ------------------------------ */}
-      <div className="grid gap-6 py-6 lg:grid-cols-2 lg:gap-10">
+      <div className="grid grid-cols-1 gap-6 py-6 lg:grid-cols-2 lg:gap-10">
         <ProductGallery images={view.images} alt={view.title} />
 
         <div className="space-y-5">

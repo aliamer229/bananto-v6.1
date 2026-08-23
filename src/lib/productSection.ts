@@ -94,6 +94,69 @@ export function resolveCategoryType(
   return "game";
 }
 
+/**
+ * Robust product classifier that checks schema, category, kind, and title hints.
+ */
+export function getProductCategory(product: unknown): CategoryType {
+  if (!product || typeof product !== "object") return "game";
+  const p = product as Record<string, any>;
+
+  // 1. Direct schema check
+  const schemaId = p.schemaId || p.schema?.id || p.schema_id;
+  if (schemaId) {
+    const resolved = resolveCategoryType("", "", "", String(schemaId));
+    if (resolved !== "game") return resolved;
+  }
+
+  // 2. Kind check
+  const kind = String(p.kind || "").toLowerCase();
+  if (kind === "hardware" || kind === "device") return "hardware";
+  if (kind === "accessory") return "accessory";
+  if (kind === "amiibo" || kind === "collectible") return "amiibo";
+  if (kind === "bundle") return "bundle";
+  if (kind === "digital_code" || kind === "gift_card") return "gift_card";
+  if (kind === "used") return "used";
+
+  // 3. Category / CategoryId check
+  const categoryId = String(p.category || p.categoryId || p.category_id || "").toLowerCase();
+  const categoryTitle = String(p.categoryTitle || p.category_title || "").toLowerCase();
+
+  const fromCategory = resolveCategoryType(categoryId, categoryTitle, kind);
+  if (fromCategory !== "game") return fromCategory;
+
+  // 4. Hardware title hints (e.g. Nintendo Switch 2 console, OLED model)
+  const title = String(p.title || p.titleEn || p.english_name || "").toLowerCase();
+  if (
+    title.includes("switch 2 console") ||
+    title.includes("switch oled console") ||
+    title.includes("switch lite console") ||
+    title.includes("dock set") ||
+    title.includes("joy-con pair") ||
+    title.includes("pro controller")
+  ) {
+    if (title.includes("controller") || title.includes("joy-con") || title.includes("dock")) {
+      return "accessory";
+    }
+    if (title.includes("console") || title.includes("switch 2") || title.includes("switch oled")) {
+      return "hardware";
+    }
+  }
+
+  return "game";
+}
+
+export function isGameProduct(product: unknown): boolean {
+  return getProductCategory(product) === "game";
+}
+
+export function isHardwareProduct(product: unknown): boolean {
+  return getProductCategory(product) === "hardware";
+}
+
+export function isAccessoryProduct(product: unknown): boolean {
+  return getProductCategory(product) === "accessory";
+}
+
 /** Canonical store category id per section, used when the store has none yet. */
 export const SECTION_CATEGORY_ID: Record<CategoryType, string> = {
   game: "cat_nintendo",

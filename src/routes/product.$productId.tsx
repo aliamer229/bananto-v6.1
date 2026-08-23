@@ -15,22 +15,23 @@ import { I18nProvider } from "@/hub/i18n";
 import { tr, useI18n } from "@/i18n";
 import { api } from "@/lib/api";
 import { detectSchema } from "@/lib/productImport/registry";
-import { resolveCategoryType, schemaForSection } from "@/lib/productSection";
+import { getProductCategory, schemaForSection } from "@/lib/productSection";
+import { findProductByIdOrSlug, getProductSlug } from "@/lib/productRouting";
 import { isProductPurchasable } from "@/lib/purchasable";
 import { recordView } from "@/lib/view-history";
 
 export const Route = createFileRoute("/product/$productId")({
   head: () => ({
     meta: [
-      { title: "تفاصيل اللعبة — بنانا ستور" },
+      { title: "تفاصيل المنتج — بنانا ستور" },
       {
         name: "description",
-        content: "كل تفاصيل اللعبة: الأسعار والتوفر، القصة، الفيديوهات، الأداء والمراجعات.",
+        content: "كل تفاصيل المنتج: الأسعار والتوفر، المواصفات، الأداء والمراجعات.",
       },
-      { property: "og:title", content: "تفاصيل اللعبة — بنانا ستور" },
+      { property: "og:title", content: "تفاصيل المنتج — بنانا ستور" },
       {
         property: "og:description",
-        content: "أسعار الحسابات وإقراض الكارتلج، مع كل معلومات اللعبة في صفحة واحدة.",
+        content: "كل تفاصيل المنتج والأسعار في صفحة واحدة.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -44,33 +45,22 @@ function ProductPage() {
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({ queryKey: ["store", "full"], queryFn: () => api.store() });
-  const found = data?.products.find((p) => String(p.id) === productId) as
-    Record<string, unknown> | undefined;
+  const found = useMemo(
+    () => findProductByIdOrSlug(data?.products, productId) as Record<string, unknown> | undefined,
+    [data?.products, productId],
+  );
 
   const lang = useI18n((s) => s.lang);
   const locale = lang === "ar" ? "ar" : "en";
 
-  // Keep the found product regardless of whether it has strict purchase validation,
-  // so admins and customers can always view the product details page.
   const product = found;
 
   /*
     The Game Hub belongs to Nintendo Switch Games and nothing else. Every other
     section — hardware, amiibo, accessories, gift cards, used, bundles — renders
-    its own schema-driven details page, so a gift card never shows a game's
-    story, trailers or cartridge pricing.
+    its own schema-driven details page.
   */
-  const section = useMemo(
-    () =>
-      product
-        ? resolveCategoryType(
-            String(product["category"] ?? product["categoryId"] ?? ""),
-            String(product["categoryTitle"] ?? ""),
-            String(product["kind"] ?? ""),
-          )
-        : undefined,
-    [product],
-  );
+  const section = useMemo(() => (product ? getProductCategory(product) : undefined), [product]);
 
   const isGame = section === "game";
 
@@ -89,7 +79,11 @@ function ProductPage() {
 
   // Kept on the user's device; sent with a support message as a hint only.
   useEffect(() => {
-    if (product) recordView(String(product["id"] ?? productId), String(product["title"] ?? ""));
+    if (product) {
+      const productTitle = String(product["titleEn"] || product["title"] || product["name"] || "");
+      document.title = `${productTitle} — بنانا ستور`;
+      recordView(String(product["id"] ?? productId), productTitle);
+    }
   }, [product, productId]);
 
   if (isLoading) {

@@ -39,8 +39,17 @@ const CHUNK_RELOAD_COUNT_KEY = "bananto_chunk_reload_count";
 /** Reloading more than this in one session is a loop, not a recovery. */
 const MAX_AUTOMATIC_RELOADS = 2;
 
-export const isScriptImportError = (errString: string) => {
-  const s = String(errString || "").toLowerCase();
+export const isScriptImportError = (errString: unknown) => {
+  if (!errString) return false;
+  const s = String(
+    (errString as any)?.message ||
+      (errString as any)?.stack ||
+      (errString as any)?.reason?.message ||
+      (errString as any)?.reason ||
+      errString ||
+      "",
+  ).toLowerCase();
+
   return (
     s.includes("importing a module script failed") ||
     s.includes("module script") ||
@@ -150,23 +159,18 @@ function isDevelopmentOrPreview(): boolean {
 export const handleModuleReload = (force = false) => {
   if (typeof window === "undefined") return;
 
-  // In development, preview iframes, or non-production sandboxes, avoid aggressive reloading
-  // or blocking recovery overlays which disrupt live inspection.
-  if (isDevelopmentOrPreview() && !force) {
-    console.warn(
-      "[ModuleLoader] Caught script/module import failure in preview/dev environment. Suppressing forced page reload.",
-    );
-    return;
-  }
-
   let previousReload = 0;
   try {
     previousReload = Number(window.sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
   } catch {
     /* sessionStorage can throw in private mode; treat it as never reloaded */
   }
-  if (!force && Date.now() - previousReload < 15_000) {
-    showRecoveryScreen();
+
+  // Throttle automatic reloads within 10 seconds unless forced
+  if (!force && Date.now() - previousReload < 10_000) {
+    if (!isDevelopmentOrPreview()) {
+      showRecoveryScreen();
+    }
     return;
   }
 
@@ -176,8 +180,10 @@ export const handleModuleReload = (force = false) => {
   } catch {
     /* ignore */
   }
-  if (attempts >= MAX_AUTOMATIC_RELOADS) {
-    showRecoveryScreen();
+  if (!force && attempts >= MAX_AUTOMATIC_RELOADS) {
+    if (!isDevelopmentOrPreview()) {
+      showRecoveryScreen();
+    }
     return;
   }
 
@@ -243,15 +249,19 @@ function isScriptElement(target: EventTarget | null): target is HTMLScriptElemen
 function isOwnScriptElement(target: EventTarget | null): boolean {
   if (!isScriptElement(target)) return false;
   const src = target.getAttribute("src");
-  if (!src) return false;
+  if (!src) return true;
   try {
     const url = new URL(src, window.location.href);
     return (
-      url.origin === window.location.origin &&
-      (url.pathname.includes("/assets/") || url.pathname.includes("/_build/"))
+      url.origin === window.location.origin ||
+      url.pathname.includes("/assets/") ||
+      url.pathname.includes("/_build/") ||
+      url.pathname.startsWith("/src/") ||
+      url.pathname.startsWith("/node_modules/") ||
+      url.pathname.startsWith("/@")
     );
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -281,6 +291,7 @@ export function installPolyfills() {
       (event) => {
         try {
           event.preventDefault();
+          event.stopImmediatePropagation();
         } catch {
           // ignore
         }
@@ -294,12 +305,11 @@ export function installPolyfills() {
       (e: ErrorEvent) => {
         const target = e.target as HTMLElement | null;
         const msg = String(e.message || e.error?.message || e.error || "");
-        // Only our own build's scripts mean "this page is broken, reload it".
-        // Any <script> tag used to qualify, so a third-party script that failed
-        // for reasons of its own — telegram-web-app.js behind a blocker, an
-        // analytics tag on a bad network — reloaded the app, failed again, and
-        // reloaded again: an endless loop that shows the member nothing.
-        if (isOwnScriptElement(target) || (!isScriptElement(target) && isScriptImportError(msg))) {
+        if (
+          isScriptImportError(msg) ||
+          isScriptImportError(e.error) ||
+          (isScriptElement(target) && isOwnScriptElement(target))
+        ) {
           try {
             e.preventDefault();
             e.stopImmediatePropagation();
@@ -316,7 +326,7 @@ export function installPolyfills() {
       "unhandledrejection",
       (e: PromiseRejectionEvent) => {
         const reasonMsg = String(e.reason?.message || e.reason || "");
-        if (isScriptImportError(reasonMsg)) {
+        if (isScriptImportError(reasonMsg) || isScriptImportError(e.reason)) {
           try {
             e.preventDefault();
             e.stopImmediatePropagation();

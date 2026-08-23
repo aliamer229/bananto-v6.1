@@ -1,0 +1,82 @@
+import React from "react";
+import { Link } from "@tanstack/react-router";
+import { Star, Sparkles } from "lucide-react";
+import NintendoCover from "@/components/NintendoCover";
+import { useCurrency } from "@/context/CurrencyContext";
+import { getProductSlug } from "@/lib/productRouting";
+
+export function GameCard({ product }: { product: any }) {
+  const { formatIQDPrice } = useCurrency();
+  const slug = getProductSlug(product) || String(product.id || "");
+  const title = product.titleEn || product.english_name || product.title || "";
+  const subtitle = product.developer || product.publisher || product.category || "";
+  const price = Number(product.price) || 0;
+  const rating = product.metacriticRating ?? product.rating;
+  const isSwitch2 =
+    product.platform === "switch2" ||
+    product.platform === "both" ||
+    String(product.tags || "")
+      .toLowerCase()
+      .includes("switch 2");
+
+  return (
+    <Link
+      to="/product/$productId"
+      params={{ productId: slug }}
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+    >
+      <div className="relative mb-3 aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted/30">
+        <NintendoCover
+          product={product}
+          usage="listing-card"
+          alt={title}
+          className="h-full w-full object-cover"
+          imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+
+        {/* Platform tag */}
+        <div className="absolute start-2 top-2 z-10 flex flex-wrap gap-1">
+          {isSwitch2 ? (
+            <span className="inline-flex items-center gap-1 rounded-md bg-red-600/90 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm backdrop-blur-md">
+              <Sparkles className="h-3 w-3" />
+              Switch 2
+            </span>
+          ) : (
+            <span className="inline-flex items-center rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm backdrop-blur-md">
+              Switch
+            </span>
+          )}
+        </div>
+
+        {/* Rating tag */}
+        {rating ? (
+          <div className="absolute bottom-2 end-2 z-10 flex items-center gap-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[11px] font-bold text-amber-400 shadow-sm backdrop-blur-md">
+            <Star className="h-3 w-3 fill-current" />
+            <span>{rating}</span>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex flex-1 flex-col justify-between gap-2" dir="ltr">
+        <div>
+          <h4
+            className="line-clamp-2 text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-primary sm:text-base"
+            title={title}
+          >
+            {title}
+          </h4>
+          {subtitle ? (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>
+          ) : null}
+        </div>
+
+        <div className="mt-2 flex items-baseline justify-between border-t border-border/50 pt-2">
+          <span className="text-xs text-muted-foreground">السعر</span>
+          <span className="text-sm font-extrabold text-foreground sm:text-base">
+            {formatIQDPrice(price)}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}

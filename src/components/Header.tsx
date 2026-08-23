@@ -195,12 +195,12 @@ export default function Header({
           pointer events — only its actual controls do. */}
       <header
         dir="ltr"
-        className={`z-50 fixed top-0 w-full transition-all duration-300 transform-gpu ${
+        className={`z-50 fixed top-0 inset-x-0 w-full transition-all duration-300 transform-gpu ${
           isMenuOpen ? "bottom-0 pointer-events-auto" : "pointer-events-none"
         }`}
       >
         <div
-          className="px-4 pt-6 pb-4 flex items-center gap-3 w-full [&>*]:pointer-events-auto relative"
+          className="mx-auto max-w-6xl px-4 pt-6 pb-4 flex items-center gap-3 w-full [&>*]:pointer-events-auto relative"
           dir="ltr"
         >
           {!isHome && (

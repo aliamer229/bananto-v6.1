@@ -598,8 +598,11 @@ export function HardwareProductDetails({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-20 [overflow-wrap:anywhere]" dir={dir}>
-      <div className="grid gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
+    <div
+      className="mx-auto max-w-7xl px-4 pt-20 pb-20 sm:pt-24 sm:px-6 lg:px-8 [overflow-wrap:anywhere]"
+      dir={dir}
+    >
+      <div className="grid grid-cols-1 gap-6 py-6 lg:grid-cols-2 lg:gap-10">
         <ProductGallery images={view.images} alt={view.title} />
         <div className="min-w-0 space-y-5">
           <div>
@@ -608,10 +611,12 @@ export function HardwareProductDetails({
               {value(product.series) ? <span>· {value(product.series)}</span> : null}
               {value(product.generation) ? <span>· {value(product.generation)}</span> : null}
             </div>
-            <h1 className="mt-2 break-words text-3xl font-black leading-tight sm:text-4xl">
+            <h1 className="mt-2 break-words text-2xl font-black leading-tight sm:text-3xl lg:text-4xl">
               {view.title}
             </h1>
-            {view.subtitle ? <p className="mt-2 text-muted-foreground">{view.subtitle}</p> : null}
+            {view.subtitle ? (
+              <p className="mt-2 text-muted-foreground text-sm sm:text-base">{view.subtitle}</p>
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-2">
             {[
@@ -638,34 +643,34 @@ export function HardwareProductDetails({
               <span dir="ltr">{rating}</span>
             </div>
           ) : null}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
             {rows(product, [
               ["storageCapacity", "Storage", "internalStorage"],
               ["screenSpecs", "Display", "nativeResolution"],
               ["batteryLife", "Battery", "runtime"],
             ]).map((item) => (
-              <div key={item.label} className="rounded-2xl bg-muted/50 p-3">
-                <p className="text-[11px] font-bold uppercase text-muted-foreground">
+              <div key={item.label} className="min-w-0 rounded-2xl bg-muted/50 p-3">
+                <p className="truncate text-[11px] font-bold uppercase text-muted-foreground">
                   {item.label}
                 </p>
-                <p className="mt-1 text-sm font-bold">{item.value}</p>
+                <p className="mt-1 break-words text-xs font-bold sm:text-sm">{item.value}</p>
               </div>
             ))}
           </div>
           {view.highlights.length ? <BulletList items={view.highlights.slice(0, 5)} /> : null}
           <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
             {view.price > 0 ? (
-              <span className="text-2xl font-black" dir="ltr">
+              <span className="text-2xl font-black sm:text-3xl" dir="ltr">
                 {formatIQDPrice(view.price)}
               </span>
             ) : null}
             <button
               type="button"
               onClick={handleCart}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground disabled:opacity-40"
+              className="inline-flex flex-1 min-w-[200px] items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-40"
               disabled={view.stock <= 0 && !view.isInfiniteStock}
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-5 w-5" />
               {t("product.addToCart")}
             </button>
           </div>
@@ -678,15 +683,15 @@ export function HardwareProductDetails({
         </div>
       </div>
 
-      <nav className="sticky top-0 z-10 -mx-4 overflow-x-auto border-y border-border bg-background/95 px-4 backdrop-blur">
-        <div className="flex min-w-max gap-1 py-2">
+      <nav className="sticky top-16 z-20 my-4 overflow-x-auto rounded-2xl border border-border bg-background/95 p-1.5 shadow-sm backdrop-blur no-scrollbar">
+        <div className="flex min-w-max gap-1">
           {nav
             .filter(([, , visible]) => visible)
             .map(([id, label]) => (
               <a
                 key={id}
                 href={`#${id}`}
-                className="rounded-full px-3 py-1.5 text-xs font-bold hover:bg-muted"
+                className="rounded-xl px-3 py-1.5 text-xs font-bold transition hover:bg-muted"
               >
                 {label}
               </a>

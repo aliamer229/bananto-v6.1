@@ -7,9 +7,8 @@ import ProductReviews from "@/components/ProductReviews";
 import { ProductDetails } from "@/components/product-details/ProductDetails";
 import { api } from "@/lib/api";
 import { HARDWARE_SCHEMA } from "@/lib/productImport/hardwareSchema";
-import { slugifyDevice } from "@/lib/devicePerformance";
-import { resolvePurchaseImage } from "@/lib/nintendoImages";
-import { resolveCategoryType } from "@/lib/productSection";
+import { findProductByIdOrSlug } from "@/lib/productRouting";
+import { getProductCategory } from "@/lib/productSection";
 
 export const Route = createFileRoute("/hardware/$slug")({
   head: () => ({
@@ -31,17 +30,7 @@ function HardwareDetailsPage() {
   const navigate = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["store", "full"], queryFn: () => api.store() });
   const product = useMemo(
-    () =>
-      data?.products.find(
-        (item) =>
-          resolveCategoryType(
-            String(item.categoryId || item.category || ""),
-            "",
-            String(item.kind || ""),
-            String(item.schemaId || ""),
-          ) === "hardware" &&
-          slugifyDevice(item.slug || item.title || item.shortName) === slugifyDevice(slug),
-      ) as Record<string, any> | undefined,
+    () => findProductByIdOrSlug(data?.products, slug) as Record<string, any> | undefined,
     [data?.products, slug],
   );
 

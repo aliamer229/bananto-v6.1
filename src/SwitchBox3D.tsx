@@ -1,11 +1,11 @@
-import React, { useRef, useEffect, useState } from "react";
-import { useGLTF, OrbitControls } from "@react-three/drei";
+import React, { useRef, useEffect, useState, useMemo } from "react";
+import { OrbitControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { readPrefs } from "@/lib/prefs";
 import { isValidTrim, type TrimBox } from "@/lib/imageTrim";
 
-export const SWITCH_GLB_URL = "https://assets.banan.to/Pages/Glb/SwitchCase.glb";
+export const SWITCH_GLB_URL = "/models/SwitchCase.glb";
 
 export interface SwitchBox3DProps {
   /** Highest-resolution front cover available — see `resolveNintendoImage(…, "3d-texture")`. */
@@ -17,33 +17,144 @@ export interface SwitchBox3DProps {
   onReady?: () => void;
 }
 
+/** Builds authentic procedural geometries for the Nintendo Switch case */
+function createSwitchCaseGeometries() {
+  const W = 6.2;
+  const H = 10.25;
+  const D = 0.68;
+  const spineR = D / 2;
+
+  // 1. Sleeve Insert Wrap Geometry
+  const colsBack = 24;
+  const colsSpine = 16;
+  const colsFront = 24;
+  const rows = 32;
+  const totalCols = colsBack + colsSpine + colsFront;
+
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+
+  const uBackStart = 0.0;
+  const uBackEnd = 588 / 1236;
+  const uSpineEnd = (588 + 60) / 1236;
+  const uFrontEnd = 1.0;
+
+  for (let r = 0; r <= rows; r++) {
+    const v = r / rows;
+    const y = -H / 2 + v * H;
+
+    // Back panel: x from +W/2 down to -(W/2 - spineR), z = -D/2
+    for (let c = 0; c <= colsBack; c++) {
+      const t = c / colsBack;
+      const x = W / 2 - t * (W - spineR);
+      const z = -D / 2;
+      const u = uBackStart + t * (uBackEnd - uBackStart);
+      positions.push(x, y, z);
+      normals.push(0, 0, -1);
+      uvs.push(u, v);
+    }
+
+    // Spine curve: angle from -PI/2 to -3PI/2 around center (-W/2 + spineR, 0)
+    for (let c = 1; c <= colsSpine; c++) {
+      const t = c / colsSpine;
+      const angle = -Math.PI / 2 - t * Math.PI;
+      const cx = -W / 2 + spineR;
+      const x = cx + Math.cos(angle) * spineR;
+      const z = Math.sin(angle) * spineR;
+      const u = uBackEnd + t * (uSpineEnd - uBackEnd);
+      const nx = Math.cos(angle);
+      const nz = Math.sin(angle);
+      positions.push(x, y, z);
+      normals.push(nx, 0, nz);
+      uvs.push(u, v);
+    }
+
+    // Front panel: x from -(W/2 - spineR) to +W/2, z = +D/2
+    for (let c = 1; c <= colsFront; c++) {
+      const t = c / colsFront;
+      const x = -(W / 2 - spineR) + t * (W - spineR);
+      const z = D / 2;
+      const u = uSpineEnd + t * (uFrontEnd - uSpineEnd);
+      positions.push(x, y, z);
+      normals.push(0, 0, 1);
+      uvs.push(u, v);
+    }
+  }
+
+  const vertsPerRow = totalCols + 1;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < totalCols; c++) {
+      const i0 = r * vertsPerRow + c;
+      const i1 = i0 + 1;
+      const i2 = (r + 1) * vertsPerRow + c;
+      const i3 = i2 + 1;
+
+      indices.push(i0, i2, i1);
+      indices.push(i1, i2, i3);
+    }
+  }
+
+  const placeholder = new THREE.BufferGeometry();
+  placeholder.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  placeholder.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+  placeholder.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  placeholder.setIndex(indices);
+  placeholder.computeVertexNormals();
+
+  // 2. Plastic outer case
+  const shape = new THREE.Shape();
+  const boxW = 6.26;
+  const boxH = 10.32;
+  const r = 0.22;
+  const x = -boxW / 2;
+  const y = -boxH / 2;
+
+  shape.moveTo(x + r, y);
+  shape.lineTo(x + boxW - r, y);
+  shape.quadraticCurveTo(x + boxW, y, x + boxW, y + r);
+  shape.lineTo(x + boxW, y + boxH - r);
+  shape.quadraticCurveTo(x + boxW, y + boxH, x + boxW - r, y + boxH);
+  shape.lineTo(x + r, y + boxH);
+  shape.quadraticCurveTo(x, y + boxH, x, y + boxH - r);
+  shape.lineTo(x, y + r);
+  shape.quadraticCurveTo(x, y, x + r, y);
+
+  const boxExtrudeSettings = {
+    steps: 1,
+    depth: 0.72,
+    bevelEnabled: true,
+    bevelThickness: 0.03,
+    bevelSize: 0.03,
+    bevelOffset: 0,
+    bevelSegments: 3,
+  };
+  const boxGeo = new THREE.ExtrudeGeometry(shape, boxExtrudeSettings);
+  boxGeo.center();
+
+  // 3. Foil protective outer sleeve
+  const foilExtrudeSettings = {
+    steps: 1,
+    depth: 0.74,
+    bevelEnabled: true,
+    bevelThickness: 0.04,
+    bevelSize: 0.04,
+    bevelOffset: 0,
+    bevelSegments: 3,
+  };
+  const foilGeo = new THREE.ExtrudeGeometry(shape, foilExtrudeSettings);
+  foilGeo.center();
+
+  return {
+    placeholder,
+    box: boxGeo,
+    foil: foilGeo,
+  };
+}
+
 /**
- * Authentic 3D Nintendo Switch game box, using the GLB hosted at
- * {@link SWITCH_GLB_URL}.
- *
- * ## The texture, and why it was soft
- *
- * The `placeholder` mesh is the printed insert: one sheet whose UVs run
- * back │ spine │ front. Handing it a front-only cover as the map therefore
- * stretched that cover across all three panels, so the front face showed
- * roughly the middle fifth of the artwork blown up — the "blurry 3D cover".
- * Three more things compounded it:
- *
- * - **Anisotropy was 1.** The box is always seen at an angle, which is the
- *   exact case anisotropic filtering exists for. At 1, mip selection is driven
- *   by the steepest axis and the whole face drops to a low mip.
- * - **The source was the listing cover**, sized for a 260px card.
- * - **Untrimmed art**: on a reference-01 source the actual box occupied ~40% of
- *   the file, so even a large file spent most of its pixels on white margin.
- *
- * So the sleeve is composited here instead, at a resolution derived from the
- * *source* image (capped by the GPU's `maxTextureSize`), with the crop applied
- * so every texel of the front panel is artwork. `LinearMipmapLinearFilter` plus
- * `capabilities.getMaxAnisotropy()` keeps it sharp at grazing angles, and
- * `SRGBColorSpace` keeps it the colour the file says it is.
- *
- * Switching product disposes the previous texture and its canvas, so nothing
- * stale is left bound to the material.
+ * Authentic 3D Nintendo Switch game box.
  */
 export function SwitchBox3D({
   coverImage,
@@ -52,16 +163,40 @@ export function SwitchBox3D({
   gameName = "",
   onReady,
 }: SwitchBox3DProps) {
-  const { nodes, materials } = useGLTF(SWITCH_GLB_URL) as any;
   const { gl } = useThree();
   const group = useRef<THREE.Group>(null);
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
+  const geometries = useMemo(() => createSwitchCaseGeometries(), []);
+
+  const materials = useMemo(() => {
+    const isSwitch2 = platform === "ns2";
+    const plasticMat = new THREE.MeshStandardMaterial({
+      transparent: true,
+      opacity: isSwitch2 ? 0.26 : 0.12,
+      depthWrite: false,
+      depthTest: true,
+      color: new THREE.Color(isSwitch2 ? "#d60012" : "#f5f5f5"),
+      roughness: 0.04,
+      metalness: 0.08,
+    });
+
+    const foilMat = new THREE.MeshStandardMaterial({
+      transparent: true,
+      opacity: 0.12,
+      depthWrite: false,
+      depthTest: true,
+      roughness: 0.04,
+      metalness: 0.06,
+      color: new THREE.Color("#ffffff"),
+    });
+
+    return { plastic: plasticMat, foil: foilMat };
+  }, [platform]);
+
   useEffect(() => {
-    if (nodes && materials) {
-      onReady?.();
-    }
-  }, [nodes, materials, onReady]);
+    onReady?.();
+  }, [onReady]);
 
   useEffect(() => {
     let isMounted = true;
@@ -116,10 +251,12 @@ export function SwitchBox3D({
         that lands on it — anything less throws away source detail before the
         GPU ever sees it. Bounded by what this GPU will actually sample and by
         4096 (a 4096 x 3153 RGBA texture is already ~50 MB with mipmaps).
+        We enforce a minimum baseline of 2048px width so spine text, Nintendo
+        branding, and vector art are super-sampled with razor-sharp fidelity.
       */
       const maxTexture = Math.min(gl?.capabilities?.maxTextureSize || 4096, 4096);
-      const wanted = artW > 0 ? Math.ceil(artW / FRONT_FRACTION) : TEMPLATE_W;
-      const width = Math.max(TEMPLATE_W, Math.min(maxTexture, wanted));
+      const wanted = artW > 0 ? Math.ceil(artW / FRONT_FRACTION) : 2048;
+      const width = Math.max(2048, Math.min(maxTexture, wanted));
       const height = Math.round(width * (LAYOUT.height / TEMPLATE_W));
 
       canvas.width = width;
@@ -306,8 +443,9 @@ export function SwitchBox3D({
       tex.minFilter = THREE.LinearMipmapLinearFilter;
       tex.magFilter = THREE.LinearFilter;
       // The face is nearly always viewed at an angle; without this the whole
-      // panel drops to a low mip and reads as blurred.
-      tex.anisotropy = gl?.capabilities?.getMaxAnisotropy?.() ?? 1;
+      // panel drops to a low mip and reads as blurred. Maximize anisotropic filtering.
+      const maxAniso = gl?.capabilities?.getMaxAnisotropy?.() ?? 16;
+      tex.anisotropy = Math.max(1, maxAniso);
       tex.wrapS = THREE.ClampToEdgeWrapping;
       tex.wrapT = THREE.ClampToEdgeWrapping;
       tex.needsUpdate = true;
@@ -337,38 +475,6 @@ export function SwitchBox3D({
     [],
   );
 
-  // Calibrate realistic materials for the GLB
-  if (materials?.foil) {
-    materials.foil.transparent = true;
-    materials.foil.opacity = 0.42;
-    materials.foil.depthWrite = false;
-    materials.foil.depthTest = true;
-    materials.foil.roughness = 0.08;
-    materials.foil.metalness = 0.1;
-  }
-
-  if (materials?.plastic) {
-    materials.plastic.transparent = true;
-    // A retail Switch case is clear plastic with the printed sleeve read
-    // through it. At 0.78-0.85 this shell sat in front of the artwork as a
-    // near-opaque white (or red) coat and washed it out — the "layer covering
-    // the cartridge" people were seeing. Keep enough tint to read as coloured
-    // plastic, and let the sleeve dominate.
-    materials.plastic.opacity = platform === "ns2" ? 0.32 : 0.16;
-    // A transparent material must not write depth: doing so lets the shell's
-    // own far faces occlude its near faces and the sleeve behind it, which
-    // shows up as flat opaque patches over the art.
-    materials.plastic.depthWrite = false;
-    materials.plastic.depthTest = true;
-    materials.plastic.color.set(platform === "ns2" ? "#d60012" : "#f5f5f5");
-    materials.plastic.roughness = 0.08;
-    materials.plastic.metalness = 0.12;
-  }
-
-  if (!nodes?.placeholder || !nodes?.box || !nodes?.foil) {
-    return null;
-  }
-
   return (
     <>
       <OrbitControls
@@ -390,7 +496,7 @@ export function SwitchBox3D({
         rotation={[0, -Math.PI / 5.5, 0]}
       >
         {/* 1. Printed sleeve insert (artwork placeholder) */}
-        <mesh geometry={nodes.placeholder.geometry} renderOrder={1}>
+        <mesh geometry={geometries.placeholder} renderOrder={1}>
           <meshStandardMaterial
             key={texture ? texture.uuid : "empty"}
             map={texture || null}
@@ -404,16 +510,13 @@ export function SwitchBox3D({
         </mesh>
 
         {/* 2. Plastic outer case */}
-        <mesh geometry={nodes.box.geometry} material={materials.plastic} renderOrder={2} />
+        <mesh geometry={geometries.box} material={materials.plastic} renderOrder={2} />
 
         {/* 3. Foil protective outer sleeve */}
-        <mesh geometry={nodes.foil.geometry} material={materials.foil} renderOrder={3} />
+        <mesh geometry={geometries.foil} material={materials.foil} renderOrder={3} />
       </group>
     </>
   );
 }
-
-// Preload the GLB model from Cloudflare CDN
-useGLTF.preload(SWITCH_GLB_URL);
 
 export default SwitchBox3D;

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Filter, SortAsc, Calendar, Star, Tag, ChevronDown, Gamepad2 } from "lucide-react";
 import { cdnImage } from "@/lib/img";
 import { GAME_GENRES, genreLabel } from "@/lib/genres";
+import { getProductCategory, isGameProduct } from "@/lib/productSection";
 
 export const Route = createFileRoute("/category/$categoryId")({
   component: CategoryPage,
@@ -172,18 +173,37 @@ function CategoryPage() {
       if (p.status === "غير نشط" || p.isActive === false) return false;
 
       // Category check
-      const pCat = String(p.category || p.categoryId || "").toLowerCase();
-      const pKind = String(p.kind || "").toLowerCase();
       const targetCat = categoryId.toLowerCase();
+      const resolved = getProductCategory(p);
 
-      const isCatMatch =
-        pCat === targetCat ||
-        pKind === targetCat ||
-        categoryId === "all" ||
-        (targetCat === "nintendo_games" &&
-          (pCat === "cat_nintendo" ||
-            pCat === "nintendo-switch-games" ||
-            pKind === "nintendo-switch-games"));
+      let isCatMatch = false;
+      if (targetCat === "all") {
+        isCatMatch = true;
+      } else if (
+        targetCat === "nintendo_games" ||
+        targetCat === "cat_nintendo" ||
+        targetCat === "nintendo-switch-games"
+      ) {
+        isCatMatch = resolved === "game";
+      } else if (targetCat === "hardware" || targetCat === "cat_hardware") {
+        isCatMatch = resolved === "hardware";
+      } else if (targetCat === "amiibo" || targetCat === "cat_amiibo") {
+        isCatMatch = resolved === "amiibo";
+      } else if (targetCat === "accessories" || targetCat === "cat_accessories") {
+        isCatMatch = resolved === "accessory";
+      } else if (
+        targetCat === "gift-cards" ||
+        targetCat === "gift_cards" ||
+        targetCat === "cat_gift_cards"
+      ) {
+        isCatMatch = resolved === "gift_card";
+      } else if (targetCat === "used" || targetCat === "cat_used") {
+        isCatMatch = resolved === "used";
+      } else {
+        const pCat = String(p.category || p.categoryId || "").toLowerCase();
+        const pKind = String(p.kind || "").toLowerCase();
+        isCatMatch = pCat === targetCat || pKind === targetCat || resolved === targetCat;
+      }
 
       if (!isCatMatch) return false;
 

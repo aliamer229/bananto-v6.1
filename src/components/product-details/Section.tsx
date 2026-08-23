@@ -38,17 +38,17 @@ export function SpecTable({
   if (rows.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-border">
       <dl className="divide-y divide-border">
         {rows.map((row, index) => (
           <div
             key={`${row.label}-${index}`}
             className="flex flex-col gap-1 px-4 py-3 odd:bg-muted/30 sm:flex-row sm:items-baseline sm:gap-4"
           >
-            <dt className="text-[13px] font-medium text-muted-foreground sm:w-2/5 sm:shrink-0">
+            <dt className="text-[13px] font-medium text-muted-foreground break-words sm:w-2/5 sm:shrink-0">
               {row.label}
             </dt>
-            <dd className="text-[14px] font-semibold text-foreground sm:w-3/5">
+            <dd className="min-w-0 text-[14px] font-semibold text-foreground break-words [overflow-wrap:anywhere] sm:w-3/5">
               <span>{row.value}</span>
               {row.unit ? (
                 // Unit symbols are international notation — never translated.
@@ -57,7 +57,7 @@ export function SpecTable({
                 </span>
               ) : null}
               {row.note ? (
-                <span className="mt-0.5 block text-[12px] font-normal text-muted-foreground">
+                <span className="mt-0.5 block text-[12px] font-normal text-muted-foreground break-words">
                   {row.note}
                 </span>
               ) : null}
