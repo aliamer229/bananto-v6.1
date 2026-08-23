@@ -27,6 +27,11 @@
  * `order_delivery_items` is the single test, and nothing advances until every
  * expected slot has reached `otp_sent`/`completed` and no mapping remains.
  */
+import { d1All, d1First, d1Run } from "./d1.server";
+import { getOrder, saveOrder } from "./db.server";
+import { areAllOrderItemsDelivered } from "./orders.server";
+import { randomId } from "./crypto.server";
+import { withDeliveryDeadline } from "./order-completion.server";
 import { d1First } from "./d1.server";
 import { allExpectedDeliveryItemsDelivered } from "./digital-delivery-state";
 import { getDeliveryOrderState, getNextActionableQueuedOrder } from "./order-delivery-items.server";
@@ -100,6 +105,58 @@ export async function finalizeDeliveryIfComplete(
   if (!allExpectedDeliveryItemsDelivered(state.deliveryItems)) {
     return { finished: false, order };
   }
+
+  /*
+    Stamp when the last item actually went out and when the order will close
+    itself. Storing both makes the state legible — the customer's screen can
+    say "completes in N minutes", and the auto-completion pass does not have to
+    re-derive the clock from item timestamps on every read.
+  */
+  const next: Order = withDeliveryDeadline(
+    {
+      ...order,
+      status: "awaiting_customer_confirmation",
+      updatedAt: now,
+      events: [
+        ...(order.events ?? []),
+        { type: "delivery_completed", at: now, payload: { by: adminId } },
+      ],
+    },
+    now,
+  );
+
+  await saveOrder(next);
+
+  // Leave the preparation queue. Everyone behind this order moves up.
+  try {
+    await d1Run(
+      `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
+      now,
+      order.id,
+    );
+  } catch (err) {
+    console.warn("[order-delivery:queue_release_failed]", err);
+  }
+
+  try {
+    await d1Run(
+      `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
+       VALUES (?, ?, ?, 'awaiting_customer_confirmation', ?, 'اكتمل تسليم جميع عناصر الطلب، بانتظار تأكيد العميل', ?)`,
+      randomId("osh"),
+      order.id,
+      order.status,
+      adminId,
+      now,
+    );
+  } catch (err) {
+    console.warn("[order-delivery:history_failed]", err);
+  }
+
+  return {
+    finished: true,
+    order: next,
+    next: await getNextQueuedOrder(order.id, adminId),
+  };
   console.error("[order-delivery:terminal_rows_without_transition]", {
     orderId: order.id,
     adminId,

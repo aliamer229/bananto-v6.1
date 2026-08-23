@@ -124,3 +124,67 @@ describe("import parser image handling", () => {
     expect(result.data["bannerImages"]).toEqual(["https://cdn.example/banner.jpg"]);
   });
 });
+
+describe("the four image fields are independent", () => {
+  const base = "schema_version=1\nname=Test Game\nplatform=switch1\n";
+
+  /**
+   * The screenshot that started this: all four image boxes in the product
+   * editor showing a "?". The value was not a picture and not empty — it was a
+   * string the browser could not load, handed straight to `<img src>`, so it
+   * painted the broken-image glyph. `?` resolves against the current page, so
+   * the browser fetched the HTML document and failed to decode it.
+   */
+  it("never stores a value that only looks like a URL", () => {
+    for (const junk of ["?", "??", "-", "n/a", "N/A", "[object Object]", "undefined", "null"]) {
+      const result = parseGameImport(`${base}front_cover_image=${junk}\n`);
+      expect(result.data["cartridgeImage"], `expected ${junk} to be dropped`).toBeUndefined();
+    }
+  });
+
+  it("keeps the good fields when one is broken", () => {
+    const result = parseGameImport(
+      `${base}front_cover_image=?\n` +
+        `nintendo_card_image=https://cdn.example/square.jpg\n` +
+        `front_cover_hires_url=[object Object]\n` +
+        `cover_image=https://cdn.example/cover.jpg\n`,
+    );
+    // The two broken ones are dropped…
+    expect(result.data["cartridgeImage"]).toBeUndefined();
+    expect(result.data["coverHiResImage"]).toBeUndefined();
+    // …and the two good ones are untouched.
+    expect(result.data["nintendoCardImage"]).toBe("https://cdn.example/square.jpg");
+    expect(result.data["coverImage"]).toBe("https://cdn.example/cover.jpg");
+    // Nothing about it blocks the import.
+    expect(result.errors.filter((e) => e.severity === "error")).toHaveLength(0);
+  });
+
+  it("warns once per broken field, naming the field", () => {
+    const result = parseGameImport(
+      `${base}front_cover_image=?\nfront_cover_hires_url=[object Object]\n`,
+    );
+    const warned = result.errors.filter((e) => e.severity === "warning").map((e) => e.key);
+    expect(warned).toContain("front_cover_image");
+    expect(warned).toContain("front_cover_hires_url");
+  });
+
+  it("no image field ever receives another field's value", () => {
+    const result = parseGameImport(
+      `${base}front_cover_image=https://cdn.example/front.jpg\n` +
+        `nintendo_card_image=https://cdn.example/square.jpg\n` +
+        `front_cover_hires_url=https://cdn.example/hi.png\n` +
+        `cover_image=https://cdn.example/cover.jpg\n`,
+    );
+    expect(result.data["cartridgeImage"]).toBe("https://cdn.example/front.jpg");
+    expect(result.data["nintendoCardImage"]).toBe("https://cdn.example/square.jpg");
+    expect(result.data["coverHiResImage"]).toBe("https://cdn.example/hi.png");
+    expect(result.data["coverImage"]).toBe("https://cdn.example/cover.jpg");
+    const values = [
+      result.data["cartridgeImage"],
+      result.data["nintendoCardImage"],
+      result.data["coverHiResImage"],
+      result.data["coverImage"],
+    ];
+    expect(new Set(values).size).toBe(4);
+  });
+});

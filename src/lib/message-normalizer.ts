@@ -1,3 +1,4 @@
+import { DELIVERY_OTP_TTL_MINUTES } from "./delivery-otp";
 import type { ChatMessage, MessageKind } from "./types";
 
 /**
@@ -266,12 +267,21 @@ export function normalizeMessage(raw: unknown, threadIdFallback?: string): Norma
         .filter(Boolean);
     }
 
+    /*
+      A verification code is good for an hour. The fallback here was 10, so any
+      card sent before the server started stamping the lifetime told the
+      customer their code died fifty minutes early — the "why does it say 10
+      minutes" complaint. The default is now the one TTL the whole delivery
+      flow uses; `body.expiresAt` remains the authority when it is present.
+    */
     const expiresInMinutes =
-      typeof parsedBody.expiresInMinutes === "number" && !isNaN(parsedBody.expiresInMinutes)
+      typeof parsedBody.expiresInMinutes === "number" &&
+      !isNaN(parsedBody.expiresInMinutes) &&
+      parsedBody.expiresInMinutes > 0
         ? parsedBody.expiresInMinutes
-        : typeof parsedBody.expires_in_minutes === "number"
+        : typeof parsedBody.expires_in_minutes === "number" && parsedBody.expires_in_minutes > 0
           ? parsedBody.expires_in_minutes
-          : 10;
+          : DELIVERY_OTP_TTL_MINUTES;
 
     const normalizedBody: NormalizedMessageBody = {
       ...parsedBody,

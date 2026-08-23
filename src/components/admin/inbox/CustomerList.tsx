@@ -17,6 +17,28 @@ import {
 } from "lucide-react";
 import { ADMIN_FINISHED_ORDER_STATUSES, Thread, Order } from "@/lib/types";
 import { InboxFilter, FilterOption } from "./types";
+import {
+  ORDER_ITEM_TITLE_UNAVAILABLE_AR,
+  orderItemTitleOf,
+  orderTitleSummary,
+  resolveOrderTitles,
+  unresolvedTitleIds,
+} from "@/lib/order-item-title";
+
+/**
+ * Log an order whose items cannot be named — once, with ids only.
+ *
+ * An order item carries the account it was delivered with, so nothing but the
+ * ids goes to the console.
+ */
+const reportedUnnamedOrders = new Set<string>();
+function reportUnnamedItems(orderId: string, items: unknown) {
+  if (reportedUnnamedOrders.has(orderId)) return;
+  const unresolved = unresolvedTitleIds(resolveOrderTitles(items as never));
+  if (unresolved.length === 0) return;
+  reportedUnnamedOrders.add(orderId);
+  console.warn("[inbox:order_items_unnamed]", { orderId, unresolved });
+}
 
 interface CustomerListProps {
   threads: Thread[];
@@ -224,6 +246,9 @@ export function CustomerList({
       const matchPreview = t.lastMessagePreview?.toLowerCase().includes(q);
       const matchOrderId = t.orderId?.toLowerCase().includes(q);
       const matchOrderCode = linkedOrder?.code?.toLowerCase().includes(q);
+      const matchItems = linkedOrder?.items?.some((i) =>
+        orderItemTitleOf(i).toLowerCase().includes(q),
+      );
       const matchItems = linkedOrder?.items?.some((i) => i.title.toLowerCase().includes(q));
 
       return (
@@ -461,6 +486,17 @@ export function CustomerList({
                 ? index + 1
                 : null;
 
+            /*
+              The name comes from the order's own items and nowhere else. This
+              used to end `?? t.subject ?? "منتج رقمي"`, so a queue row whose
+              order had not loaded showed the conversation's subject line, or a
+              product that reads like a real one called "منتج رقمي" — an admin
+              could not tell a game named that from a lookup that failed.
+            */
+            const productName = linkedOrder
+              ? orderTitleSummary(linkedOrder.items)
+              : ORDER_ITEM_TITLE_UNAVAILABLE_AR;
+            if (linkedOrder) reportUnnamedItems(linkedOrder.id, linkedOrder.items);
             // Product Title Extraction
             const productName =
               linkedOrder?.items

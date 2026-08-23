@@ -61,6 +61,7 @@ import type {
 } from "@/lib/types";
 import { cdnImage } from "@/lib/img";
 import { accountCardTypeFor } from "@/lib/account-cards";
+import { isEmptyMessage, readMessageRow } from "@/lib/chat-message-row";
 import AccountCard from "@/components/chat/AccountCard";
 import { DigitalOrderCard } from "@/components/chat/DigitalOrderCard";
 import { RatingCard } from "@/components/chat/RatingCard";
@@ -89,6 +90,56 @@ export type DisplayMessage = {
   status?: MessageStatus;
   uploadProgress?: number;
 };
+
+/**
+ * Reads the underlying wire fields off a rendered message.
+ *
+ * A `DisplayMessage` carries `sender`/`text`/`type`/`payload` — the server's
+ * `kind`, `body` and `senderRole` live *inside* `payload`. Code that read
+ * `message.kind` or `message.body` directly got `undefined` for every message,
+ * so the checks built on them ("has the customer sent proof?", "have
+ * credentials gone out?") were permanently false and the suggestion chips were
+ * always the generic set.
+ *
+ * Everything is defensive: a malformed or truncated payload yields empty
+ * values rather than throwing, because one bad row must never take the
+ * conversation down.
+ */
+function readWireMessage(message: DisplayMessage): {
+  kind: string;
+  body: Record<string, unknown>;
+  senderRole: "user" | "admin" | "assistant" | "system";
+  text: string;
+} {
+  const payload =
+    message && typeof message.payload === "object" && message.payload
+      ? (message.payload as Record<string, unknown>)
+      : {};
+  const body =
+    typeof payload["body"] === "object" && payload["body"]
+      ? (payload["body"] as Record<string, unknown>)
+      : {};
+  const rawRole = typeof payload["senderRole"] === "string" ? String(payload["senderRole"]) : "";
+  const senderRole: "user" | "admin" | "assistant" | "system" =
+    rawRole === "user" || rawRole === "admin" || rawRole === "assistant" || rawRole === "system"
+      ? rawRole
+      : message?.sender === "user"
+        ? "user"
+        : "assistant";
+  const text =
+    typeof body["text"] === "string"
+      ? body["text"]
+      : typeof message?.text === "string"
+        ? message.text
+        : "";
+  return {
+    kind:
+      typeof payload["kind"] === "string" ? String(payload["kind"]) : String(message?.type ?? ""),
+    body,
+    senderRole,
+    text,
+  };
+}
 
 const priceOf = (product: Product) => Number(product.price ?? 0);
 
@@ -642,6 +693,14 @@ export default function ChatView({
   const [selectedNav, setSelectedNav] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | undefined>(initialThreadId);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
+  /**
+   * Set when the conversation could not be loaded, so the screen can say so
+   * instead of looking like an empty chat. Bumping `threadReloadKey` re-runs
+   * the fetch effect, which is what makes "إعادة المحاولة" a real round trip
+   * to the backend rather than a re-render of stale state.
+   */
+  const [threadLoadError, setThreadLoadError] = useState<string | null>(null);
+  const [threadReloadKey, setThreadReloadKey] = useState(0);
   const activeAbortControllerRef = useRef<AbortController | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [recordingState, setRecordingState] = useState<"idle" | "recording" | "paused">("idle");
@@ -673,18 +732,30 @@ export default function ChatView({
 
   /**
    * Open the conversation that belongs to an order arriving in the URL.
+   *
+   * The URL *seeds* the conversation; it does not own it. Both effects below
+   * used to re-apply their parameter on every run, which meant that from
+   * `/chat?orderId=…` the customer could not leave: picking another
+   * conversation in the history drawer, or pressing "بدء محادثة جديدة", was
+   * undone on the next render and snapped them straight back into the order
+   * thread. Each parameter is therefore consumed exactly once, and after that
+   * the customer's own navigation decides which conversation is open.
    */
   const resolvedOrderThreadRef = useRef<string | null>(null);
+  const consumedThreadParamRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (initialThreadId && threadId !== initialThreadId) {
+    if (!initialThreadId) return;
+    if (consumedThreadParamRef.current === initialThreadId) return;
+    consumedThreadParamRef.current = initialThreadId;
+    if (threadId !== initialThreadId) {
       setThreadId(initialThreadId);
     }
   }, [initialThreadId, threadId]);
 
   useEffect(() => {
     if (!initialOrderId) return;
-    if (resolvedOrderThreadRef.current === initialOrderId && threadId) return;
+    if (resolvedOrderThreadRef.current === initialOrderId) return;
 
     const fromOrder = orders.find((order) => order.id === initialOrderId)?.threadId;
     const fromThreads = threads.find((thread) => thread.orderId === initialOrderId)?.id;
@@ -714,9 +785,26 @@ export default function ChatView({
 
   /**
    * A signed-in member always talks in a real conversation.
+   *
+   * Only while nothing else has claimed the slot: a URL seed that has not been
+   * applied yet owns the first conversation, and "بدء محادثة جديدة" means the
+   * customer wants a blank one — re-opening their existing automated thread
+   * would silently undo the button they just pressed.
    */
+  const startedBlankChatRef = useRef(false);
+
   useEffect(() => {
-    if (!user || threadId || initialOrderId || initialThreadId) return;
+    if (!user || threadId) return;
+    /*
+      A URL that names a conversation owns the slot — including the render or
+      two before its `setThreadId` lands. Gating on "has the seed resolved yet"
+      instead looked equivalent but raced: with a warm query cache both effects
+      run in the same commit, the seed sets its ref synchronously, and this
+      fallback's `setThreadId` was simply the last write — so `/chat?
+      initialOrderId=…` opened the automated conversation instead of the order.
+    */
+    if (initialOrderId || initialThreadId) return;
+    if (startedBlankChatRef.current) return;
     const existing = threads.find(
       (thread) =>
         thread.chatType === "AUTOMATED_SUPPORT" && thread.status === "open" && !thread.orderId,
@@ -818,10 +906,27 @@ export default function ChatView({
   const [deliveryBusy, setDeliveryBusy] = useState(false);
   const [proofSentItems, setProofSentItems] = useState<Record<string, boolean>>({});
 
-  // Map raw ChatMessage to DisplayMessage
-  const mapServerMessage = useCallback((message: ChatMessage): DisplayMessage => {
+  /**
+   * Maps one wire row to the shape the bubbles render from.
+   *
+   * Returns `null` for a row that is not an object at all; everything else is
+   * repaired by {@link normalizeWireMessage} first, so no branch below can
+   * throw on a missing `body` or a string where an object was expected.
+   */
+  const mapServerMessage = useCallback((raw: ChatMessage): DisplayMessage | null => {
+    if (!raw || typeof raw !== "object") return null;
+    // Repair the shape first. Live rows arrive straight off the SSE stream and
+    // never passed through the store's reader, so this is not redundant.
+    const message = readMessageRow({ doc: raw, rowId: raw.id, threadId: raw.threadId });
+    /*
+      A row that could not be read at all comes back repaired but empty — no
+      text, no attachment, no card — and rendering it would put a blank bubble
+      in the conversation.
+    */
+    if (isEmptyMessage(message)) return null;
     const mine = message.senderRole === "user";
-    const imageUrl = message.body?.["imageUrl"] as string | undefined;
+    const imageUrl =
+      typeof message.body["imageUrl"] === "string" ? message.body["imageUrl"] : undefined;
 
     if (message.body?.["type"] === "digital_order_card" || message.kind === "digital_order_card") {
       return {
@@ -882,16 +987,50 @@ export default function ChatView({
     };
   }, []);
 
+  /**
+   * Maps a whole page of rows.
+   *
+   * One unrenderable row must not cost the customer the conversation, so each
+   * is mapped inside its own guard: a failure drops that single bubble and logs
+   * its id, and the rest of the thread still paints. Nothing about the row's
+   * contents is logged — a message body can hold credentials.
+   */
+  const mapServerMessages = useCallback(
+    (rows: readonly ChatMessage[] | null | undefined): DisplayMessage[] => {
+      if (!Array.isArray(rows)) return [];
+      const mapped: DisplayMessage[] = [];
+      rows.forEach((row, index) => {
+        try {
+          const display = mapServerMessage(row);
+          if (!display) {
+            // Log the id only — a message body can carry account credentials.
+            console.warn("[chat:message_unreadable]", { id: row?.id ?? null, index });
+            return;
+          }
+          mapped.push(display);
+        } catch (err) {
+          console.warn(
+            "[chat:message_skipped]",
+            { id: (row as { id?: unknown } | null)?.id ?? null, index },
+            err,
+          );
+        }
+      });
+      return mapped;
+    },
+    [mapServerMessage],
+  );
+
   const reloadThread = useCallback(async () => {
     if (!threadId) return;
     const res = await api.threadMessages(threadId, { limit: 30 });
-    setServerMessages(res.messages.map(mapServerMessage));
+    setServerMessages(mapServerMessages(res.messages));
     setHasMore(res.hasMore ?? false);
     setNextCursor(res.nextCursor ?? null);
     if ((res as any).queueMetrics) {
       setLiveQueueMetrics((res as any).queueMetrics);
     }
-  }, [threadId, mapServerMessage]);
+  }, [threadId, mapServerMessages]);
 
   /** Upload the member's sign-in screenshot and attach it to the order line. */
   const submitLoginProof = async (file: File) => {
@@ -961,6 +1100,12 @@ export default function ChatView({
       });
       toast.success(tr("✅ تم استلام الطلب وتأكيده بنجاح!"));
       await reloadThread();
+      /*
+        `currentOrder` is derived from the orders query, not local state, so
+        there is nothing to set — invalidating is what refreshes it. The old
+        `setCurrentOrder(res.order)` call referenced a setter that does not
+        exist and threw the moment a customer pressed "تم استلام الطلب".
+      */
       void queryClient.invalidateQueries({ queryKey: ["orders"] });
       void queryClient.invalidateQueries({ queryKey: ["order", currentOrder.id] });
     } catch (err: any) {
@@ -1030,6 +1175,7 @@ export default function ChatView({
     setHighlightedMessageId(null);
     setUnreadCountBelow(0);
     setShowScrollBottomPill(false);
+    setThreadLoadError(null);
 
     if (supportCountdownTimerRef.current) {
       clearInterval(supportCountdownTimerRef.current);
@@ -1051,7 +1197,7 @@ export default function ChatView({
         const res = await api.threadMessages(threadId, { limit: 20, signal: controller.signal });
         if (controller.signal.aborted) return;
 
-        setServerMessages(res.messages.map(mapServerMessage));
+        setServerMessages(mapServerMessages(res.messages));
         setHasMore(res.hasMore ?? false);
         setNextCursor(res.nextCursor ?? null);
         if ((res as any).queueMetrics) {
@@ -1066,7 +1212,10 @@ export default function ChatView({
         if (err?.name === "AbortError" || controller.signal.aborted) {
           return; // Aborted request, ignore safely
         }
-        console.error("Failed to fetch initial thread messages", err);
+        // Say so. An empty message list is indistinguishable from a brand new
+        // conversation, which is how a failed load used to read to the customer.
+        console.error("[chat:thread_load_failed]", { threadId }, err);
+        setThreadLoadError(String(err?.message || err) || "unknown_error");
       } finally {
         if (!controller.signal.aborted) {
           setIsThreadLoading(false);
@@ -1089,7 +1238,7 @@ export default function ChatView({
       }
       clearInterval(presenceInterval);
     };
-  }, [threadId, mapServerMessage]);
+  }, [threadId, threadReloadKey, mapServerMessages]);
 
   useChatRealtime({
     threadId: threadId || null,
@@ -1104,6 +1253,8 @@ export default function ChatView({
           : -1;
 
         const mapped = mapServerMessage(rawMsg);
+        // An unreadable live row is dropped, not rendered as a broken bubble.
+        if (!mapped) return prev;
         if (existingTempIndex !== -1) {
           const copy = [...prev];
           copy[existingTempIndex] = { ...mapped, status: "sent" };
@@ -1156,7 +1307,7 @@ export default function ChatView({
       // Drop results if user switched threads while loading older messages
       if (threadId !== targetThreadId) return;
 
-      const olderMapped = res.messages.map(mapServerMessage);
+      const olderMapped = mapServerMessages(res.messages);
 
       setServerMessages((prev) => [...olderMapped, ...prev]);
       setHasMore(res.hasMore ?? false);
@@ -1434,15 +1585,15 @@ export default function ChatView({
             },
             viewHistory: viewHistoryForSupport(),
           });
+          const echoed = mapServerMessage(res.message);
           setServerMessages((prev) =>
             prev.map((m) =>
-              m.clientMessageId === clientMessageId
-                ? { ...mapServerMessage(res.message), status: "sent" }
-                : m,
+              m.clientMessageId === clientMessageId && echoed ? { ...echoed, status: "sent" } : m,
             ),
           );
-          if (res.assistant) {
-            setServerMessages((prev) => [...prev, mapServerMessage(res.assistant!)]);
+          const assistantReply = res.assistant ? mapServerMessage(res.assistant) : null;
+          if (assistantReply) {
+            setServerMessages((prev) => [...prev, assistantReply]);
           }
           void queryClient.invalidateQueries({ queryKey: ["threads"] });
           return;
@@ -1594,6 +1745,7 @@ export default function ChatView({
   };
 
   const handleSwitchToAutomatedSupport = async () => {
+    startedBlankChatRef.current = false;
     if (!user) {
       setThreadId(undefined);
       return;
@@ -1723,32 +1875,47 @@ export default function ChatView({
   const isAr = lang === "ar";
   const isRtl = lang === "ar" || lang === "ku";
 
-  const displayName = user?.name?.trim() || "";
+  /*
+    The session is fetched, not server-rendered, so the greeting differs
+    between the SSR pass (no user yet) and the first client render (user in
+    cache) — React reported "Hydration failed because the server rendered text
+    didn't match the client" and threw the whole chat tree away to re-render
+    it. Holding the personalised name back until after mount makes the first
+    client render identical to the server's, and the name appears a tick later
+    without a mismatch.
+  */
+  const [isHydrated, setIsHydrated] = useState(false);
+  useEffect(() => setIsHydrated(true), []);
+
+  const displayName = isHydrated ? user?.name?.trim() || "" : "";
   const firstName = displayName ? displayName.split(" ")[0] : isAr ? "بك" : "there";
 
   const isAutomatedThread = !threadId || currentThread?.chatType === "AUTOMATED_SUPPORT";
 
   const activeSuggestions = useMemo(() => {
     const lastMsg = messages[messages.length - 1];
-    const lastText = typeof lastMsg?.body?.["text"] === "string" ? lastMsg.body["text"] : "";
-    const lastRole = lastMsg?.senderRole;
+    const last = lastMsg ? readWireMessage(lastMsg) : null;
+    const lastText = last?.text ?? "";
+    const lastRole = last?.senderRole;
 
-    const hasSentProof = messages.some(
-      (m) =>
+    const hasSentProof = messages.some((message) => {
+      const m = readWireMessage(message);
+      return (
         m.kind === "proof" ||
         m.kind === "login_proof" ||
-        (m.body?.["imageUrl"] && m.senderRole === "user") ||
-        (typeof m.body?.["text"] === "string" && m.body["text"].includes("إثبات")),
-    );
+        (Boolean(m.body["imageUrl"]) && m.senderRole === "user") ||
+        (m.senderRole === "user" && m.text.includes("إثبات"))
+      );
+    });
 
-    const hasCredsSent = messages.some(
-      (m) =>
+    const hasCredsSent = messages.some((message) => {
+      const m = readWireMessage(message);
+      return (
         m.kind === "item_credentials" ||
         m.kind === "credentials" ||
-        (m.senderRole === "admin" &&
-          typeof m.body?.["text"] === "string" &&
-          m.body["text"].includes("بيانات الحساب")),
-    );
+        (m.senderRole === "admin" && m.text.includes("بيانات الحساب"))
+      );
+    });
 
     const dynamicChips = getSmartCustomerSuggestions({
       chatType:
@@ -1758,6 +1925,11 @@ export default function ChatView({
           : isAutomatedThread
             ? "AUTOMATED_SUPPORT"
             : "GENERAL_SUPPORT"),
+      // `activeOrderId` is the strictly-isolated id resolved above. A rename
+      // left a `threadOrderId` here that was never declared, and because this
+      // memo runs on every render the ReferenceError took the whole page down
+      // before it could paint — "Error: threadOrderId is not defined".
+      orderId: activeOrderId,
       orderId: activeOrderId || currentThread?.orderId,
       orderStatus: currentOrder?.status,
       paymentStatus: currentOrder?.paymentStatus,
@@ -1881,6 +2053,8 @@ export default function ChatView({
           )}
           <button
             onClick={() => setShowHistory(true)}
+            // The label is icon-only below `sm`, so it needs an accessible name.
+            aria-label={tr("المحادثات السابقة")}
             className="flex h-9 items-center gap-1.5 rounded-full border border-white/30 bg-card/80 px-3 text-[12px] font-bold text-[var(--ink)] shadow-xs transition-colors hover:bg-[var(--surface-3)] cursor-pointer"
             dir={isRtl ? "rtl" : "ltr"}
           >
@@ -2210,7 +2384,25 @@ export default function ChatView({
 
         {/* Dynamic Chat Messages */}
         <div className="flex flex-col gap-3">
-          {isThreadLoading ? (
+          {threadLoadError && !isThreadLoading ? (
+            <div className="mx-auto my-8 flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl border border-[var(--line)] bg-card p-5 text-center">
+              <span className="text-2xl">⚠️</span>
+              <p className="text-sm font-bold text-[var(--ink)]">{tr("تعذر تحميل المحادثة")}</p>
+              <p className="text-xs font-medium text-[var(--muted-ink)]">
+                {tr("لم نتمكن من جلب الرسائل من الخادم. تحقق من الاتصال ثم أعد المحاولة.")}
+              </p>
+              <button
+                onClick={() => {
+                  // Force a fresh request; never re-show whatever was cached.
+                  setThreadLoadError(null);
+                  setThreadReloadKey((k) => k + 1);
+                }}
+                className="rounded-xl bg-[var(--ink)] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[var(--ink-strong)] cursor-pointer"
+              >
+                {tr("إعادة المحاولة")}
+              </button>
+            </div>
+          ) : isThreadLoading ? (
             <div className="flex flex-col gap-4 py-8">
               <div className="flex items-center justify-center gap-2 text-xs font-bold text-[var(--muted-ink)]">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--ink)] border-t-transparent" />
@@ -2999,6 +3191,7 @@ export default function ChatView({
                   {/* 5. New Chat */}
                   <button
                     onClick={() => {
+                      startedBlankChatRef.current = true;
                       setThreadId(undefined);
                       setLocalMessages([]);
                       setLiveQueueMetrics(null);
@@ -3118,6 +3311,7 @@ export default function ChatView({
                       orders={orders}
                       onSend={(order) => {
                         setSelectedNav(null);
+                        startedBlankChatRef.current = false;
                         setThreadId(order.threadId);
                       }}
                     />
@@ -3212,6 +3406,7 @@ export default function ChatView({
                         }}
                         onClick={() => {
                           setShowHistory(false);
+                          startedBlankChatRef.current = false;
                           setThreadId(thread.id);
                         }}
                         className={`group flex w-full items-center justify-between rounded-xl border p-4 text-right shadow-xs transition-colors cursor-pointer ${

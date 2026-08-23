@@ -834,6 +834,13 @@ export function areAllOrderItemsDelivered(order: Order): boolean {
 }
 
 /**
+ * Auto-completion moved to `order-completion.server.ts`, which owns every way
+ * an order can finish — the admin's button, the customer's confirmation and
+ * the hour-long timer — so they cannot disagree and none of them can run twice.
+ *
+ * Re-exported here because the API routes already import it from this module.
+ */
+export { evaluateOrderAutoCompletion } from "./order-completion.server";
  * Evaluate only the explicit server deadline written when the final delivery
  * item reaches otp_sent. No view time, credential timestamp, or browser timer
  * can complete a digital order.

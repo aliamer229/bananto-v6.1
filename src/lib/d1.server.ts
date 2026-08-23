@@ -1144,6 +1144,20 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE orders ADD COLUMN payment_reference TEXT`,
   `ALTER TABLE orders ADD COLUMN source TEXT`,
   `ALTER TABLE orders ADD COLUMN created_by TEXT`,
+  /*
+    The catalogue lives in a JSON document, so a read-then-write duplicate check
+    in the API can be raced by two concurrent saves. This table is the atomic
+    half: one row per product identity, with the uniqueness the JSON blob
+    cannot enforce. It holds keys only — the product itself stays where it is.
+  */
+  `CREATE TABLE IF NOT EXISTS product_identity (
+    product_id TEXT PRIMARY KEY,
+    normalized_title TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    title TEXT,
+    updated_at TEXT NOT NULL)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS product_identity_key_idx
+     ON product_identity (normalized_title, platform)`,
   `CREATE INDEX IF NOT EXISTS orders_cancelled_idx ON orders (status, cancelled_at)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS orders_idempotency_idx ON orders (idempotency_key) WHERE idempotency_key IS NOT NULL`,
 ];
@@ -1645,6 +1659,7 @@ export function ensureCouponsSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
+const RUNTIME_SCHEMA_VERSION = 16;
 const RUNTIME_SCHEMA_VERSION = 15;
 
 async function runSchemaStatements(
@@ -1720,20 +1735,68 @@ export function ensureSchema(): Promise<void> {
       }
       await runSchemaStatements(db, remainingPatches, true);
 
-      // Clean up legacy corrupt/fake orders in D1
+      /*
+        Report the suspect orders. Do not delete them.
+
+        This block used to `DELETE FROM orders` on every schema bump for any
+        row whose document merely *contained* the substring "NaN" — which a
+        perfectly good order can, in a title, a URL or an encoded image. A paid
+        order is not something to remove on a substring match at boot, and once
+        it is gone there is nothing left to investigate.
+
+        The read paths keep degraded orders visible now (see `isOrderReadable`)
+        and every surface renders what is missing rather than inventing it, so
+        a suspect order is something staff can see and fix. Here it is only
+        counted and logged.
+      */
       try {
-        await db
+        const suspect = await db
           .prepare(
-            `DELETE FROM orders 
-             WHERE id LIKE 'legacy_ord_%' 
-                OR code IN ('DP-Z4DPYR', 'DP-9AQL75', 'DP-JAK7PU')
-                OR doc LIKE '%NaN%'
+            `SELECT id, code FROM orders
+             WHERE id LIKE 'legacy_ord_%'
                 OR doc LIKE '%"title":"undefined"%'
-                OR doc LIKE '%"title":"null"%'`,
+                OR doc LIKE '%"title":"null"%'
+             LIMIT 50`,
+          )
+          .all();
+        const rows = suspect.results ?? [];
+        if (rows.length > 0) {
+          console.warn("[d1:suspect_orders_kept]", {
+            count: rows.length,
+            ids: rows.map((row) => String((row as D1Row)["id"] ?? "")),
+          });
+        }
+      } catch (err) {
+        console.warn("[d1:suspect_order_audit_skipped]", err);
+      }
+
+      /*
+        Release queue rows for orders that are no longer the admin's problem.
+
+        The preparation queue should hold only orders still waiting on staff.
+        Every transition releases its own row now, but databases carry rows
+        from before that was true: a completed order still sitting in the queue
+        inflates everybody else's "your turn is #N" and keeps a finished order
+        in the admin's list forever. Marking them released is reversible and
+        removes nothing.
+      */
+      try {
+        const released = await db
+          .prepare(
+            `UPDATE order_queue
+             SET status = 'completed',
+                 updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+             WHERE status IN ('waiting', 'processing')
+               AND order_id IN (
+                 SELECT id FROM orders
+                 WHERE status IN ('completed', 'cancelled', 'awaiting_customer_confirmation')
+               )`,
           )
           .run();
+        const changes = Number(released.meta?.changes ?? 0);
+        if (changes > 0) console.info("[d1:queue_released_stale_rows]", { changes });
       } catch (err) {
-        console.warn("[d1:cleanup_corrupt_orders_skipped]", err);
+        console.warn("[d1:queue_cleanup_skipped]", err);
       }
 
       await db

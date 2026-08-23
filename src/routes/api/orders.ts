@@ -29,6 +29,7 @@ import { requireUser } from "@/lib/session.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import type { Address, Order, OrderItem } from "@/lib/types";
 import { redactMessageForMember, redactOrderHistoryForMember } from "@/lib/redaction";
+import { completeOrder } from "@/lib/order-completion.server";
 import { isOwnUploadUrl } from "@/lib/uploads";
 
 function redactItems(items: OrderItem[]) {
@@ -290,6 +291,19 @@ export const Route = createFileRoute("/api/orders")({
             }
           }
 
+            /*
+              Same owner as the admin button and the hour-long timer, so the
+              three cannot write different versions of "completed" — and a
+              customer who taps twice does not get two completion cards and two
+              rating requests.
+            */
+            const confirmed = await completeOrder(order, {
+              by: user.id,
+              role: "USER",
+              note: "تم تأكيد الاستلام من قبل العميل",
+              message: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
+            });
+            return json({ order: redactOrder(confirmed.order) });
           if (data.action === "report_delivery_issue") {
             if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
             try {
