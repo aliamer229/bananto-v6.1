@@ -53,6 +53,11 @@ const statusLabels: Record<OrderStatus, { label: string; color: string; icon: an
     color: "bg-teal-500/10 text-teal-700 border-teal-500/20",
     icon: CheckCircle2,
   },
+  delivery_issue: {
+    label: "مشكلة تسليم",
+    color: "bg-red-500/10 text-red-700 border-red-500/20",
+    icon: AlertTriangle,
+  },
   completed: {
     label: "مكتمل",
     color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
@@ -305,6 +310,7 @@ export function OrdersManagerView({ onNavigateToChat }: OrdersManagerViewProps) 
             { id: "processing", label: "قيد المعالجة" },
             { id: "delivering", label: "قيد التسليم" },
             { id: "awaiting_customer_confirmation", label: "بانتظار تأكيد العميل" },
+            { id: "delivery_issue", label: "مشكلة تسليم" },
             { id: "completed", label: "مكتمل" },
             { id: "cancelled", label: "ملغي" },
           ].map((tab) => (

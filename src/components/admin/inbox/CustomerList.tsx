@@ -15,7 +15,7 @@ import {
   Gamepad2,
   Package,
 } from "lucide-react";
-import { Thread, Order } from "@/lib/types";
+import { ADMIN_FINISHED_ORDER_STATUSES, Thread, Order } from "@/lib/types";
 import { InboxFilter, FilterOption } from "./types";
 
 interface CustomerListProps {
@@ -46,6 +46,7 @@ export function CustomerList({
     const map = new Map<string, Order>();
     for (const o of orders) {
       map.set(o.id, o);
+      if (o.code) map.set(o.code, o);
     }
     return map;
   }, [orders]);
@@ -82,9 +83,10 @@ export function CustomerList({
         t.chatType !== "AUTOMATED_SUPPORT";
 
       const linkedOrder = t.orderId ? orderMap.get(t.orderId) : undefined;
+      const isDeliveryIssue = linkedOrder?.status === "delivery_issue";
       const orderIsActive = linkedOrder
-        ? linkedOrder.status !== "completed" && linkedOrder.status !== "cancelled"
-        : true;
+        ? !ADMIN_FINISHED_ORDER_STATUSES.includes(linkedOrder.status)
+        : false;
       const orderIsCompleted = linkedOrder ? linkedOrder.status === "completed" : false;
 
       // 1. Digital Queue: Open, active digital order requiring preparation and delivery
@@ -95,7 +97,7 @@ export function CustomerList({
       }
 
       // 2. Open Tickets: Open human support & technical inquiries (not digital delivery queue)
-      if (t.status === "open" && !isClosed && !isDigitalOrder) {
+      if (t.status === "open" && !isClosed && (!isDigitalOrder || isDeliveryIssue)) {
         counts.open_tickets++;
       }
 
@@ -113,7 +115,7 @@ export function CustomerList({
       if (isDigitalOrder && orderIsActive && !isClosed) {
         counts.active_orders++;
       }
-      if (!isDigitalOrder && t.status === "open" && !isClosed) {
+      if ((!isDigitalOrder || isDeliveryIssue) && t.status === "open" && !isClosed) {
         counts.active_tickets++;
       }
       if (t.mode === "ORDER_PREPARATION") {
@@ -152,9 +154,10 @@ export function CustomerList({
         t.chatType !== "AUTOMATED_SUPPORT";
 
       const linkedOrder = t.orderId ? orderMap.get(t.orderId) : undefined;
+      const isDeliveryIssue = linkedOrder?.status === "delivery_issue";
       const orderIsActive = linkedOrder
-        ? linkedOrder.status !== "completed" && linkedOrder.status !== "cancelled"
-        : true;
+        ? !ADMIN_FINISHED_ORDER_STATUSES.includes(linkedOrder.status)
+        : false;
       const orderIsCompleted = linkedOrder ? linkedOrder.status === "completed" : false;
 
       // Filter check
@@ -166,7 +169,8 @@ export function CustomerList({
           matchesFilter = t.status === "open" && !isClosed && isDigitalOrder && orderIsActive;
           break;
         case "open_tickets":
-          matchesFilter = t.status === "open" && !isClosed && !isDigitalOrder;
+          matchesFilter =
+            t.status === "open" && !isClosed && (!isDigitalOrder || isDeliveryIssue);
           break;
         case "other_chats":
           matchesFilter = isClosed || (isDigitalOrder && orderIsCompleted);
@@ -183,7 +187,8 @@ export function CustomerList({
           matchesFilter = isDigitalOrder && orderIsActive && !isClosed;
           break;
         case "active_tickets":
-          matchesFilter = !isDigitalOrder && t.status === "open" && !isClosed;
+          matchesFilter =
+            (!isDigitalOrder || isDeliveryIssue) && t.status === "open" && !isClosed;
           break;
         case "order_preparation":
           matchesFilter = t.mode === "ORDER_PREPARATION";
@@ -219,9 +224,7 @@ export function CustomerList({
       const matchPreview = t.lastMessagePreview?.toLowerCase().includes(q);
       const matchOrderId = t.orderId?.toLowerCase().includes(q);
       const matchOrderCode = linkedOrder?.code?.toLowerCase().includes(q);
-      const matchItems = linkedOrder?.items?.some((i) =>
-        (i.productTitle || (i as any).title || "").toLowerCase().includes(q),
-      );
+      const matchItems = linkedOrder?.items?.some((i) => i.title.toLowerCase().includes(q));
 
       return (
         matchName || matchSubject || matchPreview || matchOrderId || matchOrderCode || matchItems
@@ -461,11 +464,10 @@ export function CustomerList({
             // Product Title Extraction
             const productName =
               linkedOrder?.items
-                ?.map((i) => i.productTitle || (i as any).title || (i as any).name)
+                ?.map((i) => i.title)
                 .filter(Boolean)
                 .join("، ") ||
-              (t.subject && !t.subject.startsWith("استفسار") ? t.subject : null) ||
-              "منتج رقمي";
+              "تعذر تحميل اسم المنتج من الطلب";
 
             // Status Definition
             const isResolved =

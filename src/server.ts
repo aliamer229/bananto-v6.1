@@ -1,5 +1,9 @@
 import { DurableObject } from "cloudflare:workers";
-import { processAutoScheduledTasks, processBotTrading } from "./lib/scheduled-jobs.server";
+import {
+  processAutoScheduledTasks,
+  processBotTrading,
+  processDigitalDeliveryMaintenance,
+} from "./lib/scheduled-jobs.server";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
@@ -285,12 +289,15 @@ export class ChatRealtimeDO extends DurableObject {
 export default {
   async scheduled(event: { scheduledTime: number; cron: string }, env: unknown, ctx: unknown) {
     publishCloudflareEnv(env);
+    // Keep the existing heavier maintenance cadence while running delivery
+    // deadlines minute-by-minute. Cloudflare emits a separate event for each
+    // matching cron, including at the 30-minute boundary.
+    const tasks =
+      event.cron === "* * * * *"
+        ? [processDigitalDeliveryMaintenance()]
+        : [processBotTrading(), processAutoScheduledTasks(), reconcileTelegramWebhook(true)];
     (ctx as { waitUntil: (p: Promise<any>) => void }).waitUntil(
-      Promise.all([
-        processAutoScheduledTasks(),
-        processBotTrading(),
-        reconcileTelegramWebhook(true),
-      ]),
+      Promise.all(tasks),
     );
   },
 

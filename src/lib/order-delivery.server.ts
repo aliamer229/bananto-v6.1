@@ -17,23 +17,19 @@
  *
  * ## Why this module exists
  *
- * There are two ways an admin sends a delivery item: the dedicated
- * `send_verification_code` action on the orders API, and an ordinary chat
- * message carrying an `item_verification_code` / `item_credentials` card
- * through `/api/chat` (which is what the account-tools modal actually uses).
- * Only the first knew how to finish an order, so finishing depended on which
- * button the admin happened to press. Both call in here now.
+ * Delivery cards are emitted only by the dedicated orders API. `/api/chat`
+ * rejects credential/OTP cards so a free-form message cannot bypass the
+ * normalized delivery-item state machine.
  *
  * ## "Last item" means last
  *
  * An order with three games is not finished when the first code goes out.
- * {@link areAllOrderItemsDelivered} is the single test, and nothing advances
- * until it is true.
+ * `order_delivery_items` is the single test, and nothing advances until every
+ * expected slot has reached `otp_sent`/`completed` and no mapping remains.
  */
-import { d1All, d1First, d1Run } from "./d1.server";
-import { getOrder, saveOrder } from "./db.server";
-import { areAllOrderItemsDelivered } from "./orders.server";
-import { randomId } from "./crypto.server";
+import { d1First } from "./d1.server";
+import { allExpectedDeliveryItemsDelivered } from "./digital-delivery-state";
+import { getDeliveryOrderState, getNextActionableQueuedOrder } from "./order-delivery-items.server";
 import type { Order } from "./types";
 
 export interface NextQueuedOrder {
@@ -64,32 +60,7 @@ export async function getNextQueuedOrder(
   excludeOrderId?: string,
   staffId?: string,
 ): Promise<NextQueuedOrder | undefined> {
-  const rows = await d1All<{ order_id: string; assigned_staff_id: string | null }>(
-    `SELECT order_id, assigned_staff_id FROM order_queue
-     WHERE status IN ('waiting', 'processing')
-     ORDER BY created_at ASC
-     LIMIT 25`,
-  );
-
-  for (const row of rows) {
-    if (excludeOrderId && row.order_id === excludeOrderId) continue;
-    // Do not steal a task another admin is already holding.
-    if (row.assigned_staff_id && staffId && row.assigned_staff_id !== staffId) continue;
-
-    const order = await getOrder(row.order_id);
-    if (!order) continue;
-    if (order.status === "completed" || order.status === "cancelled") continue;
-    if (order.status === "awaiting_customer_confirmation") continue;
-    if (areAllOrderItemsDelivered(order)) continue;
-
-    return {
-      orderId: order.id,
-      threadId: order.threadId,
-      code: order.code,
-      userName: order.userName,
-    };
-  }
-  return undefined;
+  return getNextActionableQueuedOrder(excludeOrderId, staffId);
 }
 
 /**
@@ -118,52 +89,23 @@ export async function finalizeDeliveryIfComplete(
     };
   }
 
-  if (!areAllOrderItemsDelivered(order)) {
+  /*
+   * Chat cards are not delivery state.  The legacy /api/chat path still calls
+   * this helper after a message, but a message must never promote an order.
+   * Only order_delivery_items (written by the dedicated server actions) can be
+   * terminal.  If the normalized flow already made the transition, the branch
+   * above handles the idempotent retry; otherwise this is a no-op.
+   */
+  const state = await getDeliveryOrderState(order);
+  if (!allExpectedDeliveryItemsDelivered(state.deliveryItems)) {
     return { finished: false, order };
   }
-
-  const next: Order = {
-    ...order,
-    status: "awaiting_customer_confirmation",
-    updatedAt: now,
-    events: [
-      ...(order.events ?? []),
-      { type: "delivery_completed", at: now, payload: { by: adminId } },
-    ],
-  };
-
-  await saveOrder(next);
-
-  // Leave the preparation queue. Everyone behind this order moves up.
-  try {
-    await d1Run(
-      `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-      now,
-      order.id,
-    );
-  } catch (err) {
-    console.warn("[order-delivery:queue_release_failed]", err);
-  }
-
-  try {
-    await d1Run(
-      `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-       VALUES (?, ?, ?, 'awaiting_customer_confirmation', ?, 'اكتمل تسليم جميع عناصر الطلب، بانتظار تأكيد العميل', ?)`,
-      randomId("osh"),
-      order.id,
-      order.status,
-      adminId,
-      now,
-    );
-  } catch (err) {
-    console.warn("[order-delivery:history_failed]", err);
-  }
-
-  return {
-    finished: true,
-    order: next,
-    next: await getNextQueuedOrder(order.id, adminId),
-  };
+  console.error("[order-delivery:terminal_rows_without_transition]", {
+    orderId: order.id,
+    adminId,
+    now,
+  });
+  return { finished: false, order };
 }
 
 /**

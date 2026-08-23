@@ -645,6 +645,22 @@ export const Route = createFileRoute("/api/chat")({
             return json({ success: true, thread: current });
           }
 
+          // Credentials and OTP are state transitions, not ordinary chat
+          // messages. Requiring the dedicated D1 action prevents a message
+          // body (or stale React state) from bypassing delivery_item_id.
+          if (
+            user.isAdmin &&
+            (data.kind === "item_credentials" || data.kind === "item_verification_code")
+          ) {
+            return json(
+              {
+                error: "delivery_action_required",
+                message: "استخدم أداة التسليم المرتبطة بـ delivery_item_id لإرسال الحساب أو OTP",
+              },
+              { status: 409 },
+            );
+          }
+
           // Reset user typing on send
           await chatRealtime.setTyping(
             current.id,
@@ -730,39 +746,9 @@ export const Route = createFileRoute("/api/chat")({
               console.warn("[chat:notify_user_failed]", err);
             }
 
-            /*
-              An admin can hand over a delivery item straight from the chat
-              composer (this is what the account-tools modal does), so the
-              end-of-delivery transition has to happen here too — not only in
-              the dedicated orders action. Otherwise whether an order ever
-              finished depended on which button the admin pressed.
-            */
-            let orderFinished = false;
-            let nextOrder: unknown;
-            const isDeliveryCard =
-              message.kind === "item_verification_code" || message.kind === "item_credentials";
-            if (isDeliveryCard && current.orderId) {
-              try {
-                const [{ finalizeDeliveryIfComplete }, { getOrder }] = await Promise.all([
-                  import("@/lib/order-delivery.server"),
-                  import("@/lib/db.server"),
-                ]);
-                const linked = await getOrder(current.orderId);
-                if (linked) {
-                  const completion = await finalizeDeliveryIfComplete(linked, user.id);
-                  orderFinished = completion.finished;
-                  nextOrder = completion.next;
-                }
-              } catch (err) {
-                console.warn("[chat:delivery_finalize_failed]", err);
-              }
-            }
-
             return json({
               message,
               clientMessageId: data.clientMessageId,
-              orderFinished,
-              ...(nextOrder ? { nextOrder } : {}),
             });
           }
 

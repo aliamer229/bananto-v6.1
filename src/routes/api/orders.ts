@@ -17,9 +17,14 @@ import { body, guard, json } from "@/lib/http.server";
 import {
   createOrderForUser,
   type CheckoutLine,
-  areAllOrderItemsDelivered,
   evaluateOrderAutoCompletion,
 } from "@/lib/orders.server";
+import {
+  confirmDeliveredOrder,
+  getDeliveryOrderState,
+  openDeliveryIssue,
+  recordDeliveryProof,
+} from "@/lib/order-delivery-items.server";
 import { requireUser } from "@/lib/session.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 import type { Address, Order, OrderItem } from "@/lib/types";
@@ -145,9 +150,16 @@ export const Route = createFileRoute("/api/orders")({
             note?: string;
             address?: Address;
             action?:
-              "claim" | "complete" | "confirm_received" | "submit_login_proof" | "account_next";
+              | "claim"
+              | "complete"
+              | "confirm_received"
+              | "submit_login_proof"
+              | "account_next"
+              | "report_delivery_issue";
             itemId?: string;
+            deliveryItemId?: string;
             imageUrl?: string;
+            reason?: string;
           }>(request);
 
           const order = await getOrder(data.orderId);
@@ -164,6 +176,7 @@ export const Route = createFileRoute("/api/orders")({
           if (data.action === "submit_login_proof") {
             if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
             const itemId = String(data.itemId ?? "");
+            let deliveryItemId = String(data.deliveryItemId ?? "");
             const imageUrl = String(data.imageUrl ?? "");
             const item = order.items.find((entry) => entry.id === itemId);
             if (!item) return json({ error: "item_not_found" }, { status: 404 });
@@ -172,30 +185,34 @@ export const Route = createFileRoute("/api/orders")({
               return json({ error: "invalid_image" }, { status: 400 });
             }
 
-            const now = new Date().toISOString();
-            if (order.threadId) {
-              await appendMessage(order.threadId, {
-                senderRole: "user",
-                kind: "login_proof",
-                body: {
-                  itemId,
-                  title: item.title,
-                  imageUrl,
-                  text: "📸 صورة إثبات تسجيل الدخول",
-                },
-              });
+            // Legacy cards only carried order_item_id. Resolve that identifier
+            // only when it names one and only one sent delivery row; ambiguity
+            // is surfaced instead of guessing a quantity slot.
+            const state = await getDeliveryOrderState(order);
+            if (!deliveryItemId) {
+              const candidates = state.deliveryItems.filter(
+                (entry) => entry.orderItemId === itemId && entry.status === "sent",
+              );
+              if (candidates.length !== 1) {
+                return json({ error: "delivery_item_ambiguous" }, { status: 409 });
+              }
+              deliveryItemId = candidates[0]!.id;
             }
-            const next: Order = {
-              ...order,
-              items: order.items.map((entry) =>
-                entry.id === itemId
-                  ? { ...entry, loginProofUrl: imageUrl, loginProofAt: now }
-                  : entry,
-              ),
-              updatedAt: now,
-            };
-            await saveOrder(next);
-            return json({ order: redactOrder(next) });
+            const exactDeliveryItem = state.deliveryItems.find(
+              (entry) => entry.id === deliveryItemId && entry.orderItemId === itemId,
+            );
+            if (!exactDeliveryItem) {
+              return json({ error: "delivery_item_mismatch" }, { status: 409 });
+            }
+
+            await recordDeliveryProof({
+              orderId: order.id,
+              deliveryItemId,
+              imageUrl,
+              userId: user.id,
+            });
+            const next = await getOrder(order.id);
+            return json({ order: redactOrder(next || order) });
           }
 
           /**
@@ -210,6 +227,17 @@ export const Route = createFileRoute("/api/orders")({
             const itemId = String(data.itemId ?? "");
             if (!order.items.some((entry) => entry.id === itemId)) {
               return json({ error: "item_not_found" }, { status: 404 });
+            }
+
+            const normalizedDelivery = await getDeliveryOrderState(order);
+            if (normalizedDelivery.progress.total > 0) {
+              return json({
+                released: null,
+                waiting: true,
+                order: redactOrder(order),
+                message:
+                  "الحساب التالي يُرسل من سجل delivery_item مستقل عندما يصبح جاهزًا لدى الإدارة",
+              });
             }
 
             const { markAccountRegistered, claimNextAccount, getBatchProgress } =
@@ -246,110 +274,36 @@ export const Route = createFileRoute("/api/orders")({
               return json({ error: "forbidden" }, { status: 403 });
             }
 
-            // Ensure all delivery items are fulfilled before customer can complete the order
-            if (!areAllOrderItemsDelivered(order)) {
+            try {
+              const next = await confirmDeliveredOrder(order.id, user.id);
+              return json({ order: redactOrder(next) });
+            } catch (error) {
+              const code = error instanceof Error ? error.message : "confirm_failed";
+              const status = code === "ORDER_HAS_OPEN_DELIVERY_ISSUE" ? 409 : 400;
               return json(
                 {
-                  error: "items_not_fully_delivered",
-                  message:
-                    "لا يمكن تأكيد استلام الطلب حتى يتم تسليم كافة الحسابات/الأكواد المشمولة في الطلب.",
+                  error: code,
+                  message: "لا يمكن تأكيد الاستلام قبل اكتمال جميع عناصر التسليم.",
                 },
-                { status: 400 },
+                { status },
               );
             }
+          }
 
-            if (order.status !== "completed") {
-              const now = new Date().toISOString();
-              try {
-                // 1. Remove from active queue
-                await d1Run(
-                  `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-                  now,
-                  order.id,
-                );
-
-                // 2. Add history records
-                await d1Run(
-                  `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-                   VALUES (?, ?, ?, 'completed', ?, 'تم تأكيد الاستلام من قبل العميل', ?)`,
-                  randomId("osh"),
-                  order.id,
-                  order.status,
-                  user.id,
-                  now,
-                );
-
-                await d1Run(
-                  `INSERT INTO order_status_history_v2 (
-                    id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
-                  ) VALUES (?, ?, ?, 'completed', ?, 'USER', 'Customer confirmed order receipt', ?)`,
-                  randomId("oshv2"),
-                  order.id,
-                  order.status,
-                  user.id,
-                  now,
-                );
-
-                // 3. Append confirmation system message
-                if (order.threadId) {
-                  await appendMessage(order.threadId, {
-                    senderRole: "user",
-                    kind: "order_completed",
-                    body: {
-                      text: "✅ تم استلام الطلب وتأكيده بنجاح من قبل العميل.",
-                      code: order.code,
-                      confirmedByCustomer: true,
-                    },
-                  });
-
-                  // 4. Inject Rating Card request if not sent already
-                  if (!order.ratingCardSentAt) {
-                    await appendMessage(order.threadId, {
-                      senderRole: "assistant",
-                      senderName: "الدعم الآلي",
-                      kind: "review_request",
-                      body: {
-                        orderId: order.id,
-                        orderCode: order.code,
-                        items: order.items.map((i) => ({
-                          id: i.id,
-                          title: i.title,
-                          image: i.image,
-                          productId: i.productId,
-                        })),
-                        text: "نسعد جداً بتقييمك لتجربة الشراء وجودة الخدمة ⭐",
-                      },
-                    });
-                  }
-                }
-              } catch (err) {
-                console.error("[order:confirm_received_history_failed]", err);
-              }
-
-              const updatedItems = order.items.map((entry) => ({
-                ...entry,
-                completedAt: entry.completedAt || now,
-                deliveredAt: entry.deliveredAt || now,
-              }));
-
-              const next: Order = {
-                ...order,
-                status: "completed",
-                completedAt: now,
-                customerConfirmedAt: now,
-                ratingCardSentAt: order.ratingCardSentAt || now,
-                items: updatedItems,
-                updatedAt: now,
-                events: [
-                  ...order.events,
-                  { type: "customer_confirmed", at: now, payload: { by: user.id } },
-                  { type: "order_completed", at: now, payload: { by: user.id } },
-                ],
-              };
-              await saveOrder(next);
+          if (data.action === "report_delivery_issue") {
+            if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
+            try {
+              const next = await openDeliveryIssue({
+                orderId: order.id,
+                userId: user.id,
+                deliveryItemId: data.deliveryItemId,
+                reason: data.reason,
+              });
               return json({ order: redactOrder(next) });
+            } catch (error) {
+              const code = error instanceof Error ? error.message : "delivery_issue_failed";
+              return json({ error: code }, { status: 409 });
             }
-            return json({ order: redactOrder(order) });
           }
 
           // Staff Actions
@@ -372,6 +326,22 @@ export const Route = createFileRoute("/api/orders")({
           // Only admin can change status manually
           if (data.status && data.status !== order.status) {
             if (!user.isAdmin) return json({ error: "forbidden" }, { status: 403 });
+
+            if (
+              data.status === "completed" ||
+              data.status === "awaiting_customer_confirmation"
+            ) {
+              const delivery = await getDeliveryOrderState(order);
+              if (delivery.progress.total > 0) {
+                return json(
+                  {
+                    error:
+                      "digital_orders_complete_only_after_customer_confirmation_or_server_timeout",
+                  },
+                  { status: 409 },
+                );
+              }
+            }
 
             const firstKind = order.items[0]?.kind || "account";
             if (!(await canTransition(order.status, data.status, firstKind))) {

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/public/order-queue")({
       GET: async ({ request }) =>
         guard(async () => {
           // Verify admin session
-          const user = await requireAdmin(request);
+          await requireAdmin(request);
 
           const db = getD1();
           if (!db) return json([], { status: 200 });
@@ -21,6 +21,9 @@ export const Route = createFileRoute("/api/public/order-queue")({
              JOIN orders o ON q.order_id = o.id
              JOIN users u ON o.user_id = u.id
              WHERE q.status != 'completed'
+               AND json_extract(o.doc, '$.status') NOT IN (
+                 'awaiting_customer_confirmation', 'delivery_issue', 'completed', 'cancelled'
+               )
              ORDER BY q.created_at ASC`,
           );
 

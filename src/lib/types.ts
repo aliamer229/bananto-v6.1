@@ -742,12 +742,14 @@ export type OrderStatus =
   | "processing"
   | "delivering"
   | "awaiting_customer_confirmation"
+  | "delivery_issue"
   | "completed"
   | "cancelled";
 
 /** Orders in these states are done as far as the admin queue is concerned. */
 export const ADMIN_FINISHED_ORDER_STATUSES: readonly OrderStatus[] = [
   "awaiting_customer_confirmation",
+  "delivery_issue",
   "completed",
   "cancelled",
 ];
@@ -773,6 +775,12 @@ export interface Order {
   completedAt?: string;
   customerConfirmedAt?: string;
   autoCompletedAt?: string;
+  /** Timestamp of the final expected delivery item's OTP/code. */
+  lastOtpSentAt?: string;
+  /** Server-owned deadline, exactly 60 minutes after lastOtpSentAt. */
+  autoCompleteAt?: string;
+  /** Set when a member reports a delivery problem; pauses auto-completion. */
+  deliveryIssueOpenedAt?: string;
   deliveryViewedAt?: string;
   ratingCardSentAt?: string;
   createdAt: string;

@@ -45,7 +45,12 @@ export interface MessageCardProps {
     id: string;
     items?: Array<{ id: string; title: string; credsSentAt?: string; loggedInAt?: string }>;
   } | null;
-  onSendOtp?: (params: { itemId?: string; code: string; title?: string }) => void | Promise<void>;
+  onSendOtp?: (params: {
+    itemId?: string;
+    deliveryItemId?: string;
+    code: string;
+    title?: string;
+  }) => void | Promise<void>;
   isSendingOtp?: boolean;
   onRetry?: (message: (ChatMessage | NormalizedChatMessage) & { rawPayload?: any }) => void;
 }
@@ -452,13 +457,20 @@ function InnerMessageCard({
                         return;
                       }
                       const targetItemId =
-                        (typeof body.itemId === "string" ? body.itemId : undefined) ||
-                        order?.items?.find((i) => i.credsSentAt && !i.loggedInAt)?.id ||
-                        order?.items?.[0]?.id;
+                        typeof body.itemId === "string" ? body.itemId : undefined;
+                      const targetDeliveryItemId =
+                        typeof body.deliveryItemId === "string"
+                          ? body.deliveryItemId
+                          : undefined;
+                      if (!targetItemId && !targetDeliveryItemId) {
+                        toast.error("تعذر تحديد عنصر التسليم من إثبات الدخول");
+                        return;
+                      }
                       setIsSubmittingOtp(true);
                       try {
                         await onSendOtp({
                           itemId: targetItemId,
+                          deliveryItemId: targetDeliveryItemId,
                           code: otpInput.trim(),
                           title: typeof body.title === "string" ? body.title : undefined,
                         });

@@ -1,4 +1,4 @@
-import { encryptSecretValue, randomId } from "./crypto.server";
+import { randomId } from "./crypto.server";
 import {
   appendMessage,
   findUserById,
@@ -467,6 +467,20 @@ export async function createOrderForUser(
     console.error("[order:snapshot_failed]", err);
   }
 
+  // Create the canonical order_items relation and one independent D1 delivery
+  // row per quantity slot. The admin API retries this idempotently if checkout
+  // was interrupted after payment, so a paid order is never dependent on a
+  // browser-side draft or a chat message.
+  try {
+    const { ensureOrderDeliveryRecords } = await import("./order-delivery-items.server");
+    await ensureOrderDeliveryRecords(order);
+  } catch (err) {
+    console.error("[order:delivery_records_create_failed]", {
+      orderId: order.id,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+
   // Reward Banana Calculation (Safe)
   try {
     const bananaEligible = items.every((item) => !["hardware", "device"].includes(item.kind));
@@ -685,36 +699,6 @@ export async function createOrderForUser(
   return order;
 }
 
-export async function stageCredentials(
-  order: Order,
-  itemId: string,
-  email: string,
-  password?: string,
-): Promise<Order> {
-  const items = await Promise.all(
-    order.items.map(async (item) => {
-      if (item.id !== itemId) return item;
-      if (item.credsSentAt) throw new Error("credentials_already_sent");
-      return {
-        ...item,
-        deliveryEmail: email,
-        ...(password ? { deliveryPasswordEnc: await encryptSecretValue(password) } : {}),
-      };
-    }),
-  );
-  const next: Order = {
-    ...order,
-    items,
-    updatedAt: new Date().toISOString(),
-    events: [
-      ...order.events,
-      { type: "credentials_staged", at: new Date().toISOString(), payload: { itemId } },
-    ],
-  };
-  await saveOrder(next);
-  return next;
-}
-
 export async function claimOrderTask(orderId: string, staffId: string): Promise<boolean> {
   const now = new Date().toISOString();
   await d1Run(
@@ -743,14 +727,15 @@ export async function completeOrderTask(orderId: string, staffId: string): Promi
     throw new Error("Task not assigned to this staff member");
   }
 
-  await d1Run(
-    `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-    now,
-    orderId,
-  );
-
   const order = await getOrder(orderId);
   if (order) {
+    const { getDeliveryOrderState } = await import("./order-delivery-items.server");
+    const delivery = await getDeliveryOrderState(order);
+    if (delivery.progress.total > 0) {
+      throw new Error(
+        "digital_orders_complete_only_after_customer_confirmation_or_server_timeout",
+      );
+    }
     await updateOrderStatus({
       orderId,
       newStatus: "completed",
@@ -759,6 +744,12 @@ export async function completeOrderTask(orderId: string, staffId: string): Promi
       reason: "Order completed by staff",
     });
   }
+
+  await d1Run(
+    `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
+    now,
+    orderId,
+  );
 
   return true;
 }
@@ -834,150 +825,21 @@ export function areAllOrderItemsDelivered(order: Order): boolean {
   return order.items.every((item) => {
     if (item.completedAt || item.deliveredAt) return true;
     if (item.kind === "hardware") return Boolean(item.shippedAt || item.deliveredAt);
-    // For account / digital / bundle items
-    return Boolean(
-      item.deliveryEmail ||
-      item.credsSentAt ||
-      item.verificationCodeSentAt ||
-      item.verificationCode ||
-      (item as any).cardCode ||
-      (item as any).codeSentAt,
-    );
+    // Shared legacy OrderItem fields cannot prove delivery of quantity > 1.
+    // This compatibility helper is intentionally conservative; the canonical
+    // async decision lives in order_delivery_items.
+    if (Math.max(1, Number(item.quantity) || 1) > 1) return false;
+    return Boolean(item.verificationCodeSentAt || item.completedAt);
   });
 }
 
 /**
- * 1-Hour Auto-Completion Logic:
- * Checks if 1 hour has elapsed since delivery_viewed_at or the latest item OTP/credentials
- * without any disputes, and automatically finalizes the order and triggers the rating request.
+ * Evaluate only the explicit server deadline written when the final delivery
+ * item reaches otp_sent. No view time, credential timestamp, or browser timer
+ * can complete a digital order.
  */
 export async function evaluateOrderAutoCompletion(order: Order): Promise<Order> {
-  if (order.status === "completed" || order.status === "cancelled") {
-    return order;
-  }
-
-  if (!areAllOrderItemsDelivered(order)) {
-    return order;
-  }
-
-  // Find baseline time: deliveryViewedAt or latest credential/OTP delivery
-  let latestDeliveryTime = 0;
-  if (order.deliveryViewedAt) {
-    const t = new Date(order.deliveryViewedAt).getTime();
-    if (!isNaN(t) && t > 0) latestDeliveryTime = t;
-  }
-
-  if (latestDeliveryTime === 0) {
-    for (const item of order.items) {
-      const itTime =
-        item.verificationCodeSentAt || item.credsSentAt || item.loggedInAt || item.deliveredAt;
-      if (itTime) {
-        const t = new Date(itTime).getTime();
-        if (!isNaN(t) && t > latestDeliveryTime) {
-          latestDeliveryTime = t;
-        }
-      }
-    }
-  }
-
-  if (latestDeliveryTime === 0 && order.updatedAt) {
-    const t = new Date(order.updatedAt).getTime();
-    if (!isNaN(t)) latestDeliveryTime = t;
-  }
-
-  const ONE_HOUR_MS = 60 * 60 * 1000;
-  const nowMs = Date.now();
-
-  // If 1 hour has passed since delivery
-  if (latestDeliveryTime > 0 && nowMs - latestDeliveryTime >= ONE_HOUR_MS) {
-    const now = new Date().toISOString();
-    console.log(
-      `[order:auto_complete] Auto-completing order ${order.id} (${order.code}) after 1 hour`,
-    );
-
-    try {
-      await d1Run(
-        `UPDATE order_queue SET status = 'completed', updated_at = ? WHERE order_id = ?`,
-        now,
-        order.id,
-      );
-
-      await d1Run(
-        `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
-         VALUES (?, ?, ?, 'completed', 'system', 'إكمال تلقائي لمرور أكثر من ساعة على تسليم الطلب', ?)`,
-        randomId("osh"),
-        order.id,
-        order.status,
-        now,
-      );
-
-      await d1Run(
-        `INSERT INTO order_status_history_v2 (
-          id, order_id, old_status, new_status, changed_by_user_id, changed_by_role, reason, created_at
-        ) VALUES (?, ?, ?, 'completed', 'system', 'SYSTEM', 'Auto-completed after 1 hour delivery window without dispute', ?)`,
-        randomId("oshv2"),
-        order.id,
-        order.status,
-        now,
-      );
-
-      if (order.threadId) {
-        await appendMessage(order.threadId, {
-          senderRole: "system",
-          kind: "order_completed",
-          body: {
-            text: "✅ تم إكمال الطلب تلقائياً لمرور ساعة على التسليم بنجاح.",
-            code: order.code,
-            autoCompleted: true,
-          },
-        });
-
-        if (!order.ratingCardSentAt) {
-          await appendMessage(order.threadId, {
-            senderRole: "assistant",
-            senderName: "الدعم الآلي",
-            kind: "review_request",
-            body: {
-              orderId: order.id,
-              orderCode: order.code,
-              items: order.items.map((i) => ({
-                id: i.id,
-                title: i.title,
-                image: i.image,
-                productId: i.productId,
-              })),
-              text: "نتمنى أن تكون تجربتك ممتازة! يرجى تقييم الطلب لمساعدتنا في تقديم أفضل خدمة ⭐",
-            },
-          });
-        }
-      }
-    } catch (err) {
-      console.error("[order:auto_complete_failed]", err);
-    }
-
-    const updatedItems = order.items.map((it) => ({
-      ...it,
-      completedAt: it.completedAt || now,
-      deliveredAt: it.deliveredAt || now,
-    }));
-
-    const next: Order = {
-      ...order,
-      status: "completed",
-      completedAt: now,
-      autoCompletedAt: now,
-      ratingCardSentAt: order.ratingCardSentAt || now,
-      items: updatedItems,
-      updatedAt: now,
-      events: [
-        ...order.events,
-        { type: "order_auto_completed", at: now, payload: { reason: "1_hour_timeout" } },
-      ],
-    };
-
-    await saveOrder(next);
-    return next;
-  }
-
-  return order;
+  if (order.status === "completed" || order.status === "cancelled") return order;
+  const { maybeAutoCompleteDeliveredOrder } = await import("./order-delivery-items.server");
+  return (await maybeAutoCompleteDeliveredOrder(order.id)) ?? order;
 }

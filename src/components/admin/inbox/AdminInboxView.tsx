@@ -594,6 +594,20 @@ export function AdminInboxView({ initialThreadId = null, onNavigateToOrder }: Ad
                   reminderMutation.mutate({ threadId: selectedThreadId, text });
                 }
               }}
+              onDeliveryFinished={({ nextOrder }) => {
+                void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+                void queryClient.invalidateQueries({ queryKey: ["admin-threads"] });
+                void queryClient.invalidateQueries({ queryKey: ["orders"] });
+                if (nextOrder?.threadId) {
+                  setSelectedThreadId(nextOrder.threadId);
+                  toast.success(
+                    `تم الانتقال إلى الطلب التالي ${nextOrder.code ? `#${nextOrder.code}` : ""} ⏭️`,
+                  );
+                } else {
+                  setSelectedThreadId(null);
+                  toast.success("لا توجد طلبات أخرى تحتاج تجهيزًا الآن 🎉");
+                }
+              }}
               isSending={sendMutation.isPending}
             />
           </div>

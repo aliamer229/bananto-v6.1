@@ -1,80 +1,149 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { DELIVERY_OTP_TTL_MINUTES } from "@/lib/delivery-otp";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
-  Key,
-  ShieldCheck,
-  Sparkles,
-  Send,
-  X,
-  Copy,
-  Check,
-  CreditCard,
-  Ticket,
-  ClipboardPaste,
-  CheckCircle2,
   AlertCircle,
+  Check,
+  CheckCircle2,
+  ClipboardPaste,
+  Copy,
   Eye,
   EyeOff,
-  RefreshCw,
   Gamepad2,
-  Layers,
-  ChevronRight,
-  ArrowLeft,
-  Lock,
-  Plus,
-  Trash2,
-  Clock,
-  Camera,
+  Key,
+  Loader2,
+  RefreshCw,
+  Send,
+  ShieldCheck,
+  Ticket,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  parseAccountPaste,
-  parseAccountLine,
-  matchAccountsToOrder,
-  type ParsedAccountLine,
-  type OrderItemMatchTarget,
-  type MatchedAccountResult,
-} from "@/lib/account-paste";
-import { Order, OrderItem } from "@/lib/types";
+
+import type { Order } from "@/lib/types";
+import type { DeliveryItemStatus } from "@/lib/digital-delivery-state";
+
+interface DeliveryItemView {
+  id: string;
+  orderId: string;
+  orderItemId: string | null;
+  productId: string | null;
+  productTitle: string | null;
+  slotNumber: number | null;
+  kind: string;
+  status: DeliveryItemStatus;
+  username: string;
+  password: string;
+  detectedGame: string | null;
+  matchConfidence: number | null;
+  sentAt: string | null;
+  proofReceivedAt: string | null;
+  proofUrl: string | null;
+  otpSentAt: string | null;
+  completedAt: string | null;
+  revision: number;
+  archivedAt: string | null;
+  updatedAt: string;
+}
+
+interface DeliveryStateView {
+  orderId: string;
+  orderCode: string;
+  orderStatus: Order["status"];
+  lastOtpSentAt: string | null;
+  autoCompleteAt: string | null;
+  deliveryIssueOpenedAt: string | null;
+  orderItems: Array<{
+    id: string;
+    productId: string;
+    productTitle: string;
+    kind: string;
+    quantity: number;
+  }>;
+  deliveryItems: DeliveryItemView[];
+  progress: {
+    total: number;
+    prepared: number;
+    delivered: number;
+    needsMapping: number;
+    drafts: number;
+  };
+}
+
+interface DeliveryActionResponse {
+  success?: boolean;
+  state?: DeliveryStateView;
+  orderFinished?: boolean;
+  nextReadyDeliveryItemId?: string;
+  nextOrder?: {
+    orderId: string;
+    threadId?: string;
+    code?: string;
+    userName?: string;
+  };
+  extracted?: number;
+  mapped?: number;
+  needsMapping?: number;
+  skipped?: Array<{ line: number; raw: string }>;
+  duplicates?: string[];
+  error?: string;
+  code?: string;
+}
 
 export interface AccountToolsModalProps {
   isOpen: boolean;
   onClose: () => void;
   order?: Order | null;
   defaultTab?: "credentials" | "card" | "otp" | "instructions";
-  onSendCredentials: (payload: {
-    platform?: string;
-    email: string;
-    password?: string;
-    title?: string;
-    itemId?: string;
-    slot?: number;
+  onDeliveryFinished?: (payload: {
+    nextOrder?: DeliveryActionResponse["nextOrder"];
   }) => void;
-  onSendVerificationCode: (payload: {
-    code: string;
-    expiresInMinutes?: number;
-    itemId?: string;
-    title?: string;
-  }) => void;
-  onSendCardCode?: (payload: {
-    cardType: string;
-    code: string;
-    pin?: string;
-    instructions?: string;
-    itemId?: string;
-  }) => void;
-  onCompleteOrder?: (orderId: string) => void | Promise<void>;
+  onStateChanged?: () => void;
 }
 
-export interface StagedAccountState {
-  id: string;
+interface DraftFields {
   username: string;
   password: string;
-  label?: string;
-  matchedItemId?: string;
-  matchedItemTitle?: string;
-  slotNumber?: number;
-  isSent?: boolean;
+  dirty: boolean;
+}
+
+const STATUS_LABEL: Record<DeliveryItemStatus, string> = {
+  draft: "مسودة",
+  needs_mapping: "بحاجة إلى ربط",
+  ready: "جاهز",
+  sent: "أُرسل الحساب",
+  proof_received: "وصل الإثبات",
+  otp_sent: "أُرسل OTP",
+  completed: "مكتمل",
+};
+
+const LOCKED_STATUSES = new Set<DeliveryItemStatus>([
+  "sent",
+  "proof_received",
+  "otp_sent",
+  "completed",
+]);
+
+function isCodeKind(kind: string) {
+  return ["digital_code", "code", "gift_card"].includes(kind);
+}
+
+async function readJsonResponse(
+  response: Response,
+): Promise<DeliveryActionResponse> {
+  const payload = (await response
+    .json()
+    .catch(() => ({}))) as DeliveryActionResponse;
+  if (!response.ok) {
+    throw new Error(
+      payload.error || payload.code || "تعذر حفظ بيانات التسليم في D1",
+    );
+  }
+  return payload;
 }
 
 export function AccountToolsModal({
@@ -82,1009 +151,868 @@ export function AccountToolsModal({
   onClose,
   order,
   defaultTab = "credentials",
-  onSendCredentials,
-  onSendVerificationCode,
-  onSendCardCode,
-  onCompleteOrder,
+  onDeliveryFinished,
+  onStateChanged,
 }: AccountToolsModalProps) {
-  // 1. Analyze order items to determine mode & slots
-  const orderItems: OrderItem[] = useMemo(() => order?.items || [], [order]);
-
-  const hasCodeItems = useMemo(
-    () =>
-      orderItems.some(
-        (i) =>
-          i.kind === "digital_code" ||
-          (i.kind as string) === "code" ||
-          (i.kind as string) === "gift_card",
-      ),
-    [orderItems],
+  const [deliveryState, setDeliveryState] = useState<DeliveryStateView | null>(
+    null,
   );
-
-  const hasAccountItems = useMemo(
-    () => orderItems.some((i) => i.kind === "account" || !i.kind),
-    [orderItems],
-  );
-
-  // Determine initial mode: "account" vs "card"
-  const initialMode = useMemo(() => {
-    if (defaultTab === "card" || (hasCodeItems && !hasAccountItems)) {
-      return "card";
-    }
-    return "account";
-  }, [defaultTab, hasCodeItems, hasAccountItems]);
-
-  const [mode, setMode] = useState<"account" | "card">(initialMode);
-
-  // Targets for matching
-  const matchTargets: OrderItemMatchTarget[] = useMemo(() => {
-    return orderItems.map((item) => ({
-      id: item.id,
-      title: item.title,
-      quantity: item.quantity || 1,
-      kind: item.kind,
-    }));
-  }, [orderItems]);
-
-  // Expand order items into individual deliverable slots (e.g. quantity 2 = Slot 1 & Slot 2)
-  const deliverableSlots = useMemo(() => {
-    const slots: {
-      slotKey: string;
-      itemId: string;
-      title: string;
-      slotIndex: number;
-      totalSlots: number;
-      originalItem: OrderItem;
-    }[] = [];
-
-    orderItems.forEach((item) => {
-      const qty = Math.max(item.quantity || 1, 1);
-      for (let s = 1; s <= qty; s++) {
-        slots.push({
-          slotKey: `${item.id}-${s}`,
-          itemId: item.id,
-          title: item.title,
-          slotIndex: s,
-          totalSlots: qty,
-          originalItem: item,
-        });
-      }
-    });
-
-    return slots;
-  }, [orderItems]);
-
-  // ==========================
-  // ACCOUNT MODE STATE
-  // ==========================
-  const [quickPasteInput, setQuickPasteInput] = useState("");
-  const [stagedAccounts, setStagedAccounts] = useState<StagedAccountState[]>([]);
-  const [selectedAccountIndex, setSelectedAccountIndex] = useState<number>(0);
-
-  // Current active account fields for direct editing
-  const [selectedGameTitle, setSelectedGameTitle] = useState("");
-  const [selectedItemId, setSelectedItemId] = useState<string>("");
-  const [selectedSlotNumber, setSelectedSlotNumber] = useState<number>(1);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [selectedId, setSelectedId] = useState("");
+  const [drafts, setDrafts] = useState<Record<string, DraftFields>>({});
+  const [otpById, setOtpById] = useState<Record<string, string>>({});
+  const [quickPaste, setQuickPaste] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isQuickPasting, setIsQuickPasting] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [savingIds, setSavingIds] = useState<Record<string, boolean>>({});
   const [showPassword, setShowPassword] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  );
+  const lastQuickPasteRef = useRef("");
+  const deliveryStateRef = useRef<DeliveryStateView | null>(null);
+  const draftsRef = useRef<Record<string, DraftFields>>({});
+  // All autosaves share one ordered chain. This prevents an older request from
+  // arriving later and overwriting a newer field or another item's response.
+  const saveChainRef = useRef<Promise<DeliveryStateView | null>>(
+    Promise.resolve(null),
+  );
 
-  // Integrated OTP state for active item/account
-  const [otpCode, setOtpCode] = useState("");
-  const [isOtpSectionOpen, setIsOtpSectionOpen] = useState(false);
-
-  // Copied state for feedback
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  // ==========================
-  // CARD / ACTIVATION CODE STATE
-  // ==========================
-  const [cardTitle, setCardTitle] = useState(orderItems[0]?.title || "بطاقة رقمية");
-  const [cardItemId, setCardItemId] = useState(orderItems[0]?.id || "");
-  const [cardCode, setCardCode] = useState("");
-  const [cardPin, setCardPin] = useState("");
-  const [showPinField, setShowPinField] = useState(false);
-
-  // Initialize active item from order if available
-  useEffect(() => {
-    if (orderItems.length > 0) {
-      const firstItem = orderItems[0]!;
-      setSelectedGameTitle(firstItem.title);
-      setSelectedItemId(firstItem.id);
-      setSelectedSlotNumber(1);
-      setCardTitle(firstItem.title);
-      setCardItemId(firstItem.id);
-
-      // Check if any item already has credentials sent or login proof
-      const itemNeedingOtp = orderItems.find((i) => i.credsSentAt && !i.completedAt);
-      if (itemNeedingOtp) {
-        setIsOtpSectionOpen(true);
+  const applyState = useCallback(
+    (next: DeliveryStateView, preserveDirty = false) => {
+      deliveryStateRef.current = next;
+      setDeliveryState(next);
+      const result: Record<string, DraftFields> = {};
+      for (const item of next.deliveryItems) {
+        const pending = draftsRef.current[item.id];
+        result[item.id] =
+          preserveDirty && pending?.dirty
+            ? pending
+            : {
+                username: item.username,
+                password: item.password,
+                dirty: false,
+              };
       }
+      draftsRef.current = result;
+      setDrafts(result);
+      setSelectedId((current) => {
+        if (current && next.deliveryItems.some((item) => item.id === current))
+          return current;
+        const preferred =
+          defaultTab === "otp"
+            ? next.deliveryItems.find(
+                (item) => item.status === "proof_received",
+              )
+            : next.deliveryItems.find(
+                (item) =>
+                  item.orderItemId &&
+                  !["otp_sent", "completed"].includes(item.status),
+              );
+        return preferred?.id || next.deliveryItems[0]?.id || "";
+      });
+    },
+    [defaultTab],
+  );
+
+  const loadState = useCallback(async () => {
+    if (!order?.id) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/admin/orders?delivery=1&orderId=${encodeURIComponent(order.id)}`,
+        { credentials: "include" },
+      );
+      const payload = await readJsonResponse(response);
+      if (!payload.state) throw new Error("لم تُرجع الخدمة حالة تجهيز صالحة");
+      applyState(payload.state);
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "تعذر تحميل بيانات التجهيز",
+      );
+    } finally {
+      setIsLoading(false);
     }
-  }, [orderItems]);
+  }, [applyState, order?.id]);
 
-  // Sync active account fields when selecting another staged account
   useEffect(() => {
-    if (stagedAccounts.length > 0 && stagedAccounts[selectedAccountIndex]) {
-      const acc = stagedAccounts[selectedAccountIndex]!;
-      setUsername(acc.username);
-      setPassword(acc.password);
-      if (acc.matchedItemTitle) {
-        setSelectedGameTitle(acc.matchedItemTitle);
+    if (isOpen) void loadState();
+  }, [isOpen, loadState]);
+
+  useEffect(
+    () => () => {
+      for (const timer of timersRef.current.values()) clearTimeout(timer);
+      timersRef.current.clear();
+    },
+    [],
+  );
+
+  const postAction = useCallback(
+    async (payload: Record<string, unknown>) => {
+      if (!order?.id) throw new Error("الطلب غير مرتبط بالمحادثة");
+      const response = await fetch("/api/admin/orders", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: order.id,
+          threadId: order.threadId,
+          ...payload,
+        }),
+      });
+      return readJsonResponse(response);
+    },
+    [order?.id, order?.threadId],
+  );
+
+  const saveOneDraft = useCallback(
+    (
+      deliveryItemId: string,
+      fields?: DraftFields,
+    ): Promise<DeliveryStateView | null> => {
+      const snapshot = fields || draftsRef.current[deliveryItemId];
+      if (!snapshot?.dirty) {
+        return saveChainRef.current.then(() => deliveryStateRef.current);
       }
-      if (acc.matchedItemId) {
-        setSelectedItemId(acc.matchedItemId);
+
+      const task = saveChainRef.current
+        .catch(() => null)
+        .then(async () => {
+          setSavingIds((value) => ({ ...value, [deliveryItemId]: true }));
+          try {
+            const result = await postAction({
+              action: "save_delivery_draft",
+              deliveryItemId,
+              email: snapshot.username,
+              password: snapshot.password,
+            });
+            if (result.state) applyState(result.state, true);
+            setDrafts((value) => {
+              const latest = value[deliveryItemId];
+              if (
+                !latest ||
+                latest.username !== snapshot.username ||
+                latest.password !== snapshot.password
+              ) {
+                return value;
+              }
+              const next = {
+                ...value,
+                [deliveryItemId]: { ...latest, dirty: false },
+              };
+              draftsRef.current = next;
+              return next;
+            });
+            onStateChanged?.();
+            return result.state || deliveryStateRef.current;
+          } finally {
+            setSavingIds((value) => ({ ...value, [deliveryItemId]: false }));
+          }
+        });
+      saveChainRef.current = task.catch(() => deliveryStateRef.current);
+      return task;
+    },
+    [applyState, onStateChanged, postAction],
+  );
+
+  const scheduleDraftSave = useCallback(
+    (deliveryItemId: string, next: Omit<DraftFields, "dirty">) => {
+      const fields: DraftFields = { ...next, dirty: true };
+      const nextDrafts = { ...draftsRef.current, [deliveryItemId]: fields };
+      draftsRef.current = nextDrafts;
+      setDrafts(nextDrafts);
+      const previousTimer = timersRef.current.get(deliveryItemId);
+      if (previousTimer) clearTimeout(previousTimer);
+      const timer = setTimeout(() => {
+        timersRef.current.delete(deliveryItemId);
+        void saveOneDraft(deliveryItemId, fields).catch((saveError) => {
+          toast.error(
+            saveError instanceof Error
+              ? saveError.message
+              : "فشل الحفظ التلقائي",
+          );
+        });
+      }, 450);
+      timersRef.current.set(deliveryItemId, timer);
+    },
+    [saveOneDraft],
+  );
+
+  const flushDraft = useCallback(
+    async (deliveryItemId: string) => {
+      const timer = timersRef.current.get(deliveryItemId);
+      if (timer) {
+        clearTimeout(timer);
+        timersRef.current.delete(deliveryItemId);
       }
-      if (acc.slotNumber) {
-        setSelectedSlotNumber(acc.slotNumber);
-      }
+      return saveOneDraft(deliveryItemId, draftsRef.current[deliveryItemId]);
+    },
+    [saveOneDraft],
+  );
+
+  const handleClose = async () => {
+    const dirtyIds = Object.entries(draftsRef.current)
+      .filter(([, fields]) => fields.dirty)
+      .map(([id]) => id);
+    try {
+      await Promise.all(dirtyIds.map((id) => flushDraft(id)));
+      onClose();
+    } catch (closeError) {
+      toast.error(
+        closeError instanceof Error
+          ? closeError.message
+          : "لم يكتمل حفظ المسودات",
+      );
     }
-  }, [selectedAccountIndex, stagedAccounts]);
+  };
+
+  const selected = useMemo(
+    () =>
+      deliveryState?.deliveryItems.find((item) => item.id === selectedId) ||
+      null,
+    [deliveryState?.deliveryItems, selectedId],
+  );
+  const selectedDraft = selected ? drafts[selected.id] : undefined;
+  const mappedItems = useMemo(
+    () =>
+      deliveryState?.deliveryItems.filter((item) =>
+        Boolean(item.orderItemId),
+      ) || [],
+    [deliveryState?.deliveryItems],
+  );
+  const unmappedItems = useMemo(
+    () =>
+      deliveryState?.deliveryItems.filter(
+        (item) => item.status === "needs_mapping",
+      ) || [],
+    [deliveryState?.deliveryItems],
+  );
+
+  const handleQuickPaste = useCallback(async () => {
+    const rawText = quickPaste.trim();
+    if (!rawText || isQuickPasting || rawText === lastQuickPasteRef.current)
+      return;
+    setIsQuickPasting(true);
+    try {
+      for (const timer of timersRef.current.values()) clearTimeout(timer);
+      timersRef.current.clear();
+      const dirtyDrafts = Object.entries(draftsRef.current).filter(
+        ([, fields]) => fields.dirty,
+      );
+      await Promise.all(
+        dirtyDrafts.map(([id, fields]) => saveOneDraft(id, fields)),
+      );
+      const result = await postAction({
+        action: "delivery_quick_paste",
+        rawText,
+      });
+      lastQuickPasteRef.current = rawText;
+      if (result.state) applyState(result.state);
+      setQuickPaste("");
+      toast.success(
+        `تم حفظ ${result.extracted || 0} حساب في D1: ${result.mapped || 0} مطابق، ${
+          result.needsMapping || 0
+        } يحتاج ربطًا`,
+      );
+      if (result.skipped?.length)
+        toast.warning(`تعذر استخراج ${result.skipped.length} سطر`);
+      onStateChanged?.();
+    } catch (pasteError) {
+      toast.error(
+        pasteError instanceof Error ? pasteError.message : "فشل اللصق السريع",
+      );
+    } finally {
+      setIsQuickPasting(false);
+    }
+  }, [
+    applyState,
+    isQuickPasting,
+    onStateChanged,
+    postAction,
+    quickPaste,
+    saveOneDraft,
+  ]);
+
+  useEffect(() => {
+    if (!isOpen || !quickPaste.trim() || isQuickPasting) return;
+    if (!/(?:密码|密碼|password|pass|pwd)/i.test(quickPaste)) return;
+    const timer = setTimeout(() => void handleQuickPaste(), 700);
+    return () => clearTimeout(timer);
+  }, [handleQuickPaste, isOpen, isQuickPasting, quickPaste]);
+
+  const mapItem = async (
+    sourceDeliveryItemId: string,
+    targetDeliveryItemId: string,
+  ) => {
+    setBusyId(sourceDeliveryItemId);
+    try {
+      const result = await postAction({
+        action: "map_delivery_item",
+        sourceDeliveryItemId,
+        targetDeliveryItemId,
+      });
+      if (result.state) applyState(result.state);
+      setSelectedId(targetDeliveryItemId);
+      toast.success("تم ربط الحساب باللعبة المحددة وحفظه");
+      onStateChanged?.();
+    } catch (mapError) {
+      toast.error(
+        mapError instanceof Error ? mapError.message : "تعذر ربط الحساب",
+      );
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const sendCredentials = async () => {
+    if (!selected) return;
+    setBusyId(selected.id);
+    try {
+      await flushDraft(selected.id);
+      const result = await postAction({
+        action: "send_delivery_credentials",
+        deliveryItemId: selected.id,
+      });
+      if (result.state) applyState(result.state);
+      if (result.nextReadyDeliveryItemId) {
+        setSelectedId(result.nextReadyDeliveryItemId);
+        toast.success("تم إرسال هذا الحساب والانتقال إلى الحساب الجاهز التالي");
+      } else {
+        toast.success(
+          "تم إرسال بيانات هذا الحساب. لا يوجد حساب آخر جاهز للإرسال الآن.",
+        );
+      }
+      onStateChanged?.();
+    } catch (sendError) {
+      toast.error(
+        sendError instanceof Error ? sendError.message : "فشل إرسال الحساب",
+      );
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const sendOtp = async () => {
+    if (!selected) return;
+    const code = (otpById[selected.id] || "").trim();
+    if (!code) {
+      toast.error("أدخل كود OTP");
+      return;
+    }
+    setBusyId(selected.id);
+    try {
+      const result = await postAction({
+        action: "send_delivery_otp",
+        deliveryItemId: selected.id,
+        code,
+      });
+      if (result.state) applyState(result.state);
+      setOtpById((value) => ({ ...value, [selected.id]: "" }));
+      onStateChanged?.();
+      if (result.orderFinished) {
+        toast.success("تم إرسال آخر OTP وإخراج الطلب من طابور التجهيز");
+        onDeliveryFinished?.({ nextOrder: result.nextOrder });
+        onClose();
+      } else if (result.nextReadyDeliveryItemId) {
+        setSelectedId(result.nextReadyDeliveryItemId);
+        toast.success("تم إرسال OTP والانتقال إلى اللعبة الجاهزة التالية");
+      } else {
+        toast.success("تم إرسال OTP لهذا الحساب. الطلب ينتظر بقية العناصر.");
+      }
+    } catch (otpError) {
+      toast.error(
+        otpError instanceof Error ? otpError.message : "فشل إرسال OTP",
+      );
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const sendCode = async () => {
+    if (!selected || !selectedDraft?.username.trim()) return;
+    setBusyId(selected.id);
+    try {
+      await flushDraft(selected.id);
+      const result = await postAction({
+        action: "send_delivery_code",
+        deliveryItemId: selected.id,
+        code: selectedDraft.username,
+        pin: selectedDraft.password || undefined,
+      });
+      if (result.state) applyState(result.state);
+      onStateChanged?.();
+      if (result.orderFinished) {
+        toast.success("تم إرسال آخر كود وإخراج الطلب من طابور التجهيز");
+        onDeliveryFinished?.({ nextOrder: result.nextOrder });
+        onClose();
+      } else {
+        toast.success("تم إرسال الكود لهذا العنصر");
+      }
+    } catch (codeError) {
+      toast.error(
+        codeError instanceof Error ? codeError.message : "فشل إرسال الكود",
+      );
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const copyValue = async (value: string, key: string) => {
+    if (!value) return;
+    await navigator.clipboard.writeText(value);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 1400);
+  };
+
+  const generatePassword = () => {
+    if (!selected || !selectedDraft) return;
+    const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let generated = "";
+    for (let index = 0; index < 12; index += 1) {
+      generated += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+    scheduleDraftSave(selected.id, {
+      username: selectedDraft.username,
+      password: generated,
+    });
+  };
 
   if (!isOpen) return null;
 
-  // ==========================
-  // QUICK PASTE HANDLER
-  // ==========================
-  const handleQuickPasteChange = (text: string) => {
-    setQuickPasteInput(text);
-    if (!text.trim()) {
-      return;
-    }
-
-    const { accounts } = parseAccountPaste(text);
-    if (accounts.length === 0) return;
-
-    // Match parsed accounts to order items
-    const matched = matchAccountsToOrder(accounts, matchTargets);
-
-    const newStaged: StagedAccountState[] = matched.map((m, idx) => {
-      const targetSlot = deliverableSlots[idx];
-      return {
-        id: `staged-${Date.now()}-${idx}`,
-        username: m.account.username,
-        password: m.account.password,
-        label: m.account.label,
-        matchedItemId:
-          m.matchedItemId ||
-          targetSlot?.itemId ||
-          (orderItems[0]?.id ? orderItems[0].id : undefined),
-        matchedItemTitle:
-          m.matchedItemTitle ||
-          targetSlot?.title ||
-          (orderItems[0]?.title ? orderItems[0].title : undefined),
-        slotNumber: m.slotNumber || targetSlot?.slotIndex || 1,
-        isSent: false,
-      };
-    });
-
-    setStagedAccounts(newStaged);
-    setSelectedAccountIndex(0);
-
-    if (newStaged[0]) {
-      setUsername(newStaged[0].username);
-      setPassword(newStaged[0].password);
-      if (newStaged[0].matchedItemTitle) {
-        setSelectedGameTitle(newStaged[0].matchedItemTitle);
-      }
-      if (newStaged[0].matchedItemId) {
-        setSelectedItemId(newStaged[0].matchedItemId);
-      }
-      if (newStaged[0].slotNumber) {
-        setSelectedSlotNumber(newStaged[0].slotNumber);
-      }
-    }
-
-    const matchedCount = newStaged.filter((s) => s.matchedItemId).length;
-    toast.success(
-      `تم استخراج ${newStaged.length} حساب${
-        orderItems.length > 0 ? ` ومطابقة ${matchedCount} مع الطلب` : ""
-      }`,
-    );
-  };
-
-  const handlePasteFromClipboard = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        handleQuickPasteChange(text);
-      }
-    } catch {
-      toast.error("يرجى لصق النص داخل المربع يدوياً");
-    }
-  };
-
-  const generateStrongPassword = () => {
-    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let gen = "";
-    for (let i = 0; i < 10; i++) {
-      gen += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setPassword(gen);
-    // update current staged account if exists
-    if (stagedAccounts[selectedAccountIndex]) {
-      const copy = [...stagedAccounts];
-      copy[selectedAccountIndex] = { ...copy[selectedAccountIndex]!, password: gen };
-      setStagedAccounts(copy);
-    }
-    toast.success("تم توليد كلمة مرور جديدة");
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopiedKey(label);
-    toast.success(`تم نسخ ${label}`);
-    setTimeout(() => setCopiedKey(null), 1800);
-  };
-
-  // Assign an order item / game to current staged account
-  const handleAssignGameToActive = (item: OrderItem, slotNumber = 1) => {
-    setSelectedGameTitle(item.title);
-    setSelectedItemId(item.id);
-    setSelectedSlotNumber(slotNumber);
-
-    if (stagedAccounts[selectedAccountIndex]) {
-      const copy = [...stagedAccounts];
-      copy[selectedAccountIndex] = {
-        ...copy[selectedAccountIndex]!,
-        matchedItemId: item.id,
-        matchedItemTitle: item.title,
-        slotNumber,
-      };
-      setStagedAccounts(copy);
-    }
-  };
-
-  // Send single account
-  const handleSendCurrentAccount = () => {
-    if (!username.trim() || !password.trim()) {
-      toast.error("يرجى إدخال اسم المستخدم وكلمة المرور");
-      return;
-    }
-
-    onSendCredentials({
-      title: selectedGameTitle.trim() || undefined,
-      email: username.trim(),
-      password: password.trim(),
-      itemId: selectedItemId || undefined,
-      slot: selectedSlotNumber,
-    });
-
-    // Mark current staged as sent
-    if (stagedAccounts[selectedAccountIndex]) {
-      const copy = [...stagedAccounts];
-      copy[selectedAccountIndex] = { ...copy[selectedAccountIndex]!, isSent: true };
-      setStagedAccounts(copy);
-
-      // If there are more unsent staged accounts, advance to next
-      const nextUnsentIndex = copy.findIndex((s, i) => i > selectedAccountIndex && !s.isSent);
-      if (nextUnsentIndex !== -1) {
-        setSelectedAccountIndex(nextUnsentIndex);
-      } else {
-        onClose();
-      }
-    } else {
-      onClose();
-    }
-  };
-
-  // Send all matched accounts
-  const handleSendAllStagedAccounts = () => {
-    if (stagedAccounts.length === 0) return;
-
-    let sentCount = 0;
-    stagedAccounts.forEach((acc, idx) => {
-      if (!acc.username || !acc.password || acc.isSent) return;
-      onSendCredentials({
-        title: acc.matchedItemTitle || selectedGameTitle || undefined,
-        email: acc.username,
-        password: acc.password,
-        itemId: acc.matchedItemId || undefined,
-        slot: acc.slotNumber || idx + 1,
-      });
-      sentCount++;
-    });
-
-    toast.success(`تم إرسال ${sentCount} حساب للعميل`);
-    onClose();
-  };
-
-  // Send OTP
-  const handleSendOtp = () => {
-    if (!otpCode.trim()) {
-      toast.error("يرجى إدخال كود التحقق OTP");
-      return;
-    }
-
-    onSendVerificationCode({
-      code: otpCode.trim(),
-      expiresInMinutes: DELIVERY_OTP_TTL_MINUTES,
-      itemId: selectedItemId || undefined,
-      title: selectedGameTitle || undefined,
-    });
-
-    setOtpCode("");
-    setIsOtpSectionOpen(false);
-    onClose();
-  };
-
-  // Send Code / Card
-  const handleSendCard = () => {
-    if (!cardCode.trim()) {
-      toast.error("يرجى إدخال كود البطاقة أو التفعيل");
-      return;
-    }
-
-    if (onSendCardCode) {
-      onSendCardCode({
-        cardType: cardTitle.trim() || "بطاقة رقمية",
-        code: cardCode.trim(),
-        pin: cardPin.trim() || undefined,
-        itemId: cardItemId || undefined,
-      });
-    } else {
-      onSendVerificationCode({
-        code: cardCode.trim(),
-        itemId: cardItemId || undefined,
-        title: cardTitle.trim(),
-      });
-    }
-
-    onClose();
-  };
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-xs sm:items-center sm:p-4"
       dir="rtl"
     >
-      <div
-        className="relative w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] bg-card border border-border sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-border bg-muted/20 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              {mode === "account" ? <Key className="w-4 h-4" /> : <Ticket className="w-4 h-4" />}
+      <div className="flex max-h-[94vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-2xl sm:max-h-[90vh] sm:rounded-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-border bg-muted/20 px-4 py-3.5 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-500">
+              <Key className="h-4 w-4" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-foreground">
-                  {mode === "account" ? "أداة تسليم الحسابات" : "أداة تسليم الأكواد والبطاقات"}
+                  أداة تسليم الطلب
                 </h3>
-                {order && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted font-bold text-muted-foreground border border-border/50">
-                    طلب #{order.code || order.id.slice(-6)}
-                  </span>
-                )}
+                <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                  #{deliveryState?.orderCode || order?.code || "—"}
+                </span>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                {mode === "account"
-                  ? "لصق سريع، مطابقة الألعاب، وتوليد بطاقة التسليم الفورية"
-                  : "إرسال كود التفعيل أو البطاقة الرقمية مباشرة للعميل"}
+                المصدر: order → order_items → product_id → product.title
               </p>
             </div>
           </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Mode Switcher pill */}
-            <div className="flex items-center p-0.5 bg-muted rounded-lg border border-border/60 text-xs">
-              <button
-                type="button"
-                onClick={() => setMode("account")}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
-                  mode === "account"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                حساب
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("card")}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
-                  mode === "card"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                كود / بطاقة
-              </button>
-            </div>
-
-            <button
-              onClick={onClose}
-              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
-              title="إغلاق"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => void handleClose()}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label="إغلاق"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
-          {/* ========================================================================= */}
-          {/* MODE 1: ACCOUNT MODE                                                     */}
-          {/* ========================================================================= */}
-          {mode === "account" && (
-            <div className="space-y-5">
-              {/* 1. Quick Paste Box */}
-              <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
-                    <ClipboardPaste className="w-4 h-4 text-amber-500" />
-                    <span>اللصق السريع (Quick Paste)</span>
-                  </div>
+        <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
+          {isLoading ? (
+            <div className="flex min-h-48 items-center justify-center gap-2 text-xs font-bold text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> تحميل المسودات من
+              D1...
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
+              <div className="flex items-center gap-2 font-bold">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </div>
+              <button
+                type="button"
+                onClick={() => void loadState()}
+                className="mt-3 inline-flex items-center gap-1 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-bold"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> إعادة المحاولة
+              </button>
+            </div>
+          ) : deliveryState ? (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                  تم تجهيز {deliveryState.progress.prepared} من{" "}
+                  {deliveryState.progress.total}
+                </div>
+                <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                  تم تسليم {deliveryState.progress.delivered} من{" "}
+                  {deliveryState.progress.total}
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-3.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+                    <ClipboardPaste className="h-4 w-4" /> اللصق السريع
+                  </span>
                   <button
                     type="button"
-                    onClick={handlePasteFromClipboard}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-[11px] font-bold text-foreground border border-border shadow-2xs transition-colors"
+                    onClick={() => void handleQuickPaste()}
+                    disabled={!quickPaste.trim() || isQuickPasting}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1 text-[11px] font-bold disabled:opacity-50"
                   >
-                    <ClipboardPaste className="w-3 h-3 text-amber-500" />
-                    <span>لصق من الحافظة</span>
+                    {isQuickPasting ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="h-3 w-3" />
+                    )}{" "}
+                    استخراج وحفظ
                   </button>
                 </div>
-
                 <textarea
-                  value={quickPasteInput}
-                  onChange={(e) => handleQuickPasteChange(e.target.value)}
-                  placeholder="الصق سطر الحساب أو عدة أسطر مباشرة هنا...&#10;مثال: ttxx7834 密码 a8dqq9sr 运动switch&#10;أو: 游戏 FC26 账号 user@mail.com 密码 pass123"
-                  rows={2}
-                  className="w-full p-2.5 text-xs bg-background border border-border/80 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-amber-500/30 text-foreground font-mono leading-relaxed resize-y max-h-32"
+                  value={quickPaste}
+                  onChange={(event) => {
+                    setQuickPaste(event.target.value);
+                    if (event.target.value.trim() !== lastQuickPasteRef.current)
+                      lastQuickPasteRef.current = "";
+                  }}
+                  rows={3}
                   dir="ltr"
+                  placeholder="ttxx7834 密码 a8dqq9sr 运动switch&#10;rrtt8896 密码 45g54pby 朋友收集 梦想生活"
+                  className="w-full resize-y rounded-xl border border-border bg-background p-2.5 font-mono text-xs leading-relaxed text-foreground outline-hidden focus:ring-2 focus:ring-amber-500/30"
                 />
-
-                {stagedAccounts.length > 0 && (
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
-                    <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>تم استخراج {stagedAccounts.length} حساب جاهز للمراجعة والتسليم</span>
-                    </div>
-                    {stagedAccounts.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={handleSendAllStagedAccounts}
-                        className="text-amber-700 dark:text-amber-400 font-bold hover:underline"
-                      >
-                        إرسال الكل ({stagedAccounts.length})
-                      </button>
-                    )}
-                  </div>
-                )}
+                <p className="text-[10px] text-muted-foreground">
+                  كل سطر يُحفظ كسجل مستقل. السطر غير الموثوق لا يُوزع على أي
+                  لعبة.
+                </p>
               </div>
 
-              {/* 2. Order Games Horizontal Ribbon (شريط الألعاب الموجودة في الطلب) */}
-              {deliverableSlots.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground font-bold">
-                    <span className="flex items-center gap-1">
-                      <Gamepad2 className="w-3.5 h-3.5 text-primary" />
-                      <span>الألعاب والعناصر في هذا الطلب:</span>
-                    </span>
-                    <span className="text-[10px] opacity-75">{deliverableSlots.length} عنصر</span>
+              {unmappedItems.length > 0 && (
+                <div className="space-y-2 rounded-2xl border border-red-500/30 bg-red-500/5 p-3.5">
+                  <div className="flex items-center gap-2 text-xs font-bold text-red-700 dark:text-red-300">
+                    <AlertCircle className="h-4 w-4" />
+                    {unmappedItems.length} حساب يحتاج ربطًا يدويًا
                   </div>
-
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar">
-                    {deliverableSlots.map((slot) => {
-                      const isSelected =
-                        selectedItemId === slot.itemId && selectedSlotNumber === slot.slotIndex;
-                      const hasCreds = Boolean(slot.originalItem.credsSentAt);
-                      const hasProof = Boolean(slot.originalItem.loginProofUrl);
-                      const isDone = Boolean(slot.originalItem.completedAt);
-
+                  {unmappedItems.map((source) => {
+                    const availableTargets = mappedItems.filter((target) => {
+                      const draft = drafts[target.id];
                       return (
-                        <button
-                          key={slot.slotKey}
-                          type="button"
-                          onClick={() =>
-                            handleAssignGameToActive(slot.originalItem, slot.slotIndex)
-                          }
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border shrink-0 transition-all text-right ${
-                            isSelected
-                              ? "bg-primary/10 border-primary/40 text-primary shadow-xs"
-                              : "bg-muted/40 hover:bg-muted border-border text-foreground"
-                          }`}
-                        >
-                          <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1">
-                              <span className="truncate max-w-[180px]">{slot.title}</span>
-                              {slot.totalSlots > 1 && (
-                                <span className="text-[10px] px-1 rounded-sm bg-muted text-muted-foreground">
-                                  #{slot.slotIndex}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] font-normal opacity-70">
-                              {isDone
-                                ? "✓ مكتمل"
-                                : hasProof
-                                  ? "📸 أرفق الإثبات"
-                                  : hasCreds
-                                    ? "⏳ تم إرسال الحساب"
-                                    : "جاهز للتجهيز"}
-                            </span>
-                          </div>
-                        </button>
+                        ["draft", "ready"].includes(target.status) &&
+                        !(draft?.username || target.username)
                       );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Multi-Account Staged Selector (if multiple lines parsed) */}
-              {stagedAccounts.length > 1 && (
-                <div className="space-y-1.5 p-2.5 rounded-xl bg-muted/30 border border-border">
-                  <div className="text-[11px] font-bold text-muted-foreground flex items-center justify-between">
-                    <span>اختر الحساب المراد تعديله أو إرساله:</span>
-                    <span className="text-foreground">
-                      {selectedAccountIndex + 1} من {stagedAccounts.length}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-                    {stagedAccounts.map((acc, idx) => {
-                      const isCurr = idx === selectedAccountIndex;
-                      return (
-                        <button
-                          key={acc.id}
-                          type="button"
-                          onClick={() => setSelectedAccountIndex(idx)}
-                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all ${
-                            isCurr
-                              ? "bg-foreground text-background shadow-xs"
-                              : acc.isSent
-                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
-                                : "bg-card text-foreground border border-border hover:bg-muted"
-                          }`}
-                        >
-                          <span>الحساب {idx + 1}</span>
-                          {acc.matchedItemTitle && (
-                            <span className="text-[10px] opacity-80 truncate max-w-[100px]">
-                              ({acc.matchedItemTitle})
-                            </span>
-                          )}
-                          {acc.isSent && <Check className="w-3 h-3 shrink-0" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* 3 & 4 & 5. Account Details Inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {/* 3. Game Title */}
-                <div className="sm:col-span-2 space-y-1.5">
-                  <label className="text-xs font-bold text-foreground block">
-                    اسم اللعبة أو المنتج
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedGameTitle}
-                    onChange={(e) => {
-                      setSelectedGameTitle(e.target.value);
-                      if (stagedAccounts[selectedAccountIndex]) {
-                        const copy = [...stagedAccounts];
-                        copy[selectedAccountIndex] = {
-                          ...copy[selectedAccountIndex]!,
-                          matchedItemTitle: e.target.value,
-                        };
-                        setStagedAccounts(copy);
-                      }
-                    }}
-                    placeholder="مثال: Nintendo Switch Sports أو EA SPORTS FC 26"
-                    className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                {/* 4. Username / Email */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-foreground">
-                      البريد الإلكتروني / اسم المستخدم
-                    </label>
-                    {username && (
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(username, "اسم المستخدم")}
-                        className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 font-bold"
+                    });
+                    return (
+                      <div
+                        key={source.id}
+                        className="rounded-xl border border-border bg-card p-3"
                       >
-                        {copiedKey === "اسم المستخدم" ? (
-                          <Check className="w-3 h-3 text-emerald-500" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                        <span>نسخ</span>
-                      </button>
-                    )}
-                  </div>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
-                      if (stagedAccounts[selectedAccountIndex]) {
-                        const copy = [...stagedAccounts];
-                        copy[selectedAccountIndex] = {
-                          ...copy[selectedAccountIndex]!,
-                          username: e.target.value,
-                        };
-                        setStagedAccounts(copy);
-                      }
-                    }}
-                    placeholder="e.g. user@xiaohu666.com أو login_id"
-                    className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-                    dir="ltr"
-                  />
-                </div>
-
-                {/* 5. Password */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-foreground">كلمة المرور</label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={generateStrongPassword}
-                        className="text-[10px] text-primary hover:underline font-bold inline-flex items-center gap-0.5"
-                      >
-                        <RefreshCw className="w-2.5 h-2.5" />
-                        <span>توليد</span>
-                      </button>
-                      {password && (
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(password, "كلمة المرور")}
-                          className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 font-bold"
-                        >
-                          {copiedKey === "كلمة المرور" ? (
-                            <Check className="w-3 h-3 text-emerald-500" />
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                          <span className="font-mono font-bold" dir="ltr">
+                            {source.username}
+                          </span>
+                          <span className="text-red-600">
+                            الكشف: {source.detectedGame || "لم يُتعرف على لعبة"}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {availableTargets.length ? (
+                            availableTargets.map((target) => (
+                              <button
+                                type="button"
+                                key={target.id}
+                                disabled={busyId === source.id}
+                                onClick={() =>
+                                  void mapItem(source.id, target.id)
+                                }
+                                className="rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-[11px] font-bold text-primary disabled:opacity-50"
+                              >
+                                {target.productTitle}{" "}
+                                {target.slotNumber
+                                  ? `#${target.slotNumber}`
+                                  : ""}
+                              </button>
+                            ))
                           ) : (
-                            <Copy className="w-3 h-3" />
+                            <span className="text-[11px] text-muted-foreground">
+                              لا توجد خانة لعبة فارغة؛ راجع عدد عناصر الطلب.
+                            </span>
                           )}
-                          <span>نسخ</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (stagedAccounts[selectedAccountIndex]) {
-                          const copy = [...stagedAccounts];
-                          copy[selectedAccountIndex] = {
-                            ...copy[selectedAccountIndex]!,
-                            password: e.target.value,
-                          };
-                          setStagedAccounts(copy);
-                        }
-                      }}
-                      placeholder="e.g. qw83150220"
-                      className="w-full pl-8 pr-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-                      dir="ltr"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-3.5 h-3.5" />
-                      ) : (
-                        <Eye className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 6. Live Delivery Card Preview (معاينة بطاقة التسليم) */}
-              <div className="space-y-1.5">
-                <span className="text-xs font-bold text-muted-foreground block">
-                  معاينة بطاقة التسليم الفعلية (كما ستظهر للعميل):
-                </span>
-                <div className="p-4 rounded-2xl border border-border bg-card shadow-2xs max-w-sm space-y-3">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                    <div className="flex items-center gap-2">
-                      <Key className="w-4 h-4 text-amber-500" />
-                      <span className="text-xs font-bold text-foreground">معلومات الحساب</span>
-                    </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      جاهز للتسجيل
-                    </span>
-                  </div>
-
-                  {selectedGameTitle && (
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                      <Gamepad2 className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="truncate">{selectedGameTitle}</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-2 text-xs">
-                    <div className="p-2 rounded-xl bg-muted/40 border border-border/40 flex items-center justify-between">
-                      <div className="min-w-0">
-                        <span className="text-[10px] text-muted-foreground block">
-                          اسم المستخدم:
-                        </span>
-                        <span
-                          className="font-mono font-bold text-foreground select-all truncate block"
-                          dir="ltr"
-                        >
-                          {username || "—"}
-                        </span>
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(username, "اسم المستخدم")}
-                        className="p-1 text-muted-foreground hover:text-foreground"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="p-2 rounded-xl bg-muted/40 border border-border/40 flex items-center justify-between">
-                      <div className="min-w-0">
-                        <span className="text-[10px] text-muted-foreground block">
-                          كلمة المرور:
-                        </span>
-                        <span
-                          className="font-mono font-bold text-foreground select-all truncate block"
-                          dir="ltr"
-                        >
-                          {password || "—"}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(password, "كلمة المرور")}
-                        className="p-1 text-muted-foreground hover:text-foreground"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
 
-              {/* Integrated OTP Trigger (كود التحقق في دورة بيانات الحساب) */}
-              <div className="rounded-2xl border border-blue-500/25 bg-blue-500/5 p-3.5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold text-blue-800 dark:text-blue-300">
-                    <ShieldCheck className="w-4 h-4 text-blue-500" />
-                    <span>كود التحقق (OTP) لهذا الحساب</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsOtpSectionOpen(!isOtpSectionOpen)}
-                    className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline"
-                  >
-                    {isOtpSectionOpen ? "إخفاء" : "إرسال كود OTP"}
-                  </button>
-                </div>
-
-                {isOtpSectionOpen && (
-                  <div className="space-y-2.5 pt-1 animate-in fade-in">
-                    <p className="text-[11px] text-muted-foreground">
-                      يُرسل كود التحقق بعد قيام العميل بتسجيل الدخول وإرفاق إثبات الشاشة.
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        placeholder="أدخل كود التحقق (مثال: 489210)"
-                        className="flex-1 px-3 py-2 text-xs font-mono font-bold tracking-widest bg-background border border-border rounded-xl text-foreground focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
-                        dir="ltr"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleSendOtp}
-                        disabled={!otpCode.trim()}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                        <span>إرسال كود OTP</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* MODE 2: CODE / ACTIVATION CARD MODE                                      */}
-          {/* ========================================================================= */}
-          {mode === "card" && (
-            <div className="space-y-4">
-              {/* Product / Card Title */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground block">
-                  اسم البطاقة أو كود التفعيل
-                </label>
-                <input
-                  type="text"
-                  value={cardTitle}
-                  onChange={(e) => setCardTitle(e.target.value)}
-                  placeholder="مثال: Nintendo eShop $50 US أو كود تفعيل Xbox Game Pass"
-                  className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              {/* Code Input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground block">
-                  كود التفعيل / رقم البطاقة
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={cardCode}
-                    onChange={(e) => setCardCode(e.target.value)}
-                    placeholder="XXXX-XXXX-XXXX-XXXX"
-                    className="w-full px-3 py-2.5 text-sm font-mono font-bold tracking-wider bg-background border border-border rounded-xl text-foreground focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30"
-                    dir="ltr"
-                  />
-                </div>
-              </div>
-
-              {/* Toggle PIN field */}
               <div className="space-y-2">
-                {!showPinField ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowPinField(true)}
-                    className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>إضافة الرقم السري (PIN) إذا كانت البطاقة تتطلب ذلك</span>
-                  </button>
-                ) : (
-                  <div className="space-y-1.5 animate-in fade-in">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-foreground">الرقم السري (PIN)</label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowPinField(false);
-                          setCardPin("");
-                        }}
-                        className="text-[10px] text-muted-foreground hover:text-red-500 font-bold"
-                      >
-                        إلغاء PIN
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={cardPin}
-                      onChange={(e) => setCardPin(e.target.value)}
-                      placeholder="e.g. 1234"
-                      className="w-full px-3 py-2 text-xs bg-background border border-border rounded-xl text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-                      dir="ltr"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Live Preview for Card */}
-              <div className="space-y-1.5 pt-2">
-                <span className="text-xs font-bold text-muted-foreground block">
-                  معاينة بطاقة الكود (كما ستظهر للعميل):
-                </span>
-                <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 max-w-sm space-y-3">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                    <div className="flex items-center gap-2">
-                      <Ticket className="w-4 h-4 text-emerald-500" />
-                      <span className="text-xs font-bold text-foreground">
-                        كود البطاقة / التفعيل
-                      </span>
-                    </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold">
-                      جاهز للاستخدام
-                    </span>
-                  </div>
-
-                  <div className="text-xs font-bold text-foreground truncate">{cardTitle}</div>
-
-                  <div className="p-2.5 rounded-xl bg-card border border-border flex items-center justify-between">
-                    <span
-                      className="font-mono font-bold text-sm tracking-wider text-foreground select-all truncate"
-                      dir="ltr"
-                    >
-                      {cardCode || "XXXX-XXXX-XXXX-XXXX"}
-                    </span>
+                <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <Gamepad2 className="h-4 w-4 text-primary" /> الألعاب وعناصر
+                    التسليم
+                  </span>
+                  <span>{mappedItems.length} خانة مستقلة</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {mappedItems.map((item) => (
                     <button
                       type="button"
-                      onClick={() => copyToClipboard(cardCode, "كود البطاقة")}
-                      className="p-1 text-muted-foreground hover:text-foreground"
+                      key={item.id}
+                      onClick={() => setSelectedId(item.id)}
+                      className={`min-w-[145px] rounded-xl border px-3 py-2 text-right transition-colors ${selectedId === item.id ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted/50"}`}
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      <span className="block truncate text-[11px] font-bold text-foreground">
+                        {item.productTitle}
+                      </span>
+                      <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                        #{item.slotNumber || 1} • {STATUS_LABEL[item.status]}
+                      </span>
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {selected && selected.orderItemId && selectedDraft && (
+                <div className="space-y-4 rounded-2xl border border-border bg-muted/10 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] font-bold text-muted-foreground">
+                        اسم اللعبة من D1
+                      </span>
+                      <div className="mt-1 flex items-center gap-1.5 text-sm font-black text-foreground">
+                        <Gamepad2 className="h-4 w-4 text-primary" />
+                        {selected.productTitle}
+                      </div>
+                    </div>
+                    <span className="rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-bold text-muted-foreground">
+                      {STATUS_LABEL[selected.status]}
+                    </span>
                   </div>
 
-                  {cardPin && (
-                    <div className="p-2 rounded-xl bg-card border border-border flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">PIN:</span>
-                      <span className="font-mono font-bold text-foreground" dir="ltr">
-                        {cardPin}
-                      </span>
+                  {isCodeKind(selected.kind) ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="space-y-1.5 text-xs font-bold">
+                        <span>كود التفعيل</span>
+                        <input
+                          dir="ltr"
+                          value={selectedDraft.username}
+                          disabled={LOCKED_STATUSES.has(selected.status)}
+                          onChange={(event) =>
+                            scheduleDraftSave(selected.id, {
+                              username: event.target.value,
+                              password: selectedDraft.password,
+                            })
+                          }
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-xs disabled:opacity-60"
+                        />
+                      </label>
+                      <label className="space-y-1.5 text-xs font-bold">
+                        <span>PIN اختياري</span>
+                        <input
+                          dir="ltr"
+                          value={selectedDraft.password}
+                          disabled={LOCKED_STATUSES.has(selected.status)}
+                          onChange={(event) =>
+                            scheduleDraftSave(selected.id, {
+                              username: selectedDraft.username,
+                              password: event.target.value,
+                            })
+                          }
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-xs disabled:opacity-60"
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="space-y-1.5 text-xs font-bold">
+                        <span>البريد الإلكتروني / اسم المستخدم</span>
+                        <div className="relative">
+                          <input
+                            dir="ltr"
+                            value={selectedDraft.username}
+                            disabled={LOCKED_STATUSES.has(selected.status)}
+                            onChange={(event) =>
+                              scheduleDraftSave(selected.id, {
+                                username: event.target.value,
+                                password: selectedDraft.password,
+                              })
+                            }
+                            onBlur={() => void flushDraft(selected.id)}
+                            className="w-full rounded-xl border border-border bg-background px-3 py-2 pl-8 font-mono text-xs disabled:opacity-60"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void copyValue(
+                                selectedDraft.username,
+                                `user-${selected.id}`,
+                              )
+                            }
+                            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {copied === `user-${selected.id}` ? (
+                              <Check className="h-3.5 w-3.5" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </label>
+                      <label className="space-y-1.5 text-xs font-bold">
+                        <span className="flex items-center justify-between">
+                          كلمة المرور
+                          {!LOCKED_STATUSES.has(selected.status) && (
+                            <button
+                              type="button"
+                              onClick={generatePassword}
+                              className="text-[10px] text-primary"
+                            >
+                              توليد
+                            </button>
+                          )}
+                        </span>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            dir="ltr"
+                            value={selectedDraft.password}
+                            disabled={LOCKED_STATUSES.has(selected.status)}
+                            onChange={(event) =>
+                              scheduleDraftSave(selected.id, {
+                                username: selectedDraft.username,
+                                password: event.target.value,
+                              })
+                            }
+                            onBlur={() => void flushDraft(selected.id)}
+                            className="w-full rounded-xl border border-border bg-background px-3 py-2 pl-9 font-mono text-xs disabled:opacity-60"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword((value) => !value)}
+                            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-3.5 w-3.5" />
+                            ) : (
+                              <Eye className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
+                  <div className="flex min-h-5 items-center gap-1.5 text-[10px] text-muted-foreground">
+                    {savingIds[selected.id] ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin" /> جارٍ حفظ
+                        مسودة هذه اللعبة في D1...
+                      </>
+                    ) : selectedDraft.dirty ? (
+                      "بانتظار الحفظ التلقائي..."
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />{" "}
+                        المسودة محفوظة على الخادم
+                      </>
+                    )}
+                  </div>
+
+                  {!isCodeKind(selected.kind) && (
+                    <div className="rounded-xl border border-blue-500/25 bg-blue-500/5 p-3">
+                      <div className="mb-2 flex items-center justify-between text-xs font-bold text-blue-800 dark:text-blue-300">
+                        <span className="flex items-center gap-1.5">
+                          <ShieldCheck className="h-4 w-4" /> OTP لهذا الحساب
+                        </span>
+                        {selected.proofReceivedAt
+                          ? "تم استلام الإثبات"
+                          : "ينتظر إثبات العميل"}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          dir="ltr"
+                          value={otpById[selected.id] || ""}
+                          onChange={(event) =>
+                            setOtpById((value) => ({
+                              ...value,
+                              [selected.id]: event.target.value,
+                            }))
+                          }
+                          disabled={selected.status !== "proof_received"}
+                          placeholder="أدخل OTP"
+                          className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 font-mono text-xs tracking-widest disabled:opacity-50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void sendOtp()}
+                          disabled={
+                            selected.status !== "proof_received" ||
+                            !(otpById[selected.id] || "").trim() ||
+                            busyId === selected.id
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+                        >
+                          {busyId === selected.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Send className="h-3.5 w-3.5" />
+                          )}{" "}
+                          إرسال OTP
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-          )}
+              )}
+            </>
+          ) : null}
         </div>
 
-        {/* Modal Footer Controls */}
-        <div className="p-4 border-t border-border bg-muted/20 flex items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border bg-muted/20 p-4">
+          <button
+            type="button"
+            onClick={() => void handleClose()}
+            className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground"
+          >
+            إغلاق
+          </button>
+          {selected && selectedDraft && isCodeKind(selected.kind) ? (
             <button
               type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors"
+              onClick={() => void sendCode()}
+              disabled={
+                !selectedDraft.username.trim() ||
+                LOCKED_STATUSES.has(selected.status) ||
+                busyId === selected.id
+              }
+              className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-5 py-2.5 text-xs font-bold text-background disabled:opacity-40"
             >
-              إلغاء
+              <Ticket className="h-3.5 w-3.5" /> إرسال كود هذا العنصر
             </button>
-
-            {order && order.status !== "completed" && onCompleteOrder && (
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await onCompleteOrder(order.id);
-                    toast.success("تم إكمال الطلب وإرسال بطاقة التقييم بنجاح ✅");
-                    onClose();
-                  } catch (err: any) {
-                    toast.error(err?.message || "فشل إكمال الطلب");
-                  }
-                }}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
-                title="تأكيد اكتمال جميع عناصر الطلب وإغلاق التجهيز"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>✓ تأكيد اكتمال الطلب</span>
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {mode === "account" ? (
-              <button
-                type="button"
-                onClick={handleSendCurrentAccount}
-                disabled={!username.trim() || !password.trim()}
-                className="px-5 py-2.5 bg-foreground hover:bg-foreground/90 disabled:opacity-40 text-background rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>
-                  {stagedAccounts.length > 1
-                    ? `إرسال الحساب (${selectedAccountIndex + 1}/${stagedAccounts.length})`
-                    : "إرسال بيانات الحساب للعميل"}
-                </span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSendCard}
-                disabled={!cardCode.trim()}
-                className="px-5 py-2.5 bg-foreground hover:bg-foreground/90 disabled:opacity-40 text-background rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>إرسال كود التفعيل للعميل</span>
-              </button>
-            )}
-          </div>
+          ) : selected ? (
+            <button
+              type="button"
+              onClick={() => void sendCredentials()}
+              disabled={
+                selected.status !== "ready" ||
+                busyId === selected.id ||
+                Boolean(savingIds[selected.id])
+              }
+              className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-5 py-2.5 text-xs font-bold text-background disabled:opacity-40"
+            >
+              {busyId === selected.id ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Send className="h-3.5 w-3.5" />
+              )}{" "}
+              إرسال الحساب المحدد
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
   );
 }
+
+export default AccountToolsModal;
