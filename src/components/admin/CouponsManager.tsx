@@ -19,6 +19,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  Ticket,
 } from "lucide-react";
 import { adminApi, api } from "@/lib/api";
 import { getCouponRemainingTime } from "@/lib/coupons";
@@ -49,6 +50,7 @@ export default function CouponsManager() {
     onlyDigitalProducts: false,
     isStackable: false,
     oncePerUserLifetime: false,
+    offlineAccountOnly: false,
     eligibleProducts: [],
     startAt: "",
     expirationAt: "",
@@ -124,13 +126,14 @@ export default function CouponsManager() {
       onlyDigitalProducts: false,
       isStackable: false,
       oncePerUserLifetime: false,
+      offlineAccountOnly: false,
       eligibleProducts: [],
       startAt: "",
       expirationAt: "",
     });
   };
 
-  const applyPreset = (preset: "single_50" | "percent_10" | "fixed_5k") => {
+  const applyPreset = (preset: "single_50" | "offline_once" | "percent_10" | "fixed_5k") => {
     if (preset === "single_50") {
       setForm({
         ...form,
@@ -140,6 +143,19 @@ export default function CouponsManager() {
         perUserLimit: 1,
         oncePerUserLifetime: true,
         onlyDigitalProducts: true,
+        isStackable: false,
+        isActive: true,
+      });
+    } else if (preset === "offline_once") {
+      setForm({
+        ...form,
+        code: `OFFLINE50-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+        discountType: "single_item_percent",
+        discountValue: 50,
+        perUserLimit: 1,
+        oncePerUserLifetime: true,
+        onlyDigitalProducts: true,
+        offlineAccountOnly: true,
         isStackable: false,
         isActive: true,
       });
@@ -219,6 +235,10 @@ export default function CouponsManager() {
         coupon.once_per_user_lifetime !== undefined
           ? Boolean(coupon.once_per_user_lifetime)
           : coupon.oncePerUserLifetime,
+      offlineAccountOnly:
+        coupon.offline_account_only !== undefined
+          ? Boolean(coupon.offline_account_only)
+          : Boolean(coupon.offlineAccountOnly),
       startAt: coupon.start_at || coupon.startAt || "",
       expirationAt: coupon.expiration_at || coupon.expirationAt || "",
       eligibleProducts:
@@ -298,7 +318,7 @@ export default function CouponsManager() {
       </div>
 
       {/* Quick Creator Presets */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
         <div
           onClick={() => {
             applyPreset("single_50");
@@ -323,6 +343,27 @@ export default function CouponsManager() {
             </div>
           </div>
           <Plus className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+        </div>
+
+        <div
+          onClick={() => {
+            applyPreset("offline_once");
+            setIsAdding(true);
+          }}
+          className="group cursor-pointer p-4 bg-gradient-to-br from-violet-500/10 via-card to-card border border-violet-500/20 hover:border-violet-500/40 rounded-2xl transition-all shadow-sm flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-violet-500/20 text-violet-500 rounded-xl">
+              <Ticket className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-foreground">خصم لعبة أوفلاين</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                50% على لعبة واحدة بحساب أوفلاين — مرة لكل حساب
+              </div>
+            </div>
+          </div>
+          <Plus className="w-4 h-4 text-violet-500 group-hover:scale-110 transition-transform" />
         </div>
 
         <div
@@ -921,6 +962,24 @@ export default function CouponsManager() {
                   </span>
                   <p className="text-xs text-muted-foreground">
                     يرفض السلة إذا كانت تحتوي على أجهزة أو إكسسوارات ملموسة.
+                  </p>
+                </div>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-border"
+                  checked={form.offlineAccountOnly}
+                  onChange={(e) => setForm({ ...form, offlineAccountOnly: e.target.checked })}
+                />
+                <div>
+                  <span className="text-sm font-bold text-foreground">
+                    خاص بحساب أوفلاين فقط (نسخة واحدة)
+                  </span>
+                  <p className="text-xs text-muted-foreground">
+                    يُطبَّق الخصم على لعبة واحدة مشتراة بخيار «حساب أوفلاين» وبكمية 1 فقط. الألعاب
+                    بخيار أونلاين والأجهزة والبندلات لا تحصل على الخصم.
                   </p>
                 </div>
               </label>

@@ -880,6 +880,10 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE coupon_redemptions ADD COLUMN coupon_type TEXT`,
   `ALTER TABLE coupon_redemptions ADD COLUMN discount_amount REAL`,
   `ALTER TABLE coupon_redemptions ADD COLUMN target_product_id TEXT`,
+  /* Which option the discounted copy was bought with, for the audit trail. */
+  `ALTER TABLE coupon_redemptions ADD COLUMN variant_id TEXT`,
+  /* Restricts a coupon to one game bought with the Offline account option. */
+  `ALTER TABLE coupons ADD COLUMN offline_account_only INTEGER DEFAULT 0`,
   `CREATE INDEX IF NOT EXISTS coupon_redemptions_user_idx ON coupon_redemptions(user_id, coupon_type)`,
 
   /*
@@ -1508,6 +1512,7 @@ const COUPONS_COLUMNS: Record<string, string> = {
   only_digital_products: "INTEGER DEFAULT 0",
   is_stackable: "INTEGER DEFAULT 0",
   once_per_user_lifetime: "INTEGER DEFAULT 0",
+  offline_account_only: "INTEGER DEFAULT 0",
 };
 
 const COUPON_REDEMPTIONS_TABLE = `CREATE TABLE IF NOT EXISTS coupon_redemptions (
@@ -1518,6 +1523,7 @@ const COUPON_REDEMPTIONS_TABLE = `CREATE TABLE IF NOT EXISTS coupon_redemptions 
   order_id TEXT NOT NULL,
   discount_amount REAL,
   target_product_id TEXT,
+  variant_id TEXT,
   created_at TEXT NOT NULL
 )`;
 

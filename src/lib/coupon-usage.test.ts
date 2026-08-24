@@ -29,7 +29,8 @@ vi.mock("./d1.server", () => ({
     Number(db.prepare(sql).run(...(binds as never[])).changes ?? 0),
 }));
 
-const { claimCouponUse, readCouponUsage, releaseCouponUse } = await import("./coupon-usage.server");
+const { claimCouponUse, readCouponUsage, releaseCouponUse, repairCouponUsageCounters } =
+  await import("./coupon-usage.server");
 
 function reset() {
   db.exec(`DROP TABLE IF EXISTS coupons`);
@@ -263,5 +264,69 @@ describe("readCouponUsage", () => {
     // database mid-migration does not hand everyone a free use.
     expect(await readCouponUsage("c2", "a")).toEqual({ userUses: 1, globalUses: 2 });
     expect(await readCouponUsage("c2", "c")).toEqual({ userUses: 0, globalUses: 2 });
+  });
+});
+
+describe("repairing counters that drifted from the audit trail", () => {
+  beforeEach(reset);
+
+  it("frees a coupon whose total was inflated past its real redemptions", async () => {
+    // One member redeemed once, but the stored total says the cap is spent —
+    // so the coupon refuses everybody.
+    db.prepare(`INSERT INTO coupons (id, code, usage_limit, total_uses) VALUES (?, ?, ?, ?)`).run(
+      "c1",
+      "OFFLINE50",
+      5,
+      5,
+    );
+    db.prepare(
+      `INSERT INTO coupon_redemptions (id, coupon_id, user_id, order_id, created_at)
+       VALUES ('r1', 'c1', 'user_a', 'o1', '2026-01-01')`,
+    ).run();
+
+    const repaired = await repairCouponUsageCounters();
+
+    expect(repaired).toEqual([
+      {
+        couponId: "c1",
+        code: "OFFLINE50",
+        storedTotal: 5,
+        actualTotal: 1,
+        restoredUserRows: 1,
+      },
+    ]);
+    expect(totalOf("c1")).toBe(1);
+
+    // Member A's genuine use is preserved, and member B can now redeem.
+    expect(await readCouponUsage("c1", "user_a")).toEqual({ userUses: 1, globalUses: 1 });
+    expect(await readCouponUsage("c1", "user_b")).toEqual({ userUses: 0, globalUses: 1 });
+    expect((await claimCouponUse({ couponId: "c1", userId: "user_b", perUserLimit: 1 })).ok).toBe(
+      true,
+    );
+    // ...and member A still cannot use it twice.
+    expect((await claimCouponUse({ couponId: "c1", userId: "user_a", perUserLimit: 1 })).ok).toBe(
+      false,
+    );
+  });
+
+  it("leaves a coupon whose counters already match the trail alone", async () => {
+    db.prepare(`INSERT INTO coupons (id, code, usage_limit, total_uses) VALUES (?, ?, ?, ?)`).run(
+      "c2",
+      "FINE",
+      0,
+      1,
+    );
+    db.prepare(
+      `INSERT INTO coupon_redemptions (id, coupon_id, user_id, order_id, created_at)
+       VALUES ('r2', 'c2', 'user_a', 'o2', '2026-01-01')`,
+    ).run();
+    db.prepare(
+      `INSERT INTO coupon_user_usage (coupon_id, user_id, uses, first_used_at, last_used_at)
+       VALUES ('c2', 'user_a', 1, 'x', 'x')`,
+    ).run();
+
+    expect(await repairCouponUsageCounters()).toEqual([]);
+    expect(usesOf("c2", "user_a")).toBe(1);
+    expect(totalOf("c2")).toBe(1);
   });
 });

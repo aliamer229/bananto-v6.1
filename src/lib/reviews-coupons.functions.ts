@@ -163,6 +163,14 @@ export const validateCoupon = createServerFn({ method: "POST" })
           unitPrice: z.number().optional(),
           quantity: z.number().optional(),
           title: z.string().optional(),
+          /* The selection, so the cart preview agrees with checkout about an
+             offline-account restriction. Advisory only: checkout re-reads it
+             from the catalogue. */
+          optionId: z.string().optional(),
+          optionName: z.string().optional(),
+          typeId: z.string().optional(),
+          typeName: z.string().optional(),
+          offerKind: z.string().optional(),
         }),
       ),
     }),

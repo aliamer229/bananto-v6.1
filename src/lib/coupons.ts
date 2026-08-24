@@ -1,4 +1,5 @@
 import type { Coupon, DiscountType } from "./types";
+import { isOfflineAccountSelection } from "./offlineAccount";
 
 /**
  * Coupons live in D1 as snake_case columns and are used everywhere else as the
@@ -26,6 +27,7 @@ export interface CouponRow {
   only_digital_products?: unknown;
   is_stackable?: unknown;
   once_per_user_lifetime?: unknown;
+  offline_account_only?: unknown;
   created_at?: unknown;
 }
 
@@ -123,6 +125,10 @@ export function rowToCoupon(row: CouponRow | any): Coupon {
         ? Boolean(row.oncePerUserLifetime)
         : false);
 
+  const offlineAccountOnly = Boolean(
+    Number(row.offline_account_only ?? (row.offlineAccountOnly ? 1 : 0)),
+  );
+
   return {
     id: String(row.id ?? ""),
     code: String(row.code ?? ""),
@@ -162,6 +168,8 @@ export function rowToCoupon(row: CouponRow | any): Coupon {
     is_stackable: Number(Boolean(Number(row.is_stackable ?? (row.isStackable ? 1 : 0)))),
     oncePerUserLifetime,
     once_per_user_lifetime: Number(oncePerUserLifetime),
+    offlineAccountOnly,
+    offline_account_only: Number(offlineAccountOnly),
     createdAt: String(row.created_at ?? row.createdAt ?? ""),
     created_at: String(row.created_at ?? row.createdAt ?? ""),
   };
@@ -181,6 +189,16 @@ export interface CouponCheckItem {
   unitPrice?: number;
   quantity?: number;
   title?: string;
+  /*
+    The selection the member actually made, as stored on the line. A coupon
+    restricted to offline accounts is decided from these — never from the text
+    shown in the cart, which the browser controls.
+  */
+  optionId?: string | number | null;
+  optionName?: string | null;
+  typeId?: string | number | null;
+  typeName?: string | null;
+  offerKind?: string | null;
 }
 
 export interface CouponCheckInput {
@@ -205,6 +223,7 @@ export type CouponRefusal =
   | "min_order"
   | "not_eligible"
   | "no_eligible_products"
+  | "no_offline_account_item"
   | "digital_only";
 
 /**
@@ -212,6 +231,18 @@ export type CouponRefusal =
  */
 export function getEligibleItems(coupon: Coupon, items: CouponCheckItem[]): CouponCheckItem[] {
   let list = items;
+  /*
+    Offline-account coupons.
+
+    The restriction is on the *selection*, not on the product: the same Nintendo
+    game bought as an online account is not eligible, and neither is hardware, a
+    bundle or anything else that has no offline-account option to pick. Deciding
+    it from `optionId`/`typeId` is what makes it hold — the label in the cart is
+    the browser's to write.
+  */
+  if (coupon.offlineAccountOnly) {
+    list = list.filter((it) => isOfflineAccountSelection(it));
+  }
   if (coupon.onlyDigitalProducts) {
     list = list.filter((it) => !isPhysicalKind(it.kind));
   }
@@ -306,14 +337,19 @@ export function checkCoupon(
     return { ok: false, reason: "digital_only" };
   }
 
-  // Check eligible products for single_item_percent or specific product restriction
+  // Check eligible products for single_item_percent, an offline-account
+  // restriction, or a specific product restriction.
   if (
     coupon.discountType === "single_item_percent" ||
+    coupon.offlineAccountOnly ||
     (coupon.eligibleProducts && coupon.eligibleProducts.length > 0)
   ) {
     const eligible = getEligibleItems(coupon, input.items);
     if (eligible.length === 0) {
-      return { ok: false, reason: "no_eligible_products" };
+      return {
+        ok: false,
+        reason: coupon.offlineAccountOnly ? "no_offline_account_item" : "no_eligible_products",
+      };
     }
 
     // Determine target item: if user selected a specific productId, verify it's eligible
@@ -347,7 +383,16 @@ export function couponDiscount(
   targetTitle?: string;
   singleUnitPrice?: number;
 } {
-  if (coupon.discountType === "single_item_percent") {
+  /*
+    A single-unit discount, whatever the discount type.
+
+    `single_item_percent` always worked this way. An offline-account coupon has
+    to as well: the rule is "one eligible game, one copy", so a cart holding two
+    offline games — or one offline game with quantity 3 — still gets the
+    discount on a single unit of a single line. A percentage is therefore taken
+    against that unit's price, never against the order total.
+  */
+  if (coupon.discountType === "single_item_percent" || coupon.offlineAccountOnly) {
     const eligible = getEligibleItems(coupon, items);
     if (eligible.length === 0) {
       return { discount: 0 };
@@ -365,10 +410,16 @@ export function couponDiscount(
     if (!targetItem) return { discount: 0 };
 
     const unitPrice = Math.max(0, targetItem.unitPrice || 0);
-    const percent = coupon.discountValue > 0 ? coupon.discountValue : 50;
 
-    // Strict 1-unit discount calculation:
-    const baseDiscount = Math.floor(unitPrice * (percent / 100));
+    // Strict 1-unit discount calculation. A fixed-amount coupon takes its
+    // amount off that one unit; a percentage takes its share of it.
+    let baseDiscount: number;
+    if (coupon.discountType === "fixed") {
+      baseDiscount = Math.min(Math.floor(coupon.discountValue), Math.floor(unitPrice));
+    } else {
+      const percent = coupon.discountValue > 0 ? coupon.discountValue : 50;
+      baseDiscount = Math.floor(unitPrice * (percent / 100));
+    }
     const capped =
       coupon.maxDiscountAmount !== undefined
         ? Math.min(baseDiscount, coupon.maxDiscountAmount)
@@ -406,5 +457,7 @@ export const COUPON_REFUSAL_MESSAGE: Record<CouponRefusal, string> = {
   min_order: "قيمة الطلب أقل من الحد الأدنى لاستخدام الكوبون",
   not_eligible: "هذا الكوبون غير مخصص لحسابك",
   no_eligible_products: "السلة لا تحتوي على أي لعبة مؤهلة لهذا الكوبون",
+  no_offline_account_item:
+    "هذا الكوبون يُطبَّق فقط على لعبة Nintendo مشتراة بخيار «حساب أوفلاين»، ولا توجد في سلتك لعبة بهذا الخيار",
   digital_only: "هذا الكوبون صالح فقط للمنتجات الرقمية.",
 };
