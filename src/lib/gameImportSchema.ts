@@ -811,12 +811,19 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   { key: "supports_arabic", type: "boolean", target: "arabicSupport", description: "يدعم العربية" },
 
   // MULTIPLAYER
-  { key: "multiplayer_local", type: "string", target: "mpLocalPlayers", description: "لعب محلي" },
+  {
+    key: "multiplayer_local",
+    type: "string",
+    target: "mpLocalPlayers",
+    /* A player count, not a flag: the hub parses "1-4" into a min/max range. */
+    description: "عدد اللاعبين محلياً (مثال: 1-4) — نص وليس true/false",
+  },
   {
     key: "multiplayer_online",
     type: "string",
     target: "mpOnlinePlayers",
-    description: "لعب أونلاين",
+    /* A player count, not a flag: the hub parses "2-8" into a min/max range. */
+    description: "عدد اللاعبين أونلاين (مثال: 2-8) — نص وليس true/false",
   },
   { key: "multiplayer_cooperative", type: "boolean", target: "mpCoop", description: "لعب تعاوني" },
   {

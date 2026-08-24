@@ -1,55 +1,112 @@
 import { GAME_IMPORT_SCHEMA, FieldDef } from "./gameImportSchema";
 
+/** Printed immediately above a run of boolean fields, and nowhere else. */
+export const BOOLEAN_ONLY_NOTE = "BOOLEAN ONLY: true / false / blank if unknown";
+
+/**
+ * One line of the template.
+ *
+ * The boolean note has to sit directly above the fields it describes, so the
+ * template is built as lines that know what they are rather than as one string:
+ * a note printed above a whole group lands above `device_performance.1.device`,
+ * which is text, and teaches exactly the mistake it was meant to prevent.
+ */
+type TemplateLine =
+  { kind: "comment" | "blank"; text: string } | { kind: "value"; text: string; isBoolean: boolean };
+
+const BOOLEAN_RULE = [
+  "# BOOLEAN RULE:",
+  "# Boolean fields accept only:",
+  "#   true",
+  "#   false",
+  "#   blank if unknown",
+  "#",
+  "# Never write: Not Published / Unknown / N/A / Yes / No / Not Supported",
+  "# An explanation belongs in performance_notes, or in the matching",
+  "# device_performance.X.handheld.notes / .tv.notes / .performance_notes.",
+  "#",
+  "# Only the fields under a BOOLEAN ONLY note are boolean. These three read",
+  "# like flags but hold text, so never write true/false in them:",
+  "#   resolution_dynamic      a dynamic resolution range, e.g. 1280x720~1920x1080",
+  "#   multiplayer_local       local player count, e.g. 1-4",
+  "#   multiplayer_online      online player count, e.g. 2-8",
+];
+
 export function generateGameImportTemplate(): string {
-  let template = "# Nintendo Switch Game Import Template\n";
-  template += "# =========================================\n";
-  template += "# الصيغة: field=value\n";
-  template += "# النصوص الطويلة: field<<EOF ... EOF\n";
-  template += "# العناصر المتكررة: genre.1=Action, genre.2=RPG\n";
-  template += "# =========================================\n\n";
+  const lines: TemplateLine[] = [];
+  const comment = (text: string) => lines.push({ kind: "comment", text });
+
+  comment("# Nintendo Switch Game Import Template");
+  comment("# =========================================");
+  comment("# الصيغة: field=value");
+  comment("# النصوص الطويلة: field<<EOF ... EOF");
+  comment("# العناصر المتكررة: genre.1=Action, genre.2=RPG");
+  comment("# =========================================");
+  lines.push({ kind: "blank", text: "" });
+  BOOLEAN_RULE.forEach(comment);
+  comment("# =========================================");
+  lines.push({ kind: "blank", text: "" });
 
   for (const field of GAME_IMPORT_SCHEMA) {
     if (field.key === "device_performance") {
-      template += "# =========================================\n";
-      template += "# DEVICE PERFORMANCE\n";
-      template += "# =========================================\n";
-      template += "# Actual game performance only; never copy hardware maximum capabilities.\n";
-      template +=
-        "# Leave unpublished values blank or use information_status with a source/reason.\n";
+      comment("# =========================================");
+      comment("# DEVICE PERFORMANCE");
+      comment("# =========================================");
+      comment("# Actual game performance only; never copy hardware maximum capabilities.");
+      comment("# Leave unpublished values blank or use information_status with a source/reason.");
       /*
         One index per *distinct* device. Repeating the same device across .1,
         .2 and .3 is what produced phantom duplicates in the catalogue, and the
         importer now refuses a file that does it.
       */
-      template += "# ONE DEVICE PER INDEX: .1 is the first real device, .2 only if a\n";
-      template += "# genuinely different second device has its own measured data, .3 likewise.\n";
-      template += "# Never repeat the same device across indexes — leave unused ones blank.\n";
+      comment("# ONE DEVICE PER INDEX: .1 is the first real device, .2 only if a");
+      comment("# genuinely different second device has its own measured data, .3 likewise.");
+      comment("# Never repeat the same device across indexes — leave unused ones blank.");
     }
     if (field.description) {
-      template += `# ${field.description}\n`;
-    }
-    if (hasBooleanMember(field)) {
-      template += `# ${BOOLEAN_ONLY_NOTE}\n`;
+      comment(`# ${field.description}`);
     }
 
     if (field.key === "slug") {
-      template += `# الرابط الفريد (اختياري)\n${field.key}=\n`;
+      comment("# الرابط الفريد (اختياري)");
+      lines.push({ kind: "value", text: `${field.key}=`, isBoolean: false });
     } else {
-      template += renderField(field, field.key);
+      lines.push(...renderField(field, field.key));
     }
-    template += "\n";
+    lines.push({ kind: "blank", text: "" });
   }
 
-  return template;
+  return annotateBooleans(lines)
+    .map((line) => `${line.text}\n`)
+    .join("");
 }
 
-/** Printed above any group that carries a boolean, so nobody writes prose in one. */
-export const BOOLEAN_ONLY_NOTE = "BOOLEAN ONLY: true / false / blank if unknown";
+/**
+ * Inserts the boolean note above each run of boolean fields.
+ *
+ * A run is consecutive *value* lines that are boolean; the comments and blank
+ * lines between them (a field's own description, for instance) do not break it,
+ * so six multiplayer flags get one note rather than six. The note is placed
+ * above the description of the first field in the run, not between the
+ * description and its field.
+ */
+function annotateBooleans(lines: TemplateLine[]): TemplateLine[] {
+  const out: TemplateLine[] = [];
+  let previousValueWasBoolean = false;
 
-/** Does this field, or anything nested inside it, take true/false? */
-function hasBooleanMember(field: FieldDef): boolean {
-  if (field.type === "boolean") return true;
-  return Object.values(field.itemFields || {}).some(hasBooleanMember);
+  for (const line of lines) {
+    if (line.kind === "value" && line.isBoolean && !previousValueWasBoolean) {
+      // Step back over the comment/blank lines this field already printed so
+      // the note heads the whole block.
+      let insertAt = out.length;
+      while (insertAt > 0 && out[insertAt - 1]!.kind === "comment") insertAt--;
+      out.splice(insertAt, 0, { kind: "comment", text: `# ${BOOLEAN_ONLY_NOTE}` });
+    }
+    if (line.kind === "value") previousValueWasBoolean = line.isBoolean;
+    out.push(line);
+  }
+
+  return out;
 }
 
 /**
@@ -72,33 +129,49 @@ function isSimpleList(field: FieldDef): boolean {
 }
 
 /** Renders nested fields recursively, including device_performance.N.mode.N.*. */
-function renderField(field: FieldDef, path: string): string {
+function renderField(field: FieldDef, path: string): TemplateLine[] {
   if (field.repeatable) {
-    let output = "";
+    const out: TemplateLine[] = [];
     const repeats = field.templateRepeat ?? 3;
     const simpleList = isSimpleList(field);
     for (let index = 1; index <= repeats; index++) {
       const indexedPath = `${path}.${index}`;
       if (simpleList) {
-        output += `${indexedPath}=\n`;
+        out.push({ kind: "value", text: `${indexedPath}=`, isBoolean: false });
       } else if (field.type === "object" && field.itemFields) {
         for (const child of Object.values(field.itemFields)) {
-          output += renderField(child, `${indexedPath}.${child.key}`);
+          out.push(...renderField(child, `${indexedPath}.${child.key}`));
         }
       } else {
-        output += `${indexedPath}=${defaultOf(field)}\n`;
+        out.push({
+          kind: "value",
+          text: `${indexedPath}=${defaultOf(field)}`,
+          isBoolean: field.type === "boolean",
+        });
       }
     }
-    return output;
+    return out;
   }
 
   if (field.type === "object" && field.itemFields) {
-    return Object.values(field.itemFields)
-      .map((child) => renderField(child, `${path}.${child.key}`))
-      .join("");
+    return Object.values(field.itemFields).flatMap((child) =>
+      renderField(child, `${path}.${child.key}`),
+    );
   }
-  if (field.type === "multiline") return `${path}<<EOF\n\nEOF\n`;
-  return `${path}=${defaultOf(field)}\n`;
+  if (field.type === "multiline") {
+    return [
+      { kind: "value", text: `${path}<<EOF`, isBoolean: false },
+      { kind: "value", text: "", isBoolean: false },
+      { kind: "value", text: "EOF", isBoolean: false },
+    ];
+  }
+  return [
+    {
+      kind: "value",
+      text: `${path}=${defaultOf(field)}`,
+      isBoolean: field.type === "boolean",
+    },
+  ];
 }
 
 /** Pre-filled value for fields that declare one; every other field stays blank. */
