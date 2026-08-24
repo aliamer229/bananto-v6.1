@@ -15,11 +15,15 @@
 # An explanation belongs in performance_notes, or in the matching
 # device_performance.X.handheld.notes / .tv.notes / .performance_notes.
 #
-# Only the fields under a BOOLEAN ONLY note are boolean. These three read
-# like flags but hold text, so never write true/false in them:
-#   resolution_dynamic      a dynamic resolution range, e.g. 1280x720~1920x1080
-#   multiplayer_local       local player count, e.g. 1-4
-#   multiplayer_online      online player count, e.g. 2-8
+# resolution_dynamic is BOOLEAN ONLY:
+#   true  = resolution is dynamic
+#   false = resolution is fixed
+#   blank = unknown
+# The measured values belong in resolution / rendering_resolution /
+# output_resolution — never in resolution_dynamic.
+#
+# Player counts live in players_count / players / player_count, never in a
+# multiplayer_* flag.
 # =========================================
 
 schema_version=
@@ -299,33 +303,43 @@ official_store_url=
 # تتطلب Switch Online
 nintendo_requires_switch_online=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # تتطلب اشتراك Switch Online
 requires_nintendo_switch_online=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # يدعم الحفظ السحابي
 nintendo_cloud_save=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # حفظ البيانات سحابياً
 save_data_cloud=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # بطاقة مفتاح اللعبة
 nintendo_game_key_card=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # بطاقة مفتاح اللعبة
 game_key_card=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # النسخة الفعلية تتطلب تنزيلاً
 nintendo_physical_requires_download=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # النسخة الفيزيائية تتطلب تنزيلاً
 physical_download_required=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # يدعم وضع التلفزيون
 tv_mode=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # يدعم وضع سطح الطاولة
 tabletop_mode=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # يدعم الوضع المحمول
 handheld_mode=
 
@@ -341,6 +355,7 @@ EOF
 # نسخة محسنة لـ Switch 2
 switch2_enhanced=
 
+# BOOLEAN ONLY: true / false / blank if unknown
 # نسخة محسنة لـ Switch 2
 switch_2_enhanced=
 
@@ -504,6 +519,7 @@ EOF
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.1.handheld.supported=
 device_performance.1.handheld.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
 device_performance.1.handheld.resolution_dynamic=
 device_performance.1.handheld.rendering_resolution=
 device_performance.1.handheld.output_resolution=
@@ -521,6 +537,7 @@ EOF
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.1.tv.supported=
 device_performance.1.tv.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
 device_performance.1.tv.resolution_dynamic=
 device_performance.1.tv.rendering_resolution=
 device_performance.1.tv.output_resolution=
@@ -597,6 +614,7 @@ EOF
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.2.handheld.supported=
 device_performance.2.handheld.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
 device_performance.2.handheld.resolution_dynamic=
 device_performance.2.handheld.rendering_resolution=
 device_performance.2.handheld.output_resolution=
@@ -614,6 +632,7 @@ EOF
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.2.tv.supported=
 device_performance.2.tv.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
 device_performance.2.tv.resolution_dynamic=
 device_performance.2.tv.rendering_resolution=
 device_performance.2.tv.output_resolution=
@@ -690,6 +709,7 @@ EOF
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.3.handheld.supported=
 device_performance.3.handheld.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
 device_performance.3.handheld.resolution_dynamic=
 device_performance.3.handheld.rendering_resolution=
 device_performance.3.handheld.output_resolution=
@@ -707,6 +727,7 @@ EOF
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.3.tv.supported=
 device_performance.3.tv.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
 device_performance.3.tv.resolution_dynamic=
 device_performance.3.tv.rendering_resolution=
 device_performance.3.tv.output_resolution=
@@ -805,13 +826,13 @@ supported_languages_raw=
 # يدعم العربية
 supports_arabic=
 
-# عدد اللاعبين محلياً (مثال: 1-4) — نص وليس true/false
+# BOOLEAN ONLY: true / false / blank if unknown
+# لعب محلي
 multiplayer_local=
 
-# عدد اللاعبين أونلاين (مثال: 2-8) — نص وليس true/false
+# لعب أونلاين
 multiplayer_online=
 
-# BOOLEAN ONLY: true / false / blank if unknown
 # لعب تعاوني
 multiplayer_cooperative=
 

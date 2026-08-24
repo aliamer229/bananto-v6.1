@@ -295,7 +295,7 @@ function buildPerformance(
       values: typeof record.handheld,
     ): NonNullable<PerformanceProfile["modes"]>[number] | undefined => {
       if (!values) return undefined;
-      const resolution = values.outputResolution || values.resolution || values.resolutionDynamic;
+      const resolution = values.outputResolution || values.resolution;
       return {
         mode,
         ...(values.supported !== undefined ? { supported: values.supported } : {}),
@@ -402,16 +402,45 @@ function parseRange(text: string): { min: number; max: number } | undefined {
   return undefined;
 }
 
+/** true/false written in the field, as opposed to a legacy player count. */
+function flag(value: unknown): boolean | undefined {
+  if (typeof value === "boolean") return value;
+  const text = str(value).trim().toLowerCase();
+  if (text === "true") return true;
+  if (text === "false") return false;
+  return undefined;
+}
+
 function buildMultiplayer(p: Record<string, unknown>): MultiplayerInfo | undefined {
-  const localPlayers = parseRange(str(p["mpLocalPlayers"]));
-  const onlinePlayers = parseRange(str(p["mpOnlinePlayers"]));
+  /*
+    `mpLocalPlayers` / `mpOnlinePlayers` are flags: does this game support local
+    play, and online play. Products saved while they briefly held a player count
+    ("1-4") still parse as a range, so nothing already in the catalogue loses
+    its numbers; the player count for new imports lives in `numberOfPlayers`.
+  */
+  const localFlag = flag(p["mpLocalPlayers"]);
+  const onlineFlag = flag(p["mpOnlinePlayers"]);
+  const localPlayers = localFlag === undefined ? parseRange(str(p["mpLocalPlayers"])) : undefined;
+  const onlinePlayers =
+    onlineFlag === undefined ? parseRange(str(p["mpOnlinePlayers"])) : undefined;
+
   const flagsPresent = ["mpCoop", "mpCompetitive", "mpSplitScreen", "mpLocalWireless"].some(
     (k) => k in p,
   );
-  if (!localPlayers && !onlinePlayers && !flagsPresent) return undefined;
+  if (
+    !localPlayers &&
+    !onlinePlayers &&
+    localFlag === undefined &&
+    onlineFlag === undefined &&
+    !flagsPresent
+  ) {
+    return undefined;
+  }
   return {
     ...(localPlayers ? { localPlayers } : {}),
     ...(onlinePlayers ? { onlinePlayers, onlineMultiplayer: true } : {}),
+    ...(localFlag === undefined ? {} : { localMultiplayer: localFlag }),
+    ...(onlineFlag === undefined ? {} : { onlineMultiplayer: onlineFlag }),
     ...("mpCoop" in p ? { coop: bool(p["mpCoop"]) } : {}),
     ...("mpCompetitive" in p ? { competitive: bool(p["mpCompetitive"]) } : {}),
     ...("mpSplitScreen" in p ? { splitScreen: bool(p["mpSplitScreen"]) } : {}),

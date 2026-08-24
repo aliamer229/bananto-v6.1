@@ -17,9 +17,11 @@ export interface FieldDef {
 const DEVICE_MODE_FIELDS: Record<string, FieldDef> = {
   supported: { key: "supported", type: "boolean", target: "supported" },
   resolution: { key: "resolution", type: "string", target: "resolution" },
+  /* A flag, not a resolution: true = dynamic, false = fixed, blank = unknown.
+     The measured values live in resolution / rendering_resolution / output_resolution. */
   resolution_dynamic: {
     key: "resolution_dynamic",
-    type: "string",
+    type: "boolean",
     target: "resolutionDynamic",
   },
   rendering_resolution: {
@@ -811,19 +813,12 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   { key: "supports_arabic", type: "boolean", target: "arabicSupport", description: "يدعم العربية" },
 
   // MULTIPLAYER
-  {
-    key: "multiplayer_local",
-    type: "string",
-    target: "mpLocalPlayers",
-    /* A player count, not a flag: the hub parses "1-4" into a min/max range. */
-    description: "عدد اللاعبين محلياً (مثال: 1-4) — نص وليس true/false",
-  },
+  { key: "multiplayer_local", type: "boolean", target: "mpLocalPlayers", description: "لعب محلي" },
   {
     key: "multiplayer_online",
-    type: "string",
+    type: "boolean",
     target: "mpOnlinePlayers",
-    /* A player count, not a flag: the hub parses "2-8" into a min/max range. */
-    description: "عدد اللاعبين أونلاين (مثال: 2-8) — نص وليس true/false",
+    description: "لعب أونلاين",
   },
   { key: "multiplayer_cooperative", type: "boolean", target: "mpCoop", description: "لعب تعاوني" },
   {

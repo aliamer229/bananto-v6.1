@@ -13,7 +13,9 @@ export type PerformanceInformationStatus = "available" | "not_published" | "not_
 export interface DeviceModePerformance {
   supported?: boolean;
   resolution?: string;
-  resolutionDynamic?: string;
+  /** Whether the resolution is dynamic. The values themselves live in the
+   *  resolution / renderingResolution / outputResolution fields. */
+  resolutionDynamic?: boolean;
   renderingResolution?: string;
   outputResolution?: string;
   fps?: string;
@@ -106,10 +108,22 @@ export function slugifyDevice(value: unknown): string {
 function normalizeDeviceMode(value: unknown): DeviceModePerformance | undefined {
   if (!value || typeof value !== "object") return undefined;
   const input = value as Record_;
+
+  /*
+    `resolutionDynamic` is a flag. Records written while it was a free-text
+    field hold a range there instead ("468p-648p"), so that value is moved into
+    `resolution` when nothing else filled it and the flag is read as true — the
+    range was only ever written to say the resolution is dynamic. Nothing is
+    rewritten in storage; this happens each time a record is read.
+  */
+  const rawDynamic = input["resolutionDynamic"] ?? input["resolution_dynamic"];
+  const dynamicFlag = bool(rawDynamic);
+  const legacyRange = dynamicFlag === undefined ? text(rawDynamic) : "";
+
   const normalized = compact({
     supported: bool(input["supported"]),
-    resolution: text(input["resolution"]),
-    resolutionDynamic: text(input["resolutionDynamic"] ?? input["resolution_dynamic"]),
+    resolution: text(input["resolution"]) || legacyRange,
+    resolutionDynamic: dynamicFlag ?? (legacyRange ? true : undefined),
     renderingResolution: text(input["renderingResolution"] ?? input["rendering_resolution"]),
     outputResolution: text(input["outputResolution"] ?? input["output_resolution"]),
     fps: text(input["fps"]),
@@ -278,7 +292,7 @@ export function productSupportsSwitch2(product: Record_): boolean {
 function modeMissing(mode: DeviceModePerformance | undefined, prefix: string): string[] {
   if (mode?.supported === false) return [];
   const missing: string[] = [];
-  const resolution = mode?.outputResolution || mode?.resolution || mode?.resolutionDynamic;
+  const resolution = mode?.outputResolution || mode?.resolution;
   if (!resolution) missing.push(`${prefix}.resolution`);
   if (!mode?.fps) missing.push(`${prefix}.fps`);
   return missing;
@@ -354,7 +368,7 @@ export function requiresPerformanceReview(product: Record_): boolean {
 function modeSummary(label: string, mode?: DeviceModePerformance): string {
   if (!mode) return "";
   if (mode.supported === false) return `${label}: Not Supported`;
-  const resolution = mode.outputResolution || mode.resolution || mode.resolutionDynamic;
+  const resolution = mode.outputResolution || mode.resolution;
   const parts = [resolution, mode.fps ? `${mode.fps}${/fps/i.test(mode.fps) ? "" : " FPS"}` : ""];
   if (mode.hdr) parts.push("HDR");
   if (mode.vrr) parts.push("VRR");
@@ -405,11 +419,9 @@ export function performanceMatches(record: DevicePerformance, filters: readonly 
   );
   const resolutionValues = [
     record.handheld?.resolution,
-    record.handheld?.resolutionDynamic,
     record.handheld?.renderingResolution,
     record.handheld?.outputResolution,
     record.tv?.resolution,
-    record.tv?.resolutionDynamic,
     record.tv?.renderingResolution,
     record.tv?.outputResolution,
     ...(record.modes || []).flatMap((mode) => [mode.handheldResolution, mode.tvResolution]),

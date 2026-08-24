@@ -12,7 +12,17 @@ export const BOOLEAN_ONLY_NOTE = "BOOLEAN ONLY: true / false / blank if unknown"
  * which is text, and teaches exactly the mistake it was meant to prevent.
  */
 type TemplateLine =
-  { kind: "comment" | "blank"; text: string } | { kind: "value"; text: string; isBoolean: boolean };
+  | { kind: "comment" | "blank"; text: string }
+  | { kind: "value"; text: string; isBoolean: boolean; group: string };
+
+/**
+ * Which family of fields a line belongs to, so a run of booleans never spans
+ * two unrelated sections: `supports_arabic` and `multiplayer_local` are both
+ * flags, but they are not one group, and the multiplayer block has to carry its
+ * own note. Nested paths inherit their top-level field's family, which keeps
+ * `handheld.hdr` and `handheld.vrr` together under one note.
+ */
+const familyOf = (topLevelKey: string) => topLevelKey.split("_")[0] || topLevelKey;
 
 const BOOLEAN_RULE = [
   "# BOOLEAN RULE:",
@@ -25,11 +35,15 @@ const BOOLEAN_RULE = [
   "# An explanation belongs in performance_notes, or in the matching",
   "# device_performance.X.handheld.notes / .tv.notes / .performance_notes.",
   "#",
-  "# Only the fields under a BOOLEAN ONLY note are boolean. These three read",
-  "# like flags but hold text, so never write true/false in them:",
-  "#   resolution_dynamic      a dynamic resolution range, e.g. 1280x720~1920x1080",
-  "#   multiplayer_local       local player count, e.g. 1-4",
-  "#   multiplayer_online      online player count, e.g. 2-8",
+  "# resolution_dynamic is BOOLEAN ONLY:",
+  "#   true  = resolution is dynamic",
+  "#   false = resolution is fixed",
+  "#   blank = unknown",
+  "# The measured values belong in resolution / rendering_resolution /",
+  "# output_resolution — never in resolution_dynamic.",
+  "#",
+  "# Player counts live in players_count / players / player_count, never in a",
+  "# multiplayer_* flag.",
 ];
 
 export function generateGameImportTemplate(): string {
@@ -69,9 +83,9 @@ export function generateGameImportTemplate(): string {
 
     if (field.key === "slug") {
       comment("# الرابط الفريد (اختياري)");
-      lines.push({ kind: "value", text: `${field.key}=`, isBoolean: false });
+      lines.push({ kind: "value", text: `${field.key}=`, isBoolean: false, group: "slug" });
     } else {
-      lines.push(...renderField(field, field.key));
+      lines.push(...renderField(field, field.key, familyOf(field.key)));
     }
     lines.push({ kind: "blank", text: "" });
   }
@@ -93,16 +107,24 @@ export function generateGameImportTemplate(): string {
 function annotateBooleans(lines: TemplateLine[]): TemplateLine[] {
   const out: TemplateLine[] = [];
   let previousValueWasBoolean = false;
+  let previousGroup = "";
 
   for (const line of lines) {
-    if (line.kind === "value" && line.isBoolean && !previousValueWasBoolean) {
+    const startsRun =
+      line.kind === "value" &&
+      line.isBoolean &&
+      (!previousValueWasBoolean || line.group !== previousGroup);
+    if (startsRun) {
       // Step back over the comment/blank lines this field already printed so
       // the note heads the whole block.
       let insertAt = out.length;
       while (insertAt > 0 && out[insertAt - 1]!.kind === "comment") insertAt--;
       out.splice(insertAt, 0, { kind: "comment", text: `# ${BOOLEAN_ONLY_NOTE}` });
     }
-    if (line.kind === "value") previousValueWasBoolean = line.isBoolean;
+    if (line.kind === "value") {
+      previousValueWasBoolean = line.isBoolean;
+      previousGroup = line.group;
+    }
     out.push(line);
   }
 
@@ -129,7 +151,7 @@ function isSimpleList(field: FieldDef): boolean {
 }
 
 /** Renders nested fields recursively, including device_performance.N.mode.N.*. */
-function renderField(field: FieldDef, path: string): TemplateLine[] {
+function renderField(field: FieldDef, path: string, group: string): TemplateLine[] {
   if (field.repeatable) {
     const out: TemplateLine[] = [];
     const repeats = field.templateRepeat ?? 3;
@@ -137,16 +159,17 @@ function renderField(field: FieldDef, path: string): TemplateLine[] {
     for (let index = 1; index <= repeats; index++) {
       const indexedPath = `${path}.${index}`;
       if (simpleList) {
-        out.push({ kind: "value", text: `${indexedPath}=`, isBoolean: false });
+        out.push({ kind: "value", text: `${indexedPath}=`, isBoolean: false, group });
       } else if (field.type === "object" && field.itemFields) {
         for (const child of Object.values(field.itemFields)) {
-          out.push(...renderField(child, `${indexedPath}.${child.key}`));
+          out.push(...renderField(child, `${indexedPath}.${child.key}`, group));
         }
       } else {
         out.push({
           kind: "value",
           text: `${indexedPath}=${defaultOf(field)}`,
           isBoolean: field.type === "boolean",
+          group,
         });
       }
     }
@@ -155,14 +178,14 @@ function renderField(field: FieldDef, path: string): TemplateLine[] {
 
   if (field.type === "object" && field.itemFields) {
     return Object.values(field.itemFields).flatMap((child) =>
-      renderField(child, `${path}.${child.key}`),
+      renderField(child, `${path}.${child.key}`, group),
     );
   }
   if (field.type === "multiline") {
     return [
-      { kind: "value", text: `${path}<<EOF`, isBoolean: false },
-      { kind: "value", text: "", isBoolean: false },
-      { kind: "value", text: "EOF", isBoolean: false },
+      { kind: "value", text: `${path}<<EOF`, isBoolean: false, group },
+      { kind: "value", text: "", isBoolean: false, group },
+      { kind: "value", text: "EOF", isBoolean: false, group },
     ];
   }
   return [
@@ -170,6 +193,7 @@ function renderField(field: FieldDef, path: string): TemplateLine[] {
       kind: "value",
       text: `${path}=${defaultOf(field)}`,
       isBoolean: field.type === "boolean",
+      group,
     },
   ];
 }

@@ -132,7 +132,7 @@ function PerformanceBadges({ mode }: { mode?: Record_ }) {
     );
   }
   const badgeValues = [
-    mode.outputResolution || mode.resolution || mode.resolutionDynamic,
+    mode.outputResolution || mode.resolution,
     mode.fps ? `${mode.fps}${/fps/i.test(String(mode.fps)) ? "" : " FPS"}` : "",
     mode.hdr === true ? "HDR" : "",
     mode.vrr === true ? "VRR" : "",
