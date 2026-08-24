@@ -268,8 +268,8 @@ export const HUB_GROUPS: GroupDef[] = [
     label: "اللعب الجماعي",
     sectionTitle: "اللعب الجماعي",
     fields: [
-      { key: "mpLocalPlayers", label: "محلياً", type: "text" },
-      { key: "mpOnlinePlayers", label: "أونلاين", type: "text" },
+      { key: "mpLocalPlayers", label: "لعب محلي", type: "bool" },
+      { key: "mpOnlinePlayers", label: "لعب أونلاين", type: "bool" },
       { key: "mpCoop", label: "تعاوني", type: "bool" },
       { key: "mpCompetitive", label: "تنافسي", type: "bool" },
       { key: "mpSplitScreen", label: "شاشة مقسومة", type: "bool" },

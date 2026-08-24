@@ -719,11 +719,22 @@ export function MultiplayerSection() {
       <Reveal>
         <Panel className="p-5 sm:p-6">
           <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+            {/* A player count when one is recorded, otherwise the support flag. */}
             <Row label={t("multiplayer.localPlayers")} large>
-              {formatRange(mp.localPlayers) ?? <NotAvailable />}
+              {formatRange(mp.localPlayers) ??
+                (mp.localMultiplayer === undefined ? (
+                  <NotAvailable />
+                ) : (
+                  t(mp.localMultiplayer ? "common.yes" : "common.no")
+                ))}
             </Row>
             <Row label={t("multiplayer.onlinePlayers")} large>
-              {formatRange(mp.onlinePlayers) ?? <NotAvailable />}
+              {formatRange(mp.onlinePlayers) ??
+                (mp.onlineMultiplayer === undefined ? (
+                  <NotAvailable />
+                ) : (
+                  t(mp.onlineMultiplayer ? "common.yes" : "common.no")
+                ))}
             </Row>
             {mp.coop && (
               <Row label={t("multiplayer.coop")} large>

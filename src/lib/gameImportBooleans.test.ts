@@ -64,7 +64,6 @@ describe("the BOOLEAN ONLY note sits only above boolean fields", () => {
   it("never annotates a resolution, an fps, a mode or a notes field", () => {
     for (const key of [
       "resolution",
-      "resolution_dynamic",
       "rendering_resolution",
       "output_resolution",
       "fps",
@@ -108,6 +107,7 @@ describe("the BOOLEAN ONLY note sits only above boolean fields", () => {
     for (const index of [1, 2, 3]) {
       for (const section of ["handheld", "tv"]) {
         expect(annotated(`device_performance.${index}.${section}.supported`)).toBe(true);
+        expect(annotated(`device_performance.${index}.${section}.resolution_dynamic`)).toBe(true);
         expect(annotated(`device_performance.${index}.${section}.hdr`)).toBe(true);
         expect(annotated(`device_performance.${index}.${section}.vrr`)).toBe(true);
       }
@@ -119,22 +119,38 @@ describe("the BOOLEAN ONLY note sits only above boolean fields", () => {
     }
   });
 
-  it("annotates the four multiplayer flags once, and not the two player counts", () => {
+  it("heads the whole multiplayer block with one note", () => {
+    // The note sits above the first flag of the group, not above a neighbour.
     const noteLine = lines.findIndex(
-      (text, index) => text === NOTE && lines[index + 2] === "multiplayer_cooperative=",
+      (text, index) => text === NOTE && lines[index + 2] === "multiplayer_local=",
     );
     expect(noteLine).toBeGreaterThan(-1);
-    // The player counts above it are text and carry no boolean note.
-    expect(lines[lines.indexOf("multiplayer_local=") - 1]).not.toBe(NOTE);
-    expect(lines[lines.indexOf("multiplayer_online=") - 1]).not.toBe(NOTE);
+    for (const key of [
+      "multiplayer_local",
+      "multiplayer_online",
+      "multiplayer_cooperative",
+      "multiplayer_competitive",
+      "multiplayer_split_screen",
+      "multiplayer_local_wireless",
+    ]) {
+      const line = lines.indexOf(`${key}=`);
+      expect(line, `${key} missing`).toBeGreaterThan(-1);
+      expect(line).toBeGreaterThan(noteLine);
+    }
   });
 
-  it("states the rule once at the top, including the three look-alike text fields", () => {
+  it("states the rule once at the top, and spells out resolution_dynamic", () => {
     expect(template).toContain("# BOOLEAN RULE:");
     expect(template).toContain("#   blank if unknown");
     expect(template).toContain("# Never write: Not Published / Unknown / N/A / Yes / No");
-    expect(template).toContain("resolution_dynamic");
-    expect(template).toContain("multiplayer_local       local player count");
+    expect(template).toContain("# resolution_dynamic is BOOLEAN ONLY:");
+    expect(template).toContain("#   true  = resolution is dynamic");
+    expect(template).toContain("#   false = resolution is fixed");
+    // Player counts are pointed at their own fields, not at a flag.
+    expect(template).toContain("# Player counts live in players_count / players / player_count");
+    // The old, wrong guidance is gone.
+    expect(template).not.toContain("local player count, e.g. 1-4");
+    expect(template).not.toContain("a dynamic resolution range");
   });
 });
 
@@ -194,15 +210,106 @@ multiplayer_local_wireless=false
     expect(result.data["mpLocalWireless"]).toBe(false);
   });
 
-  it("never coerces a string field into a boolean", () => {
+  it("never coerces a genuine string field into a boolean", () => {
     const device = (result.data["devicePerformance"] as Record<string, any>[])[0]!;
     expect(device["device"]).toBe("Nintendo Switch 2");
     expect(device["handheld"].outputResolution).toBe("1920x1080");
     expect(device["handheld"].fps).toBe("60");
-    // resolution_dynamic and the player counts are text; "true" stays the text
-    // "true" rather than becoming a boolean.
-    expect(device["handheld"].resolutionDynamic).toBe("true");
-    expect(result.data["mpLocalPlayers"]).toBe("true");
-    expect(typeof result.data["mpLocalPlayers"]).toBe("string");
+    expect(typeof device["handheld"].fps).toBe("string");
+  });
+
+  it("reads resolution_dynamic and the multiplayer flags as booleans", () => {
+    const device = (result.data["devicePerformance"] as Record<string, any>[])[0]!;
+    expect(device["handheld"].resolutionDynamic).toBe(true);
+    expect(device["tv"].resolutionDynamic).toBe(true);
+    expect(result.data["mpLocalPlayers"]).toBe(true);
+    expect(result.data["mpOnlinePlayers"]).toBe(true);
+  });
+});
+
+describe("resolution_dynamic and the multiplayer flags are boolean", () => {
+  const SAMPLE = `
+schema_version=1
+name=Resolution Flag Sample
+platform=switch2
+
+device_performance.1.device=Nintendo Switch 2
+
+device_performance.1.handheld.resolution=468p-648p
+device_performance.1.handheld.resolution_dynamic=true
+device_performance.1.handheld.fps=60
+
+device_performance.1.tv.resolution=720p-900p
+device_performance.1.tv.resolution_dynamic=true
+device_performance.1.tv.fps=60
+
+multiplayer_local=true
+multiplayer_online=true
+multiplayer_cooperative=true
+multiplayer_competitive=false
+multiplayer_split_screen=true
+multiplayer_local_wireless=false
+`;
+
+  it("imports the sample with no validation error", () => {
+    const parsed = parseGameImport(SAMPLE);
+    expect(parsed.errors.filter((issue) => issue.severity === "error")).toEqual([]);
+    expect(parsed.unknownFields).toEqual([]);
+  });
+
+  it("keeps the measured resolutions where they belong", () => {
+    const device = (parseGameImport(SAMPLE).data["devicePerformance"] as Record<string, any>[])[0]!;
+    expect(device["handheld"].resolution).toBe("468p-648p");
+    expect(device["handheld"].resolutionDynamic).toBe(true);
+    expect(device["tv"].resolution).toBe("720p-900p");
+    expect(device["tv"].resolutionDynamic).toBe(true);
+  });
+
+  it("reads all six multiplayer flags as booleans", () => {
+    const data = parseGameImport(SAMPLE).data;
+    expect(data["mpLocalPlayers"]).toBe(true);
+    expect(data["mpOnlinePlayers"]).toBe(true);
+    expect(data["mpCoop"]).toBe(true);
+    expect(data["mpCompetitive"]).toBe(false);
+    expect(data["mpSplitScreen"]).toBe(true);
+    expect(data["mpLocalWireless"]).toBe(false);
+    for (const key of [
+      "mpLocalPlayers",
+      "mpOnlinePlayers",
+      "mpCoop",
+      "mpCompetitive",
+      "mpSplitScreen",
+      "mpLocalWireless",
+    ]) {
+      expect(typeof data[key]).toBe("boolean");
+    }
+  });
+
+  it("refuses a resolution written into resolution_dynamic", () => {
+    const errors = parseGameImport(
+      `schema_version=1\nname=Bad\nplatform=switch1\ndevice_performance.1.handheld.resolution_dynamic=468p-648p\n`,
+    ).errors.filter((issue) => issue.severity === "error");
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.message).toContain("boolean");
+  });
+
+  it("refuses a player count written into a multiplayer flag", () => {
+    for (const bad of ["1-4", "2-8"]) {
+      const errors = parseGameImport(
+        `schema_version=1\nname=Bad\nplatform=switch1\nmultiplayer_local=${bad}\n`,
+      ).errors.filter((issue) => issue.severity === "error");
+      expect(errors).toHaveLength(1);
+      expect(errors[0]!.key).toBe("multiplayer_local");
+    }
+  });
+
+  it("accepts blank on both, recording nothing", () => {
+    const data = parseGameImport(
+      `schema_version=1\nname=Blank\nplatform=switch1\nmultiplayer_local=\nmultiplayer_online=\ndevice_performance.1.device=Nintendo Switch\ndevice_performance.1.handheld.resolution_dynamic=\n`,
+    ).data;
+    expect(data["mpLocalPlayers"]).toBeUndefined();
+    expect(data["mpOnlinePlayers"]).toBeUndefined();
+    const device = (data["devicePerformance"] as Record<string, any>[])[0]!;
+    expect(device["handheld"]?.resolutionDynamic).toBeUndefined();
   });
 });

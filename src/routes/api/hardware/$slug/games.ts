@@ -65,10 +65,10 @@ export const Route = createFileRoute("/api/hardware/$slug/games")({
                 performanceSummary: [
                   performance.handheld?.supported === false
                     ? "Handheld: Not Supported"
-                    : `Handheld: ${performance.handheld?.outputResolution || performance.handheld?.resolution || performance.handheld?.resolutionDynamic || ""} / ${performance.handheld?.fps || ""}`,
+                    : `Handheld: ${performance.handheld?.outputResolution || performance.handheld?.resolution || ""} / ${performance.handheld?.fps || ""}`,
                   performance.tv?.supported === false
                     ? "TV: Not Supported"
-                    : `TV: ${performance.tv?.outputResolution || performance.tv?.resolution || performance.tv?.resolutionDynamic || ""} / ${performance.tv?.fps || ""}`,
+                    : `TV: ${performance.tv?.outputResolution || performance.tv?.resolution || ""} / ${performance.tv?.fps || ""}`,
                 ]
                   .filter((entry) => !entry.endsWith(":  / "))
                   .join(" · "),
@@ -82,13 +82,10 @@ export const Route = createFileRoute("/api/hardware/$slug/games")({
             Math.max(
               resolutionRank(
                 game.performance.handheld?.outputResolution ||
-                  game.performance.handheld?.resolution ||
-                  game.performance.handheld?.resolutionDynamic,
+                  game.performance.handheld?.resolution,
               ),
               resolutionRank(
-                game.performance.tv?.outputResolution ||
-                  game.performance.tv?.resolution ||
-                  game.performance.tv?.resolutionDynamic,
+                game.performance.tv?.outputResolution || game.performance.tv?.resolution,
               ),
             );
           games.sort((a, b) => {

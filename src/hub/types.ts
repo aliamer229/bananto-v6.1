@@ -225,6 +225,8 @@ export interface MultiplayerInfo {
   competitive?: boolean;
   splitScreen?: boolean;
   localWireless?: boolean;
+  /** Supports local play at all — the flag behind `multiplayer_local`. */
+  localMultiplayer?: boolean;
   onlineMultiplayer?: boolean;
   sharedScreen?: boolean;
   notes?: string;
