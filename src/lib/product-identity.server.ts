@@ -110,6 +110,77 @@ export async function releaseProductIdentity(productId: string): Promise<void> {
   }
 }
 
+/** Ids of the products actually in the catalogue right now. */
+function catalogueIds(catalogue: readonly ProductIdentityInput[]): Set<string> {
+  const ids = new Set<string>();
+  for (const product of catalogue) {
+    const id = product?.id === undefined || product?.id === null ? "" : String(product.id);
+    if (id) ids.add(id);
+  }
+  return ids;
+}
+
+/**
+ * Claim an identity, refusing only to a product that still exists.
+ *
+ * A row here outlives its product if the product was deleted without releasing
+ * it, and that stale row then refuses the identity to everything — forever,
+ * naming a `conflictProductId` an admin cannot find anywhere in the catalogue.
+ * Deletion now releases the row, but the rows already orphaned by earlier
+ * deletions still have to go, so a conflict is verified against the live
+ * catalogue before it is believed: if the holder is gone, its row is dropped
+ * and the claim retried once.
+ *
+ * A conflict with a product that *is* in the catalogue is returned unchanged.
+ * This never weakens duplicate prevention; it only stops a ghost enforcing it.
+ */
+export async function claimProductIdentityAgainstCatalogue(
+  product: ProductIdentityInput,
+  catalogue: readonly ProductIdentityInput[],
+  now = new Date().toISOString(),
+): Promise<IdentityClaim> {
+  const claim = await claimProductIdentity(product, now);
+  if (claim.ok || !claim.conflictProductId) return claim;
+  if (catalogueIds(catalogue).has(claim.conflictProductId)) return claim;
+
+  console.warn("[product-identity:orphan_released]", {
+    productId: String(product.id ?? ""),
+    orphanProductId: claim.conflictProductId,
+  });
+  await releaseProductIdentity(claim.conflictProductId);
+  return claimProductIdentity(product, now);
+}
+
+/**
+ * Drop every index row whose product is no longer in the catalogue.
+ *
+ * The lazy repair above fixes a row the moment something needs its identity;
+ * this is the sweep, for the diagnostics endpoint. Only rows pointing at a
+ * product that does not exist are removed — nothing in the catalogue is
+ * touched, and no product is ever deleted here.
+ */
+export async function pruneOrphanProductIdentities(
+  catalogue: readonly ProductIdentityInput[],
+): Promise<{ productId: string; title: string }[]> {
+  if (!(await d1Ready())) return [];
+  const live = catalogueIds(catalogue);
+  /*
+    An empty catalogue is far more likely a failed read than a store with no
+    products, and the index is the only thing standing between the catalogue
+    and duplicate rows. Sweeping on that reading would clear all of it.
+  */
+  if (live.size === 0) return [];
+  const removed: { productId: string; title: string }[] = [];
+
+  for (const row of await listProductIdentities()) {
+    if (live.has(row.productId)) continue;
+    await releaseProductIdentity(row.productId);
+    removed.push({ productId: row.productId, title: row.title });
+  }
+
+  return removed;
+}
+
 /**
  * Bring the index up to date with the catalogue, without failing on the
  * duplicates already in it.

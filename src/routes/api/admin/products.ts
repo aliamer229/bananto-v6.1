@@ -9,7 +9,12 @@ import {
   normalizeProductPlatform,
   normalizeProductTitle,
 } from "@/lib/product-identity";
-import { claimProductIdentity, reindexProductIdentities } from "@/lib/product-identity.server";
+import {
+  claimProductIdentityAgainstCatalogue,
+  pruneOrphanProductIdentities,
+  reindexProductIdentities,
+  releaseProductIdentity,
+} from "@/lib/product-identity.server";
 import type { Product } from "@/lib/types";
 import {
   deactivateGameDevicePerformance,
@@ -108,12 +113,16 @@ export const Route = createFileRoute("/api/admin/products")({
           */
           if (url.searchParams.get("duplicates")) {
             const duplicates = findDuplicateProducts(products);
+            /* Rows left behind by products that no longer exist. Each one would
+               otherwise refuse its identity to every future product. */
+            const orphanIdentities = await pruneOrphanProductIdentities(products);
             const { indexed, unindexed } = await reindexProductIdentities(products);
             return json({
               success: true,
               duplicateGroups: duplicates.length,
               affectedProducts: duplicates.reduce((sum, g) => sum + g.products.length, 0),
               duplicates,
+              orphanIdentities,
               /* Products the unique index could not take, because an earlier
                  product already holds their identity. They remain in the
                  catalogue exactly as they are. */
@@ -232,12 +241,10 @@ export const Route = createFileRoute("/api/admin/products")({
             admins saving at the same moment can both pass it. The identity
             table closes that window with a real unique constraint.
           */
-          const claim = await claimProductIdentity({
-            id: productId,
-            title: payload.title || titleEn,
-            titleEn,
-            platform: platformInput,
-          });
+          const claim = await claimProductIdentityAgainstCatalogue(
+            { id: productId, title: payload.title || titleEn, titleEn, platform: platformInput },
+            existingCatalog,
+          );
           if (!claim.ok && !batchImport) {
             return json(
               {
@@ -460,12 +467,10 @@ export const Route = createFileRoute("/api/admin/products")({
                 { status: 409 },
               );
             }
-            await claimProductIdentity({
-              id: productId,
-              title: payload.title || titleEn,
-              titleEn,
-              platform: editPlatform,
-            });
+            await claimProductIdentityAgainstCatalogue(
+              { id: productId, title: payload.title || titleEn, titleEn, platform: editPlatform },
+              existingCatalog,
+            );
           }
 
           const slugConflict = existingCatalog.find(
@@ -579,6 +584,14 @@ export const Route = createFileRoute("/api/admin/products")({
             products: (store.products || []).filter((p) => String(p.id) !== targetId),
           }));
           await deactivateGameDevicePerformance(targetId);
+          /*
+            The identity index is part of the product, not a record of it. Left
+            behind, its row keeps the title+platform reserved for a product that
+            no longer exists, and re-adding that game is refused with an
+            `existingProductId` pointing at nothing. Order history and reviews
+            are deliberately not touched here.
+          */
+          await releaseProductIdentity(targetId);
 
           return json({ success: true, id: targetId });
         }),

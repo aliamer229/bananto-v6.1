@@ -142,6 +142,51 @@ const defaultMessages: any[] = [];
 import { safeStringify } from "../utils/safeJson";
 import { isProductPriced, isProductHidden } from "@/lib/purchasable";
 
+/**
+ * The read-only notice, with the reason and a way out.
+ *
+ * A banner that only says "something failed" leaves an admin with nothing to
+ * do and nothing to report, so this carries the status, the server's error
+ * reference and which binding the diagnostics endpoint says is down — and a
+ * button, because an outage that ends should not need a page reload.
+ */
+function DbErrorBanner({
+  message,
+  detail,
+  isRetrying,
+  onRetry,
+  className,
+}: {
+  message: string;
+  detail: string;
+  isRetrying: boolean;
+  onRetry: () => void;
+  className: string;
+}) {
+  return (
+    <div
+      className={`${className} rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-[13px] text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-bold">{message}</span>
+        <button
+          type="button"
+          onClick={onRetry}
+          disabled={isRetrying}
+          className="rounded-md border border-red-400 px-3 py-1 text-[12px] font-bold transition-colors hover:bg-red-100 disabled:opacity-50 dark:hover:bg-red-500/20"
+        >
+          {isRetrying ? "جارٍ إعادة المحاولة..." : "إعادة المحاولة"}
+        </button>
+      </div>
+      {detail && (
+        <p className="mt-1 font-mono text-[11px] opacity-80" dir="ltr">
+          {detail}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [activeSidebar, setActiveSidebar] = useState("dashboard");
   const [selectedChatThreadId, setSelectedChatThreadId] = useState<string | null>(null);
@@ -228,64 +273,133 @@ export default function AdminDashboard() {
   // skip the first write per key (it would just echo the loaded snapshot back)
   const hydrated = React.useRef<Record<string, boolean>>({});
   const [dbError, setDbError] = useState("");
+  /** What the server actually said, so a report can be matched to one log line. */
+  const [dbErrorDetail, setDbErrorDetail] = useState("");
+  const [isReloading, setIsReloading] = useState(false);
+
+  /*
+    Why the load failed matters more than that it failed.
+
+    `guard()` answers a broken request with `{ error, ref, message }` and logs
+    the same `ref`, precisely so a report from an admin can be matched against a
+    single `wrangler tail` line — but the reason was read as `HTTP ${status}`
+    and thrown away, leaving a banner that names no cause and offers no way out.
+    This asks the diagnostics endpoint which binding is actually down and keeps
+    the reference visible.
+  */
+  const describeLoadFailure = async (res: Response | null, err: unknown): Promise<string> => {
+    const parts: string[] = [];
+    if (res) {
+      parts.push(`HTTP ${res.status}`);
+      const payload = (await res
+        .clone()
+        .json()
+        .catch(() => null)) as { error?: string; ref?: string; message?: string } | null;
+      if (payload?.ref) parts.push(`ref: ${payload.ref}`);
+      if (payload?.message || payload?.error) parts.push(String(payload.message || payload.error));
+    } else if (err instanceof Error) {
+      parts.push(err.message);
+    }
+
+    try {
+      const probe = await fetch("/api/diagnostics", { credentials: "include" });
+      const status = (await probe.json()) as Record<string, unknown>;
+      const down = ["d1", "r2", "durableObject", "queue"].filter((key) => status[key] === false);
+      parts.push(down.length ? `خدمات غير متاحة: ${down.join("، ")}` : "كل الخدمات تستجيب");
+    } catch {
+      parts.push("تعذر الوصول إلى الخادم أيضاً (/api/diagnostics)");
+    }
+
+    return parts.filter(Boolean).join(" — ");
+  };
+
+  const loadFromDb = React.useCallback(async (isCancelled: () => boolean): Promise<boolean> => {
+    let res: Response | null = null;
+    try {
+      res = await fetch("/api/data", { credentials: "include" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (isCancelled()) return true;
+      // Keys the server actually returned will echo back once through the
+      // save effects, so skip that echo. Keys it did NOT return never echo —
+      // mark them hydrated now so their first real change is saved.
+      for (const key of [
+        "products",
+        "bundles",
+        "banners",
+        "categories",
+        "orders",
+        "messages",
+        "musicList",
+        "notifications",
+        "gameRequests",
+        "discTrades",
+        "problemSolutions",
+      ]) {
+        hydrated.current[key] = !Array.isArray(data[key]);
+      }
+      if (Array.isArray(data.products)) setProducts(data.products);
+      if (Array.isArray(data.bundles)) setBundles(data.bundles);
+      if (Array.isArray(data.banners)) setBanners(data.banners);
+      if (Array.isArray(data.categories)) setCategories(data.categories);
+      if (Array.isArray(data.orders)) setOrders(data.orders);
+      if (Array.isArray(data.messages)) setMessages(data.messages);
+      if (Array.isArray(data.musicList)) setMusicList(data.musicList);
+      if (Array.isArray(data.notifications)) setNotifications(data.notifications);
+      if (Array.isArray(data.gameRequests)) setGameRequests(data.gameRequests);
+      if (Array.isArray(data.discTrades)) setDiscTrades(data.discTrades);
+      if (Array.isArray(data.problemSolutions)) setProblemSolutions(data.problemSolutions);
+
+      if (typeof data.visits === "number") setVisits(data.visits);
+      if (typeof data.views === "number") setViews(data.views);
+      canWrite.current = true;
+
+      setDbError("");
+      setDbErrorDetail("");
+      setIsLoaded(true);
+      return true;
+    } catch (err) {
+      if (isCancelled()) return true;
+      console.error("DB load failed", err);
+      canWrite.current = false;
+      setDbError("تعذر قراءة البيانات من قاعدة البيانات — الحفظ معطّل مؤقتاً لحماية بياناتك.");
+      setDbErrorDetail(await describeLoadFailure(res, err));
+      setIsLoaded(true);
+      return false;
+    }
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      try {
-        const res = await fetch("/api/data", { credentials: "include" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+    const isCancelled = () => cancelled;
+    /*
+      A cold start or one dropped connection used to disable saving for the rest
+      of the session: the load ran once and `canWrite` never came back without a
+      full page reload. Retry a few times before giving up, and leave a button
+      for when the outage is longer than that.
+    */
+    const run = async () => {
+      for (let attempt = 0; attempt < 3; attempt++) {
         if (cancelled) return;
-        // Keys the server actually returned will echo back once through the
-        // save effects, so skip that echo. Keys it did NOT return never echo —
-        // mark them hydrated now so their first real change is saved.
-        for (const key of [
-          "products",
-          "bundles",
-          "banners",
-          "categories",
-          "orders",
-          "messages",
-          "musicList",
-          "notifications",
-          "gameRequests",
-          "discTrades",
-          "problemSolutions",
-        ]) {
-          hydrated.current[key] = !Array.isArray(data[key]);
-        }
-        if (Array.isArray(data.products)) setProducts(data.products);
-        if (Array.isArray(data.bundles)) setBundles(data.bundles);
-        if (Array.isArray(data.banners)) setBanners(data.banners);
-        if (Array.isArray(data.categories)) setCategories(data.categories);
-        if (Array.isArray(data.orders)) setOrders(data.orders);
-        if (Array.isArray(data.messages)) setMessages(data.messages);
-        if (Array.isArray(data.musicList)) setMusicList(data.musicList);
-        if (Array.isArray(data.notifications)) setNotifications(data.notifications);
-        if (Array.isArray(data.gameRequests)) setGameRequests(data.gameRequests);
-        if (Array.isArray(data.discTrades)) setDiscTrades(data.discTrades);
-        if (Array.isArray(data.problemSolutions)) setProblemSolutions(data.problemSolutions);
-
-        if (typeof data.visits === "number") setVisits(data.visits);
-        if (typeof data.views === "number") setViews(data.views);
-        canWrite.current = true;
-
-        setDbError("");
-        setIsLoaded(true);
-      } catch (err) {
-        if (cancelled) return;
-        console.error("DB load failed", err);
-        canWrite.current = false;
-        setDbError("تعذر قراءة البيانات من قاعدة البيانات — الحفظ معطّل مؤقتاً لحماية بياناتك.");
-        setIsLoaded(true);
+        if (await loadFromDb(isCancelled)) return;
+        await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** attempt));
       }
     };
-    void load();
+    void run();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadFromDb]);
+
+  const retryDbLoad = React.useCallback(async () => {
+    setIsReloading(true);
+    try {
+      const ok = await loadFromDb(() => false);
+      if (ok) toast.success("تم الاتصال بقاعدة البيانات — الحفظ مفعّل مجدداً");
+    } finally {
+      setIsReloading(false);
+    }
+  }, [loadFromDb]);
 
   const saveToDb = React.useCallback(async (key: string, value: any) => {
     if (!canWrite.current) return;
@@ -737,18 +851,26 @@ Please think step-by-step in order to resolve it.
         {activeSidebar === "messages" ? (
           <div className="w-full h-full flex-1 flex flex-col min-h-0 overflow-hidden p-0 m-0 max-w-none">
             {dbError && (
-              <div className="m-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-[13px] text-red-700">
-                {dbError}
-              </div>
+              <DbErrorBanner
+                message={dbError}
+                detail={dbErrorDetail}
+                isRetrying={isReloading}
+                onRetry={retryDbLoad}
+                className="m-2"
+              />
             )}
             {renderContent()}
           </div>
         ) : (
           <div className="w-full px-4 py-6 pb-24 sm:px-8 lg:px-10">
             {dbError && (
-              <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-[13px] text-red-700">
-                {dbError}
-              </div>
+              <DbErrorBanner
+                message={dbError}
+                detail={dbErrorDetail}
+                isRetrying={isReloading}
+                onRetry={retryDbLoad}
+                className="mb-4"
+              />
             )}
             {renderContent()}
           </div>
@@ -1388,10 +1510,41 @@ function ListingsView({
       if (!res.ok || !result?.success) {
         const errorMsg =
           result?.error || `HTTP ${res.status}: Failed to save product - ${JSON.stringify(result)}`;
-        toast.error(`Debug: HTTP ${res.status} ${JSON.stringify(result)}`);
         console.error(`[SaveProductError] code=${result?.code} ref=${result?.ref}`, result);
-        alert(`[SaveProductError] ${JSON.stringify(result)}`);
-        throw new Error(errorMsg);
+
+        /*
+          A refused duplicate names the product already holding the identity, so
+          say which one and offer to open it. The server only reports a product
+          that is still in the catalogue — a row left behind by an old deletion
+          is released rather than reported — but if the id is one this list does
+          not have, say that plainly instead of pointing at nothing.
+        */
+        if (result?.code === "PRODUCT_ALREADY_EXISTS") {
+          const existing = products.find(
+            (p: any) => String(p.id) === String(result?.existingProductId || ""),
+          );
+          if (existing) {
+            toast.error(`منتج بنفس الاسم موجود بالفعل: ${existing.title}`, {
+              duration: 10000,
+              action: {
+                label: "فتح المنتج الموجود",
+                onClick: () => {
+                  setIsAdding(false);
+                  setEditingProduct(existing);
+                },
+              },
+            });
+          } else {
+            toast.error(
+              "تم رفض الحفظ بسبب تعارض اسم لم يعد له منتج في القائمة. أعد المحاولة — سيُحرَّر السجل القديم تلقائياً.",
+              { duration: 10000 },
+            );
+          }
+        } else {
+          toast.error(errorMsg);
+        }
+        // Already reported above; the outer catch must not toast it twice.
+        throw Object.assign(new Error(errorMsg), { reported: true });
       }
 
       const savedProduct = result.product || productData;
@@ -1413,7 +1566,7 @@ function ListingsView({
       setIsAdding(false);
     } catch (err: any) {
       console.error("[handleSave:error]", err);
-      toast.error(err?.message || t("admin.saveFailed"));
+      if (!err?.reported) toast.error(err?.message || t("admin.saveFailed"));
       throw err;
     }
   };
