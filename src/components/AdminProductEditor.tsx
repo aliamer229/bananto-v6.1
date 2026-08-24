@@ -63,7 +63,11 @@ import GlobalPriceTracker from "./GlobalPriceTracker";
 import HubFields from "./admin/HubFields";
 import { ImageUploadField } from "./admin/ImageUploadField";
 import { StepsEditor } from "./admin/StepsEditor";
-import { safeRandomUUID } from "@/lib/polyfills";
+import {
+  applyGameImportToForm,
+  buildProductSavePayload,
+  createBlankProductForm,
+} from "@/lib/gameImportForm";
 import { ProductOptionsEditor } from "./admin/ProductOptionsEditor";
 import { GamePerformanceEditor } from "./admin/GamePerformanceEditor";
 import { HardwareAdminEditor } from "./admin/HardwareAdminEditor";
@@ -271,6 +275,8 @@ export default function AdminProductEditor({
         cost: Number(product.cost) || 0,
         stock: Number(product.stock) || 0,
         isInfiniteStock: product.isInfiniteStock === true,
+        // Absent on every product saved before hiding existed — those stay visible.
+        isHidden: product.isHidden === true,
         displayOrder: Number(product.displayOrder) || 0,
         isActive: product.isActive !== false,
         status: product.status || "نشط",
@@ -315,97 +321,7 @@ export default function AdminProductEditor({
 
     const defaultCat = initialCategoryId || (categories[0] ? categories[0].id : "cat_nintendo");
 
-    return {
-      title: "",
-      titleEn: "",
-      titleKu: "",
-      slug: "",
-      description: "",
-      descriptionEn: "",
-      descriptionKu: "",
-      cartridgeImage: "",
-      nintendoCardImage: "",
-      coverHiResImage: "",
-      coverImage: "",
-      bannerImages: [""],
-      gallery: [],
-      youtubeTrailer: "",
-      releaseDate: new Date().toISOString().split("T")[0],
-      ageRating: "PEGI 7",
-      metacriticRating: "85",
-      genres: ["Adventure", "Action"],
-      platform: "switch1",
-      size: "8.5 GB",
-      numberOfPlayers: "1 Player",
-      supportedLanguages: "English, Japanese, French, Spanish, German",
-      // Hardware — intentionally blank: these are real product specs, never demo text.
-      hardwareModel: "",
-      colorEdition: "",
-      storageCapacity: "",
-      screenSpecs: "",
-      batteryLife: "",
-      boxContents: [],
-      boxContentsText: "",
-      warrantyCondition: "",
-      connectivity: "",
-      // Amiibo
-      characterName: "Link",
-      amiiboSeries: "The Legend of Zelda",
-      figureType: "figure",
-      inGameUnlock: "فتح زي أسطوري وأسلحة نادرة داخل لعبة Tears of the Kingdom",
-      compatibleGames: "Super Smash Bros. Ultimate, Zelda: Tears of the Kingdom, Mario Kart 8",
-      boxCondition: "mib",
-      releaseWave: "Wave 2 (Restock)",
-      rarity: "standard",
-      // Accessory
-      accessoryType: "حقيبة حماية وتنقل Carry Case",
-      compatibleDevices: "Nintendo Switch OLED / Switch V2 / Switch Lite",
-      brand: "Nintendo Official",
-      material: "Hard EVA Shockproof Shell",
-      availableColors: "Black, Neon Red/Blue, White",
-      keyFeatures: "مقاوم للصدمات والماء، يتسع لـ 10 أشرطة ألعاب، مقبض مريح",
-      // Gift Card
-      cardValue: "$20 eShop Balance",
-      region: "US",
-      cardType: "eshop",
-      deliveryMethod: "instant_code",
-      redemptionGuide: "",
-      redemptionSteps: [],
-      validity: "no_expiry",
-      // Used
-      usedType: "cartridge",
-      conditionGrade: "like_new",
-      packaging: "cib",
-      guaranteeStatus: "tested_30days",
-      conditionNotes: "تم الفحص والتعقيم 100%، عمل مثالي بدون أي خدوش أو مشاكل",
-      // Bundle
-      accountType: "primary",
-      badge: "وفر 40%",
-      bundleGamesSummary: "حزمة ألعاب مختارة بحساب كامل وجاهز",
-      // Common
-      price: 25000,
-      cost: 18000,
-      stock: 5,
-      isInfiniteStock: false,
-      displayOrder: 0,
-      category: defaultCat,
-      categoryId: defaultCat,
-      categoryEn: "",
-      categoryKu: "",
-      options: [],
-      types: [],
-      editions: [],
-      dlcs: [],
-      isActive: true,
-      status: "نشط",
-      kind: "account",
-      // Trade & Store Bonus
-      trade_value_iqd: 0,
-      store_offer_bonus_iqd: 0,
-      trade_enabled: true,
-      trade_value_locked: false,
-      id: `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`,
-    };
+    return createBlankProductForm(defaultCat);
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -704,32 +620,7 @@ export default function AdminProductEditor({
       }
     }
 
-    const stableId = formData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
-
-    const selectedCategoryId = formData.categoryId || formData.category || "cat_nintendo";
-
-    const cleanedData = {
-      ...formData,
-      id: stableId,
-      category: selectedCategoryId,
-      categoryId: selectedCategoryId,
-      title: formData.titleEn || formData.title,
-      titleEn: formData.titleEn || formData.title,
-      description: formData.descriptionEn || formData.description || "",
-      descriptionEn: formData.descriptionEn || formData.description || "",
-      price: Number(formData.price) || 0,
-      cost: Number(formData.cost) || 0,
-      stock: formData.isInfiniteStock ? 999999 : Number(formData.stock) || 0,
-      displayOrder: Number(formData.displayOrder) || 0,
-      image: formData.coverImage || formData.cartridgeImage || formData.image || "",
-      banner: formData.bannerImages?.[0] || formData.banner || "",
-      nintendoCardImage: formData.nintendoCardImage || "",
-      coverHiResImage: formData.coverHiResImage || "",
-      // Records the section explicitly, so the storefront renders this product's
-      // own details page instead of guessing from the category name.
-      schemaId: activeSchema?.id ?? "",
-      kind: formData.kind || activeSchema?.kind || "account",
-    };
+    const cleanedData: Record<string, any> = buildProductSavePayload(formData, activeSchema);
 
     /*
       Measure the cover once, here, and store the crop with the record.
@@ -2477,6 +2368,25 @@ export default function AdminProductEditor({
               </div>
             </div>
 
+            {/* Hidden from customers */}
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">ظهور المنتج:</label>
+              <label className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={formData.isHidden === true}
+                  onChange={(e) => handleChange("isHidden", e.target.checked)}
+                  className="rounded border-border"
+                />
+                <span className="font-bold">إخفاء المنتج عن المستخدمين</span>
+              </label>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {formData.isHidden
+                  ? "المنتج ظاهر في لوحة الإدارة فقط. أزل الإخفاء واحفظ لنشره."
+                  : "المنتج ظاهر لجميع المستخدمين."}
+              </p>
+            </div>
+
             {/* Display Order */}
             <div>
               <label className="block text-xs font-bold text-foreground mb-1">
@@ -2560,76 +2470,7 @@ export default function AdminProductEditor({
         <AdminImportModal
           onClose={() => setShowImportModal(false)}
           onImport={(importedData) => {
-            setFormData((prev: any) => {
-              const newData = { ...prev };
-              Object.entries(importedData).forEach(([key, value]) => {
-                if (value !== undefined && value !== null && value !== "") {
-                  newData[key] = value;
-                }
-              });
-
-              // Ensure options have unique ids
-              if (Array.isArray(newData.options)) {
-                newData.options = newData.options.filter(Boolean).map((opt: any, idx: number) => ({
-                  ...opt,
-                  id:
-                    opt.id && String(opt.id).trim()
-                      ? String(opt.id).trim()
-                      : `opt_${Date.now()}_${idx}`,
-                }));
-              }
-
-              // An imported template fills `variants`; the panel edits `types`.
-              if (
-                (!Array.isArray(newData.types) || newData.types.length === 0) &&
-                Array.isArray(newData.variants) &&
-                newData.variants.length > 0
-              ) {
-                newData.types = newData.variants;
-              }
-
-              // Ensure types have unique ids
-              if (Array.isArray(newData.types)) {
-                newData.types = newData.types.filter(Boolean).map((t: any, idx: number) => ({
-                  ...t,
-                  id:
-                    t.id && String(t.id).trim() ? String(t.id).trim() : `typ_${Date.now()}_${idx}`,
-                }));
-              } else if (Array.isArray(newData.variants)) {
-                newData.types = newData.variants.filter(Boolean).map((t: any, idx: number) => ({
-                  ...t,
-                  id:
-                    t.id && String(t.id).trim() ? String(t.id).trim() : `typ_${Date.now()}_${idx}`,
-                }));
-              }
-
-              if (!newData.category || newData.category === "nintendo_switch_games") {
-                newData.category = "cat_nintendo";
-              }
-
-              if (newData.boxContents !== undefined) {
-                if (Array.isArray(newData.boxContents))
-                  newData.boxContentsList = newData.boxContents;
-                newData.boxContentsText = boxContentsToText(newData.boxContents);
-              }
-              const importedSteps = toStepList(newData.redemptionSteps ?? newData.redemptionGuide);
-              if (importedSteps.length) {
-                newData.redemptionSteps = importedSteps;
-                newData.redemptionGuide = importedSteps.join("\n");
-              }
-
-              if (!newData.coverImage) {
-                newData.coverImage =
-                  newData.cardArtwork || newData.mainImage || prev.coverImage || "";
-              }
-              // Front-cover sources only. A banner is never promoted here.
-              if (!newData.cartridgeImage) {
-                newData.cartridgeImage =
-                  newData.packagingFrontImage || newData.boxImage || prev.cartridgeImage || "";
-              }
-
-              return newData;
-            });
+            setFormData((prev: any) => applyGameImportToForm(prev, importedData));
             setShowImportModal(false);
             toast.success("تم استيراد بيانات اللعبة بنجاح");
           }}

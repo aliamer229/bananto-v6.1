@@ -6,6 +6,7 @@ import {
   performanceSummary,
   slugifyDevice,
 } from "@/lib/devicePerformance";
+import { isProductHidden } from "@/lib/purchasable";
 
 export const Route = createFileRoute("/api/games/$slug/performance")({
   server: {
@@ -16,8 +17,9 @@ export const Route = createFileRoute("/api/games/$slug/performance")({
           const wanted = slugifyDevice(params.slug);
           const game = (store.products || []).find(
             (product) =>
-              slugifyDevice(product.slug || product.title || product.titleEn) === wanted ||
-              String(product.id) === params.slug,
+              !isProductHidden(product) &&
+              (slugifyDevice(product.slug || product.title || product.titleEn) === wanted ||
+                String(product.id) === params.slug),
           );
           if (!game) return json({ error: "Game not found" }, { status: 404 });
           return json({

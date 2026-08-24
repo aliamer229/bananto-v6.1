@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { isProductHidden } from "./purchasable";
+
 /**
  * Advanced product filter and sort for "View All" pages.
  * Specifically optimized for Nintendo Switch games and account products.
@@ -20,6 +22,9 @@ export const getSortedProducts = createServerFn({ method: "POST" })
     const { products, categoryId, sortBy = "newest", platform = "all" } = data;
 
     const filtered = products.filter((p) => {
+      // 0. Hidden by an admin — never listed for a customer.
+      if (isProductHidden(p)) return false;
+
       // 1. Basic active/purchasable check
       if (p.status === "غير نشط" || p.isActive === false) return false;
 

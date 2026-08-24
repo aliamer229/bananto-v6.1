@@ -3,6 +3,7 @@ import { getStore } from "@/lib/db.server";
 import { json, guard } from "@/lib/http.server";
 import { slugifyDevice, getDevicePerformanceList } from "@/lib/devicePerformance";
 import { resolveCategoryType } from "@/lib/productSection";
+import { isProductHidden } from "@/lib/purchasable";
 
 export const Route = createFileRoute("/api/hardware/$slug")({
   server: {
@@ -11,7 +12,8 @@ export const Route = createFileRoute("/api/hardware/$slug")({
         guard(async () => {
           const store = await getStore();
           const wanted = slugifyDevice(params.slug);
-          const hardware = (store.products || []).find((product) => {
+          const visible = (store.products || []).filter((product) => !isProductHidden(product));
+          const hardware = visible.find((product) => {
             const section = resolveCategoryType(
               String(product.categoryId || product.category || ""),
               "",
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/api/hardware/$slug")({
           });
           if (!hardware) return json({ error: "Hardware not found" }, { status: 404 });
 
-          const linkedGames = (store.products || []).filter((product) =>
+          const linkedGames = visible.filter((product) =>
             getDevicePerformanceList(product).some((record) => record.deviceSlug === wanted),
           ).length;
           return json({ hardware, linkedGames });
