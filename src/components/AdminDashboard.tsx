@@ -1388,10 +1388,41 @@ function ListingsView({
       if (!res.ok || !result?.success) {
         const errorMsg =
           result?.error || `HTTP ${res.status}: Failed to save product - ${JSON.stringify(result)}`;
-        toast.error(`Debug: HTTP ${res.status} ${JSON.stringify(result)}`);
         console.error(`[SaveProductError] code=${result?.code} ref=${result?.ref}`, result);
-        alert(`[SaveProductError] ${JSON.stringify(result)}`);
-        throw new Error(errorMsg);
+
+        /*
+          A refused duplicate names the product already holding the identity, so
+          say which one and offer to open it. The server only reports a product
+          that is still in the catalogue — a row left behind by an old deletion
+          is released rather than reported — but if the id is one this list does
+          not have, say that plainly instead of pointing at nothing.
+        */
+        if (result?.code === "PRODUCT_ALREADY_EXISTS") {
+          const existing = products.find(
+            (p: any) => String(p.id) === String(result?.existingProductId || ""),
+          );
+          if (existing) {
+            toast.error(`منتج بنفس الاسم موجود بالفعل: ${existing.title}`, {
+              duration: 10000,
+              action: {
+                label: "فتح المنتج الموجود",
+                onClick: () => {
+                  setIsAdding(false);
+                  setEditingProduct(existing);
+                },
+              },
+            });
+          } else {
+            toast.error(
+              "تم رفض الحفظ بسبب تعارض اسم لم يعد له منتج في القائمة. أعد المحاولة — سيُحرَّر السجل القديم تلقائياً.",
+              { duration: 10000 },
+            );
+          }
+        } else {
+          toast.error(errorMsg);
+        }
+        // Already reported above; the outer catch must not toast it twice.
+        throw Object.assign(new Error(errorMsg), { reported: true });
       }
 
       const savedProduct = result.product || productData;
@@ -1413,7 +1444,7 @@ function ListingsView({
       setIsAdding(false);
     } catch (err: any) {
       console.error("[handleSave:error]", err);
-      toast.error(err?.message || t("admin.saveFailed"));
+      if (!err?.reported) toast.error(err?.message || t("admin.saveFailed"));
       throw err;
     }
   };

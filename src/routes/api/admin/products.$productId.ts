@@ -10,6 +10,7 @@ import {
   syncGameDevicePerformance,
 } from "@/lib/devicePerformance.server";
 import { validateGameDevicePerformance } from "@/lib/devicePerformance";
+import { releaseProductIdentity } from "@/lib/product-identity.server";
 import { resolveCategoryType } from "@/lib/productSection";
 
 function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
@@ -196,6 +197,9 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
             products: (store.products || []).filter((p) => String(p.id) !== productId),
           }));
           await deactivateGameDevicePerformance(productId);
+          // Same reason as the collection route: a stale identity row would
+          // reserve this game's title+platform forever.
+          await releaseProductIdentity(productId);
 
           return json({ success: true, id: productId });
         }),
