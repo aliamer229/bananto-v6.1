@@ -3,6 +3,7 @@ import { d1All, d1First, d1Execute, d1Ready, ensureCouponsSchema } from "@/lib/d
 import { body, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { rowToCoupon } from "@/lib/coupons";
+import { repairCouponUsageCounters } from "@/lib/coupon-usage.server";
 import { v4 as uuidv4 } from "uuid";
 
 export const Route = createFileRoute("/api/admin/coupons")({
@@ -12,6 +13,19 @@ export const Route = createFileRoute("/api/admin/coupons")({
         guard(async () => {
           await requireAdmin(request);
           await ensureCouponsSchema();
+
+          /*
+            `?repair=1` re-derives the usage counters from `coupon_redemptions`.
+            A counter that drifted above the trail exhausts a coupon for
+            everybody while the trail shows a single redemption; nothing is
+            deleted, so every genuine per-member use survives the repair.
+          */
+          if (new URL(request.url).searchParams.get("repair")) {
+            const repaired = await repairCouponUsageCounters();
+            const rows = await d1All<any>("SELECT * FROM coupons ORDER BY created_at DESC");
+            return json({ coupons: rows.map((r) => rowToCoupon(r)), repaired });
+          }
+
           const rows = await d1All<any>("SELECT * FROM coupons ORDER BY created_at DESC");
           const coupons = rows.map((r) => rowToCoupon(r));
           return json({ coupons });
@@ -128,14 +142,15 @@ export const Route = createFileRoute("/api/admin/coupons")({
           const onlyDigitalProducts =
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0;
           const isStackable = data.isStackable || data.is_stackable ? 1 : 0;
+          const offlineAccountOnly = data.offlineAccountOnly || data.offline_account_only ? 1 : 0;
 
           const insertSql = `INSERT INTO coupons (
             id, code, discount_type, discount_value, start_at, expiration_at, 
             usage_limit, per_user_limit, eligible_products, 
             eligible_categories, eligible_users, min_order_amount, 
             max_discount_amount, is_active, only_digital_products,
-            is_stackable, once_per_user_lifetime, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            is_stackable, once_per_user_lifetime, offline_account_only, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
           try {
             await d1Execute(
@@ -157,6 +172,7 @@ export const Route = createFileRoute("/api/admin/coupons")({
               onlyDigitalProducts,
               isStackable,
               oncePerUserLifetime,
+              offlineAccountOnly,
               createdAt,
             );
           } catch (err: any) {
@@ -294,13 +310,14 @@ export const Route = createFileRoute("/api/admin/coupons")({
           const onlyDigitalProducts =
             data.onlyDigitalProducts || data.only_digital_products ? 1 : 0;
           const isStackable = data.isStackable || data.is_stackable ? 1 : 0;
+          const offlineAccountOnly = data.offlineAccountOnly || data.offline_account_only ? 1 : 0;
 
           const updateSql = `UPDATE coupons SET 
             code = ?, discount_type = ?, discount_value = ?, start_at = ?, expiration_at = ?, 
             usage_limit = ?, per_user_limit = ?, eligible_products = ?, 
             eligible_categories = ?, eligible_users = ?, min_order_amount = ?, 
             max_discount_amount = ?, is_active = ?, only_digital_products = ?,
-            is_stackable = ?, once_per_user_lifetime = ?
+            is_stackable = ?, once_per_user_lifetime = ?, offline_account_only = ?
           WHERE id = ?`;
 
           try {
@@ -322,6 +339,7 @@ export const Route = createFileRoute("/api/admin/coupons")({
               onlyDigitalProducts,
               isStackable,
               oncePerUserLifetime,
+              offlineAccountOnly,
               data.id,
             );
           } catch (err: any) {

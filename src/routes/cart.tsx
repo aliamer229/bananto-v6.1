@@ -46,6 +46,34 @@ import { resolvePurchaseImage } from "@/lib/nintendoImages";
 import { playSound } from "@/utils/audio";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getCart, updateCartItem, removeCartItem } from "@/lib/cart.functions";
+
+/**
+ * A cart line as the coupon rules need to see it.
+ *
+ * The selection travels: a coupon restricted to offline accounts is decided
+ * from `optionId`/`typeId`, and sending the line without them is why such a
+ * coupon could never match anything. The cart's answer is a preview only —
+ * checkout re-derives all of this from the catalogue.
+ */
+function couponItemFromLine(line: CartLine) {
+  return {
+    productId: String(line.productId),
+    categoryId: String(
+      (line.source as Record<string, unknown> | undefined)?.["categoryId"] ??
+        (line.source as Record<string, unknown> | undefined)?.["category"] ??
+        "",
+    ),
+    kind: String(line.kind),
+    unitPrice: Number(line.price),
+    quantity: Number(line.quantity),
+    title: String(line.title),
+    optionId: String(line.optionId ?? line.meta?.optionId ?? ""),
+    optionName: String(line.optionName ?? line.meta?.optionName ?? ""),
+    typeId: String(line.typeId ?? line.meta?.typeId ?? ""),
+    typeName: String(line.typeName ?? line.meta?.typeName ?? ""),
+    offerKind: String(line.offerKind ?? ""),
+  };
+}
 import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/cart")({
@@ -379,14 +407,7 @@ function CartPage() {
           code,
           orderAmount: subtotal,
           targetProductId: target,
-          items: lines.map((l) => ({
-            productId: String(l.productId),
-            categoryId: "",
-            kind: String(l.kind),
-            unitPrice: Number(l.price),
-            quantity: Number(l.quantity),
-            title: String(l.title),
-          })),
+          items: lines.map(couponItemFromLine),
         },
       });
       if (res.valid && res.coupon) {
@@ -427,14 +448,7 @@ function CartPage() {
               code: appliedCoupon.code,
               orderAmount: subtotal,
               targetProductId: selectedTargetProductId,
-              items: lines.map((l) => ({
-                productId: String(l.productId),
-                categoryId: "",
-                kind: String(l.kind),
-                unitPrice: Number(l.price),
-                quantity: Number(l.quantity),
-                title: String(l.title),
-              })),
+              items: lines.map(couponItemFromLine),
             },
           });
           if (res.valid && res.coupon) {
@@ -508,6 +522,10 @@ function CartPage() {
           quantity: l.quantity,
           editionId: l.meta?.editionId,
           dlcIds: l.meta?.dlcIds,
+          // Without these the server cannot tell an offline account from an
+          // online one, and an offline-only coupon has nothing to match on.
+          optionId: l.optionId ?? l.meta?.optionId ?? undefined,
+          typeId: l.typeId ?? l.meta?.typeId ?? undefined,
         })),
         needsAddress ? { id: "cart", ...address } : undefined,
         appliedCoupon?.code,

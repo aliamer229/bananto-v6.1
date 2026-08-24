@@ -31,7 +31,7 @@
  * refusal rather than a double discount. `coupon_redemptions` stays as the
  * per-order audit trail.
  */
-import { d1First, d1Run, d1RunChanges } from "./d1.server";
+import { d1All, d1First, d1Run, d1RunChanges } from "./d1.server";
 
 export interface CouponUsageCounts {
   /** Times this member has used this coupon. */
@@ -195,4 +195,91 @@ export async function releaseCouponUse(options: {
       options.couponId,
     );
   }
+}
+
+export interface CouponCounterRepair {
+  couponId: string;
+  code: string;
+  /** What `coupons.total_uses` said before the repair. */
+  storedTotal: number;
+  /** What the audit trail actually contains. */
+  actualTotal: number;
+  /** Per-member counter rows created from redemptions that had none. */
+  restoredUserRows: number;
+}
+
+/**
+ * Re-derive the counters from the audit trail.
+ *
+ * `coupon_redemptions` is the record of what actually happened; the two
+ * counters are a cache of it kept for atomic claiming. When they drift — a
+ * `total_uses` inflated by an older build, or a member whose redemption never
+ * produced a `coupon_user_usage` row — the coupon refuses people it should
+ * accept, or accepts people twice.
+ *
+ * The repair only ever rewrites the counters to match the redemptions. It
+ * removes nothing: a member's genuine use stays a use, and a coupon exhausted
+ * by real redemptions stays exhausted. What it fixes is a coupon that stopped
+ * working for *everybody* while the audit trail shows one redemption by one
+ * member.
+ */
+export async function repairCouponUsageCounters(): Promise<CouponCounterRepair[]> {
+  const coupons = await d1All<{ id: string; code: string; total_uses: number | null }>(
+    `SELECT id, code, total_uses FROM coupons`,
+  );
+  const repaired: CouponCounterRepair[] = [];
+
+  for (const coupon of coupons) {
+    const actual = Number(
+      (
+        await d1First<{ total: number }>(
+          `SELECT COUNT(*) as total FROM coupon_redemptions WHERE coupon_id = ?`,
+          coupon.id,
+        )
+      )?.total ?? 0,
+    );
+    const stored = Number(coupon.total_uses ?? 0);
+
+    // One row per member who redeemed but has no counter row, seeded with the
+    // number of redemptions the trail records for them.
+    const perUser = await d1All<{ user_id: string; total: number; first_at: string }>(
+      `SELECT user_id, COUNT(*) as total, MIN(created_at) as first_at
+       FROM coupon_redemptions WHERE coupon_id = ? GROUP BY user_id`,
+      coupon.id,
+    );
+    let restored = 0;
+    for (const row of perUser) {
+      const existing = await d1First<{ uses: number }>(
+        `SELECT uses FROM coupon_user_usage WHERE coupon_id = ? AND user_id = ?`,
+        coupon.id,
+        row.user_id,
+      );
+      if (existing) continue;
+      await d1Run(
+        `INSERT INTO coupon_user_usage (coupon_id, user_id, uses, first_used_at, last_used_at)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(coupon_id, user_id) DO NOTHING`,
+        coupon.id,
+        row.user_id,
+        Number(row.total ?? 1),
+        row.first_at,
+        row.first_at,
+      );
+      restored += 1;
+    }
+
+    if (stored === actual && restored === 0) continue;
+    if (stored !== actual) {
+      await d1Run(`UPDATE coupons SET total_uses = ? WHERE id = ?`, actual, coupon.id);
+    }
+    repaired.push({
+      couponId: coupon.id,
+      code: coupon.code,
+      storedTotal: stored,
+      actualTotal: actual,
+      restoredUserRows: restored,
+    });
+  }
+
+  return repaired;
 }

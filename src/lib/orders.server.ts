@@ -13,7 +13,13 @@ import {
   createAuditLog,
 } from "./db.server";
 import { sendTelegramMessage } from "./telegram.server";
-import { checkCoupon, couponDiscount, rowToCoupon, type CouponRow } from "./coupons";
+import {
+  checkCoupon,
+  couponDiscount,
+  rowToCoupon,
+  type CouponCheckItem,
+  type CouponRow,
+} from "./coupons";
 import { claimCouponUse, readCouponUsage, releaseCouponUse } from "./coupon-usage.server";
 import type {
   Address,
@@ -37,6 +43,15 @@ export interface CheckoutLine {
   quantity: number;
   editionId?: string;
   dlcIds?: string[];
+  /*
+    Which option and type the member picked — the offline or the online account,
+    the standard or the DLC edition. The cart has always known this; it simply
+    never travelled, so the server could not tell an offline purchase from an
+    online one and a coupon restricted to offline accounts had nothing to read.
+    Only the *id* is accepted: names are resolved from the catalogue below.
+  */
+  optionId?: string;
+  typeId?: string;
 }
 
 function toNumber(value: unknown): number {
@@ -125,6 +140,26 @@ async function validateLine(
 
   const kind: ProductKind = (product.kind as ProductKind) ?? "account";
 
+  /*
+    Resolve the selection against the catalogue, never against the request. The
+    client sends an id; the name, and therefore whether this is an offline
+    account, is read from the stored product. A line naming an option the
+    product does not have resolves to nothing rather than to whatever the
+    browser claimed.
+  */
+  const options = Array.isArray((product as any).options) ? (product as any).options : [];
+  const types = Array.isArray((product as any).types)
+    ? (product as any).types
+    : Array.isArray((product as any).variants)
+      ? (product as any).variants
+      : [];
+  const selectedOption = line.optionId
+    ? options.find((option: any) => String(option?.id) === String(line.optionId))
+    : undefined;
+  const selectedType = line.typeId
+    ? types.find((type: any) => String(type?.id) === String(line.typeId))
+    : undefined;
+
   return {
     id: randomId("itm"),
     productId: product.id,
@@ -136,6 +171,10 @@ async function validateLine(
     meta: {
       editionId: line.editionId ?? null,
       dlcIds: line.dlcIds ?? null,
+      optionId: selectedOption ? String(selectedOption.id) : null,
+      optionName: selectedOption ? String(selectedOption.name ?? "") : null,
+      typeId: selectedType ? String(selectedType.id) : null,
+      typeName: selectedType ? String(selectedType.name ?? "") : null,
     },
   };
 }
@@ -228,6 +267,8 @@ export async function createOrderForUser(
   let discountAmount = 0;
   let appliedCoupon: Coupon | null = null;
   let appliedTargetProductId: string | null = null;
+  /** The option the discounted copy was bought with, for the audit trail. */
+  let appliedVariantId: string | null = null;
   // Set once a coupon use has actually been claimed, so it can be handed back
   // if a later step of checkout fails.
   let couponClaimed: { couponId: string; userId: string } | null = null;
@@ -242,6 +283,24 @@ export async function createOrderForUser(
     // Mapped through the same reader the validator uses, so what the member was
     // told at the cart is exactly what checkout applies.
     const coupon = rowToCoupon(row);
+
+    /*
+      The coupon rules read the *server's* view of the cart: prices taken from
+      the catalogue and the option resolved from the product record, not the
+      values the browser sent. That is what makes an offline-account
+      restriction unspoofable.
+    */
+    const couponItems: CouponCheckItem[] = items.map((item) => ({
+      productId: item.productId,
+      kind: item.kind,
+      unitPrice: item.unitPrice,
+      quantity: item.quantity,
+      title: item.title,
+      optionId: (item.meta as any)?.optionId ?? null,
+      optionName: (item.meta as any)?.optionName ?? null,
+      typeId: (item.meta as any)?.typeId ?? null,
+      typeName: (item.meta as any)?.typeName ?? null,
+    }));
     const [usage, lifetimeSingleItem] = await Promise.all([
       readCouponUsage(coupon.id, user.id),
       d1First<{ total: number }>(
@@ -254,7 +313,7 @@ export async function createOrderForUser(
       coupon,
       userId: user.id,
       orderAmount: itemsTotal,
-      items,
+      items: couponItems,
       globalUses: usage.globalUses,
       userUses: usage.userUses,
       lifetimeSingleItemUses: Number(lifetimeSingleItem?.total ?? 0),
@@ -280,7 +339,11 @@ export async function createOrderForUser(
     if (!claim.ok) throw new Error("coupon_invalid");
     couponClaimed = { couponId: coupon.id, userId: user.id };
 
-    const discountRes = couponDiscount(coupon, itemsTotal, items, targetProductId);
+    const discountRes = couponDiscount(coupon, itemsTotal, couponItems, targetProductId);
+    const discountedLine = discountRes.targetProductId
+      ? couponItems.find((item) => String(item.productId) === String(discountRes.targetProductId))
+      : undefined;
+    appliedVariantId = discountedLine?.optionId ? String(discountedLine.optionId) : null;
     discountAmount = discountRes.discount;
     appliedCoupon = coupon;
     appliedTargetProductId = discountRes.targetProductId
@@ -397,8 +460,8 @@ export async function createOrderForUser(
   if (appliedCoupon) {
     try {
       await d1Run(
-        `INSERT INTO coupon_redemptions (id, coupon_id, coupon_type, user_id, order_id, discount_amount, target_product_id, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO coupon_redemptions (id, coupon_id, coupon_type, user_id, order_id, discount_amount, target_product_id, variant_id, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         randomId("cpr"),
         appliedCoupon.id,
         appliedCoupon.discountType,
@@ -406,6 +469,7 @@ export async function createOrderForUser(
         orderId,
         discountAmount,
         appliedTargetProductId,
+        appliedVariantId,
         now,
       );
     } catch (err) {

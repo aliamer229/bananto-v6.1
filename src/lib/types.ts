@@ -455,6 +455,9 @@ export interface Coupon {
   is_stackable?: boolean | number;
   oncePerUserLifetime?: boolean;
   once_per_user_lifetime?: boolean | number;
+  /** Applies only to a game bought with the Offline account option, one copy. */
+  offlineAccountOnly?: boolean;
+  offline_account_only?: boolean | number;
   createdAt: string;
   created_at?: string;
 }
@@ -724,6 +727,11 @@ export interface OrderItem {
   meta?: {
     editionId?: string | null | undefined;
     dlcIds?: string[] | null | undefined;
+    /** The option and type the member picked, resolved from the catalogue. */
+    optionId?: string | null | undefined;
+    optionName?: string | null | undefined;
+    typeId?: string | null | undefined;
+    typeName?: string | null | undefined;
   };
   /** account items only */
   deliveryEmail?: string;

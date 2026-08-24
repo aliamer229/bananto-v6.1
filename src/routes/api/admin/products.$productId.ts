@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getStore, updateStore } from "@/lib/db.server";
-import { body, guard, json } from "@/lib/http.server";
+import { getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
+import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { autoTranslateProduct } from "@/lib/translate.server";
 import type { Product } from "@/lib/types";
@@ -196,6 +196,23 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
             ...store,
             products: (store.products || []).filter((p) => String(p.id) !== productId),
           }));
+
+          // Same check as the collection route: confirm from D1 that it is gone.
+          invalidateStoreCache();
+          const after = await getStore();
+          if ((after.products || []).some((p) => String(p.id) === productId)) {
+            const ref = errorRef();
+            console.error("[DeleteProduct:still_present]", { productId, ref });
+            return json(
+              {
+                error: "Product is still in the catalogue after delete",
+                code: "DELETE_FAILED",
+                ref,
+              },
+              { status: 500 },
+            );
+          }
+
           await deactivateGameDevicePerformance(productId);
           // Same reason as the collection route: a stale identity row would
           // reserve this game's title+platform forever.

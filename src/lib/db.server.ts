@@ -229,12 +229,30 @@ function chunkJson(value: unknown): string[] {
  */
 const COUNTER_KEYS = { visits: "analytics:visits", views: "analytics:views" } as const;
 
+/**
+ * The revision the loaded document was read at.
+ *
+ * A write is only accepted when the catalogue has not moved since; see
+ * `persistStore`. Kept beside the cached document rather than inside it so the
+ * shape handed to callers never changes.
+ */
+let storeRev = 0;
+
+async function readStoreRev(): Promise<number> {
+  const row = await d1RawFirst<{ rev: number | null }>(`SELECT MAX(rev) as rev FROM store_rev`);
+  return Number(row?.rev ?? 0);
+}
+
 async function loadStore(): Promise<StoreDoc> {
   if (await d1Ready()) {
-    const rows = await d1RawAll<{ key: string; value: string }>(
-      `SELECT key, value FROM store_kv
+    const [rows, rev] = await Promise.all([
+      d1RawAll<{ key: string; value: string }>(
+        `SELECT key, value FROM store_kv
        WHERE key = 'store' OR key LIKE 'store:%' OR key LIKE 'analytics:%'`,
-    );
+      ),
+      readStoreRev().catch(() => 0),
+    ]);
+    storeRev = rev;
     const base = rows.find((r) => r.key === "store");
     const doc = { ...emptyStore, ...parse<Partial<StoreDoc>>(base?.value, {}) } as Record<
       string,
@@ -248,7 +266,23 @@ async function loadStore(): Promise<StoreDoc> {
         .map((r) => r.value)
         .join("");
       if (!parts) continue;
-      const parsed = parse<unknown>(parts, undefined as unknown);
+      /*
+        A heavy section that will not parse is corruption, not emptiness.
+        Falling back to `[]` here handed every reader an empty catalogue — and
+        the next save then wrote that emptiness over the real data. Refusing to
+        load is recoverable; silently discarding the catalogue is not.
+      */
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(parts);
+      } catch (err) {
+        console.error("[store:section_corrupt]", {
+          section,
+          bytes: parts.length,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        throw new Error(`store_section_unreadable:${section}`);
+      }
       if (parsed !== undefined) doc[section] = parsed;
     }
 
@@ -309,40 +343,106 @@ export async function incrementSiteCounters(delta: {
   return next;
 }
 
-async function persistStore(next: StoreDoc) {
+class StoreConflictError extends Error {
+  constructor() {
+    super("store_revision_conflict");
+  }
+}
+
+/**
+ * Write the whole catalogue, atomically, and only if nobody else has.
+ *
+ * ## Why a revision guard
+ *
+ * The catalogue is one document, so every save rewrites all of it from the
+ * snapshot the request started with. Two saves that overlap therefore do not
+ * merge — the second one's snapshot simply does not contain the first one's
+ * change, and writing it erases that change. Across Workers isolates, each with
+ * its own read cache, this is not a rare race: a product created a moment ago
+ * disappears, and a product deleted a moment ago comes back.
+ *
+ * `store_rev` closes it. Every write inserts the next revision number, and the
+ * primary key makes a second writer at the same revision fail rather than
+ * overwrite. The failure rolls back the whole batch, and `updateStore` re-reads
+ * and re-applies the change to the newer catalogue.
+ *
+ * ## Why one batch
+ *
+ * The base row, four heavy sections and their chunk cleanups are a dozen
+ * statements. Run one at a time, a failure halfway leaves a catalogue whose
+ * sections disagree — products from the new save, bundles from the old. D1's
+ * `batch` runs them in a single transaction, so the store either moves forward
+ * completely or not at all.
+ */
+async function persistStore(next: StoreDoc, expectedRev: number): Promise<number> {
   const now = new Date().toISOString();
+  const nextRev = expectedRev + 1;
+  const statements: { sql: string; params: unknown[] }[] = [];
+
+  /*
+    The guard, first: a duplicate primary key aborts the transaction before any
+    catalogue row is touched. An UPDATE ... WHERE would report zero changes and
+    let the rest of the batch commit regardless, which is exactly the overwrite
+    this exists to prevent.
+  */
+  statements.push({
+    sql: `INSERT INTO store_rev (rev, updated_at) VALUES (?, ?)`,
+    params: [nextRev, now],
+  });
+
   const write = (key: string, value: string) =>
-    d1Execute(
-      `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+    statements.push({
+      sql: `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-      key,
-      value,
-      now,
-    );
+      params: [key, value, now],
+    });
 
   const base = { ...(next as unknown as Record<string, unknown>) };
   for (const section of HEAVY_SECTIONS) delete base[section];
-  await write("store", JSON.stringify(base));
+  write("store", JSON.stringify(base));
 
   for (const section of HEAVY_SECTIONS) {
     const parts = chunkJson((next as unknown as Record<string, unknown>)[section]);
     if (parts.length === 1) {
-      await write(`store:${section}`, parts[0]!);
+      write(`store:${section}`, parts[0]!);
     } else {
       // Multi-part payloads are stored as `store:section#001…` so the loader can
       // stitch them back together in order.
-      await write(`store:${section}`, "");
+      write(`store:${section}`, "");
       for (let i = 0; i < parts.length; i++) {
-        await write(`store:${section}#${String(i + 1).padStart(3, "0")}`, parts[i]!);
+        write(`store:${section}#${String(i + 1).padStart(3, "0")}`, parts[i]!);
       }
     }
     // Drop stale chunks from a previous, longer save.
-    await d1Execute(
-      `DELETE FROM store_kv WHERE key LIKE ? AND key > ?`,
-      `store:${section}#%`,
-      `store:${section}#${String(parts.length === 1 ? 0 : parts.length).padStart(3, "0")}`,
-    );
+    statements.push({
+      sql: `DELETE FROM store_kv WHERE key LIKE ? AND key > ?`,
+      params: [
+        `store:${section}#%`,
+        `store:${section}#${String(parts.length === 1 ? 0 : parts.length).padStart(3, "0")}`,
+      ],
+    });
   }
+
+  // Keep the revision table at a single row.
+  statements.push({ sql: `DELETE FROM store_rev WHERE rev < ?`, params: [nextRev] });
+
+  try {
+    /*
+      `d1Batch` runs the statements in one transaction where the binding
+      supports it, and falls back to running them in order where it does not.
+      In the fallback the revision guard still holds — the insert is first, and
+      a duplicate revision throws before any catalogue row is written — but the
+      section writes are not one transaction, which is the best that backend
+      can offer.
+    */
+    await d1Batch(statements);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (/unique|constraint|primary key/i.test(message)) throw new StoreConflictError();
+    throw err;
+  }
+
+  return nextRev;
 }
 
 export async function getStore(): Promise<StoreDoc> {
@@ -364,12 +464,50 @@ export async function getStore(): Promise<StoreDoc> {
 }
 
 export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Promise<StoreDoc> {
-  const current = await getStore();
-  const next = mutate(current);
+  let current = await getStore();
+  let next = mutate(current);
 
   if (await d1Ready()) {
-    await persistStore(next);
+    /*
+      Read fresh, then write under the revision the read saw.
+
+      `getStore()` may be up to a minute stale, and every isolate keeps its own
+      copy — so mutating the cached document and writing the result is how a
+      product saved seconds ago on another isolate got erased, and how a
+      deleted one came back. The first attempt therefore re-reads from D1, and
+      a losing writer re-reads and re-applies its change rather than
+      overwriting the winner.
+    */
+    let saved = false;
+    for (let attempt = 0; attempt < 4 && !saved; attempt++) {
+      current = await loadStore();
+      next = mutate(current);
+      try {
+        storeRev = await persistStore(next, storeRev);
+        saved = true;
+      } catch (err) {
+        if (!(err instanceof StoreConflictError)) {
+          console.error("[store:write_failed]", {
+            attempt,
+            products: (next.products ?? []).length,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          throw err;
+        }
+        console.warn("[store:revision_conflict]", { attempt, rev: storeRev });
+        storeCache = undefined;
+      }
+    }
+    if (!saved) {
+      throw new Error("store_write_conflict");
+    }
   } else {
+    /*
+      No D1. `mutateJson` writes to the filesystem in development and to an
+      in-memory map in a Worker, where it is lost when the isolate ends — so
+      say so rather than reporting a save that did not durably happen.
+    */
+    console.warn("[store:no_d1]", { products: (next.products ?? []).length });
     await mutateJson<StoreDoc>(STORE_KEY, emptyStore, mutate);
   }
 
