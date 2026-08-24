@@ -24,6 +24,14 @@ interface ImageUploadFieldProps {
   aspect?: "square" | "video" | "cartridge" | "banner" | "auto";
   required?: boolean;
   className?: string;
+  /**
+   * A problem this field's own value ran into, reported by the screen that
+   * owns it — e.g. an imported URL the source host refused to serve. Optional:
+   * a field that never sets it behaves exactly as before.
+   */
+  error?: string;
+  /** The offending value, shown under the message so it can still be read. */
+  errorDetail?: string;
 }
 
 export function ImageUploadField({
@@ -36,6 +44,8 @@ export function ImageUploadField({
   aspect = "auto",
   required = false,
   className,
+  error,
+  errorDetail,
 }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -249,6 +259,24 @@ export function ImageUploadField({
               </span>
             )}
           </div>
+
+          {error && (
+            <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-2 space-y-1">
+              <p className="text-[11px] font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                {error}
+              </p>
+              {errorDetail && (
+                <p
+                  className="text-[10px] font-mono text-muted-foreground break-all"
+                  dir="ltr"
+                  title={errorDetail}
+                >
+                  {errorDetail.slice(0, 160)}
+                </p>
+              )}
+            </div>
+          )}
 
           {/*
             Say what is wrong and show the value, rather than a glyph. The

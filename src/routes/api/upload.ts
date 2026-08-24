@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { randomId } from "@/lib/crypto.server";
+import { coverTextureFetchHeaders } from "@/lib/coverTexture";
 import { body, guard, json } from "@/lib/http.server";
-import { requireUser } from "@/lib/session.server";
+import { fetchRemoteImage, readLimitedBody } from "@/lib/security.server";
+import { requireAdmin, requireUser } from "@/lib/session.server";
 import { writeBinary } from "@/lib/storage.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 
@@ -24,6 +26,12 @@ const MIME_EXT: Record<string, string> = {
 function isVideo(mime: string): boolean {
   return mime.startsWith("video/");
 }
+
+/**
+ * An error page is a few kilobytes of HTML; a printable case wrap is not.
+ * Anything below this is a refusal wearing an image content type.
+ */
+const MIN_REMOTE_IMAGE_BYTES = 1024;
 
 function matchesMagic(bytes: Uint8Array, mime: string): boolean {
   if (mime === "image/png") {
@@ -52,8 +60,58 @@ function matchesMagic(bytes: Uint8Array, mime: string): boolean {
   return false;
 }
 
+/** The declared type is advisory; the bytes decide. */
+function sniffImageMime(bytes: Uint8Array): string | undefined {
+  for (const candidate of ["image/png", "image/jpeg", "image/webp", "image/gif"]) {
+    if (matchesMagic(bytes, candidate)) return candidate;
+  }
+  return undefined;
+}
+
+type RemoteImage = { ok: true; bytes: Uint8Array; mime: string } | { ok: false; error: string };
+
 /**
- * Accepts multipart/form-data or a base64 data URL and stores it securely in BANANTO_PRIVATE_BUCKET.
+ * Download an image the admin linked to, so the product stops depending on
+ * somebody else's server.
+ *
+ * Scan archives answer a bare request with 403 or an HTML notice, so the
+ * request carries ordinary browser headers (see `coverTextureFetchHeaders`).
+ * The transport itself is the project's existing `fetchRemoteImage`: HTTPS
+ * only, no credentials in the URL, no private or loopback address, and every
+ * redirect hop re-validated — none of which this relaxes.
+ */
+async function downloadRemoteImage(sourceUrl: string): Promise<RemoteImage> {
+  let response: Response | undefined;
+  try {
+    response = await fetchRemoteImage(sourceUrl, { headers: coverTextureFetchHeaders(sourceUrl) });
+  } catch {
+    return { ok: false, error: "remote_fetch_failed" };
+  }
+  // Undefined means the URL, or a host it redirected to, is one we refuse to
+  // request at all.
+  if (!response) return { ok: false, error: "remote_url_rejected" };
+  if (!response.ok) return { ok: false, error: `remote_status_${response.status}` };
+
+  const declared = (response.headers.get("content-type") || "").split(";")[0]?.trim().toLowerCase();
+  if (declared && !declared.startsWith("image/")) {
+    return { ok: false, error: `remote_not_an_image_${declared}` };
+  }
+
+  const bytes = await readLimitedBody(response, MAX_BYTES);
+  if (!bytes) return { ok: false, error: "remote_image_too_large" };
+  if (bytes.length < MIN_REMOTE_IMAGE_BYTES) return { ok: false, error: "remote_image_too_small" };
+
+  // A challenge or error page can arrive under any content type; the magic
+  // bytes are what decide whether this is a readable image.
+  const mime = sniffImageMime(bytes);
+  if (!mime) return { ok: false, error: "remote_not_an_image" };
+
+  return { ok: true, bytes, mime };
+}
+
+/**
+ * Accepts multipart/form-data, a base64 data URL, or (admins only) a remote
+ * image URL to download, and stores it securely in BANANTO_PRIVATE_BUCKET.
  * Returned URL is served through authenticated /api/files/$.
  */
 export const Route = createFileRoute("/api/upload")({
@@ -96,21 +154,43 @@ export const Route = createFileRoute("/api/upload")({
             const buffer = await file.arrayBuffer();
             bytes = new Uint8Array(buffer);
           } else {
-            const { dataUrl, folder } = await body<{ dataUrl?: string; folder?: string }>(request);
+            const { dataUrl, sourceUrl, folder } = await body<{
+              dataUrl?: string;
+              sourceUrl?: string;
+              folder?: string;
+            }>(request);
             if (folder) targetFolder = folder;
-            const match = /^data:([\w/+.-]+);base64,(.+)$/.exec(dataUrl ?? "");
-            if (!match) return json({ error: "invalid_data_url" }, { status: 400 });
 
-            mime = match[1]!;
-            const base64 = match[2]!;
-            if (base64.length * 0.75 > MAX_BYTES) {
-              return json({ error: "الملف كبير جداً (الحد ٤ ميغابايت)" }, { status: 413 });
-            }
+            if (typeof sourceUrl === "string" && sourceUrl.trim()) {
+              /*
+                Fetching a URL of the caller's choosing is a sharper tool than
+                accepting bytes they already hold, so this branch — and only
+                this branch — is admins only. Everything after it is the
+                existing pipeline: same signature check, same folder rules,
+                same bucket, same `/api/files/...` URL.
+              */
+              await requireAdmin(request);
+              const downloaded = await downloadRemoteImage(sourceUrl.trim());
+              if (!downloaded.ok) {
+                return json({ error: downloaded.error }, { status: 422 });
+              }
+              bytes = downloaded.bytes;
+              mime = downloaded.mime;
+            } else {
+              const match = /^data:([\w/+.-]+);base64,(.+)$/.exec(dataUrl ?? "");
+              if (!match) return json({ error: "invalid_data_url" }, { status: 400 });
 
-            try {
-              bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-            } catch {
-              return json({ error: "invalid_base64" }, { status: 400 });
+              mime = match[1]!;
+              const base64 = match[2]!;
+              if (base64.length * 0.75 > MAX_BYTES) {
+                return json({ error: "الملف كبير جداً (الحد ٤ ميغابايت)" }, { status: 413 });
+              }
+
+              try {
+                bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+              } catch {
+                return json({ error: "invalid_base64" }, { status: 400 });
+              }
             }
           }
 

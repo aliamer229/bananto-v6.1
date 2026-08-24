@@ -21,7 +21,7 @@
  * | --- | --- |
  * | `cartridgeImage` | **canonical front box cover** — vertical retail packshot |
  * | `nintendoCardImage` | square / near-square art for compact platform cards |
- * | `coverHiResImage` | optional print-resolution front cover, for the 3D texture |
+ * | `coverHiResImage` | optional full case wrap (back + spine + front), the 3D texture |
  * | `coverImage`, `image` | legacy front-cover carriers, kept as fallbacks |
  * | `galleryImages`, `gallery` | screenshots — never a cover |
  * | `bannerImage`, `banner` | wide key art — never a cover |
@@ -204,7 +204,10 @@ function withTrim(
  *   frames it rather than stretching it, but a dedicated square asset always
  *   wins so nothing has to be cropped.
  * - **3d-texture**
- *   `coverHiResImage → front cover → placeholder`. Never a thumbnail, never a
+ *   `coverHiResImage → front cover → placeholder`. `coverHiResImage` is the
+ *   *full printable case wrap* — Back Cover + Spine + Front Cover in one
+ *   uncropped image (see src/lib/coverTexture.ts); the front cover is only the
+ *   fallback for a product that has no wrap. Never a thumbnail, never a
  *   gallery frame.
  * - **banner**
  *   `bannerImage → banner → keyArtUrl → gallery` → placeholder. It never falls
