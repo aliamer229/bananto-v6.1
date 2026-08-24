@@ -18,8 +18,8 @@ export function QuickRepliesModal({ isOpen, onClose, onSelectReply }: QuickRepli
     return DEFAULT_QUICK_REPLIES.filter((reply) => {
       const matchesCategory = selectedCategory === "all" || reply.category === selectedCategory;
       const matchesSearch =
-        reply.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reply.text.toLowerCase().includes(searchTerm.toLowerCase());
+        (reply.title || "").toLowerCase().includes((searchTerm || "").toLowerCase()) ||
+        (reply.text || "").toLowerCase().includes((searchTerm || "").toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [searchTerm, selectedCategory]);

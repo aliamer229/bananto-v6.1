@@ -211,6 +211,59 @@ export function invalidateStoreCache() {
 const HEAVY_SECTIONS = ["products", "banners", "content", "bundles"] as const;
 const CHUNK_LIMIT = 400_000;
 
+export function isValidProductRecord(item: unknown): item is Product {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+  const p = item as Record<string, unknown>;
+  const id =
+    typeof p.id === "string"
+      ? p.id.trim()
+      : typeof p.id === "number"
+        ? String(p.id).trim()
+        : "";
+  if (!id) return false;
+
+  // Exclude known non-product sub-objects (like option ids, type ids, feature fragments)
+  if (id.startsWith("opt_") || id.startsWith("typ_") || id.startsWith("feat_")) {
+    return false;
+  }
+
+  const title = typeof p.title === "string" ? p.title.trim() : "";
+  const titleEn = typeof p.titleEn === "string" ? p.titleEn.trim() : "";
+
+  // Must have at least a non-empty string title or titleEn
+  if (!title && !titleEn) return false;
+
+  return true;
+}
+
+export function normalizeProductRecord(p: any): Product {
+  const id = String(p.id || "").trim();
+  const title =
+    typeof p.title === "string" && p.title.trim()
+      ? p.title.trim()
+      : typeof p.titleEn === "string" && p.titleEn.trim()
+        ? p.titleEn.trim()
+        : id;
+  const titleEn =
+    typeof p.titleEn === "string" && p.titleEn.trim()
+      ? p.titleEn.trim()
+      : title;
+  const slug =
+    typeof p.slug === "string" && p.slug.trim()
+      ? p.slug.trim()
+      : typeof p.id === "string" && p.id.trim()
+        ? p.id.trim()
+        : `product-${Date.now().toString(36)}`;
+
+  return {
+    ...p,
+    id,
+    title,
+    titleEn,
+    slug,
+  };
+}
+
 function chunkJson(value: unknown): string[] {
   const raw = JSON.stringify(value ?? null);
   if (raw.length <= CHUNK_LIMIT) return [raw];
@@ -390,7 +443,23 @@ async function loadStore(): Promise<StoreDoc> {
           }
 
           if (parsed !== undefined) {
-            doc[section] = parsed;
+            if (section === "products" && Array.isArray(parsed)) {
+              const validProducts: Product[] = [];
+              for (const item of parsed) {
+                if (isValidProductRecord(item)) {
+                  validProducts.push(normalizeProductRecord(item));
+                } else {
+                  console.warn(`[store:corrupt_product_isolated] Skipping invalid product record:`, {
+                    id: (item as any)?.id,
+                    title: (item as any)?.title,
+                    type: typeof (item as any)?.title,
+                  });
+                }
+              }
+              doc[section] = validProducts;
+            } else {
+              doc[section] = parsed;
+            }
           }
         } catch (sectionErr) {
           console.error(`[store:load_section_failed] section=${section}`, sectionErr);
@@ -491,6 +560,25 @@ async function persistStore(next: StoreDoc, expectedRev: number): Promise<number
   const now = new Date().toISOString();
   const nextRev = expectedRev + 1;
   const statements: { sql: string; params: unknown[] }[] = [];
+
+  // Ensure products are completely valid and normalized before persisting to D1
+  if (Array.isArray(next.products)) {
+    const cleanProducts: Product[] = [];
+    for (const p of next.products) {
+      if (isValidProductRecord(p)) {
+        cleanProducts.push(normalizeProductRecord(p));
+      } else {
+        console.error(`[store:persist_corrupt_product_prevented] Filtered out invalid product before persist:`, {
+          id: (p as any)?.id,
+          title: (p as any)?.title,
+        });
+      }
+    }
+    next = {
+      ...next,
+      products: cleanProducts,
+    };
+  }
 
   /*
     The guard, first: a duplicate primary key aborts the transaction before any

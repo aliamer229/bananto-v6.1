@@ -338,7 +338,28 @@ export default function AdminDashboard() {
       ]) {
         hydrated.current[key] = !Array.isArray(data[key]);
       }
-      if (Array.isArray(data.products)) setProducts(data.products);
+      if (Array.isArray(data.products)) {
+        const safeProducts = data.products
+          .filter((p: any) => p && typeof p === "object")
+          .map((p: any) => ({
+            ...p,
+            id: String(p.id || ""),
+            title:
+              typeof p.title === "string" && p.title.trim()
+                ? p.title.trim()
+                : typeof p.titleEn === "string" && p.titleEn.trim()
+                  ? p.titleEn.trim()
+                  : String(p.id || ""),
+            titleEn:
+              typeof p.titleEn === "string" && p.titleEn.trim()
+                ? p.titleEn.trim()
+                : typeof p.title === "string" && p.title.trim()
+                  ? p.title.trim()
+                  : String(p.id || ""),
+            slug: typeof p.slug === "string" ? p.slug : String(p.id || ""),
+          }));
+        setProducts(safeProducts);
+      }
       if (Array.isArray(data.bundles)) setBundles(data.bundles);
       if (Array.isArray(data.banners)) setBanners(data.banners);
       if (Array.isArray(data.categories)) setCategories(data.categories);
@@ -1448,8 +1469,11 @@ function ListingsView({
     );
   });
 
-  const filteredProducts = products.filter((p: any) => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProducts = (products || []).filter((p: any) => {
+    if (!p || typeof p !== "object") return false;
+    const titleStr = typeof p.title === "string" ? p.title : (typeof p.titleEn === "string" ? p.titleEn : "");
+    const searchStr = (searchTerm || "").trim().toLowerCase();
+    const matchesSearch = searchStr === "" ? true : titleStr.toLowerCase().includes(searchStr);
     const pCat = p.category || p.categoryId;
     const matchesCategory = initialCategoryId ? pCat === initialCategoryId : true;
     const matchesPricing = onlyUnpriced ? !isProductPriced(p) : true;
@@ -3781,10 +3805,10 @@ function UsersManagementView() {
   const filteredUsers =
     data?.users.filter(
       (u: any) =>
-        u.name.toLowerCase().includes(search.toLowerCase()) ||
-        u.username?.toLowerCase().includes(search.toLowerCase()) ||
-        u.email?.toLowerCase().includes(search.toLowerCase()) ||
-        u.phone?.includes(search),
+        (u?.name || "").toLowerCase().includes((search || "").toLowerCase()) ||
+        (u?.username || "").toLowerCase().includes((search || "").toLowerCase()) ||
+        (u?.email || "").toLowerCase().includes((search || "").toLowerCase()) ||
+        (u?.phone || "").includes(search || ""),
     ) || [];
 
   if (isLoading) return <div className="p-10 text-center">جاري التحميل...</div>;

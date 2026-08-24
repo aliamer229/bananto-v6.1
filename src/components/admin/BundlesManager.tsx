@@ -137,7 +137,7 @@ export default function BundlesManager({
     e.preventDefault();
     if (!editingBundle) return;
 
-    if (!editingBundle.title.trim()) {
+    if (!String(editingBundle.title || "").trim()) {
       toast.error("يرجى إدخال عنوان البندل");
       return;
     }
