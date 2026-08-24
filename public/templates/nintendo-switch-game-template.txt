@@ -116,9 +116,11 @@ cost_iqd=
 stock=
 
 # هل المخزون غير محدود (الألعاب غير محدودة المخزون افتراضياً)
+# BOOLEAN ONLY: true / false / blank if unknown
 is_infinite_stock=true
 
 # هل المنتج مخفي عن المستخدمين
+# BOOLEAN ONLY: true / false / blank if unknown
 is_hidden=false
 
 # قيمة الاستبدال بالدينار
@@ -149,12 +151,15 @@ kind=
 category=
 
 # هل اللعبة اوفلاين
+# BOOLEAN ONLY: true / false / blank if unknown
 game_is_offline=
 
 # هل تستطيع اللعب اونلاين
+# BOOLEAN ONLY: true / false / blank if unknown
 game_is_online=
 
 # هل فيها قفل لغة اقليمي
+# BOOLEAN ONLY: true / false / blank if unknown
 game_language_locked=
 
 # الوصف المختصر
@@ -228,10 +233,17 @@ box_front_url=
 # صورة الغلاف الخلفي
 box_back_url=
 
-# صور البنر / المعرض الرئيسي
+# صور البنر / المعرض الرئيسي — بنرات وصور رسمية عالية الدقة، بدون تكرار أو مصغّرات أو روابط معطلة (الأرقام أمثلة وليست حداً أقصى)
 banner_image.1=
 banner_image.2=
 banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+banner_image.8=
+banner_image.9=
+banner_image.10=
 
 # رابط التريلر (يوتيوب)
 trailer_url=
@@ -270,36 +282,47 @@ nintendo_official_url=
 official_store_url=
 
 # تتطلب Switch Online
+# BOOLEAN ONLY: true / false / blank if unknown
 nintendo_requires_switch_online=
 
 # تتطلب اشتراك Switch Online
+# BOOLEAN ONLY: true / false / blank if unknown
 requires_nintendo_switch_online=
 
 # يدعم الحفظ السحابي
+# BOOLEAN ONLY: true / false / blank if unknown
 nintendo_cloud_save=
 
 # حفظ البيانات سحابياً
+# BOOLEAN ONLY: true / false / blank if unknown
 save_data_cloud=
 
 # بطاقة مفتاح اللعبة
+# BOOLEAN ONLY: true / false / blank if unknown
 nintendo_game_key_card=
 
 # بطاقة مفتاح اللعبة
+# BOOLEAN ONLY: true / false / blank if unknown
 game_key_card=
 
 # النسخة الفعلية تتطلب تنزيلاً
+# BOOLEAN ONLY: true / false / blank if unknown
 nintendo_physical_requires_download=
 
 # النسخة الفيزيائية تتطلب تنزيلاً
+# BOOLEAN ONLY: true / false / blank if unknown
 physical_download_required=
 
 # يدعم وضع التلفزيون
+# BOOLEAN ONLY: true / false / blank if unknown
 tv_mode=
 
 # يدعم وضع سطح الطاولة
+# BOOLEAN ONLY: true / false / blank if unknown
 tabletop_mode=
 
 # يدعم الوضع المحمول
+# BOOLEAN ONLY: true / false / blank if unknown
 handheld_mode=
 
 # أنماط اللعب (تلفاز، محمول، طاولة)
@@ -311,12 +334,15 @@ nintendo_notes<<EOF
 EOF
 
 # نسخة محسنة لـ Switch 2
+# BOOLEAN ONLY: true / false / blank if unknown
 switch2_enhanced=
 
 # نسخة محسنة لـ Switch 2
+# BOOLEAN ONLY: true / false / blank if unknown
 switch_2_enhanced=
 
 # حصري لـ Switch 2
+# BOOLEAN ONLY: true / false / blank if unknown
 switch_2_exclusive=
 
 # سعر الترقية لـ Switch 2
@@ -336,14 +362,14 @@ switch2_features.3=
 overview_tagline=
 
 # تناسب من؟
-overview_suitable_for.1.value=
-overview_suitable_for.2.value=
-overview_suitable_for.3.value=
+overview_suitable_for.1=
+overview_suitable_for.2=
+overview_suitable_for.3=
 
 # لا تناسب من؟
-overview_not_suitable_for.1.value=
-overview_not_suitable_for.2.value=
-overview_not_suitable_for.3.value=
+overview_not_suitable_for.1=
+overview_not_suitable_for.2=
+overview_not_suitable_for.3=
 
 # ساعات القصة الرئيسية
 main_story_hours=
@@ -407,18 +433,36 @@ story_chapter.3.text<<EOF
 EOF
 story_chapter.3.image=
 
-# معرض الصور
+# معرض الصور — لقطات وصور رسمية عالية الدقة، بدون تكرار أو مصغّرات أو صور غير متعلقة (الأرقام أمثلة وليست حداً أقصى)
 gallery.1.image=
 gallery.1.description=
 gallery.2.image=
 gallery.2.description=
 gallery.3.image=
 gallery.3.description=
+gallery.4.image=
+gallery.4.description=
+gallery.5.image=
+gallery.5.description=
+gallery.6.image=
+gallery.6.description=
+gallery.7.image=
+gallery.7.description=
+gallery.8.image=
+gallery.8.description=
+gallery.9.image=
+gallery.9.description=
+gallery.10.image=
+gallery.10.description=
+gallery.11.image=
+gallery.11.description=
+gallery.12.image=
+gallery.12.description=
 
 # المميزات
-feature.1.value=
-feature.2.value=
-feature.3.value=
+feature.1=
+feature.2=
+feature.3=
 
 # الدقة (تلفاز)
 performance_tv_resolution=
@@ -430,6 +474,7 @@ performance_handheld_resolution=
 performance_fps=
 
 # يدعم HDR
+# BOOLEAN ONLY: true / false / blank if unknown
 performance_hdr=
 
 # ملاحظات الأداء
@@ -442,7 +487,11 @@ EOF
 # =========================================
 # Actual game performance only; never copy hardware maximum capabilities.
 # Leave unpublished values blank or use information_status with a source/reason.
+# ONE DEVICE PER INDEX: .1 is the first real device, .2 only if a
+# genuinely different second device has its own measured data, .3 likewise.
+# Never repeat the same device across indexes — leave unused ones blank.
 # أداء اللعبة الفعلي على جهاز محدد (عدد أجهزة وأنماط غير محدود)
+# BOOLEAN ONLY: true / false / blank if unknown
 device_performance.1.device=
 device_performance.1.device_slug=
 device_performance.1.device_model=
@@ -706,6 +755,7 @@ storage_download_size_gb=
 storage_required_space_gb=
 
 # ينصح ببطاقة microSD
+# BOOLEAN ONLY: true / false / blank if unknown
 storage_micro_sd_recommended=
 
 # ملاحظات التخزين
@@ -727,6 +777,7 @@ text_language.3=
 supported_languages_raw=
 
 # يدعم العربية
+# BOOLEAN ONLY: true / false / blank if unknown
 supports_arabic=
 
 # لعب محلي
@@ -736,15 +787,19 @@ multiplayer_local=
 multiplayer_online=
 
 # لعب تعاوني
+# BOOLEAN ONLY: true / false / blank if unknown
 multiplayer_cooperative=
 
 # لعب تنافسي
+# BOOLEAN ONLY: true / false / blank if unknown
 multiplayer_competitive=
 
 # شاشة مقسومة
+# BOOLEAN ONLY: true / false / blank if unknown
 multiplayer_split_screen=
 
 # لاسلكي محلي
+# BOOLEAN ONLY: true / false / blank if unknown
 multiplayer_local_wireless=
 
 # الإضافات
@@ -813,14 +868,14 @@ verdict_summary<<EOF
 EOF
 
 # الإيجابيات
-verdict_pro.1.value=
-verdict_pro.2.value=
-verdict_pro.3.value=
+verdict_pro.1=
+verdict_pro.2=
+verdict_pro.3=
 
 # السلبيات
-verdict_con.1.value=
-verdict_con.2.value=
-verdict_con.3.value=
+verdict_con.1=
+verdict_con.2=
+verdict_con.3=
 
 # مراجعات مختارة
 review.1.source=
@@ -888,9 +943,9 @@ music.3.url=
 series_name=
 
 # أجزاء السلسلة (ألعاب مشابهة)
-series_game.1.value=
-series_game.2.value=
-series_game.3.value=
+series_game.1=
+series_game.2=
+series_game.3=
 
 # اسم الاستوديو
 studio_name=
@@ -907,9 +962,9 @@ studio_description<<EOF
 EOF
 
 # المتطلبات
-setting_requirement.1.value=
-setting_requirement.2.value=
-setting_requirement.3.value=
+setting_requirement.1=
+setting_requirement.2=
+setting_requirement.3=
 
 # المصادر
 source.1.name=
@@ -920,6 +975,7 @@ source.3.name=
 source.3.url=
 
 # خيارات المنتج الرئيسية — لكل لعبة خياران: option.1.id=offline_account (حساب أوفلاين) و option.2.id=online_account (حساب أونلاين)
+# BOOLEAN ONLY: true / false / blank if unknown
 option.1.id=
 option.1.name=
 option.1.description=
@@ -932,6 +988,7 @@ option.2.stock=
 option.2.is_infinite_stock=true
 
 # أنواع المنتج المرتبطة بالخيارات — النسخة القياسية لكل خيار (standard_offline / standard_online)، وعند وجود DLC حقيقي فقط تُضاف dlc_offline / dlc_online بسعرها الجاهز من الملف
+# BOOLEAN ONLY: true / false / blank if unknown
 type.1.id=
 type.1.name=
 type.1.option_id=
