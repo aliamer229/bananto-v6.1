@@ -10,6 +10,7 @@ import { useStoreData } from "@/hooks/useStoreData";
 import { GAME_GENRES } from "@/lib/genres";
 import { resolveNintendoImageUrl } from "@/lib/nintendoImages";
 import { filterPurchasable } from "@/lib/purchasable";
+import { isGameProduct } from "@/lib/productSection";
 import { playSound } from "@/utils/audio";
 
 export const Route = createFileRoute("/games")({
@@ -51,7 +52,7 @@ function GamesPage() {
   const games: (CartridgeGame & { genres: string[] })[] = useMemo(
     () =>
       products
-        .filter((p) => p["kind"] !== "hardware")
+        .filter((p) => isGameProduct(p))
         .map((p) => ({
           id: p["id"],
           title: p["titleEn"] || p["english_name"] || p["title"],

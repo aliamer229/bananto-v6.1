@@ -10,6 +10,7 @@ import { Filter, SortAsc, Calendar, Star, Tag, ChevronDown, Gamepad2 } from "luc
 import { cdnImage } from "@/lib/img";
 import { GAME_GENRES, genreLabel } from "@/lib/genres";
 import { getProductCategory, isGameProduct } from "@/lib/productSection";
+import { isVisibleToPublic } from "@/lib/purchasable";
 
 export const Route = createFileRoute("/category/$categoryId")({
   component: CategoryPage,
@@ -104,18 +105,29 @@ function CategoryPage() {
 
     const targetCat = categoryId.toLowerCase();
     const categoryProducts = store.products.filter((p: any) => {
-      if (p.status === "غير نشط" || p.isActive === false) return false;
+      if (!isVisibleToPublic(p)) return false;
+      const resolved = getProductCategory(p);
+      if (targetCat === "all") return true;
+      if (
+        targetCat === "nintendo_games" ||
+        targetCat === "cat_nintendo" ||
+        targetCat === "nintendo-switch-games"
+      ) {
+        return resolved === "game";
+      }
+      if (targetCat === "hardware" || targetCat === "cat_hardware") return resolved === "hardware";
+      if (targetCat === "amiibo" || targetCat === "cat_amiibo") return resolved === "amiibo";
+      if (targetCat === "accessories" || targetCat === "cat_accessories") return resolved === "accessory";
+      if (
+        targetCat === "gift-cards" ||
+        targetCat === "gift_cards" ||
+        targetCat === "cat_gift_cards"
+      ) {
+        return resolved === "gift_card";
+      }
+      if (targetCat === "used" || targetCat === "cat_used") return resolved === "used";
       const pCat = String(p.category || p.categoryId || "").toLowerCase();
-      const pKind = String(p.kind || "").toLowerCase();
-      const isMatch =
-        pCat === targetCat ||
-        pKind === targetCat ||
-        categoryId === "all" ||
-        (targetCat === "nintendo_games" &&
-          (pCat === "cat_nintendo" ||
-            pCat === "nintendo-switch-games" ||
-            pKind === "nintendo-switch-games"));
-      return isMatch;
+      return pCat === targetCat || resolved === targetCat;
     });
 
     const genreKeys = new Set<string>();
@@ -169,8 +181,8 @@ function CategoryPage() {
     if (!store?.products) return [];
 
     const filtered = store.products.filter((p: any) => {
-      // Basic active check
-      if (p.status === "غير نشط" || p.isActive === false) return false;
+      // Basic visibility & active check
+      if (!isVisibleToPublic(p)) return false;
 
       // Category check
       const targetCat = categoryId.toLowerCase();
@@ -201,8 +213,7 @@ function CategoryPage() {
         isCatMatch = resolved === "used";
       } else {
         const pCat = String(p.category || p.categoryId || "").toLowerCase();
-        const pKind = String(p.kind || "").toLowerCase();
-        isCatMatch = pCat === targetCat || pKind === targetCat || resolved === targetCat;
+        isCatMatch = pCat === targetCat || resolved === targetCat;
       }
 
       if (!isCatMatch) return false;

@@ -8,7 +8,7 @@ import {
   resolutionRank,
   slugifyDevice,
 } from "@/lib/devicePerformance";
-import { isProductHidden } from "@/lib/purchasable";
+import { isVisibleToPublic } from "@/lib/purchasable";
 
 type LinkedGame = {
   id: string;
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/hardware/$slug/games")({
           const store = await getStore();
 
           const games = (store.products || []).flatMap((product): LinkedGame[] => {
-            if (isProductHidden(product)) return [];
+            if (!isVisibleToPublic(product)) return [];
             const performance = getDevicePerformanceList(product).find(
               (record) => record.deviceSlug === wanted,
             );

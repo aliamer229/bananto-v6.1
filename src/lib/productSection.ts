@@ -19,7 +19,105 @@ export function resolveCategoryType(
   kind?: string,
   schemaId?: string,
 ): CategoryType {
-  const sid = String(schemaId || "").toLowerCase();
+  const cid = String(categoryId || "").trim().toLowerCase();
+
+  // 1. Exact canonical category IDs / Slugs from database (Source of Truth)
+  if (
+    cid === "nintendo-switch-games" ||
+    cid === "cat_nintendo" ||
+    cid === "nintendo_games" ||
+    cid === "cat_1" ||
+    cid === "games" ||
+    cid === "game"
+  ) {
+    return "game";
+  }
+
+  if (cid === "hardware" || cid === "cat_hardware" || cid === "consoles" || cid === "devices") {
+    return "hardware";
+  }
+
+  if (cid === "accessories" || cid === "cat_accessories" || cid === "accessory") {
+    return "accessory";
+  }
+
+  if (cid === "amiibo" || cid === "cat_amiibo" || cid === "figures" || cid === "collectibles") {
+    return "amiibo";
+  }
+
+  if (
+    cid === "gift-cards" ||
+    cid === "gift_cards" ||
+    cid === "cat_gift_cards" ||
+    cid === "gift_card" ||
+    cid === "cards"
+  ) {
+    return "gift_card";
+  }
+
+  if (cid === "used" || cid === "cat_used" || cid === "preowned") {
+    return "used";
+  }
+
+  if (cid === "bundles" || cid === "cat_bundles" || cid === "bundle") {
+    return "bundle";
+  }
+
+  // 2. Category Title check (if custom category title is provided)
+  const title = String(categoryTitle || "").trim().toLowerCase();
+  if (title) {
+    if (
+      title.includes("لعب") ||
+      title.includes("ألعاب") ||
+      title.includes("العاب") ||
+      title.includes("game")
+    ) {
+      return "game";
+    }
+    if (title.includes("بندل") || title.includes("حزم") || title.includes("bundle")) {
+      return "bundle";
+    }
+    if (
+      title.includes("هاردوير") ||
+      title.includes("أجهزة") ||
+      title.includes("اجهزة") ||
+      title.includes("hardware") ||
+      title.includes("console")
+    ) {
+      return "hardware";
+    }
+    if (
+      title.includes("إكسسوار") ||
+      title.includes("اكسسوار") ||
+      title.includes("ملحق") ||
+      title.includes("accessor")
+    ) {
+      return "accessory";
+    }
+    if (title.includes("اميبو") || title.includes("amiibo") || title.includes("مجسم")) {
+      return "amiibo";
+    }
+    if (
+      title.includes("كروت") ||
+      title.includes("بطاق") ||
+      title.includes("شحن") ||
+      title.includes("تعبئ") ||
+      title.includes("gift")
+    ) {
+      return "gift_card";
+    }
+    if (
+      title.includes("مستعمل") ||
+      title.includes("مستخدم") ||
+      title.includes("مستعملة") ||
+      title.includes("used")
+    ) {
+      return "used";
+    }
+  }
+
+  // 3. Fallback to schemaId or kind ONLY if no recognized category exists
+  const sid = String(schemaId || "").trim().toLowerCase();
   if (sid === "hardware") return "hardware";
   if (sid === "amiibo") return "amiibo";
   if (sid === "accessory") return "accessory";
@@ -27,122 +125,39 @@ export function resolveCategoryType(
   if (sid === "used") return "used";
   if (sid === "bundle") return "bundle";
 
-  const cid = String(categoryId || "").toLowerCase();
-  const title = String(categoryTitle || "").toLowerCase();
-  const k = String(kind || "").toLowerCase();
-
-  if (cid.includes("bundle") || title.includes("بندل") || title.includes("حزم") || k === "bundle") {
-    return "bundle";
-  }
-  if (
-    cid.includes("hardware") ||
-    cid.includes("device") ||
-    cid.includes("console") ||
-    title.includes("هاردوير") ||
-    title.includes("أجهزة") ||
-    title.includes("اجهزة") ||
-    k === "hardware" ||
-    k === "device"
-  ) {
-    return "hardware";
-  }
-  if (
-    cid.includes("amiibo") ||
-    cid.includes("figur") ||
-    cid.includes("collectible") ||
-    title.includes("مجسم") ||
-    title.includes("اميبو") ||
-    title.includes("amiibo") ||
-    k === "collectible" ||
-    k === "amiibo"
-  ) {
-    return "amiibo";
-  }
-  if (
-    cid.includes("accessor") ||
-    title.includes("إكسسوار") ||
-    title.includes("اكسسوار") ||
-    title.includes("ملحق") ||
-    k === "accessory"
-  ) {
-    return "accessory";
-  }
-  if (
-    cid.includes("card") ||
-    cid.includes("gift") ||
-    cid.includes("eshop") ||
-    title.includes("كروت") ||
-    title.includes("بطاق") ||
-    title.includes("تعبئ") ||
-    title.includes("شحن") ||
-    k === "digital_code"
-  ) {
-    return "gift_card";
-  }
-  if (
-    cid.includes("used") ||
-    cid.includes("preowned") ||
-    cid.includes("trade") ||
-    title.includes("مستعمل") ||
-    title.includes("مستخدم") ||
-    title.includes("مستعملة") ||
-    k === "used"
-  ) {
-    return "used";
-  }
+  const k = String(kind || "").trim().toLowerCase();
+  if (k === "hardware" || k === "device") return "hardware";
+  if (k === "accessory") return "accessory";
+  if (k === "amiibo" || k === "collectible") return "amiibo";
+  if (k === "bundle") return "bundle";
+  if (k === "digital_code" || k === "gift_card") return "gift_card";
+  if (k === "used") return "used";
 
   return "game";
 }
 
 /**
- * Robust product classifier that checks schema, category, kind, and title hints.
+ * Strict product classifier.
+ * Category ID/slug from the database is the primary source of truth.
+ * Never uses title matching, platform, image, or metadata to guess categories.
  */
 export function getProductCategory(product: unknown): CategoryType {
   if (!product || typeof product !== "object") return "game";
   const p = product as Record<string, any>;
 
-  // 1. Direct schema check
-  const schemaId = p.schemaId || p.schema?.id || p.schema_id;
-  if (schemaId) {
-    const resolved = resolveCategoryType("", "", "", String(schemaId));
-    if (resolved !== "game") return resolved;
+  // 1. Primary: Category ID / Slug from product record
+  const categoryId = String(p.category || p.categoryId || p.category_id || "").trim().toLowerCase();
+  const categoryTitle = String(p.categoryTitle || p.category_title || "").trim().toLowerCase();
+
+  if (categoryId || categoryTitle) {
+    return resolveCategoryType(categoryId, categoryTitle);
   }
 
-  // 2. Kind check
-  const kind = String(p.kind || "").toLowerCase();
-  if (kind === "hardware" || kind === "device") return "hardware";
-  if (kind === "accessory") return "accessory";
-  if (kind === "amiibo" || kind === "collectible") return "amiibo";
-  if (kind === "bundle") return "bundle";
-  if (kind === "digital_code" || kind === "gift_card") return "gift_card";
-  if (kind === "used") return "used";
+  // 2. Secondary: SchemaId or Kind ONLY if product has no category specified
+  const schemaId = String(p.schemaId || p.schema?.id || p.schema_id || "").trim().toLowerCase();
+  const kind = String(p.kind || "").trim().toLowerCase();
 
-  // 3. Category / CategoryId check
-  const categoryId = String(p.category || p.categoryId || p.category_id || "").toLowerCase();
-  const categoryTitle = String(p.categoryTitle || p.category_title || "").toLowerCase();
-
-  const fromCategory = resolveCategoryType(categoryId, categoryTitle, kind);
-  if (fromCategory !== "game") return fromCategory;
-
-  // 4. Hardware title hints (e.g. Nintendo Switch 2 console, OLED model)
-  const title = String(p.title || p.titleEn || p.english_name || "").toLowerCase();
-  if (
-    title.includes("switch 2 console") ||
-    title.includes("switch oled console") ||
-    title.includes("switch lite console") ||
-    title.includes("dock set") ||
-    title.includes("joy-con pair") ||
-    title.includes("pro controller")
-  ) {
-    if (title.includes("controller") || title.includes("joy-con") || title.includes("dock")) {
-      return "accessory";
-    }
-    if (title.includes("console") || title.includes("switch 2") || title.includes("switch oled")) {
-      return "hardware";
-    }
-  }
-
-  return "game";
+  return resolveCategoryType("", "", kind, schemaId);
 }
 
 export function isGameProduct(product: unknown): boolean {

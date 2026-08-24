@@ -3,7 +3,7 @@ import { getStore } from "@/lib/db.server";
 import { json, guard } from "@/lib/http.server";
 import { slugifyDevice, getDevicePerformanceList } from "@/lib/devicePerformance";
 import { resolveCategoryType } from "@/lib/productSection";
-import { isProductHidden } from "@/lib/purchasable";
+import { isVisibleToPublic } from "@/lib/purchasable";
 
 export const Route = createFileRoute("/api/hardware/$slug")({
   server: {
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/hardware/$slug")({
         guard(async () => {
           const store = await getStore();
           const wanted = slugifyDevice(params.slug);
-          const visible = (store.products || []).filter((product) => !isProductHidden(product));
+          const visible = (store.products || []).filter((product) => isVisibleToPublic(product));
           const hardware = visible.find((product) => {
             const section = resolveCategoryType(
               String(product.categoryId || product.category || ""),

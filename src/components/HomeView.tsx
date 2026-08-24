@@ -310,30 +310,7 @@ export default function HomeView({
             <div dir="ltr" className="w-full max-w-full">
               <ProductStrip
                 products={adminProducts
-                  .filter((p) => {
-                    const catId = (p.category || p.categoryId || "").toLowerCase();
-                    const kind = (p.kind || "").toLowerCase();
-                    // Include Nintendo switch games
-                    return (
-                      !catId ||
-                      catId === "cat_1" ||
-                      catId === "cat_nintendo" ||
-                      catId === "nintendo_games" ||
-                      catId === "nintendo-switch-games" ||
-                      kind === "account" ||
-                      kind === "offline_account" ||
-                      kind === "online_account" ||
-                      kind === "physical" ||
-                      Boolean(
-                        p.releaseDate ||
-                        p.release_date ||
-                        p.metadata?.releaseDate ||
-                        p.metadata?.release_date ||
-                        p.releaseYear ||
-                        p.release_year,
-                      )
-                    );
-                  })
+                  .filter((p) => isGameProduct(p))
                   .sort((a, b) => {
                     const getVal = (p: any) => {
                       const d =
@@ -525,14 +502,7 @@ export default function HomeView({
               products={adminProducts
                 .filter((p) => {
                   const resolved = getProductCategory(p);
-                  return (
-                    resolved === "hardware" ||
-                    resolved === "accessory" ||
-                    p.category === "hardware" ||
-                    p.category === "accessories" ||
-                    p.categoryId === "hardware" ||
-                    p.categoryId === "accessories"
-                  );
+                  return resolved === "hardware" || resolved === "accessory";
                 })
                 .slice(0, 12)
                 .map((p) => ({
@@ -569,12 +539,7 @@ export default function HomeView({
             </div>
             <ProductStrip
               products={adminProducts
-                .filter(
-                  (p) =>
-                    getProductCategory(p) === "amiibo" ||
-                    p.category === "amiibo" ||
-                    p.categoryId === "amiibo",
-                )
+                .filter((p) => getProductCategory(p) === "amiibo")
                 .slice(0, 12)
                 .map((p) => ({
                   id: p.id,
@@ -612,12 +577,7 @@ export default function HomeView({
             </div>
             <ProductStrip
               products={adminProducts
-                .filter(
-                  (p) =>
-                    getProductCategory(p) === "gift_card" ||
-                    p.category === "gift-cards" ||
-                    p.categoryId === "gift-cards",
-                )
+                .filter((p) => getProductCategory(p) === "gift_card")
                 .slice(0, 12)
                 .map((p) => ({
                   id: p.id,
@@ -653,12 +613,7 @@ export default function HomeView({
             </div>
             <ProductStrip
               products={adminProducts
-                .filter(
-                  (p) =>
-                    getProductCategory(p) === "used" ||
-                    p.category === "used" ||
-                    p.categoryId === "used",
-                )
+                .filter((p) => getProductCategory(p) === "used")
                 .slice(0, 12)
                 .map((p) => ({
                   id: p.id,

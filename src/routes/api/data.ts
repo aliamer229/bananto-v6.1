@@ -13,7 +13,7 @@ import { getSessionUser } from "@/lib/session.server";
 import { autoTranslateProduct, autoTranslateBundle } from "@/lib/translate.server";
 
 import { forceFullImport } from "@/lib/force-import.server";
-import { isProductHidden } from "@/lib/purchasable";
+import { isProductHidden, isVisibleToPublic } from "@/lib/purchasable";
 import type { StoreDoc, AdminAvailabilityStatus, AdminAvailabilityConfig } from "@/lib/types";
 
 /** Cheap, stable hash used for the ETag of the catalogue payload. */
@@ -124,7 +124,7 @@ function publicStore(
       unfiltered store further down and keep seeing all of them.
     */
     products: (store.products ?? [])
-      .filter((product) => !isProductHidden(product))
+      .filter((product) => isVisibleToPublic(product))
       .map((product) => publicProduct(product) as StoreDoc["products"][number]),
     bundles: (store.bundles ?? []).filter((b) => b.isActive !== false),
     quickReplies: [],
