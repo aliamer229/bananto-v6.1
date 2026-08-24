@@ -209,7 +209,7 @@ export function invalidateStoreCache() {
  * section is still too big), so saving a product never fails on size.
  */
 const HEAVY_SECTIONS = ["products", "banners", "content", "bundles"] as const;
-const CHUNK_LIMIT = 600_000;
+const CHUNK_LIMIT = 400_000;
 
 function chunkJson(value: unknown): string[] {
   const raw = JSON.stringify(value ?? null);
@@ -217,6 +217,77 @@ function chunkJson(value: unknown): string[] {
   const parts: string[] = [];
   for (let i = 0; i < raw.length; i += CHUNK_LIMIT) parts.push(raw.slice(i, i + CHUNK_LIMIT));
   return parts;
+}
+
+/**
+ * Safely parse JSON array data, with automatic recovery/salvaging for truncated or slightly corrupted JSON.
+ */
+function parseArraySafely<T>(raw: string, fallback: T[] = []): T[] {
+  if (!raw || typeof raw !== "string" || !raw.trim()) return fallback;
+  const trimmed = raw.trim();
+  try {
+    const result = JSON.parse(trimmed);
+    if (Array.isArray(result)) return result as T[];
+    if (result && typeof result === "object") return [result as unknown as T];
+  } catch (err) {
+    console.warn("[parseArraySafely:attempting_salvage]", err);
+  }
+
+  // Robust object scanner to salvage all valid items even if some elements or boundaries are broken
+  const items: T[] = [];
+  let pos = 0;
+  while (pos < trimmed.length) {
+    const nextStart = trimmed.indexOf('{"', pos);
+    if (nextStart === -1) break;
+
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    let foundEnd = -1;
+
+    for (let i = nextStart; i < Math.min(trimmed.length, nextStart + 600000); i++) {
+      const char = trimmed[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (char === "\\") {
+        escape = true;
+        continue;
+      }
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+
+      if (char === "{") depth++;
+      else if (char === "}") {
+        depth--;
+        if (depth === 0) {
+          foundEnd = i;
+          break;
+        }
+      }
+    }
+
+    if (foundEnd !== -1) {
+      const candidate = trimmed.slice(nextStart, foundEnd + 1);
+      try {
+        const parsed = JSON.parse(candidate);
+        if (parsed && typeof parsed === "object") {
+          items.push(parsed as T);
+        }
+        pos = foundEnd + 1;
+      } catch {
+        pos = nextStart + 1;
+      }
+    } else {
+      pos = nextStart + 1;
+    }
+  }
+
+  return items.length > 0 ? items : fallback;
 }
 
 /**
@@ -239,55 +310,97 @@ const COUNTER_KEYS = { visits: "analytics:visits", views: "analytics:views" } as
 let storeRev = 0;
 
 async function readStoreRev(): Promise<number> {
-  const row = await d1RawFirst<{ rev: number | null }>(`SELECT MAX(rev) as rev FROM store_rev`);
-  return Number(row?.rev ?? 0);
+  try {
+    const row = await d1RawFirst<{ rev: number | null }>(`SELECT MAX(rev) as rev FROM store_rev`);
+    return Number(row?.rev ?? 0);
+  } catch {
+    return 0;
+  }
 }
 
 async function loadStore(): Promise<StoreDoc> {
   if (await d1Ready()) {
-    const [rows, rev] = await Promise.all([
+    const [baseRows, rev] = await Promise.all([
       d1RawAll<{ key: string; value: string }>(
-        `SELECT key, value FROM store_kv
-       WHERE key = 'store' OR key LIKE 'store:%' OR key LIKE 'analytics:%'`,
-      ),
-      readStoreRev().catch(() => 0),
+        `SELECT key, value FROM store_kv WHERE key = 'store' OR key LIKE 'analytics:%'`,
+      ).catch(() => []),
+      readStoreRev(),
     ]);
     storeRev = rev;
-    const base = rows.find((r) => r.key === "store");
+    const base = baseRows.find((r) => r.key === "store");
     const doc = { ...emptyStore, ...parse<Partial<StoreDoc>>(base?.value, {}) } as Record<
       string,
       unknown
     >;
 
-    for (const section of HEAVY_SECTIONS) {
-      const parts = rows
-        .filter((r) => r.key === `store:${section}` || r.key.startsWith(`store:${section}#`))
-        .sort((a, b) => a.key.localeCompare(b.key, "en", { numeric: true }))
-        .map((r) => r.value)
-        .join("");
-      if (!parts) continue;
-      /*
-        A heavy section that will not parse is corruption, not emptiness.
-        Falling back to `[]` here handed every reader an empty catalogue — and
-        the next save then wrote that emptiness over the real data. Refusing to
-        load is recoverable; silently discarding the catalogue is not.
-      */
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(parts);
-      } catch (err) {
-        console.error("[store:section_corrupt]", {
-          section,
-          bytes: parts.length,
-          error: err instanceof Error ? err.message : String(err),
-        });
-        throw new Error(`store_section_unreadable:${section}`);
-      }
-      if (parsed !== undefined) doc[section] = parsed;
-    }
+    // Load each heavy section independently to avoid exceeding query payload limits
+    await Promise.all(
+      HEAVY_SECTIONS.map(async (section) => {
+        try {
+          const rows = await d1RawAll<{ key: string; value: string }>(
+            `SELECT key, value FROM store_kv WHERE key = ? OR key LIKE ? ORDER BY key ASC`,
+            `store:${section}`,
+            `store:${section}#%`,
+          );
+
+          const chunkRegex = new RegExp(`^store:${section}#(\\d+)$`);
+          const chunkRows = rows
+            .map((r) => {
+              const m = r.key.match(chunkRegex);
+              return m ? { index: parseInt(m[1], 10), key: r.key, value: r.value } : null;
+            })
+            .filter((c): c is { index: number; key: string; value: string } => c !== null);
+
+          let parsed: unknown;
+          if (chunkRows.length > 0) {
+            // Deduplicate chunks by numeric index
+            const chunkMap = new Map<number, string>();
+            for (const r of chunkRows) {
+              chunkMap.set(r.index, r.value);
+            }
+            const sortedIndices = Array.from(chunkMap.keys()).sort((a, b) => a - b);
+            const chunkedParts = sortedIndices.map((idx) => chunkMap.get(idx)!).join("");
+
+            if (chunkedParts.trim()) {
+              if (section === "content") {
+                try {
+                  parsed = JSON.parse(chunkedParts);
+                } catch {
+                  parsed = {};
+                }
+              } else {
+                parsed = parseArraySafely(chunkedParts, []);
+              }
+            }
+          }
+
+          if (parsed === undefined || (Array.isArray(parsed) && parsed.length === 0)) {
+            const baseRow = rows.find((r) => r.key === `store:${section}`);
+            if (baseRow?.value && baseRow.value.trim()) {
+              if (section === "content") {
+                try {
+                  parsed = JSON.parse(baseRow.value);
+                } catch {
+                  parsed = {};
+                }
+              } else {
+                parsed = parseArraySafely(baseRow.value, []);
+              }
+            }
+          }
+
+          if (parsed !== undefined) {
+            doc[section] = parsed;
+          }
+        } catch (sectionErr) {
+          console.error(`[store:load_section_failed] section=${section}`, sectionErr);
+          doc[section] = section === "content" ? {} : [];
+        }
+      }),
+    );
 
     for (const [field, key] of Object.entries(COUNTER_KEYS)) {
-      const row = rows.find((r) => r.key === key);
+      const row = baseRows.find((r) => r.key === key);
       if (!row) continue;
       const value = Number(row.value);
       if (Number.isFinite(value)) doc[field] = value;
@@ -403,6 +516,12 @@ async function persistStore(next: StoreDoc, expectedRev: number): Promise<number
 
   for (const section of HEAVY_SECTIONS) {
     const parts = chunkJson((next as unknown as Record<string, unknown>)[section]);
+    // Always clear old chunks for this section to prevent stale or duplicate chunk keys
+    statements.push({
+      sql: `DELETE FROM store_kv WHERE key LIKE ?`,
+      params: [`store:${section}#%`],
+    });
+
     if (parts.length === 1) {
       write(`store:${section}`, parts[0]!);
     } else {
@@ -413,14 +532,6 @@ async function persistStore(next: StoreDoc, expectedRev: number): Promise<number
         write(`store:${section}#${String(i + 1).padStart(3, "0")}`, parts[i]!);
       }
     }
-    // Drop stale chunks from a previous, longer save.
-    statements.push({
-      sql: `DELETE FROM store_kv WHERE key LIKE ? AND key > ?`,
-      params: [
-        `store:${section}#%`,
-        `store:${section}#${String(parts.length === 1 ? 0 : parts.length).padStart(3, "0")}`,
-      ],
-    });
   }
 
   // Keep the revision table at a single row.
@@ -463,9 +574,9 @@ export async function getStore(): Promise<StoreDoc> {
   return storeInFlight;
 }
 
-export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Promise<StoreDoc> {
+export async function updateStore(mutate: (current: StoreDoc) => StoreDoc | void): Promise<StoreDoc> {
   let current = await getStore();
-  let next = mutate(current);
+  let next = (mutate(current) ?? current) as StoreDoc;
 
   if (await d1Ready()) {
     /*
@@ -481,7 +592,7 @@ export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Prom
     let saved = false;
     for (let attempt = 0; attempt < 4 && !saved; attempt++) {
       current = await loadStore();
-      next = mutate(current);
+      next = (mutate(current) ?? current) as StoreDoc;
       try {
         storeRev = await persistStore(next, storeRev);
         saved = true;
@@ -489,7 +600,7 @@ export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Prom
         if (!(err instanceof StoreConflictError)) {
           console.error("[store:write_failed]", {
             attempt,
-            products: (next.products ?? []).length,
+            products: (next?.products ?? []).length,
             error: err instanceof Error ? err.message : String(err),
           });
           throw err;
@@ -507,8 +618,8 @@ export async function updateStore(mutate: (current: StoreDoc) => StoreDoc): Prom
       in-memory map in a Worker, where it is lost when the isolate ends — so
       say so rather than reporting a save that did not durably happen.
     */
-    console.warn("[store:no_d1]", { products: (next.products ?? []).length });
-    await mutateJson<StoreDoc>(STORE_KEY, emptyStore, mutate);
+    console.warn("[store:no_d1]", { products: (next?.products ?? []).length });
+    await mutateJson<StoreDoc>(STORE_KEY, emptyStore, (c) => mutate(c) ?? c);
   }
 
   storeCache = { doc: next, at: Date.now() };

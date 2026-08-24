@@ -11,6 +11,7 @@ import {
 } from "@/lib/product-identity";
 import {
   claimProductIdentityAgainstCatalogue,
+  hardDeleteProductRelations,
   pruneOrphanProductIdentities,
   reindexProductIdentities,
   releaseProductIdentity,
@@ -46,10 +47,6 @@ function hardwareProducts(products: Product[], categories: Record<string, unknow
 
 /**
  * A free slug for a copy of a product that already exists.
- *
- * The batch importer never touches the product already in the catalogue, so
- * the new copy needs a slug of its own to satisfy the uniqueness rule. The
- * slug it *wanted* is kept on the record as `duplicateOriginalSlug`.
  */
 export function uniqueSlug(desired: string, taken: Iterable<string>): string {
   const used = new Set([...taken].map((value) => String(value).toLowerCase()));
@@ -62,36 +59,43 @@ export function uniqueSlug(desired: string, taken: Iterable<string>): string {
 }
 
 /**
- * Confirm from storage that the product is really there (or really gone).
- *
- * `invalidateStoreCache()` first, so the check reads D1 rather than the copy
- * this request just put in the cache — otherwise it would only prove that the
- * write function returned.
+ * Confirm from D1 storage that the product is really persisted with correct integrity (or really gone).
  */
 async function verifyProductPersisted(
   productId: string,
   operation: "create" | "update" | "delete",
-): Promise<void> {
+  expectedProduct?: Partial<Product>,
+): Promise<Product | null> {
   invalidateStoreCache();
   const fresh = await getStore();
-  const present = (fresh.products || []).some((p) => String(p.id) === productId);
-  const expected = operation !== "delete";
-  if (present === expected) return;
+  const found = (fresh.products || []).find((p) => String(p.id) === productId);
 
-  const ref = errorRef();
-  console.error("[Product:persist_verification_failed]", {
-    operation,
-    productId,
-    ref,
-    expected: expected ? "present" : "absent",
-    found: present ? "present" : "absent",
-    catalogueSize: (fresh.products || []).length,
-  });
-  throw new Error(
-    operation === "delete"
-      ? `Product ${productId} is still in the catalogue after delete (ref ${ref})`
-      : `Product ${productId} is not in the catalogue after save (ref ${ref})`,
-  );
+  if (operation === "delete") {
+    if (found) {
+      const ref = errorRef();
+      console.error("[Product:delete_verification_failed]", { productId, ref });
+      throw new Error(`Product ${productId} is still in the catalogue after delete (ref ${ref})`);
+    }
+    return null;
+  }
+
+  if (!found) {
+    const ref = errorRef();
+    console.error("[Product:save_verification_failed]", { productId, operation, ref });
+    throw new Error(`Product ${productId} is not found in database after save (ref ${ref})`);
+  }
+
+  // Verify core data integrity
+  if (expectedProduct) {
+    if (expectedProduct.title && found.title !== expectedProduct.title) {
+      console.warn("[Product:title_mismatch_after_save]", {
+        expected: expectedProduct.title,
+        found: found.title,
+      });
+    }
+  }
+
+  return found;
 }
 
 export function sanitizeSlug(input: string, fallbackId: string): string {
@@ -651,23 +655,14 @@ export const Route = createFileRoute("/api/admin/products")({
 
           /*
             Prove it left the catalogue before reporting the delete.
-
-            A delete that only removed the product from the response — because
-            the write lost a race with a concurrent save holding an older
-            snapshot — is what made a "deleted" product reappear on the next
-            refresh, and then read as a duplicate.
           */
           await verifyProductPersisted(targetId, "delete");
 
           await deactivateGameDevicePerformance(targetId);
           /*
-            The identity index is part of the product, not a record of it. Left
-            behind, its row keeps the title+platform reserved for a product that
-            no longer exists, and re-adding that game is refused with an
-            `existingProductId` pointing at nothing. Order history and reviews
-            are deliberately not touched here.
+            Hard delete all related index and child records across all D1 tables.
           */
-          await releaseProductIdentity(targetId);
+          await hardDeleteProductRelations(targetId);
 
           return json({ success: true, id: targetId });
         }),

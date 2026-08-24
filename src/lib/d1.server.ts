@@ -64,11 +64,29 @@ function restD1(): D1Like | undefined {
         params: params.map((p) => (p === undefined ? null : p)),
       }),
     });
-    const payload = (await res.json()) as {
+    let rawText = "";
+    try {
+      rawText = await res.text();
+    } catch (readErr) {
+      console.error(`[d1:rest:read_error] status=${res.status}`, readErr);
+      throw new Error(`D1_REST_READ_ERROR: ${readErr instanceof Error ? readErr.message : String(readErr)}`);
+    }
+
+    let payload: {
       success?: boolean;
       errors?: { message?: string; code?: number }[];
       result?: D1RunResult[];
     };
+    try {
+      payload = JSON.parse(rawText);
+    } catch (parseErr) {
+      console.error(
+        `[d1:rest:json_parse_error] status=${res.status} length=${rawText.length} snippet=${rawText.slice(0, 100)}...${rawText.slice(-100)}`,
+        parseErr,
+      );
+      throw new Error(`D1_REST_INVALID_JSON (length: ${rawText.length}): ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`);
+    }
+
     if (!res.ok || payload.success === false) {
       const msg = payload.errors?.[0]?.message ?? `D1 REST error ${res.status}`;
       console.error(`[d1:rest:error] status=${res.status} error=${msg}`);
@@ -638,6 +656,8 @@ const SCHEMA: string[] = [
  * (SQLite has no `ADD COLUMN IF NOT EXISTS`), so their errors are swallowed.
  */
 const SCHEMA_PATCHES: string[] = [
+  `CREATE TABLE IF NOT EXISTS store_kv (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS store_rev (rev INTEGER PRIMARY KEY, updated_at TEXT NOT NULL)`,
   `ALTER TABLE users ADD COLUMN wallet_balance REAL NOT NULL DEFAULT 0`,
   `ALTER TABLE users ADD COLUMN banana_balance INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE users ADD COLUMN banana_locked INTEGER NOT NULL DEFAULT 0`,
@@ -1671,7 +1691,7 @@ export function ensureCouponsSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 16;
+const RUNTIME_SCHEMA_VERSION = 17;
 
 async function runSchemaStatements(
   db: D1Like,
@@ -1708,6 +1728,22 @@ export function ensureSchema(): Promise<void> {
           `CREATE TABLE IF NOT EXISTS app_schema_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
         )
         .run();
+      // Always guarantee base store tables exist regardless of schema meta
+      try {
+        await db
+          .prepare(
+            `CREATE TABLE IF NOT EXISTS store_kv (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+          )
+          .run();
+        await db
+          .prepare(
+            `CREATE TABLE IF NOT EXISTS store_rev (rev INTEGER PRIMARY KEY, updated_at TEXT NOT NULL)`,
+          )
+          .run();
+      } catch (e) {
+        console.warn("[d1:base_store_tables_ensure_failed]", e);
+      }
+
       const installed = await db
         .prepare(`SELECT value FROM app_schema_meta WHERE key = 'runtime_schema_version'`)
         .first<{ value: string }>();

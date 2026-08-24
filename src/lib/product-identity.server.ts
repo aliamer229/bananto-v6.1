@@ -110,6 +110,45 @@ export async function releaseProductIdentity(productId: string): Promise<void> {
   }
 }
 
+/** Drop any index row holding a title+platform if it's not held by an active product. */
+export async function releaseProductIdentityByKey(
+  normalizedTitle: string,
+  platform: string,
+): Promise<void> {
+  if (!normalizedTitle || !(await d1Ready())) return;
+  try {
+    await d1Run(
+      `DELETE FROM product_identity WHERE normalized_title = ? AND platform = ?`,
+      normalizedTitle,
+      platform,
+    );
+  } catch (err) {
+    console.warn("[product-identity:release_by_key_failed]", { normalizedTitle, platform }, err);
+  }
+}
+
+/** Hard delete all related records across all tables for a deleted product */
+export async function hardDeleteProductRelations(productId: string): Promise<void> {
+  if (!productId || !(await d1Ready())) return;
+  try {
+    await Promise.allSettled([
+      d1Run(`DELETE FROM product_identity WHERE product_id = ?`, productId),
+      d1Run(
+        `DELETE FROM game_device_performance_modes WHERE performance_id IN (SELECT id FROM game_device_performance WHERE game_id = ?)`,
+        productId,
+      ),
+      d1Run(`DELETE FROM game_device_performance WHERE game_id = ?`, productId),
+      d1Run(`DELETE FROM game_variants WHERE game_id = ?`, productId),
+      d1Run(`DELETE FROM game_images WHERE game_id = ?`, productId),
+      d1Run(`DELETE FROM game_aliases WHERE game_id = ?`, productId),
+      d1Run(`DELETE FROM game_price_history WHERE game_id = ?`, productId),
+      d1Run(`DELETE FROM game_import_logs WHERE game_id = ?`, productId),
+    ]);
+  } catch (err) {
+    console.warn("[product-relations:hard_delete_failed]", { productId }, err);
+  }
+}
+
 /** Ids of the products actually in the catalogue right now. */
 function catalogueIds(catalogue: readonly ProductIdentityInput[]): Set<string> {
   const ids = new Set<string>();
@@ -140,15 +179,37 @@ export async function claimProductIdentityAgainstCatalogue(
   now = new Date().toISOString(),
 ): Promise<IdentityClaim> {
   const claim = await claimProductIdentity(product, now);
-  if (claim.ok || !claim.conflictProductId) return claim;
-  if (catalogueIds(catalogue).has(claim.conflictProductId)) return claim;
+  if (claim.ok) return claim;
 
-  console.warn("[product-identity:orphan_released]", {
-    productId: String(product.id ?? ""),
-    orphanProductId: claim.conflictProductId,
-  });
-  await releaseProductIdentity(claim.conflictProductId);
-  return claimProductIdentity(product, now);
+  const activeIds = catalogueIds(catalogue);
+  const normalizedTitle = normalizeProductTitle(product.title ?? product.titleEn);
+  const platform = normalizeProductPlatform(product.platform);
+
+  // If the conflict product ID is not in the live catalogue, release it
+  if (claim.conflictProductId && !activeIds.has(claim.conflictProductId)) {
+    console.warn("[product-identity:orphan_released]", {
+      productId: String(product.id ?? ""),
+      orphanProductId: claim.conflictProductId,
+    });
+    await releaseProductIdentity(claim.conflictProductId);
+    return claimProductIdentity(product, now);
+  }
+
+  // If conflict happened without a conflictProductId or with another ghost row:
+  if (!claim.conflictProductId && normalizedTitle) {
+    const existing = await d1First<{ product_id: string }>(
+      `SELECT product_id FROM product_identity WHERE normalized_title = ? AND platform = ?`,
+      normalizedTitle,
+      platform,
+    ).catch(() => null);
+
+    if (existing?.product_id && !activeIds.has(existing.product_id)) {
+      await releaseProductIdentity(existing.product_id);
+      return claimProductIdentity(product, now);
+    }
+  }
+
+  return claim;
 }
 
 /**
