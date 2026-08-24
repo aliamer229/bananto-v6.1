@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
 import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
+import { d1Run } from "@/lib/d1.server";
 import { autoTranslateProduct } from "@/lib/translate.server";
 import {
   findConflictingProduct,
@@ -370,34 +371,24 @@ export const Route = createFileRoute("/api/admin/products")({
             );
           }
 
-          // 9. Save single product to database
+          // 9. Save single product to database (Granular Save)
           try {
-            const updated = await updateStore((store) => {
-              const products = store.products || [];
-              const index = products.findIndex((p) => String(p.id) === productId);
-              let nextProducts: Product[];
-              if (index >= 0) {
-                nextProducts = [...products];
-                nextProducts[index] = { ...products[index], ...productToSave };
-              } else {
-                nextProducts = [productToSave, ...products];
-              }
-              return {
-                ...store,
-                products: nextProducts,
-              };
-            });
+            await d1Run(
+              `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+               ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+              `store:product:${productId}`,
+              JSON.stringify(productToSave),
+              new Date().toISOString(),
+            );
 
-            const saved =
-              (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+            // Invalidate the store cache so loadStore picks up the new granular product
+            invalidateStoreCache();
+
+            const saved = productToSave;
+            const updated = await getStore(); // Fetch updated store to get categories/products for sync
 
             /*
               Read it back before saying it saved.
-
-              The catalogue is one document written wholesale, so "the write
-              returned" and "the product is in the catalogue" were not the same
-              statement — and reporting success for a save that did not land is
-              what made a product vanish on the next refresh.
             */
             await verifyProductPersisted(productId, "create");
 
@@ -581,24 +572,19 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           try {
-            const updated = await updateStore((store) => {
-              const products = store.products || [];
-              const index = products.findIndex((p) => String(p.id) === productId);
-              let nextProducts: Product[];
-              if (index >= 0) {
-                nextProducts = [...products];
-                nextProducts[index] = { ...products[index], ...productToSave };
-              } else {
-                nextProducts = [productToSave, ...products];
-              }
-              return {
-                ...store,
-                products: nextProducts,
-              };
-            });
+            await d1Run(
+              `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+               ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+              `store:product:${productId}`,
+              JSON.stringify(productToSave),
+              new Date().toISOString(),
+            );
 
-            const saved =
-              (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+            // Invalidate the store cache so loadStore picks up the new granular product
+            invalidateStoreCache();
+
+            const saved = productToSave;
+            const updated = await getStore(); // Fetch updated store to get categories/products for sync
 
             // Same reason as the create path: confirm from D1, not from the
             // value we just handed to the writer.
@@ -648,10 +634,16 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           const targetId = String(id);
-          await updateStore((store) => ({
-            ...store,
-            products: (store.products || []).filter((p) => String(p.id) !== targetId),
-          }));
+          
+          await d1Run(
+            `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+            `store:product:${targetId}`,
+            JSON.stringify({ id: targetId, _deleted: true }),
+            new Date().toISOString(),
+          );
+          
+          invalidateStoreCache();
 
           /*
             Prove it left the catalogue before reporting the delete.

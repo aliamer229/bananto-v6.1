@@ -90,14 +90,11 @@ export function ImageUploadField({
           onChange(res.url);
           toast.success("تم رفع الصورة وتخزينها بنجاح");
         } else {
-          // Fallback to data URL if direct upload returns no url
-          onChange(dataUrl);
-          toast.success("تم تجهيز الصورة بنجاح");
+          toast.error("فشل رفع الصورة: لم يتم إرجاع رابط.");
         }
-      } catch (uploadErr) {
-        console.warn("Server upload fallback to data url:", uploadErr);
-        onChange(dataUrl);
-        toast.success("تم حفظ الصورة محلياً بنجاح");
+      } catch (uploadErr: any) {
+        console.error("Server upload failed:", uploadErr);
+        toast.error("فشل رفع الصورة: " + (uploadErr?.message || "خطأ غير معروف"));
       }
     } catch (err) {
       console.error("File read error:", err);

@@ -468,6 +468,43 @@ async function loadStore(): Promise<StoreDoc> {
       }),
     );
 
+    // Load granular products and merge them
+    try {
+      const granularRows = await d1RawAll<{ key: string; value: string }>(
+        `SELECT key, value FROM store_kv WHERE key LIKE 'store:product:%'`
+      );
+      if (granularRows.length > 0) {
+        if (!Array.isArray(doc.products)) {
+          doc.products = [];
+        }
+        const granularProducts = granularRows.map((r) => {
+          try {
+            return JSON.parse(r.value);
+          } catch {
+            return null;
+          }
+        }).filter(Boolean);
+
+        // Deduplicate: granular products overwrite chunked products
+        const productsMap = new Map<string, any>();
+        for (const p of doc.products as any[]) {
+          if (p && p.id) productsMap.set(String(p.id), p);
+        }
+        for (const p of granularProducts) {
+          if (p && p.id) {
+            if (p._deleted) {
+              productsMap.delete(String(p.id));
+            } else if (isValidProductRecord(p)) {
+              productsMap.set(String(p.id), normalizeProductRecord(p));
+            }
+          }
+        }
+        doc.products = Array.from(productsMap.values());
+      }
+    } catch (err) {
+      console.error(`[store:load_granular_products] failed`, err);
+    }
+
     for (const [field, key] of Object.entries(COUNTER_KEYS)) {
       const row = baseRows.find((r) => r.key === key);
       if (!row) continue;

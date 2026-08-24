@@ -191,8 +191,32 @@ export function buildProductSavePayload(
   const stableId = formData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
   const selectedCategoryId = formData.categoryId || formData.category || "cat_nintendo";
 
+  const cleanedData = { ...formData };
+  
+  // Remove UI state and massive fields
+  const ignoreKeys = ["files", "previewData", "blob", "blobs", "file", "dataUrl"];
+  for (const key of Object.keys(cleanedData)) {
+    if (ignoreKeys.includes(key) || typeof cleanedData[key] === "function" || cleanedData[key] instanceof File) {
+      delete cleanedData[key];
+    } else if (typeof cleanedData[key] === "string" && (cleanedData[key].startsWith("data:image/") || cleanedData[key].startsWith("blob:"))) {
+      delete cleanedData[key]; // Do not send base64 or blob strings!
+    }
+  }
+
+  // Clean nested images in gallery or bannerImages
+  if (Array.isArray(cleanedData.gallery)) {
+    cleanedData.gallery = cleanedData.gallery.filter(
+      (img: any) => typeof img === "string" && !img.startsWith("data:image/") && !img.startsWith("blob:")
+    );
+  }
+  if (Array.isArray(cleanedData.bannerImages)) {
+    cleanedData.bannerImages = cleanedData.bannerImages.filter(
+      (img: any) => typeof img === "string" && !img.startsWith("data:image/") && !img.startsWith("blob:")
+    );
+  }
+
   return {
-    ...formData,
+    ...cleanedData,
     id: stableId,
     category: selectedCategoryId,
     categoryId: selectedCategoryId,

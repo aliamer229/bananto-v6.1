@@ -1522,11 +1522,108 @@ function ListingsView({
 
   const handleSave = async (productData: any) => {
     try {
+      const payloadString = safeStringify(productData);
+      
+      // If the payload is larger than 50KB, use staged/chunked save
+      if (payloadString.length > 50 * 1024) {
+        toast.loading("يتم الآن تجهيز الحفظ المجزأ...", { id: "save-product" });
+        
+        // 1. Start session
+        const startRes = await fetch("/api/admin/products/save/start", {
+          method: "POST",
+          credentials: "include",
+        });
+        const startData = await startRes.json();
+        if (!startData.save_session_id) throw new Error("Failed to start staged save session");
+        const sessionId = startData.save_session_id;
+
+        // 2. Split payload into logical chunks
+        const coreKeys = ["id", "title", "titleEn", "description", "descriptionEn", "price", "cost", "stock", "categoryId", "category", "status", "isActive", "kind", "schemaId"];
+        const coreData: any = {};
+        const imagesData: any = {};
+        const contentData: any = {};
+        const variantsData: any = {};
+        const performanceData: any = {};
+        const metadataData: any = {};
+
+        for (const [key, value] of Object.entries(productData)) {
+          if (coreKeys.includes(key)) {
+            coreData[key] = value;
+          } else if (key.toLowerCase().includes("image") || key === "gallery" || key === "banner") {
+            imagesData[key] = value;
+          } else if (key === "options" || key === "types" || key === "variants") {
+            variantsData[key] = value;
+          } else if (key.startsWith("perf_") || key.includes("performance") || key === "devicePerformance") {
+            performanceData[key] = value;
+          } else if (key === "content" || key.includes("description") || key === "specs" || key === "details") {
+            contentData[key] = value;
+          } else {
+            metadataData[key] = value;
+          }
+        }
+
+        const chunks = [
+          { part: "core", data: coreData },
+          { part: "images", data: imagesData },
+          { part: "variants", data: variantsData },
+          { part: "performance", data: performanceData },
+          { part: "content", data: contentData },
+          { part: "metadata", data: metadataData }
+        ];
+
+        // 3. Upload chunks
+        let i = 1;
+        for (const chunk of chunks) {
+          if (Object.keys(chunk.data).length === 0) continue;
+          toast.loading(`يتم حفظ الجزء ${i} من ${chunks.length} (${chunk.part})...`, { id: "save-product" });
+          const chunkRes = await fetch("/api/admin/products/save/chunk", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ save_session_id: sessionId, part: chunk.part, data: chunk.data }),
+          });
+          if (!chunkRes.ok) throw new Error(`Failed to save chunk ${chunk.part}`);
+          i++;
+        }
+
+        // 4. Finalize
+        toast.loading("يتم الآن إتمام الحفظ وبناء المنتج...", { id: "save-product" });
+        const finalRes = await fetch("/api/admin/products/save/finalize", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ save_session_id: sessionId }),
+        });
+        
+        const result = await finalRes.json().catch(() => null);
+        if (!finalRes.ok || !result?.success) {
+          throw new Error(result?.error || `HTTP ${finalRes.status}: Finalize failed`);
+        }
+        
+        toast.success(t("admin.saved") || "تم الحفظ بنجاح", { id: "save-product" });
+        
+        // Update local state
+        setProducts((prev: any[]) => {
+          const idx = prev.findIndex((p: any) => String(p.id) === String(productData.id));
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = { ...next[idx], ...productData };
+            return next;
+          }
+          return [productData, ...prev];
+        });
+        
+        setIsEditing(false);
+        setEditingProduct(null);
+        return;
+      }
+
+      toast.loading("جاري الحفظ...", { id: "save-product" });
       const res = await fetch("/api/admin/products", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: safeStringify(productData),
+        body: payloadString,
       });
 
       const result = await res.json().catch(() => null);
@@ -2716,17 +2813,20 @@ function BannersView({
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const result = reader.result as string;
-        // Optimization: For banners, we should probably resize large images,
-        // but for now we'll just check if it's exceptionally large.
-        if (result.length > 500000) {
-          toast.warning(
-            "هذه الصورة كبيرة جداً وقد تسبب مشاكل في الحفظ. يرجى استخدام صورة أصغر إذا فشل الحفظ.",
-          );
+        try {
+          const res = await adminApi.upload(result, "banners");
+          if (res?.url) {
+            setNewBanner({ ...newBanner, imageUrl: res.url });
+            extractColor(res.url); // Use remote URL or local base64 to extract color? extractColor works on URL
+          } else {
+            toast.error("فشل رفع الصورة: لم يتم إرجاع رابط.");
+          }
+        } catch (err: any) {
+          console.error("Banner upload error:", err);
+          toast.error("فشل رفع البانر: " + (err.message || "خطأ غير معروف"));
         }
-        setNewBanner({ ...newBanner, imageUrl: result });
-        extractColor(result);
       };
       reader.readAsDataURL(file);
     }
