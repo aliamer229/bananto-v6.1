@@ -4,6 +4,12 @@ import { toast } from "sonner";
 
 import { buildBatchGameImport } from "@/lib/gameImportForm";
 import {
+  COVER_TEXTURE_FETCH_FAILED,
+  COVER_TEXTURE_FIELD,
+  mirrorCoverTextureSource,
+  needsStorageMirror,
+} from "@/lib/coverTexture";
+import {
   isImportableTextEntry,
   listZipEntries,
   readZipEntryText,
@@ -43,6 +49,8 @@ export default function AdminZipImportModal({
   const [isRunning, setIsRunning] = useState(false);
   const [current, setCurrent] = useState(0);
   const [outcomes, setOutcomes] = useState<FileOutcome[]>([]);
+  /** Files whose 3D Texture Source could not be pulled off its source host. */
+  const [textureFailures, setTextureFailures] = useState<string[]>([]);
   const bufferRef = useRef<ArrayBuffer | null>(null);
 
   const savedCount = outcomes.filter((o) => o.state === "saved").length;
@@ -82,6 +90,7 @@ export default function AdminZipImportModal({
 
     setIsRunning(true);
     setOutcomes([]);
+    setTextureFailures([]);
     setCurrent(0);
 
     // Sequential on purpose: the catalogue is one document, and parallel saves
@@ -96,6 +105,19 @@ export default function AdminZipImportModal({
         if (!prepared.ok) {
           outcome = { file: entry.baseName, state: "failed", reason: prepared.reason };
         } else {
+          /*
+            The wrap is a link to an archive that will not serve a plain
+            server-side request, so copy it into our storage before the product
+            is written. A source that refuses is noted and the field left
+            empty — the game itself still imports.
+          */
+          const wrap = prepared.payload[COVER_TEXTURE_FIELD];
+          if (needsStorageMirror(wrap)) {
+            const mirrored = await mirrorCoverTextureSource(String(wrap));
+            prepared.payload[COVER_TEXTURE_FIELD] = mirrored.ok ? mirrored.url : "";
+            if (!mirrored.ok) setTextureFailures((prev) => [...prev, entry.baseName]);
+          }
+
           const res = await fetch("/api/admin/products", {
             method: "POST",
             credentials: "include",
@@ -207,6 +229,19 @@ export default function AdminZipImportModal({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {textureFailures.length > 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+              <h3 className="mb-2 flex items-center gap-1.5 text-[12px] font-bold text-amber-700 dark:text-amber-300">
+                <AlertTriangle className="h-3.5 w-3.5" /> {COVER_TEXTURE_FETCH_FAILED} (
+                {textureFailures.length})
+              </h3>
+              <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                {textureFailures.join("، ")} — حُفظت الألعاب بدون صورة المجسم؛ أضفها يدوياً من محرر
+                المنتج.
+              </p>
             </div>
           )}
 

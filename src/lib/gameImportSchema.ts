@@ -330,13 +330,15 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     key: "front_cover_hires_url",
     type: "url",
     target: "coverHiResImage",
-    description: "غلاف أمامي بدقة عالية (يُستخدم لنسيج المجسم ثلاثي الأبعاد)",
+    description:
+      "3D Texture Source: الغلاف الكامل للعلبة بدقة عالية — Back Cover + Spine + Front Cover في صورة واحدة بدون قص",
   },
   {
     key: "cover_texture_url",
     type: "url",
     target: "coverHiResImage",
-    description: "غلاف أمامي بدقة عالية لنسيج المجسم ثلاثي الأبعاد",
+    description:
+      "3D Texture Source: الغلاف الكامل للعلبة (خلفي + كعب + أمامي) في صورة واحدة، تُنزَّل وتُخزَّن تلقائياً عند الاستيراد",
   },
   {
     key: "cover_image",

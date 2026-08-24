@@ -68,6 +68,13 @@ import {
   buildProductSavePayload,
   createBlankProductForm,
 } from "@/lib/gameImportForm";
+import {
+  COVER_TEXTURE_FETCH_FAILED,
+  COVER_TEXTURE_FIELD,
+  COVER_TEXTURE_HELPER,
+  mirrorCoverTextureSource,
+  needsStorageMirror,
+} from "@/lib/coverTexture";
 import { ProductOptionsEditor } from "./admin/ProductOptionsEditor";
 import { GamePerformanceEditor } from "./admin/GamePerformanceEditor";
 import { HardwareAdminEditor } from "./admin/HardwareAdminEditor";
@@ -327,6 +334,34 @@ export default function AdminProductEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showSchemaImport, setShowSchemaImport] = useState(false);
+  /** Set when an imported wrap could not be pulled off its source host. */
+  const [coverTextureError, setCoverTextureError] = useState<{ url: string } | null>(null);
+
+  /*
+    An imported "3D Texture Source" is a link to somebody else's server, and
+    the archives that host printable wraps refuse plain server-side requests.
+    Copy the file into our own storage right after the import, through the same
+    endpoint the upload button uses, and keep the stored URL in the same field.
+
+    A failure is reported at the field and the link is dropped: a URL the host
+    will not serve is not a texture, and storing it produces the empty box this
+    replaces. Nothing else about the imported game is affected.
+  */
+  const adoptCoverTextureSource = useCallback(async (sourceUrl: string) => {
+    if (!needsStorageMirror(sourceUrl)) return;
+    setCoverTextureError(null);
+    const result = await mirrorCoverTextureSource(sourceUrl);
+    setFormData((prev: any) => {
+      if (prev[COVER_TEXTURE_FIELD] !== sourceUrl) return prev;
+      return { ...prev, [COVER_TEXTURE_FIELD]: result.ok ? result.url : "" };
+    });
+    if (result.ok) {
+      toast.success("تم تنزيل صورة 3D Texture Source وتخزينها");
+    } else {
+      setCoverTextureError({ url: sourceUrl });
+      toast.error(COVER_TEXTURE_FETCH_FAILED);
+    }
+  }, []);
 
   // Determine current active category
   const selectedCategoryObj = categories.find((c: any) => c.id === formData.category);
@@ -1190,14 +1225,24 @@ export default function AdminProductEditor({
                   helperText="اختيارية. تُستخدم فقط في بطاقات الكارتلج المربّعة، وليست بديلاً عن غلاف العلبة."
                 />
 
-                {/* Print-resolution cover, sampled only by the 3D sleeve. */}
+                {/*
+                  The full printable case wrap — Back Cover + Spine + Front
+                  Cover in one image — sampled across the three faces of the 3D
+                  sleeve. Stored whole, never cropped, never a front cover on
+                  its own. See src/lib/coverTexture.ts.
+                */}
                 <ImageUploadField
                   label="غلاف بدقة عالية للمجسم ثلاثي الأبعاد (3D Texture Source)"
                   value={formData.coverHiResImage || ""}
-                  onChange={(url) => handleChange("coverHiResImage", url)}
+                  onChange={(url) => {
+                    setCoverTextureError(null);
+                    handleChange("coverHiResImage", url);
+                  }}
                   aspect="cartridge"
                   folder="cartridges"
-                  helperText="اختيارية. نسخة عالية الدقة من الغلاف الأمامي، تُستخدم كنسيج للمجسم فقط."
+                  helperText={`اختيارية. ${COVER_TEXTURE_HELPER}`}
+                  error={coverTextureError ? COVER_TEXTURE_FETCH_FAILED : undefined}
+                  errorDetail={coverTextureError?.url}
                 />
 
                 {/* Cover Image */}
@@ -2473,6 +2518,8 @@ export default function AdminProductEditor({
             setFormData((prev: any) => applyGameImportToForm(prev, importedData));
             setShowImportModal(false);
             toast.success("تم استيراد بيانات اللعبة بنجاح");
+            const wrap = (importedData as Record<string, unknown>)[COVER_TEXTURE_FIELD];
+            if (typeof wrap === "string") void adoptCoverTextureSource(wrap);
           }}
         />
       )}
