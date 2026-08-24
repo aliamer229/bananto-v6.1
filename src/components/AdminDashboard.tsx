@@ -66,6 +66,7 @@ import {
   UserCheck,
   Key,
   ShieldAlert,
+  FileArchive,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -81,6 +82,7 @@ import { ChatMessage, Thread, StoreDoc, AccountBundle } from "@/lib/types";
 
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 import AdminProductEditor from "./AdminProductEditor";
+import AdminZipImportModal from "./admin/AdminZipImportModal";
 import KbEditor from "./admin/KbEditor";
 import ServicesManager from "./admin/ServicesManager";
 import ServicesDiscTradesAdminView from "./admin/services/DiscTradesAdminView";
@@ -138,7 +140,7 @@ const defaultOrders: any[] = [];
 const defaultMessages: any[] = [];
 
 import { safeStringify } from "../utils/safeJson";
-import { isProductPriced } from "@/lib/purchasable";
+import { isProductPriced, isProductHidden } from "@/lib/purchasable";
 
 export default function AdminDashboard() {
   const [activeSidebar, setActiveSidebar] = useState("dashboard");
@@ -1294,8 +1296,11 @@ function ListingsView({
   const [isAdding, setIsAdding] = useState(false);
   const [onlyUnpriced, setOnlyUnpriced] = useState(false);
   const [onlyMissingPerformance, setOnlyMissingPerformance] = useState(false);
+  const [onlyHidden, setOnlyHidden] = useState(false);
+  const [showZipImport, setShowZipImport] = useState(false);
 
   const unpricedCount = products.filter((p: any) => !isProductPriced(p)).length;
+  const hiddenCount = products.filter((p: any) => isProductHidden(p)).length;
   const isGameProduct = (product: any) => {
     const categoryId = product.category || product.categoryId;
     const category = categories.find((item: any) => item.id === categoryId);
@@ -1306,6 +1311,12 @@ function ListingsView({
   const missingPerformanceCount = products.filter(
     (product: any) => isGameProduct(product) && requiresPerformanceReview(product),
   ).length;
+  /* The batch importer belongs to Nintendo Switch Games and nowhere else. */
+  const sectionCategory = categories.find((item: any) => item.id === initialCategoryId);
+  const isGamesSection =
+    Boolean(initialCategoryId) &&
+    resolveCategoryType(initialCategoryId || undefined, sectionCategory?.title) === "game";
+
   const hardwareProducts = products.filter((product: any) => {
     const categoryId = product.category || product.categoryId;
     const category = categories.find((item: any) => item.id === categoryId);
@@ -1323,7 +1334,10 @@ function ListingsView({
     const matchesPerformance = onlyMissingPerformance
       ? isGameProduct(p) && requiresPerformanceReview(p)
       : true;
-    return matchesSearch && matchesCategory && matchesPricing && matchesPerformance;
+    const matchesHidden = onlyHidden ? isProductHidden(p) : true;
+    return (
+      matchesSearch && matchesCategory && matchesPricing && matchesPerformance && matchesHidden
+    );
   });
 
   // Sort by order or date so the newest imports appear on top/correctly
@@ -1428,13 +1442,25 @@ function ListingsView({
             ? categories.find((c: any) => c.id === initialCategoryId)?.title || t("admin.products")
             : t("admin.products")}
         </h1>
-        <button
-          onClick={() => setIsAdding(true)}
-          className="bg-[var(--admin-ink)] text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-black transition-colors border-2 border-transparent focus:border-white focus:ring-2 focus:ring-[var(--admin-ink)]"
-        >
-          <Plus className="w-4 h-4" />
-          {t("admin.addProduct")}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Nintendo Switch Games only — every other section keeps its own flow. */}
+          {isGamesSection && (
+            <button
+              onClick={() => setShowZipImport(true)}
+              className="rounded-full border border-border px-4 py-2 text-sm font-bold text-foreground flex items-center gap-2 transition-colors hover:bg-muted"
+            >
+              <FileArchive className="w-4 h-4" />
+              استيراد مجموعة ألعاب
+            </button>
+          )}
+          <button
+            onClick={() => setIsAdding(true)}
+            className="bg-[var(--admin-ink)] text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-black transition-colors border-2 border-transparent focus:border-white focus:ring-2 focus:ring-[var(--admin-ink)]"
+          >
+            <Plus className="w-4 h-4" />
+            {t("admin.addProduct")}
+          </button>
+        </div>
       </div>
 
       <div className="border border-border rounded-lg overflow-hidden bg-card shadow-sm">
@@ -1460,6 +1486,12 @@ function ListingsView({
             className={`whitespace-nowrap rounded-md border px-3 py-1.5 text-[12px] font-bold transition-colors ${onlyMissingPerformance ? "border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-black"}`}
           >
             Missing Performance Data ({missingPerformanceCount})
+          </button>
+          <button
+            onClick={() => setOnlyHidden((value) => !value)}
+            className={`whitespace-nowrap rounded-md border px-3 py-1.5 text-[12px] font-bold transition-colors ${onlyHidden ? "border-slate-500 bg-slate-500/10 text-slate-700 dark:text-slate-300" : "border-border text-muted-foreground hover:border-black"}`}
+          >
+            المخفية ({hiddenCount})
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -1488,6 +1520,16 @@ function ListingsView({
                     {isGameProduct(p) && requiresPerformanceReview(p) && (
                       <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
                         Performance review required
+                      </span>
+                    )}
+                    {isProductHidden(p) && (
+                      <span className="ms-2 inline-block rounded-md bg-slate-500/10 px-2 py-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                        مخفي
+                      </span>
+                    )}
+                    {p.isDuplicate && (
+                      <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                        مكرر
                       </span>
                     )}
                   </td>
@@ -1531,6 +1573,22 @@ function ListingsView({
           </table>
         </div>
       </div>
+
+      {showZipImport && (
+        <AdminZipImportModal
+          categoryId={initialCategoryId || "cat_nintendo"}
+          onClose={() => setShowZipImport(false)}
+          onProductSaved={(saved: any) =>
+            setProducts((prev: any[]) => {
+              const index = prev.findIndex((p: any) => String(p.id) === String(saved.id));
+              if (index < 0) return [saved, ...prev];
+              const next = [...prev];
+              next[index] = saved;
+              return next;
+            })
+          }
+        />
+      )}
     </div>
   );
 }

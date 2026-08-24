@@ -7,6 +7,9 @@ export interface ProductOption {
   name: string;
   price?: number | string;
   cost?: number | string;
+  /** Stock for this option; ignored while `isInfiniteStock` is set. */
+  stock?: number | string;
+  isInfiniteStock?: boolean;
   description?: string;
 }
 
@@ -16,7 +19,9 @@ export interface ProductTypeVariant {
   optionId?: string; // Empty or "all" = applies to all options, otherwise specific option ID
   price: number | string;
   cost?: number | string;
+  /** Overrides the stock of the option this type belongs to when present. */
   stock?: number | string;
+  isInfiniteStock?: boolean;
   description?: string;
 }
 

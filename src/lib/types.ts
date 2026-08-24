@@ -247,6 +247,17 @@ export interface Product extends Partial<GameMetadata> {
   displayOrder?: number;
   categoryId: string | number;
   isActive?: boolean;
+  /**
+   * Hidden from every customer-facing surface while staying fully visible in
+   * the admin panel. Absent means visible: products saved before this existed
+   * keep showing exactly as they did.
+   */
+  isHidden?: boolean;
+  /** Set when the product was imported while its slug was already taken. */
+  isDuplicate?: boolean;
+  /** The slug the duplicate copy wanted, kept because the stored one is suffixed. */
+  duplicateOriginalSlug?: string;
+  isInfiniteStock?: boolean;
   requiresAddress?: boolean;
   editions?: ProductEdition[];
   dlcs?: ProductDLC[];

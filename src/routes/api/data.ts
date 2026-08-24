@@ -13,6 +13,7 @@ import { getSessionUser } from "@/lib/session.server";
 import { autoTranslateProduct, autoTranslateBundle } from "@/lib/translate.server";
 
 import { forceFullImport } from "@/lib/force-import.server";
+import { isProductHidden } from "@/lib/purchasable";
 import type { StoreDoc, AdminAvailabilityStatus, AdminAvailabilityConfig } from "@/lib/types";
 
 /** Cheap, stable hash used for the ETag of the catalogue payload. */
@@ -115,9 +116,16 @@ function publicStore(
 ): StoreDoc & { adminAvailability?: AdminAvailabilityStatus } {
   return {
     ...(redactPrivateKeys(store) as StoreDoc),
-    products: (store.products ?? []).map(
-      (product) => publicProduct(product) as StoreDoc["products"][number],
-    ),
+    /*
+      A hidden product is not redacted, it is absent: the public catalogue is
+      what every storefront surface reads (home, sections, search, strips,
+      bundles and the product page all resolve against it), so dropping it here
+      is what makes "hidden" mean hidden everywhere at once. Admins receive the
+      unfiltered store further down and keep seeing all of them.
+    */
+    products: (store.products ?? [])
+      .filter((product) => !isProductHidden(product))
+      .map((product) => publicProduct(product) as StoreDoc["products"][number]),
     bundles: (store.bundles ?? []).filter((b) => b.isActive !== false),
     quickReplies: [],
     autoReplies: {},

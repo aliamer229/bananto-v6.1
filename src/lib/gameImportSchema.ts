@@ -9,6 +9,8 @@ export interface FieldDef {
   repeatable?: boolean;
   itemFields?: Record<string, FieldDef>;
   validation?: { min?: number; max?: number };
+  /** How many indexed repeats the generated template should print (default 3). */
+  templateRepeat?: number;
   description?: string;
 }
 
@@ -174,6 +176,20 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   { key: "cost", type: "number", target: "cost", description: "تكلفة المنتج" },
   { key: "cost_iqd", type: "number", target: "cost", description: "التكلفة بالدينار" },
   { key: "stock", type: "number", target: "stock", description: "الكمية المتوفرة" },
+  {
+    key: "is_infinite_stock",
+    type: "boolean",
+    target: "isInfiniteStock",
+    defaultValue: true,
+    description: "هل المخزون غير محدود (الألعاب غير محدودة المخزون افتراضياً)",
+  },
+  {
+    key: "is_hidden",
+    type: "boolean",
+    target: "isHidden",
+    defaultValue: false,
+    description: "هل المنتج مخفي عن المستخدمين",
+  },
   {
     key: "trade_value",
     type: "number",
@@ -1012,12 +1028,21 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     type: "object",
     target: "options",
     repeatable: true,
+    templateRepeat: 2,
     itemFields: {
       id: { key: "id", type: "string", target: "id" },
       name: { key: "name", type: "string", target: "name" },
       description: { key: "description", type: "string", target: "description" },
+      stock: { key: "stock", type: "number", target: "stock" },
+      is_infinite_stock: {
+        key: "is_infinite_stock",
+        type: "boolean",
+        target: "isInfiniteStock",
+        defaultValue: true,
+      },
     },
-    description: "خيارات المنتج الرئيسية (حساب أوفلاين، حساب أونلاين، إلخ)",
+    description:
+      "خيارات المنتج الرئيسية — لكل لعبة خياران: option.1.id=offline_account (حساب أوفلاين) و option.2.id=online_account (حساب أونلاين)",
   },
 
   // TYPES
@@ -1026,6 +1051,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     type: "object",
     target: "types",
     repeatable: true,
+    templateRepeat: 4,
     itemFields: {
       id: { key: "id", type: "string", target: "id" },
       name: { key: "name", type: "string", target: "name" },
@@ -1033,7 +1059,15 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
       price: { key: "price", type: "number", target: "price" },
       cost: { key: "cost", type: "number", target: "cost" },
       description: { key: "description", type: "string", target: "description" },
+      stock: { key: "stock", type: "number", target: "stock" },
+      is_infinite_stock: {
+        key: "is_infinite_stock",
+        type: "boolean",
+        target: "isInfiniteStock",
+        defaultValue: true,
+      },
     },
-    description: "أنواع وإصدارات المنتج (مرتبطة بخيار محدد أو عامة للكل)",
+    description:
+      "أنواع المنتج المرتبطة بالخيارات — النسخة القياسية لكل خيار (standard_offline / standard_online)، وعند وجود DLC حقيقي فقط تُضاف dlc_offline / dlc_online بسعرها الجاهز من الملف",
   },
 ];

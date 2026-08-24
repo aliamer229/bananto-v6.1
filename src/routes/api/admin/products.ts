@@ -39,6 +39,23 @@ function hardwareProducts(products: Product[], categories: Record<string, unknow
   return products.filter((product) => productSection(product, categories) === "hardware");
 }
 
+/**
+ * A free slug for a copy of a product that already exists.
+ *
+ * The batch importer never touches the product already in the catalogue, so
+ * the new copy needs a slug of its own to satisfy the uniqueness rule. The
+ * slug it *wanted* is kept on the record as `duplicateOriginalSlug`.
+ */
+export function uniqueSlug(desired: string, taken: Iterable<string>): string {
+  const used = new Set([...taken].map((value) => String(value).toLowerCase()));
+  if (!used.has(desired.toLowerCase())) return desired;
+  for (let suffix = 2; suffix < 1000; suffix++) {
+    const candidate = `${desired}-${suffix}`;
+    if (!used.has(candidate.toLowerCase())) return candidate;
+  }
+  return `${desired}-${Date.now().toString(36)}`;
+}
+
 export function sanitizeSlug(input: string, fallbackId: string): string {
   const cleaned = input
     .toLowerCase()
@@ -113,6 +130,17 @@ export const Route = createFileRoute("/api/admin/products")({
           await requireAdmin(request);
           const payload = await body<Partial<Product>>(request);
 
+          /*
+            The ZIP batch importer opts into one behaviour change and nothing
+            else: a product whose slug is already taken is stored as a flagged,
+            hidden copy instead of being refused, because the point of the batch
+            run is that it never stops on one file. Every other caller — the add
+            product form, the single-game import — is untouched.
+          */
+          const batchImport = (payload as Record<string, unknown>)["batchImport"] === true;
+          // A transport flag, never a stored product field.
+          delete (payload as Record<string, unknown>)["batchImport"];
+
           // 1. Ensure/validate stable ID
           let productId =
             payload.id !== undefined && payload.id !== null ? String(payload.id).trim() : "";
@@ -158,7 +186,7 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           // 5. Validate & normalize slug
-          const slug = sanitizeSlug(payload.slug || titleEn, productId);
+          let slug = sanitizeSlug(payload.slug || titleEn, productId);
 
           const currentStore = await getStore();
           const existingCatalog = currentStore.products || [];
@@ -174,11 +202,18 @@ export const Route = createFileRoute("/api/admin/products")({
             through the same way.
           */
           const platformInput = typeof payload.platform === "string" ? payload.platform : null;
-          const duplicate = findConflictingProduct(
-            { id: productId, title: payload.title || titleEn, titleEn, platform: platformInput },
-            existingCatalog,
-            productId,
-          );
+          const duplicate = batchImport
+            ? null
+            : findConflictingProduct(
+                {
+                  id: productId,
+                  title: payload.title || titleEn,
+                  titleEn,
+                  platform: platformInput,
+                },
+                existingCatalog,
+                productId,
+              );
           if (duplicate) {
             return json(
               {
@@ -203,7 +238,7 @@ export const Route = createFileRoute("/api/admin/products")({
             titleEn,
             platform: platformInput,
           });
-          if (!claim.ok) {
+          if (!claim.ok && !batchImport) {
             return json(
               {
                 error: `منتج بنفس الاسم موجود بالفعل على هذه المنصة: "${claim.conflictTitle || claim.conflictProductId}"`,
@@ -221,7 +256,7 @@ export const Route = createFileRoute("/api/admin/products")({
               Boolean(p.slug) &&
               String(p.slug).toLowerCase() === slug.toLowerCase(),
           );
-          if (slugConflict) {
+          if (slugConflict && !batchImport) {
             return json(
               {
                 error: `Duplicate slug: "${slug}" is already in use by product "${slugConflict.title || slugConflict.titleEn || slugConflict.id}".`,
@@ -231,9 +266,29 @@ export const Route = createFileRoute("/api/admin/products")({
             );
           }
 
+          /*
+            Duplicate detection for a batch import is the slug and nothing else:
+            no title similarity, no platform matching, no merging. The product
+            already in the catalogue is left completely alone; the incoming copy
+            is stored hidden and flagged so an admin decides what happens to it.
+          */
+          const duplicateFields: Partial<Product> = {};
+          if (slugConflict) {
+            duplicateFields.isDuplicate = true;
+            duplicateFields.duplicateOriginalSlug = slug;
+            duplicateFields.isHidden = true;
+            slug = uniqueSlug(
+              slug,
+              existingCatalog
+                .filter((p) => String(p.id) !== productId && Boolean(p.slug))
+                .map((p) => String(p.slug)),
+            );
+          }
+
           // 7. Assemble product object with all fields
           let productToSave: Product = {
             ...payload,
+            ...duplicateFields,
             id: productId,
             title: payload.title || titleEn,
             titleEn,

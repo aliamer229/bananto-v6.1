@@ -28,9 +28,22 @@ export function isProductPriced(product: unknown): boolean {
   );
 }
 
+/**
+ * Hidden by an admin, so no customer-facing surface may render it.
+ *
+ * Only an explicit `true` hides a product: the field did not exist until the
+ * batch importer needed it, and every product saved before that must stay
+ * exactly as visible as it was.
+ */
+export function isProductHidden(product: unknown): boolean {
+  const p = (product ?? {}) as Record<string, unknown>;
+  return p["isHidden"] === true || p["is_hidden"] === true;
+}
+
 /** Visible + buyable in the storefront. */
 export function isProductPurchasable(product: unknown): boolean {
   const p = (product ?? {}) as Record<string, unknown>;
+  if (isProductHidden(p)) return false;
   if (p["status"] === "غير نشط" || p["isActive"] === false) return false;
   return isProductPriced(p);
 }

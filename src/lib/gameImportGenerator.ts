@@ -36,14 +36,15 @@ export function generateGameImportTemplate(): string {
 function renderField(field: FieldDef, path: string): string {
   if (field.repeatable) {
     let output = "";
-    for (let index = 1; index <= 3; index++) {
+    const repeats = field.templateRepeat ?? 3;
+    for (let index = 1; index <= repeats; index++) {
       const indexedPath = `${path}.${index}`;
       if (field.type === "object" && field.itemFields) {
         for (const child of Object.values(field.itemFields)) {
           output += renderField(child, `${indexedPath}.${child.key}`);
         }
       } else {
-        output += `${indexedPath}=\n`;
+        output += `${indexedPath}=${defaultOf(field)}\n`;
       }
     }
     return output;
@@ -55,5 +56,12 @@ function renderField(field: FieldDef, path: string): string {
       .join("");
   }
   if (field.type === "multiline") return `${path}<<EOF\n\nEOF\n`;
-  return `${path}=\n`;
+  return `${path}=${defaultOf(field)}\n`;
+}
+
+/** Pre-filled value for fields that declare one; every other field stays blank. */
+function defaultOf(field: FieldDef): string {
+  return field.defaultValue === undefined || field.defaultValue === null
+    ? ""
+    : String(field.defaultValue);
 }

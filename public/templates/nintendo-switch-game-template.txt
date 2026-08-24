@@ -115,6 +115,12 @@ cost_iqd=
 # الكمية المتوفرة
 stock=
 
+# هل المخزون غير محدود (الألعاب غير محدودة المخزون افتراضياً)
+is_infinite_stock=true
+
+# هل المنتج مخفي عن المستخدمين
+is_hidden=false
+
 # قيمة الاستبدال بالدينار
 trade_value=
 
@@ -913,34 +919,49 @@ source.2.url=
 source.3.name=
 source.3.url=
 
-# خيارات المنتج الرئيسية (حساب أوفلاين، حساب أونلاين، إلخ)
+# خيارات المنتج الرئيسية — لكل لعبة خياران: option.1.id=offline_account (حساب أوفلاين) و option.2.id=online_account (حساب أونلاين)
 option.1.id=
 option.1.name=
 option.1.description=
+option.1.stock=
+option.1.is_infinite_stock=true
 option.2.id=
 option.2.name=
 option.2.description=
-option.3.id=
-option.3.name=
-option.3.description=
+option.2.stock=
+option.2.is_infinite_stock=true
 
-# أنواع وإصدارات المنتج (مرتبطة بخيار محدد أو عامة للكل)
+# أنواع المنتج المرتبطة بالخيارات — النسخة القياسية لكل خيار (standard_offline / standard_online)، وعند وجود DLC حقيقي فقط تُضاف dlc_offline / dlc_online بسعرها الجاهز من الملف
 type.1.id=
 type.1.name=
 type.1.option_id=
 type.1.price=
 type.1.cost=
 type.1.description=
+type.1.stock=
+type.1.is_infinite_stock=true
 type.2.id=
 type.2.name=
 type.2.option_id=
 type.2.price=
 type.2.cost=
 type.2.description=
+type.2.stock=
+type.2.is_infinite_stock=true
 type.3.id=
 type.3.name=
 type.3.option_id=
 type.3.price=
 type.3.cost=
 type.3.description=
+type.3.stock=
+type.3.is_infinite_stock=true
+type.4.id=
+type.4.name=
+type.4.option_id=
+type.4.price=
+type.4.cost=
+type.4.description=
+type.4.stock=
+type.4.is_infinite_stock=true
 
