@@ -197,6 +197,12 @@ export async function d1BatchRun(
  */
 const SCHEMA: string[] = [
   `CREATE TABLE IF NOT EXISTS store_kv (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  /*
+    Optimistic lock for the catalogue document. Every save inserts the next
+    revision; the primary key is what makes a concurrent save fail instead of
+    silently overwriting the other one's changes. Holds a single row.
+  */
+  `CREATE TABLE IF NOT EXISTS store_rev (rev INTEGER PRIMARY KEY, updated_at TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT,
     password_hash TEXT NOT NULL DEFAULT '', avatar TEXT, is_admin INTEGER NOT NULL DEFAULT 0,

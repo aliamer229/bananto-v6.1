@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getStore, updateStore } from "@/lib/db.server";
-import { body, guard, json } from "@/lib/http.server";
+import { getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
+import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { autoTranslateProduct } from "@/lib/translate.server";
 import {
@@ -59,6 +59,39 @@ export function uniqueSlug(desired: string, taken: Iterable<string>): string {
     if (!used.has(candidate.toLowerCase())) return candidate;
   }
   return `${desired}-${Date.now().toString(36)}`;
+}
+
+/**
+ * Confirm from storage that the product is really there (or really gone).
+ *
+ * `invalidateStoreCache()` first, so the check reads D1 rather than the copy
+ * this request just put in the cache — otherwise it would only prove that the
+ * write function returned.
+ */
+async function verifyProductPersisted(
+  productId: string,
+  operation: "create" | "update" | "delete",
+): Promise<void> {
+  invalidateStoreCache();
+  const fresh = await getStore();
+  const present = (fresh.products || []).some((p) => String(p.id) === productId);
+  const expected = operation !== "delete";
+  if (present === expected) return;
+
+  const ref = errorRef();
+  console.error("[Product:persist_verification_failed]", {
+    operation,
+    productId,
+    ref,
+    expected: expected ? "present" : "absent",
+    found: present ? "present" : "absent",
+    catalogueSize: (fresh.products || []).length,
+  });
+  throw new Error(
+    operation === "delete"
+      ? `Product ${productId} is still in the catalogue after delete (ref ${ref})`
+      : `Product ${productId} is not in the catalogue after save (ref ${ref})`,
+  );
 }
 
 export function sanitizeSlug(input: string, fallbackId: string): string {
@@ -353,6 +386,17 @@ export const Route = createFileRoute("/api/admin/products")({
 
             const saved =
               (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+
+            /*
+              Read it back before saying it saved.
+
+              The catalogue is one document written wholesale, so "the write
+              returned" and "the product is in the catalogue" were not the same
+              statement — and reporting success for a save that did not land is
+              what made a product vanish on the next refresh.
+            */
+            await verifyProductPersisted(productId, "create");
+
             if (productSection(saved, updated.categories || []) === "game") {
               await syncGameDevicePerformance(
                 saved,
@@ -361,11 +405,19 @@ export const Route = createFileRoute("/api/admin/products")({
             }
             return json({ success: true, product: saved });
           } catch (dbErr: any) {
-            console.error("[SaveProduct:DatabaseError]", dbErr);
+            const ref = errorRef();
+            console.error("[SaveProduct:DatabaseError]", {
+              operation: "create",
+              productId,
+              ref,
+              error: dbErr?.message || String(dbErr),
+              stack: dbErr?.stack,
+            });
             return json(
               {
                 error: `Database save failed: ${dbErr?.message || "Internal database error"}`,
                 code: "DATABASE_SAVE_FAILED",
+                ref,
               },
               { status: 500 },
             );
@@ -543,6 +595,11 @@ export const Route = createFileRoute("/api/admin/products")({
 
             const saved =
               (updated.products || []).find((p) => String(p.id) === productId) || productToSave;
+
+            // Same reason as the create path: confirm from D1, not from the
+            // value we just handed to the writer.
+            await verifyProductPersisted(productId, "update");
+
             if (productSection(saved, updated.categories || []) === "game") {
               await syncGameDevicePerformance(
                 saved,
@@ -551,11 +608,19 @@ export const Route = createFileRoute("/api/admin/products")({
             }
             return json({ success: true, product: saved });
           } catch (dbErr: any) {
-            console.error("[UpdateProduct:DatabaseError]", dbErr);
+            const ref = errorRef();
+            console.error("[UpdateProduct:DatabaseError]", {
+              operation: "update",
+              productId,
+              ref,
+              error: dbErr?.message || String(dbErr),
+              stack: dbErr?.stack,
+            });
             return json(
               {
                 error: `Database save failed: ${dbErr?.message || "Internal database error"}`,
                 code: "DATABASE_SAVE_FAILED",
+                ref,
               },
               { status: 500 },
             );
@@ -583,6 +648,17 @@ export const Route = createFileRoute("/api/admin/products")({
             ...store,
             products: (store.products || []).filter((p) => String(p.id) !== targetId),
           }));
+
+          /*
+            Prove it left the catalogue before reporting the delete.
+
+            A delete that only removed the product from the response — because
+            the write lost a race with a concurrent save holding an older
+            snapshot — is what made a "deleted" product reappear on the next
+            refresh, and then read as a duplicate.
+          */
+          await verifyProductPersisted(targetId, "delete");
+
           await deactivateGameDevicePerformance(targetId);
           /*
             The identity index is part of the product, not a record of it. Left
