@@ -390,7 +390,10 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     type: "url",
     target: "bannerImages",
     repeatable: true,
-    description: "صور البنر / المعرض الرئيسي",
+    /* Examples, not a ceiling: banner_image.11 and beyond parse fine. */
+    templateRepeat: 10,
+    description:
+      "صور البنر / المعرض الرئيسي — بنرات وصور رسمية عالية الدقة، بدون تكرار أو مصغّرات أو روابط معطلة (الأرقام أمثلة وليست حداً أقصى)",
   },
 
   // MEDIA
@@ -646,11 +649,14 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     type: "object",
     target: "galleryImages",
     repeatable: true,
+    /* Examples, not a ceiling: gallery.13 and beyond parse fine. */
+    templateRepeat: 12,
     itemFields: {
       image: { key: "image", type: "url", target: "url" },
       description: { key: "description", type: "string", target: "alt" },
     },
-    description: "معرض الصور",
+    description:
+      "معرض الصور — لقطات وصور رسمية عالية الدقة، بدون تكرار أو مصغّرات أو صور غير متعلقة (الأرقام أمثلة وليست حداً أقصى)",
   },
 
   // FEATURES

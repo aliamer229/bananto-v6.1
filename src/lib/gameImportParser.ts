@@ -271,11 +271,21 @@ function typed(value: string, def: FieldDef, key: string, result: ParseResult): 
   }
   if (typedValue === undefined && value !== "") {
     const isImageField = def.type === "url";
+    /*
+      A boolean that was filled with prose ("Not Published", "HDR10", a device
+      name) is the single most common reason an import used to be refused, and
+      "قيمة غير صالحة للنوع boolean" did not say what to write instead. Blank is
+      always a valid answer for something nobody published; the descriptive text
+      belongs in the matching `*_notes` field.
+    */
+    const message = isImageField
+      ? `تم تجاهل رابط صورة غير صالح: "${value.slice(0, 60)}"`
+      : def.type === "boolean"
+        ? `قيمة غير صالحة للنوع boolean: "${value.slice(0, 40)}" — المسموح فقط true أو false، أو اترك الحقل فارغاً إذا كانت المعلومة غير معروفة (اكتب التفاصيل في حقل الملاحظات)`
+        : `قيمة غير صالحة للنوع ${def.type}`;
     result.errors.push({
       key,
-      message: isImageField
-        ? `تم تجاهل رابط صورة غير صالح: "${value.slice(0, 60)}"`
-        : `قيمة غير صالحة للنوع ${def.type}`,
+      message,
       severity: isImageField ? "warning" : "error",
     });
     return undefined;
