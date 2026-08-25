@@ -238,6 +238,26 @@ export function isValidProductRecord(item: unknown): item is Product {
 }
 
 export function normalizeProductRecord(p: any): Product {
+  if (!p || typeof p !== "object") {
+    return {
+      id: `prod_${Date.now()}`,
+      title: "منتج بدون اسم",
+      titleEn: "Untitled Product",
+      slug: `prod-${Date.now()}`,
+      price: 0,
+      cost: 0,
+      stock: 0,
+      options: [],
+      types: [],
+      editions: [],
+      dlcs: [],
+      images: [],
+      gallery: [],
+      boxContents: [],
+      modes: [],
+    } as unknown as Product;
+  }
+
   const id = String(p.id || "").trim();
   const title =
     typeof p.title === "string" && p.title.trim()
@@ -262,6 +282,22 @@ export function normalizeProductRecord(p: any): Product {
     title,
     titleEn,
     slug,
+    price: Number(p.price) || 0,
+    cost: Number(p.cost) || 0,
+    stock: Number(p.stock) || 0,
+    sales: Number(p.sales) || 0,
+    options: Array.isArray(p.options) ? p.options.filter(Boolean) : [],
+    types: Array.isArray(p.types)
+      ? p.types.filter(Boolean)
+      : Array.isArray(p.variants)
+        ? p.variants.filter(Boolean)
+        : [],
+    editions: Array.isArray(p.editions) ? p.editions.filter(Boolean) : [],
+    dlcs: Array.isArray(p.dlcs) ? p.dlcs.filter(Boolean) : [],
+    images: Array.isArray(p.images) ? p.images.filter(Boolean) : [],
+    gallery: Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [],
+    boxContents: Array.isArray(p.boxContents) ? p.boxContents.filter(Boolean) : [],
+    modes: Array.isArray(p.modes) ? p.modes.filter(Boolean) : [],
   };
 }
 
@@ -512,6 +548,28 @@ async function loadStore(): Promise<StoreDoc> {
       const value = Number(row.value);
       if (Number.isFinite(value)) doc[field] = value;
     }
+
+    // Ensure all sections are strictly sanitized arrays / objects
+    const cleanList = <T>(list: unknown): T[] =>
+      (Array.isArray(list) ? list : []).filter((x) => x && typeof x === "object") as T[];
+
+    doc.products = cleanList<Product>(doc.products).filter(isValidProductRecord).map(normalizeProductRecord);
+    doc.categories = cleanList<any>(doc.categories).map((c: any) => ({
+      ...c,
+      id: String(c.id || ""),
+      title: String(c.title || c.name || ""),
+    }));
+    doc.banners = cleanList(doc.banners);
+    doc.bundles = cleanList<any>(doc.bundles).map((b: any) => ({
+      ...b,
+      gameIds: Array.isArray(b.gameIds) ? b.gameIds.filter(Boolean) : [],
+    }));
+    doc.musicList = cleanList(doc.musicList);
+    doc.notifications = cleanList(doc.notifications);
+    doc.gameRequests = cleanList(doc.gameRequests);
+    doc.discTrades = cleanList(doc.discTrades);
+    doc.problemSolutions = cleanList(doc.problemSolutions);
+    doc.settings = doc.settings && typeof doc.settings === "object" ? doc.settings : {};
 
     return doc as unknown as StoreDoc;
   }

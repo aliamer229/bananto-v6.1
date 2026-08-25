@@ -247,26 +247,29 @@ export default function BundlesManager({
 
       {/* Bundles Table / Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredBundles.map((bundle) => {
-          const games = getBundleGames(bundle, products);
-          const isActive = bundle.isActive !== false;
+        {(filteredBundles || [])
+          .filter((bundle) => bundle && typeof bundle === "object")
+          .map((bundle) => {
+            const games = getBundleGames(bundle, products);
+            const isActive = bundle.isActive !== false;
+            const gameCount = games.length || (Array.isArray(bundle.gameIds) ? bundle.gameIds.length : 0);
 
-          return (
-            <div
-              key={bundle.id}
-              className={`p-4 rounded-3xl bg-card border transition-all flex flex-col justify-between space-y-4 ${
-                isActive
-                  ? "border-border shadow-xs hover:shadow-md"
-                  : "border-border/50 opacity-60 bg-muted/20"
-              }`}
-            >
-              {/* Top Row: Badges & Actions */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20 flex items-center gap-1">
-                    <Layers className="w-3 h-3" />
-                    {games.length || bundle.gameIds.length} ألعاب
-                  </span>
+            return (
+              <div
+                key={bundle.id}
+                className={`p-4 rounded-3xl bg-card border transition-all flex flex-col justify-between space-y-4 ${
+                  isActive
+                    ? "border-border shadow-xs hover:shadow-md"
+                    : "border-border/50 opacity-60 bg-muted/20"
+                }`}
+              >
+                {/* Top Row: Badges & Actions */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20 flex items-center gap-1">
+                      <Layers className="w-3 h-3" />
+                      {gameCount} ألعاب
+                    </span>
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       bundle.accountType === "primary"

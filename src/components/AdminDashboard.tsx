@@ -96,6 +96,7 @@ import AdminInboxView from "./admin/inbox/AdminInboxView";
 import OrdersManagerView from "./admin/OrdersManagerView";
 import { RechargeReviewPanel } from "./admin/RechargeReviewPanel";
 import { ImageMigrationPanel } from "./admin/ImageMigrationPanel";
+import { AdminErrorBoundary } from "./admin/AdminErrorBoundary";
 import { adminApi, fileToDataUrl } from "@/lib/api";
 import mascot from "@/assets/bananto_logo.webp.asset.json";
 import { useAuth } from "@/hooks/useAuth";
@@ -361,16 +362,26 @@ export default function AdminDashboard() {
           }));
         setProducts(safeProducts);
       }
-      if (Array.isArray(data.bundles)) setBundles(data.bundles);
-      if (Array.isArray(data.banners)) setBanners(data.banners);
-      if (Array.isArray(data.categories)) setCategories(data.categories);
-      if (Array.isArray(data.orders)) setOrders(data.orders);
-      if (Array.isArray(data.messages)) setMessages(data.messages);
-      if (Array.isArray(data.musicList)) setMusicList(data.musicList);
-      if (Array.isArray(data.notifications)) setNotifications(data.notifications);
-      if (Array.isArray(data.gameRequests)) setGameRequests(data.gameRequests);
-      if (Array.isArray(data.discTrades)) setDiscTrades(data.discTrades);
-      if (Array.isArray(data.problemSolutions)) setProblemSolutions(data.problemSolutions);
+      const cleanArray = <T,>(arr: unknown): T[] =>
+        (Array.isArray(arr) ? arr : []).filter((x) => x && typeof x === "object") as T[];
+
+      if (Array.isArray(data.bundles)) setBundles(cleanArray(data.bundles));
+      if (Array.isArray(data.banners)) setBanners(cleanArray(data.banners));
+      if (Array.isArray(data.categories))
+        setCategories(
+          cleanArray<any>(data.categories).map((c) => ({
+            ...c,
+            id: String(c.id || ""),
+            title: String(c.title || c.name || ""),
+          })),
+        );
+      if (Array.isArray(data.orders)) setOrders(cleanArray(data.orders));
+      if (Array.isArray(data.messages)) setMessages(cleanArray(data.messages));
+      if (Array.isArray(data.musicList)) setMusicList(cleanArray(data.musicList));
+      if (Array.isArray(data.notifications)) setNotifications(cleanArray(data.notifications));
+      if (Array.isArray(data.gameRequests)) setGameRequests(cleanArray(data.gameRequests));
+      if (Array.isArray(data.discTrades)) setDiscTrades(cleanArray(data.discTrades));
+      if (Array.isArray(data.problemSolutions)) setProblemSolutions(cleanArray(data.problemSolutions));
 
       if (typeof data.visits === "number") setVisits(data.visits);
       if (typeof data.views === "number") setViews(data.views);
@@ -500,11 +511,13 @@ export default function AdminDashboard() {
       label: "المنتجات",
       children: [
         { id: "listings_all", icon: Tag, label: "جميع المنتجات" },
-        ...categories.map((c: any) => ({
-          id: `listings_${c.id}`,
-          icon: Tag,
-          label: c.title,
-        })),
+        ...(Array.isArray(categories) ? categories : [])
+          .filter((c: any) => c && c.id)
+          .map((c: any) => ({
+            id: `listings_${c.id}`,
+            icon: Tag,
+            label: c.title || c.name || "قسم",
+          })),
       ],
     },
     { id: "bundles", icon: Layers, label: "حزم الحسابات (Bundles)" },
@@ -885,7 +898,9 @@ Please think step-by-step in order to resolve it.
                 className="m-2"
               />
             )}
-            {renderContent()}
+            <AdminErrorBoundary sectionName="صندوق الدعم والمحادثات">
+              {renderContent()}
+            </AdminErrorBoundary>
           </div>
         ) : (
           <div className="w-full px-4 py-6 pb-24 sm:px-8 lg:px-10">
@@ -898,7 +913,9 @@ Please think step-by-step in order to resolve it.
                 className="mb-4"
               />
             )}
-            {renderContent()}
+            <AdminErrorBoundary sectionName={activeSidebar}>
+              {renderContent()}
+            </AdminErrorBoundary>
           </div>
         )}
       </main>
@@ -3990,7 +4007,7 @@ function UsersManagementView() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                        {u.name[0]}
+                        {u.name ? u.name[0] : (u.username ? u.username[0] : "👤")}
                       </div>
                       <div>
                         <p className="font-bold text-sm">{u.name}</p>

@@ -199,7 +199,8 @@ export function normalizeDevicePerformance(value: unknown): DevicePerformance | 
   } as Record_) as unknown as DevicePerformance;
 }
 
-export function getDevicePerformanceList(product: Record_): DevicePerformance[] {
+export function getDevicePerformanceList(product: Record_ | null | undefined): DevicePerformance[] {
+  if (!product || typeof product !== "object") return [];
   const source = product["devicePerformance"] ?? product["device_performance"];
   const normalized = (Array.isArray(source) ? source : source ? [source] : [])
     .map(normalizeDevicePerformance)
@@ -251,6 +252,7 @@ export function getDevicePerformanceList(product: Record_): DevicePerformance[] 
 export function dedupeDevicePerformance(records: DevicePerformance[]): DevicePerformance[] {
   const byDevice = new Map<string, DevicePerformance>();
   for (const record of records) {
+    if (!record || typeof record !== "object") continue;
     const key = record.hardwareId || record.deviceSlug || slugifyDevice(record.device);
     if (!key) continue;
     byDevice.set(key, record);
@@ -268,7 +270,8 @@ export function normalizePlatform(value: unknown): "switch" | "switch2" | "both"
   return normalized;
 }
 
-export function productSupportsSwitch2(product: Record_): boolean {
+export function productSupportsSwitch2(product: Record_ | null | undefined): boolean {
+  if (!product || typeof product !== "object") return false;
   const platform = normalizePlatform(product["platform"]);
   if (platform === "switch2" || platform === "both") return true;
 
@@ -298,7 +301,8 @@ function modeMissing(mode: DeviceModePerformance | undefined, prefix: string): s
   return missing;
 }
 
-export function validateGameDevicePerformance(product: Record_): PerformanceValidationIssue[] {
+export function validateGameDevicePerformance(product: Record_ | null | undefined): PerformanceValidationIssue[] {
+  if (!product || typeof product !== "object") return [];
   const source = product["devicePerformance"] ?? product["device_performance"];
   const rawRecords = (Array.isArray(source) ? source : source ? [source] : [])
     .map(normalizeDevicePerformance)
@@ -361,7 +365,8 @@ export function validateGameDevicePerformance(product: Record_): PerformanceVali
   ];
 }
 
-export function requiresPerformanceReview(product: Record_): boolean {
+export function requiresPerformanceReview(product: Record_ | null | undefined): boolean {
+  if (!product || typeof product !== "object") return false;
   return productSupportsSwitch2(product) && validateGameDevicePerformance(product).length > 0;
 }
 
