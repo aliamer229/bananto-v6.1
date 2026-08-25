@@ -202,11 +202,14 @@ export const Route = createFileRoute("/api/data")({
     handlers: {
       GET: async ({ request }) =>
         guard(async () => {
-          try {
-            await forceFullImport();
-          } catch (err) {
-            console.error("[api:data] forceFullImport failed:", err);
-          }
+          const startTime = Date.now();
+          const reqId = `req_${Math.random().toString(36).slice(2, 8)}`;
+          const url = new URL(request.url);
+          const slim = url.searchParams.has("slim");
+          const page = parseInt(url.searchParams.get("page") || "0", 10);
+          const limit = parseInt(url.searchParams.get("limit") || "0", 10);
+          const category = url.searchParams.get("category") || undefined;
+
           const viewer = await getSessionUser(request);
           const availability = await getAdminAvailabilityStatus();
           const availabilityConfig = viewer?.isAdmin
@@ -214,11 +217,13 @@ export const Route = createFileRoute("/api/data")({
             : undefined;
 
           const store = await getStore();
-          const url = new URL(request.url);
-          const slim = url.searchParams.has("slim");
-          const page = parseInt(url.searchParams.get("page") || "0", 10);
-          const limit = parseInt(url.searchParams.get("limit") || "0", 10);
-          const category = url.searchParams.get("category") || undefined;
+          const duration = Date.now() - startTime;
+
+          if (duration > 2000) {
+            console.warn(`[SLOW_REQUEST] /api/data reqId=${reqId} duration=${duration}ms url=${request.url}`);
+          } else {
+            console.log(`[PRODUCTS_FETCH_SUCCESS] reqId=${reqId} duration=${duration}ms productsCount=${store?.products?.length ?? 0}`);
+          }
 
           const paginationOpts = (page > 0 || category) ? { page, limit, category } : undefined;
 
@@ -239,7 +244,8 @@ export const Route = createFileRoute("/api/data")({
             etag,
             "cache-control": viewer?.isAdmin
               ? "private, no-store"
-              : "private, max-age=120, stale-while-revalidate=600",
+              : "public, max-age=60, s-maxage=300, stale-while-revalidate=86400",
+            "server-timing": `db;dur=${duration}`,
           };
           if (request.headers.get("if-none-match") === etag) {
             return new Response(null, { status: 304, headers });

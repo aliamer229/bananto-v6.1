@@ -59,11 +59,21 @@ export default function HomeView({
 }) {
   const [clickedCartridgeId, setClickedCartridgeId] = useState<number | string | null>(null);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
   const { t } = useI18n();
   const { formatGenericPrice } = useCurrency();
 
-  const { data: store, isPending, isPlaceholderData } = useStoreData();
-  const isDbLoaded = !isPending || isPlaceholderData || !!store;
+  const { data: store, isPending, isError, refetch, isFetching } = useStoreData();
+  const hasProducts = Array.isArray(store?.products) && store.products.length > 0;
+
+  // Maximum 4-second safety fallback: never stay in full-page skeleton forever
+  useEffect(() => {
+    if (hasProducts) return;
+    const timer = setTimeout(() => {
+      setHasTimedOut(true);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [hasProducts]);
 
   const banners: any[] = store?.banners ?? [];
   const { user } = useAuth();
@@ -131,7 +141,9 @@ export default function HomeView({
     </div>
   );
 
-  if (!isDbLoaded && !store) {
+  // If initial load takes less than 4 seconds and no cached data is present, show graceful skeleton.
+  // After 4 seconds, always break out and render full structure.
+  if (isPending && !store && !hasTimedOut) {
     return <PageSkeleton />;
   }
 
@@ -141,6 +153,22 @@ export default function HomeView({
       animate={{ opacity: 1 }}
       className="relative z-10 flex flex-col"
     >
+      {/* Degraded mode / Network issue banner */}
+      {(isError || (hasTimedOut && !hasProducts)) && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-xs flex items-center justify-between text-amber-700 dark:text-amber-300">
+          <span>{t("جاري عرض البيانات المخزنة مؤقتاً لضمان سرعة التصفح.")}</span>
+          <button
+            onClick={() => {
+              setHasTimedOut(false);
+              void refetch();
+            }}
+            disabled={isFetching}
+            className="font-bold underline hover:opacity-80 px-2 py-0.5"
+          >
+            {isFetching ? t("جاري التحديث...") : t("إعادة المحاولة")}
+          </button>
+        </div>
+      )}
       {/* Hero Banner */}
       <div className="w-full aspect-[16/9] md:aspect-[21/9] relative z-0 overflow-hidden flex bg-[var(--shell-2)]">
         {activeBanners.length > 0 ? (

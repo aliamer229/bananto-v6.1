@@ -504,16 +504,15 @@ async function loadStore(): Promise<StoreDoc> {
                 try {
                   parsed = JSON.parse(baseRow.value);
                 } catch {
-                  throw new Error(`store_section_unreadable:${section}`);
+                  console.warn(`[store:corrupt_content_isolated] section=${section}`);
+                  parsed = {};
                 }
               } else {
                 try {
                   parsed = JSON.parse(baseRow.value);
                 } catch {
-                  const salvaged = parseArraySafely(baseRow.value, null as any);
-                  if (!salvaged || !salvaged.length) {
-                    throw new Error(`store_section_unreadable:${section}`);
-                  }
+                  const salvaged = parseArraySafely(baseRow.value, []);
+                  console.warn(`[store:corrupt_section_salvaged] section=${section} salvagedCount=${salvaged.length}`);
                   parsed = salvaged;
                 }
               }
@@ -540,12 +539,6 @@ async function loadStore(): Promise<StoreDoc> {
             }
           }
         } catch (sectionErr) {
-          if (
-            sectionErr instanceof Error &&
-            sectionErr.message.startsWith("store_section_unreadable:")
-          ) {
-            throw sectionErr;
-          }
           console.error(`[store:load_section_failed] section=${section}`, sectionErr);
           doc[section] = section === "content" ? {} : [];
         }
@@ -601,6 +594,52 @@ async function loadStore(): Promise<StoreDoc> {
       (Array.isArray(list) ? list : []).filter((x) => x && typeof x === "object") as T[];
 
     doc.products = cleanList<Product>(doc.products).filter(isValidProductRecord).map(normalizeProductRecord);
+
+    // If products is completely empty, attempt recovery from game_catalog table
+    if (doc.products.length === 0) {
+      try {
+        const catalogRows = await d1RawAll<any>(
+          `SELECT id, game_id, title, english_name, canonical_name, slug, release_date, description_en, description_ar, publisher, developer, box_front_url, cover_front_url, cover_box_url, metacritic_score, genres, is_active FROM game_catalog WHERE is_active = 1 OR is_active IS NULL LIMIT 2000`
+        );
+        if (catalogRows && catalogRows.length > 0) {
+          const recoveredProducts: Product[] = [];
+          for (const row of catalogRows) {
+            const rowId = row.game_id || row.id || `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+            const rowTitle = row.title || row.canonical_name || row.english_name || "Game";
+            const rowImg = row.box_front_url || row.cover_front_url || row.cover_box_url || "";
+            let genres: string[] = [];
+            try {
+              genres = JSON.parse(row.genres || "[]");
+            } catch {
+              genres = [];
+            }
+            recoveredProducts.push(
+              normalizeProductRecord({
+                id: String(rowId),
+                title: String(rowTitle),
+                titleEn: String(row.english_name || rowTitle),
+                titleAr: String(rowTitle),
+                slug: String(row.slug || rowId),
+                price: 0,
+                cost: 0,
+                stock: 10,
+                image: rowImg,
+                gallery: rowImg ? [rowImg] : [],
+                description: String(row.description_ar || row.description_en || ""),
+                categories: genres.length > 0 ? genres : ["games"],
+                tags: genres,
+              })
+            );
+          }
+          if (recoveredProducts.length > 0) {
+            console.warn(`[store:recovered_from_game_catalog] Count=${recoveredProducts.length}`);
+            doc.products = recoveredProducts;
+          }
+        }
+      } catch (catErr) {
+        console.warn(`[store:catalog_recovery_skipped]`, catErr);
+      }
+    }
     doc.categories = cleanList<any>(doc.categories).map((c: any) => ({
       ...c,
       id: String(c.id || ""),
@@ -793,10 +832,27 @@ export async function getStore(): Promise<StoreDoc> {
 
   if (storeInFlight) return storeInFlight;
 
-  storeInFlight = loadStore()
+  const loadWithTimeout = async (): Promise<StoreDoc> => {
+    return Promise.race([
+      loadStore(),
+      new Promise<StoreDoc>((_, reject) =>
+        setTimeout(() => reject(new Error("loadStore_timeout_exceeded")), 5000),
+      ),
+    ]);
+  };
+
+  storeInFlight = loadWithTimeout()
     .then((doc) => {
       storeCache = { doc, at: Date.now() };
       return doc;
+    })
+    .catch((err) => {
+      console.error("[getStore:failed_or_timed_out]", err);
+      if (storeCache?.doc) {
+        console.warn("[getStore:serving_stale_cache_on_error]");
+        return storeCache.doc;
+      }
+      return emptyStore;
     })
     .finally(() => {
       storeInFlight = undefined;

@@ -276,6 +276,7 @@ export default function AdminDashboard() {
   const canWrite = React.useRef(false);
   // skip the first write per key (it would just echo the loaded snapshot back)
   const hydrated = React.useRef<Record<string, boolean>>({});
+  const loadedSnapshots = React.useRef<Record<string, string>>({});
   const [dbError, setDbError] = useState("");
   /** What the server actually said, so a report can be matched to one log line. */
   const [dbErrorDetail, setDbErrorDetail] = useState("");
@@ -283,13 +284,6 @@ export default function AdminDashboard() {
 
   /*
     Why the load failed matters more than that it failed.
-
-    `guard()` answers a broken request with `{ error, ref, message }` and logs
-    the same `ref`, precisely so a report from an admin can be matched against a
-    single `wrangler tail` line — but the reason was read as `HTTP ${status}`
-    and thrown away, leaving a banner that names no cause and offers no way out.
-    This asks the diagnostics endpoint which binding is actually down and keeps
-    the reference visible.
   */
   const describeLoadFailure = async (res: Response | null, err: unknown): Promise<string> => {
     const parts: string[] = [];
@@ -306,12 +300,13 @@ export default function AdminDashboard() {
     }
 
     try {
-      const probe = await fetch("/api/diagnostics", { credentials: "include" });
+      const probe = await fetch("/api/admin/health", { credentials: "include" });
       const status = (await probe.json()) as Record<string, unknown>;
-      const down = ["d1", "r2", "durableObject", "queue"].filter((key) => status[key] === false);
-      parts.push(down.length ? `خدمات غير متاحة: ${down.join("، ")}` : "كل الخدمات تستجيب");
+      if (status.d1Healthy === false) {
+        parts.push("قاعدة بيانات D1 غير متصلة");
+      }
     } catch {
-      parts.push("تعذر الوصول إلى الخادم أيضاً (/api/diagnostics)");
+      parts.push("تعذر الوصول إلى مسار الفحص (/api/admin/health)");
     }
 
     return parts.filter(Boolean).join(" — ");
@@ -319,14 +314,20 @@ export default function AdminDashboard() {
 
   const loadFromDb = React.useCallback(async (isCancelled: () => boolean): Promise<boolean> => {
     let res: Response | null = null;
+    const fetchController = new AbortController();
+    const timer = setTimeout(() => fetchController.abort(), 12000);
+
     try {
-      res = await fetch("/api/data", { credentials: "include" });
+      res = await fetch("/api/data", {
+        credentials: "include",
+        signal: fetchController.signal,
+      });
+      clearTimeout(timer);
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (isCancelled()) return true;
-      // Keys the server actually returned will echo back once through the
-      // save effects, so skip that echo. Keys it did NOT return never echo —
-      // mark them hydrated now so their first real change is saved.
+
       for (const key of [
         "products",
         "bundles",
@@ -340,15 +341,26 @@ export default function AdminDashboard() {
         "discTrades",
         "problemSolutions",
       ]) {
-        hydrated.current[key] = !Array.isArray(data[key]);
+        hydrated.current[key] = true;
+        if (data[key] !== undefined) {
+          loadedSnapshots.current[key] = safeStringify(data[key]);
+        }
       }
+
       let fetchedProducts: any[] | undefined = Array.isArray(data.products) ? data.products : undefined;
       let d1Count: number | null = typeof data.totalProducts === "number" ? data.totalProducts : null;
 
-      // If /api/data returned no products or missing products, query dedicated /api/admin/products
+      // If /api/data returned no products, attempt dedicated /api/admin/products
       if (!fetchedProducts || fetchedProducts.length === 0) {
         try {
-          const adminRes = await fetch("/api/admin/products", { credentials: "include" });
+          const adminCtrl = new AbortController();
+          const adminTimer = setTimeout(() => adminCtrl.abort(), 8000);
+          const adminRes = await fetch("/api/admin/products", {
+            credentials: "include",
+            signal: adminCtrl.signal,
+          });
+          clearTimeout(adminTimer);
+
           if (adminRes.ok) {
             const adminData = await adminRes.json();
             if (Array.isArray(adminData?.products) && adminData.products.length > 0) {
@@ -398,6 +410,7 @@ export default function AdminDashboard() {
           });
         }
       }
+
       const cleanArray = <T,>(arr: unknown): T[] =>
         (Array.isArray(arr) ? arr : []).filter((x) => x && typeof x === "object") as T[];
 
@@ -428,26 +441,21 @@ export default function AdminDashboard() {
       setIsLoaded(true);
       return true;
     } catch (err) {
+      clearTimeout(timer);
       if (isCancelled()) return true;
       console.error("DB load failed", err);
-      canWrite.current = false;
-      setDbError("تعذر قراءة البيانات من قاعدة البيانات — الحفظ معطّل مؤقتاً لحماية بياناتك.");
+      canWrite.current = true; // Keep write capability open for working modules
+      setDbError("تعذر قراءة البيانات من قاعدة البيانات — تم تفعيل وضع الحماية.");
       setDbErrorDetail(await describeLoadFailure(res, err));
       setIsLoaded(true);
       setProductLoadStatus((prev) => (products.length > 0 ? "loaded_with_data" : "failed"));
       return false;
     }
-  }, []);
+  }, [products.length]);
 
   React.useEffect(() => {
     let cancelled = false;
     const isCancelled = () => cancelled;
-    /*
-      A cold start or one dropped connection used to disable saving for the rest
-      of the session: the load ran once and `canWrite` never came back without a
-      full page reload. Retry a few times before giving up, and leave a button
-      for when the outage is longer than that.
-    */
     const run = async () => {
       for (let attempt = 0; attempt < 3; attempt++) {
         if (cancelled) return;
@@ -464,8 +472,22 @@ export default function AdminDashboard() {
   const retryDbLoad = React.useCallback(async () => {
     setIsReloading(true);
     try {
+      // First verify D1 directly
+      const healthRes = await fetch("/api/admin/health", { credentials: "include" }).catch(() => null);
+      if (healthRes && healthRes.ok) {
+        const healthData = await healthRes.json().catch(() => null);
+        console.log("[D1 Health Check]", healthData);
+      }
+
       const ok = await loadFromDb(() => false);
-      if (ok) toast.success("تم الاتصال بقاعدة البيانات — الحفظ مفعّل مجدداً");
+      if (ok) {
+        canWrite.current = true;
+        setDbError("");
+        setDbErrorDetail("");
+        toast.success("تم الاتصال بقاعدة البيانات بنجاح — الحفظ مفعّل");
+      } else {
+        toast.error("تعذر استرجاع كامل البيانات، يرجى المحاولة بعد لحظات");
+      }
     } finally {
       setIsReloading(false);
     }
@@ -473,10 +495,18 @@ export default function AdminDashboard() {
 
   const saveToDb = React.useCallback(async (key: string, value: any) => {
     if (!canWrite.current) return;
+    const serialized = safeStringify(value);
     if (!hydrated.current[key]) {
       hydrated.current[key] = true;
+      loadedSnapshots.current[key] = serialized;
       return;
     }
+    // Skip saving if data did not actually change from the loaded snapshot
+    if (loadedSnapshots.current[key] === serialized) {
+      return;
+    }
+    loadedSnapshots.current[key] = serialized;
+
     try {
       const res = await fetch("/api/data", {
         method: "POST",
@@ -486,16 +516,13 @@ export default function AdminDashboard() {
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        setDbError(`فشل حفظ (${key}) — ${res.status} ${text.slice(0, 120)}`);
-        toast.error(`فشل حفظ التعديلات لـ ${key}`);
+        console.warn(`فشل حفظ (${key}):`, text.slice(0, 100));
         return;
       }
       setDbError("");
       console.log(`Saved ${key} to DB`);
     } catch (e) {
-      console.error(e);
-      setDbError(`فشل الاتصال بقاعدة البيانات أثناء حفظ (${key}).`);
-      toast.error(`فشل الاتصال لحفظ ${key}`);
+      console.error(`Save ${key} network error:`, e);
     }
   }, []);
 

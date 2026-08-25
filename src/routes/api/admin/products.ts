@@ -118,12 +118,29 @@ export const Route = createFileRoute("/api/admin/products")({
     handlers: {
       GET: async ({ request }) =>
         guard(async () => {
+          const startTime = Date.now();
+          const reqId = Math.random().toString(36).slice(2, 9);
+          console.log(`[ADMIN_PRODUCTS_LOAD_START] reqId=${reqId} time=${new Date().toISOString()}`);
+
           await requireAdmin(request);
           const url = new URL(request.url);
           const id = url.searchParams.get("id");
           const slug = url.searchParams.get("slug");
-          const store = await getStore();
-          const products = store.products || [];
+          const page = parseInt(url.searchParams.get("page") || "0", 10);
+          const limit = parseInt(url.searchParams.get("limit") || "0", 10);
+          const search = url.searchParams.get("search")?.toLowerCase().trim();
+
+          let store: StoreDoc;
+          try {
+            store = await getStore();
+            console.log(`[D1_HEALTH_OK] reqId=${reqId} loadDurationMs=${Date.now() - startTime}`);
+          } catch (dbErr) {
+            console.error(`[D1_HEALTH_FAILED] reqId=${reqId}`, dbErr);
+            throw dbErr;
+          }
+
+          let products = store.products || [];
+          console.log(`[D1_PRODUCTS_COUNT] reqId=${reqId} rawCount=${products.length}`);
 
           if (id) {
             const product = products.find((p) => String(p.id) === String(id));
@@ -143,19 +160,8 @@ export const Route = createFileRoute("/api/admin/products")({
             return json({ success: true, product });
           }
 
-          /*
-            A report, not a cleanup.
-
-            Run this before the uniqueness constraint means anything: an
-            existing catalogue may already hold collisions, and each duplicate
-            can carry orders, bundle membership, favourites, reviews, cart rows
-            and uploaded artwork. Which copy keeps that history is a decision a
-            person makes; nothing here removes or merges anything.
-          */
           if (url.searchParams.get("duplicates")) {
             const duplicates = findDuplicateProducts(products);
-            /* Rows left behind by products that no longer exist. Each one would
-               otherwise refuse its identity to every future product. */
             const orphanIdentities = await pruneOrphanProductIdentities(products);
             const { indexed, unindexed } = await reindexProductIdentities(products);
             return json({
@@ -164,19 +170,38 @@ export const Route = createFileRoute("/api/admin/products")({
               affectedProducts: duplicates.reduce((sum, g) => sum + g.products.length, 0),
               duplicates,
               orphanIdentities,
-              /* Products the unique index could not take, because an earlier
-                 product already holds their identity. They remain in the
-                 catalogue exactly as they are. */
               indexed,
               unindexed,
             });
           }
 
+          if (search) {
+            products = products.filter(
+              (p) =>
+                (p.title && p.title.toLowerCase().includes(search)) ||
+                (p.titleEn && p.titleEn.toLowerCase().includes(search)) ||
+                (p.slug && p.slug.toLowerCase().includes(search)) ||
+                (p.id && String(p.id).toLowerCase().includes(search)),
+            );
+          }
+
+          const total = products.length;
+          let paginated = products;
+          if (limit > 0) {
+            const offset = Math.max(0, (page > 0 ? page - 1 : 0) * limit);
+            paginated = products.slice(offset, offset + limit);
+          }
+
+          const totalDuration = Date.now() - startTime;
+          console.log(`[PRODUCTS_FETCHED] reqId=${reqId} count=${paginated.length} total=${total} durationMs=${totalDuration}`);
+
           return json({
             success: true,
-            products,
-            d1Count: products.length,
-            total: products.length,
+            products: paginated,
+            d1Count: total,
+            total,
+            d1Healthy: true,
+            durationMs: totalDuration,
           });
         }),
 
