@@ -229,11 +229,16 @@ export function isValidProductRecord(item: unknown): item is Product {
     return false;
   }
 
-  const title = typeof p.title === "string" ? p.title.trim() : "";
-  const titleEn = typeof p.titleEn === "string" ? p.titleEn.trim() : "";
+  const title =
+    (typeof p.title === "string" && p.title.trim()) ||
+    (typeof p.titleEn === "string" && p.titleEn.trim()) ||
+    (typeof p.titleAr === "string" && p.titleAr.trim()) ||
+    (typeof p.english_name === "string" && p.english_name.trim()) ||
+    (typeof p.canonical_name === "string" && p.canonical_name.trim()) ||
+    (typeof p.name === "string" && p.name.trim()) ||
+    (typeof p.slug === "string" && p.slug.trim());
 
-  // Must have at least a non-empty string title or titleEn
-  if (!title && !titleEn) return false;
+  if (!title) return false;
 
   return true;
 }
@@ -260,16 +265,23 @@ export function normalizeProductRecord(p: any): Product {
   }
 
   const id = String(p.id || "").trim();
-  const title =
-    typeof p.title === "string" && p.title.trim()
-      ? p.title.trim()
-      : typeof p.titleEn === "string" && p.titleEn.trim()
-        ? p.titleEn.trim()
-        : id;
-  const titleEn =
-    typeof p.titleEn === "string" && p.titleEn.trim()
-      ? p.titleEn.trim()
-      : title;
+  const rawTitle =
+    (typeof p.title === "string" && p.title.trim()) ||
+    (typeof p.titleAr === "string" && p.titleAr.trim()) ||
+    (typeof p.name === "string" && p.name.trim()) ||
+    (typeof p.titleEn === "string" && p.titleEn.trim()) ||
+    (typeof p.english_name === "string" && p.english_name.trim()) ||
+    (typeof p.canonical_name === "string" && p.canonical_name.trim()) ||
+    id;
+
+  const rawTitleEn =
+    (typeof p.titleEn === "string" && p.titleEn.trim()) ||
+    (typeof p.english_name === "string" && p.english_name.trim()) ||
+    (typeof p.canonical_name === "string" && p.canonical_name.trim()) ||
+    rawTitle;
+
+  const title = rawTitle;
+  const titleEn = rawTitleEn;
   const slug =
     typeof p.slug === "string" && p.slug.trim()
       ? p.slug.trim()
@@ -464,6 +476,23 @@ async function loadStore(): Promise<StoreDoc> {
                 }
               } else {
                 parsed = parseArraySafely(chunkedParts, []);
+              }
+            }
+
+            // If joined chunks yielded empty or failed, salvage item-by-item from individual chunk rows
+            if ((parsed === undefined || (Array.isArray(parsed) && parsed.length === 0)) && section !== "content") {
+              const salvagedFromChunks: any[] = [];
+              for (const r of chunkRows) {
+                if (r.value && r.value.trim()) {
+                  const items = parseArraySafely(r.value, []);
+                  if (Array.isArray(items) && items.length > 0) {
+                    salvagedFromChunks.push(...items);
+                  }
+                }
+              }
+              if (salvagedFromChunks.length > 0) {
+                parsed = salvagedFromChunks;
+                console.warn(`[store:load_section:chunk_salvage_success] section=${section} salvagedCount=${salvagedFromChunks.length}`);
               }
             }
           }

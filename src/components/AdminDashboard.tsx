@@ -210,6 +210,8 @@ export default function AdminDashboard() {
   }, []);
 
   const [isLoaded, setIsLoaded] = useState(false);
+  const [productLoadStatus, setProductLoadStatus] = useState<"loading" | "loaded_with_data" | "loaded_empty" | "failed">("loading");
+  const [d1ProductCount, setD1ProductCount] = useState<number | null>(null);
 
   const [products, setProducts] = useState<any[]>([]);
   const [bundles, setBundles] = useState<AccountBundle[]>([]);
@@ -340,8 +342,27 @@ export default function AdminDashboard() {
       ]) {
         hydrated.current[key] = !Array.isArray(data[key]);
       }
-      if (Array.isArray(data.products)) {
-        const safeProducts = data.products
+      let fetchedProducts: any[] | undefined = Array.isArray(data.products) ? data.products : undefined;
+      let d1Count: number | null = typeof data.totalProducts === "number" ? data.totalProducts : null;
+
+      // If /api/data returned no products or missing products, query dedicated /api/admin/products
+      if (!fetchedProducts || fetchedProducts.length === 0) {
+        try {
+          const adminRes = await fetch("/api/admin/products", { credentials: "include" });
+          if (adminRes.ok) {
+            const adminData = await adminRes.json();
+            if (Array.isArray(adminData?.products) && adminData.products.length > 0) {
+              fetchedProducts = adminData.products;
+              d1Count = adminData.d1Count ?? adminData.products.length;
+            }
+          }
+        } catch (adminErr) {
+          console.warn("[AdminDashboard:adminProductsFetchFailed]", adminErr);
+        }
+      }
+
+      if (Array.isArray(fetchedProducts)) {
+        const safeProducts = fetchedProducts
           .filter((p: any) => p && typeof p === "object")
           .map((p: any) => ({
             ...p,
@@ -360,7 +381,22 @@ export default function AdminDashboard() {
                   : String(p.id || ""),
             slug: typeof p.slug === "string" ? p.slug : String(p.id || ""),
           }));
-        setProducts(safeProducts);
+
+        if (safeProducts.length > 0) {
+          setProducts(safeProducts);
+          setD1ProductCount(d1Count ?? safeProducts.length);
+          setProductLoadStatus("loaded_with_data");
+        } else {
+          setD1ProductCount(0);
+          setProducts((prev) => {
+            if (prev && prev.length > 0) {
+              setProductLoadStatus("loaded_with_data");
+              return prev;
+            }
+            setProductLoadStatus("loaded_empty");
+            return [];
+          });
+        }
       }
       const cleanArray = <T,>(arr: unknown): T[] =>
         (Array.isArray(arr) ? arr : []).filter((x) => x && typeof x === "object") as T[];
@@ -398,6 +434,7 @@ export default function AdminDashboard() {
       setDbError("تعذر قراءة البيانات من قاعدة البيانات — الحفظ معطّل مؤقتاً لحماية بياناتك.");
       setDbErrorDetail(await describeLoadFailure(res, err));
       setIsLoaded(true);
+      setProductLoadStatus((prev) => (products.length > 0 ? "loaded_with_data" : "failed"));
       return false;
     }
   }, []);
@@ -607,10 +644,12 @@ export default function AdminDashboard() {
         );
       case "categories":
         return <CategoriesView categories={categories} setCategories={setCategories} />;
+      case "products":
       case "listings":
+      case "listings_all":
       case activeSidebar.startsWith("listings_") ? activeSidebar : "": {
         const selectedCategoryId =
-          activeSidebar === "listings_all" || activeSidebar === "listings"
+          activeSidebar === "listings_all" || activeSidebar === "listings" || activeSidebar === "products"
             ? null
             : activeSidebar.replace("listings_", "");
         return (
@@ -619,6 +658,12 @@ export default function AdminDashboard() {
             setProducts={setProducts}
             categories={categories}
             initialCategoryId={selectedCategoryId}
+            loadStatus={productLoadStatus}
+            d1ProductCount={d1ProductCount}
+            onRetry={retryDbLoad}
+            isReloading={isReloading}
+            loadError={dbError}
+            loadErrorDetail={dbErrorDetail}
           />
         );
       }
@@ -1449,11 +1494,23 @@ function ListingsView({
   setProducts,
   categories,
   initialCategoryId,
+  loadStatus = "loaded_with_data",
+  d1ProductCount,
+  onRetry,
+  isReloading,
+  loadError,
+  loadErrorDetail,
 }: {
   products: any[];
   setProducts: any;
   categories: any[];
   initialCategoryId?: string | null;
+  loadStatus?: "loading" | "loaded_with_data" | "loaded_empty" | "failed";
+  d1ProductCount?: number | null;
+  onRetry?: () => void;
+  isReloading?: boolean;
+  loadError?: string;
+  loadErrorDetail?: string;
 }) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
@@ -1516,6 +1573,42 @@ function ListingsView({
         new Date(a.releaseDate || a.createdAt || 0).getTime()
     );
   });
+
+  // Log product diagnostics to verify D1 single source of truth and active filters
+  useEffect(() => {
+    console.log("[AdminProductsDiagnostics]", {
+      d1ProductCount,
+      fetchedCount: products.length,
+      filteredCount: filteredProducts.length,
+      renderedCount: sortedProducts.length,
+      activeFilters: {
+        searchTerm: searchTerm || undefined,
+        onlyUnpriced,
+        onlyMissingPerformance,
+        onlyHidden,
+        initialCategoryId: initialCategoryId || "all",
+      },
+      loadStatus,
+    });
+  }, [
+    d1ProductCount,
+    products.length,
+    filteredProducts.length,
+    sortedProducts.length,
+    searchTerm,
+    onlyUnpriced,
+    onlyMissingPerformance,
+    onlyHidden,
+    initialCategoryId,
+    loadStatus,
+  ]);
+
+  const resetAllFilters = () => {
+    setSearchTerm("");
+    setOnlyUnpriced(false);
+    setOnlyMissingPerformance(false);
+    setOnlyHidden(false);
+  };
 
   const handleDelete = async (id: string) => {
     const productToDelete = products.find((p: any) => String(p.id) === String(id));
@@ -1735,11 +1828,18 @@ function ListingsView({
   return (
     <div className="animate-in fade-in duration-300">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-[22px] font-bold text-[var(--admin-ink)]">
-          {initialCategoryId
-            ? categories.find((c: any) => c.id === initialCategoryId)?.title || t("admin.products")
-            : t("admin.products")}
-        </h1>
+        <div className="flex flex-col">
+          <h1 className="text-[22px] font-bold text-[var(--admin-ink)]">
+            {initialCategoryId
+              ? categories.find((c: any) => c.id === initialCategoryId)?.title || t("admin.products")
+              : t("admin.products")}
+          </h1>
+          <span className="text-xs text-muted-foreground mt-0.5">
+            {loadStatus === "loading"
+              ? "جاري مزامنة المنتجات مع قاعدة البيانات D1..."
+              : `عرض ${sortedProducts.length} من أصل ${products.length} منتج مسجل في D1`}
+          </span>
+        </div>
         <div className="flex items-center gap-2">
           {/* Nintendo Switch Games only — every other section keeps its own flow. */}
           {isGamesSection && (
@@ -1806,6 +1906,88 @@ function ListingsView({
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-[14px]">
+              {loadStatus === "loading" && products.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                      <p className="text-sm font-medium text-foreground">
+                        جاري تحميل قائمة المنتجات من قاعدة البيانات D1...
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        يتم التحقق من المصدر الفعلي لقاعدة البيانات
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {loadStatus === "failed" && products.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center">
+                    <div className="max-w-md mx-auto rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
+                      <p className="text-sm font-bold text-destructive mb-1">
+                        فشل تحميل قائمة المنتجات من قاعدة البيانات
+                      </p>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        {loadErrorDetail || loadError || "تعذر الاتصال بقاعدة البيانات D1 أو استرجاع سجلات المنتجات."}
+                      </p>
+                      {onRetry && (
+                        <button
+                          onClick={onRetry}
+                          disabled={isReloading}
+                          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${isReloading ? "animate-spin" : ""}`} />
+                          إعادة المحاولة الآن
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {loadStatus === "loaded_empty" && products.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <Package className="w-8 h-8 text-muted-foreground/50" />
+                      <p className="text-sm font-medium text-foreground">
+                        لا توجد منتجات مضافة حتى الآن في قاعدة البيانات D1
+                      </p>
+                      <button
+                        onClick={() => setIsAdding(true)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--admin-ink)] text-white text-xs font-bold hover:bg-black transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        إضافة أول منتج
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {products.length > 0 && sortedProducts.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p className="text-sm font-medium text-foreground">
+                        لا توجد منتجات تطابق الفلاتر المحددة
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        إجمالي المنتجات المتاحة في قاعدة البيانات: {products.length} منتج
+                      </p>
+                      <button
+                        onClick={resetAllFilters}
+                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-muted/60 text-xs font-bold hover:bg-muted text-foreground transition-colors"
+                      >
+                        إلغاء تفعيل الفلاتر
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
               {sortedProducts.map((p: any) => (
                 <tr key={p.id} className="hover:bg-muted transition-colors">
                   <td className="px-4 py-3 font-medium text-[var(--admin-ink)]">

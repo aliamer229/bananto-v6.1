@@ -172,7 +172,12 @@ export const Route = createFileRoute("/api/admin/products")({
             });
           }
 
-          return json({ success: true, products });
+          return json({
+            success: true,
+            products,
+            d1Count: products.length,
+            total: products.length,
+          });
         }),
 
       POST: async ({ request }) =>

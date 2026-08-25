@@ -100,9 +100,13 @@ export async function forceFullImport(): Promise<void> {
       isInfiniteStock: true,
     }));
 
-    // 4. Return new state. We don't overwrite products anymore if we already have some,
-    // to avoid wiping Splatoon Raiders or other extracted games.
-    const products = current.products?.length > 0 ? current.products : newProducts;
+    // 4. Return new state. Never overwrite existing products with an empty array.
+    const products =
+      Array.isArray(current.products) && current.products.length > 0
+        ? current.products
+        : newProducts.length > 0
+          ? newProducts
+          : current.products || [];
     const bundles =
       Array.isArray(current.bundles) && current.bundles.length > 0
         ? current.bundles
