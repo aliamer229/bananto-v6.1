@@ -7,7 +7,8 @@ import {
   X,
   Play,
   ShieldCheck,
-  ExternalLink,
+  Globe,
+  Layers,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,10 +19,12 @@ interface MediaStatusResponse {
   totalExternalImages: number;
   totalStoredImages: number;
   failedAuditRecords: number;
+  hostBreakdown?: Record<string, number>;
   pendingProducts: Array<{
     id: string;
     title: string;
     externalFields: string[];
+    sources?: string[];
   }>;
 }
 
@@ -136,9 +139,9 @@ export function AdminMediaRepairModal({
               <ImageIcon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg">فحص وإصلاح الوسائط الخارجية</h3>
+              <h3 className="font-bold text-lg">فحص وتخزين وسائط الألعاب (CDN / Retail)</h3>
               <p className="text-xs text-muted-foreground">
-                تنزيل الصور الخارجية وحفظها كـ WebP دائم في التخزين السحابي (R2)
+                تنزيل وحفظ صور الألعاب من مصادر التوزيع (Nintendo, Amazon, Walmart, BestBuy, Costco, etc.) في R2
               </p>
             </div>
           </div>
@@ -166,7 +169,7 @@ export function AdminMediaRepairModal({
             </div>
 
             <div className="p-4 rounded-xl border border-border bg-background/50 flex flex-col justify-between">
-              <span className="text-xs text-muted-foreground">صور مخزنة محلياً (R2)</span>
+              <span className="text-xs text-muted-foreground">صور مخزنة في R2 (WebP)</span>
               <div className="flex items-baseline gap-1 mt-2">
                 <span className="text-2xl font-black text-emerald-500">
                   {isLoadingStatus ? "..." : statusData?.totalStoredImages ?? 0}
@@ -188,14 +191,35 @@ export function AdminMediaRepairModal({
             </div>
           </div>
 
+          {/* Sources Host Breakdown */}
+          {statusData?.hostBreakdown && Object.keys(statusData.hostBreakdown).length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                <Globe className="w-4 h-4 text-primary" />
+                <span>مصادر الوسائط الخارجية المكتشفة:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(statusData.hostBreakdown).map(([host, count]) => (
+                  <span
+                    key={host}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted/40 text-xs font-mono"
+                  >
+                    <span className="font-sans font-semibold text-foreground">{host}</span>
+                    <span className="px-1.5 py-0.2 rounded bg-primary/10 text-primary text-[11px] font-bold">
+                      {count}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Explanation Banner */}
           <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-start gap-3">
             <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div className="text-xs text-muted-foreground leading-relaxed">
-              <span className="font-bold text-foreground">عزل أخطاء الوسائط: </span>
-              النظام يقوم بتنزيل الروابط الخارجية وتخزينها بصيغة WebP مع إعادة المحاولة التلقائية عند
-              حدوث 503 أو قيود المزود. في حال تعذر تنزيل صورة معينة، يتم الحفاظ على بيانات اللعبة كاملة
-              دون إلغاء استيرادها.
+              <span className="font-bold text-foreground">معمارية التخزين المقاومة للأخطاء: </span>
+              يدعم النظام التنزيل التلقائي من مصادر التوزيع الرسمية وشبكات CDN الرئيسية (Walmart, Amazon, BestBuy, Costco, TradeInn, Nintendo eShop/Assets). يتم تحويل الصور إلى WebP عالي الدقة، مع إعادة المحاولة التلقائية عند 503/429 وحفظ دائم للمنتج حتى لو تعذرت صورة واحدة.
             </div>
           </div>
 
@@ -282,7 +306,7 @@ export function AdminMediaRepairModal({
               ) : (
                 <>
                   <Play className="w-4 h-4 fill-current" />
-                  بدء إصلاح وتخزين الوسائط
+                  بدء تخزين وإصلاح الوسائط
                 </>
               )}
             </button>

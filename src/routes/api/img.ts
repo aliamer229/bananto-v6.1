@@ -157,7 +157,7 @@ export const Route = createFileRoute("/api/img")({
                 const sharpModule = await import("sharp");
                 const sharp = sharpModule.default || sharpModule;
                 if (typeof sharp === "function" && mime !== "image/gif") {
-                  let pipeline = sharp(rawBuffer, { failOnError: false }).rotate();
+                  let pipeline = sharp(rawBuffer, { failOnError: false } as any).rotate();
 
                   if (targetWidth > 0) {
                     pipeline = pipeline.resize({ width: targetWidth, fit: "inside", withoutEnlargement: true });

@@ -107,7 +107,7 @@ export async function processImageToAvif(
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default || sharpModule;
     if (typeof sharp === "function") {
-      const image = sharp(bytes, { failOnError: false });
+      const image = sharp(bytes, { failOnError: false } as any);
       const metadata = await image.metadata().catch(() => undefined);
 
       const pipeline = image
@@ -174,7 +174,7 @@ export async function processImageToWebP(
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default || sharpModule;
     if (typeof sharp === "function") {
-      const image = sharp(bytes, { failOnError: false });
+      const image = sharp(bytes, { failOnError: false } as any);
       
       const pipeline = image
         .rotate()
@@ -265,7 +265,7 @@ export async function processImagePipeline(
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default || sharpModule;
     if (typeof sharp === "function") {
-      const base = sharp(bytes, { failOnError: false }).rotate();
+      const base = sharp(bytes, { failOnError: false } as any).rotate();
       const meta = await base.metadata().catch(() => undefined);
       const origW = meta?.width || 800;
       const origH = meta?.height || 600;

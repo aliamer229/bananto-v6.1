@@ -3,6 +3,7 @@ import {
   isSafeRemoteImageUrl,
   sniffImageMimeType,
   buildMediaRequestHeaders,
+  fetchRemoteMedia,
   fetchRemoteImageWithRetry,
 } from "./mediaIngest.server";
 import { sanitizeAndVerifyProductImages } from "./productImageVerification.server";
@@ -26,9 +27,16 @@ describe("mediaIngest SSRF & Validation", () => {
     }
   });
 
-  it("accepts valid public URLs with query params and subdomains", () => {
+  it("accepts valid public URLs from all required retail & gaming CDNs", () => {
     const validUrls = [
       "https://assets.nintendo.com/image/upload/v1/switch/game.jpg?w=1920&q=80",
+      "https://img-eshop.cdn.nintendo.net/i/38a0f0d2c94380f7d54b4a3a60c23ca5.jpg",
+      "https://m.media-amazon.com/images/I/81abcXYZ._SL1500_.jpg",
+      "https://images-na.ssl-images-amazon.com/images/I/71xyz.jpg",
+      "https://i5.walmartimages.com/asr/12345-6789.jpeg?odnHeight=612&odnWidth=612&odnBg=FFFFFF",
+      "https://multimedia.bbycastatic.ca/multimedia/products/500x500/171/17188/17188123.jpg",
+      "https://bfasset.costco-static.com/images/bc/12345/hero.jpg?auto=webp&format=jpg&width=800",
+      "https://www.tradeinn.com/f/13812/13812345/nintendo-switch-game.jpg",
       "https://images.igdb.com/igdb/image/upload/t_cover_big/co49wj.webp",
       "https://thecoverproject.net/view.php?cover_id=12345",
       "http://example.com/images/cover.png",
@@ -41,10 +49,28 @@ describe("mediaIngest SSRF & Validation", () => {
     }
   });
 
-  it("builds realistic headers for specific hostnames", () => {
+  it("builds source-specific headers for major retail and gaming CDNs", () => {
     const nintendoHeaders = buildMediaRequestHeaders("https://assets.nintendo.com/art.jpg");
     expect(nintendoHeaders["Referer"]).toContain("nintendo.com");
     expect(nintendoHeaders["User-Agent"]).toContain("Mozilla");
+
+    const eshopHeaders = buildMediaRequestHeaders("https://img-eshop.cdn.nintendo.net/i/cover.jpg");
+    expect(eshopHeaders["Referer"]).toContain("nintendo.com");
+
+    const amazonHeaders = buildMediaRequestHeaders("https://m.media-amazon.com/images/I/81test.jpg");
+    expect(amazonHeaders["Referer"]).toContain("amazon.com");
+
+    const walmartHeaders = buildMediaRequestHeaders("https://i5.walmartimages.com/asr/test.jpg");
+    expect(walmartHeaders["Referer"]).toContain("walmart.com");
+
+    const bestbuyHeaders = buildMediaRequestHeaders("https://multimedia.bbycastatic.ca/products/test.jpg");
+    expect(bestbuyHeaders["Referer"]).toContain("bestbuy.com");
+
+    const costcoHeaders = buildMediaRequestHeaders("https://bfasset.costco-static.com/images/test.jpg");
+    expect(costcoHeaders["Referer"]).toContain("costco.com");
+
+    const tradeinnHeaders = buildMediaRequestHeaders("https://www.tradeinn.com/f/game.jpg");
+    expect(tradeinnHeaders["Referer"]).toContain("tradeinn.com");
 
     const coverProjectHeaders = buildMediaRequestHeaders("https://www.thecoverproject.net/view.php");
     expect(coverProjectHeaders["Referer"]).toContain("thecoverproject.net");
@@ -90,57 +116,63 @@ describe("sniffImageMimeType Magic Numbers", () => {
 });
 
 describe("sanitizeAndVerifyProductImages Media Isolation Guarantee", () => {
-  it(
-    "never fails the product import when remote images return HTTP 503 or fail",
-    async () => {
-      // Mock global fetch to return HTTP 503 for remote images
-      const originalFetch = global.fetch;
-      global.fetch = vi.fn().mockResolvedValue({
+  it("never fails the product import when remote images return HTTP 503 or fail", async () => {
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockImplementation(async (input: any) => {
+      const url = typeof input === "string" ? input : input?.url || "";
+      if (url.includes("api.cloudflare.com")) {
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify({ success: true, result: [{ results: [] }] }),
+          json: async () => ({ success: true, result: [{ results: [] }] }),
+        } as any;
+      }
+      return {
         ok: false,
         status: 503,
         statusText: "Service Unavailable",
         headers: new Headers({ "retry-after": "1" }),
         arrayBuffer: async () => new ArrayBuffer(0),
         text: async () => JSON.stringify({ error: "Service Unavailable" }),
-      } as any);
+      } as any;
+    });
 
-      try {
-        const incomingProduct = {
-          id: "game_dynasty_warriors_origins",
-          titleEn: "Dynasty Warriors: Origins",
-          title: "داينستي ووريورز: أوريجينز",
-          price: 59.99,
-          cartridgeImage: "https://assets.nintendo.com/image/upload/dw_origins_503.jpg",
-          coverHiResImage: "https://thecoverproject.net/dw_origins_wrap_503.jpg",
-          gallery: [
-            "https://cdn.example.com/dw_screenshot1_503.jpg",
-            "https://cdn.example.com/dw_screenshot2_503.jpg",
-          ],
-        };
+    try {
+      const incomingProduct = {
+        id: "game_dynasty_warriors_origins",
+        titleEn: "Dynasty Warriors: Origins",
+        title: "داينستي ووريورز: أوريجينز",
+        price: 59.99,
+        cartridgeImage: "https://assets.nintendo.com/image/upload/dw_origins_503.jpg",
+        coverHiResImage: "https://thecoverproject.net/dw_origins_wrap_503.jpg",
+        gallery: [
+          "https://cdn.example.com/dw_screenshot1_503.jpg",
+          "https://cdn.example.com/dw_screenshot2_503.jpg",
+        ],
+      };
 
-        const result = await sanitizeAndVerifyProductImages(incomingProduct);
+      const result = await sanitizeAndVerifyProductImages(incomingProduct);
 
-        // The import must succeed (ok: true)
-        expect(result.ok).toBe(true);
-        expect(result.product).toBeDefined();
-        expect(result.product.id).toBe("game_dynasty_warriors_origins");
-        expect(result.product.titleEn).toBe("Dynasty Warriors: Origins");
+      // The import must succeed (ok: true)
+      expect(result.ok).toBe(true);
+      expect(result.product).toBeDefined();
+      expect(result.product.id).toBe("game_dynasty_warriors_origins");
+      expect(result.product.titleEn).toBe("Dynasty Warriors: Origins");
 
-        // Original URLs are preserved for subsequent repair rather than lost
-        expect(result.product.cartridgeImage).toBe(
-          "https://assets.nintendo.com/image/upload/dw_origins_503.jpg"
-        );
-        expect(result.product.coverHiResImage).toBe(
-          "https://thecoverproject.net/dw_origins_wrap_503.jpg"
-        );
-        expect(result.warnings).toBeDefined();
-        expect(result.warnings?.length).toBeGreaterThan(0);
-      } finally {
-        global.fetch = originalFetch;
-      }
-    },
-    20000
-  );
+      // Original URLs are preserved for subsequent repair rather than lost
+      expect(result.product.cartridgeImage).toBe(
+        "https://assets.nintendo.com/image/upload/dw_origins_503.jpg"
+      );
+      expect(result.product.coverHiResImage).toBe(
+        "https://thecoverproject.net/dw_origins_wrap_503.jpg"
+      );
+      expect(result.warnings).toBeDefined();
+      expect(result.warnings?.length).toBeGreaterThan(0);
+    } finally {
+      global.fetch = originalFetch;
+    }
+  }, 15000);
 
   it("safely accepts pre-stored R2 URLs", async () => {
     const incomingProduct = {

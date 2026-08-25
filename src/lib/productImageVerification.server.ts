@@ -100,16 +100,16 @@ export async function sanitizeAndVerifyProductImages(
     return trimmed;
   };
 
-  // 1. Process single image fields concurrently
-  const singlePromises = SINGLE_IMAGE_FIELDS.map(async (field) => {
+  // 1. Process single image fields
+  for (const field of SINGLE_IMAGE_FIELDS) {
     if (cloned[field] && typeof cloned[field] === "string") {
       const processedUrl = await processAndVerifyUrl(cloned[field], field);
       cloned[field] = processedUrl || "";
     }
-  });
+  }
 
-  // 2. Process array image fields concurrently
-  const arrayPromises = ARRAY_IMAGE_FIELDS.map(async (field) => {
+  // 2. Process array image fields
+  for (const field of ARRAY_IMAGE_FIELDS) {
     if (Array.isArray(cloned[field]) && cloned[field].length > 0) {
       const newArray = await Promise.all(
         cloned[field].map(async (item: any, idx: number) => {
@@ -125,72 +125,52 @@ export async function sanitizeAndVerifyProductImages(
       );
       cloned[field] = newArray.filter(Boolean);
     }
-  });
+  }
 
-  // 3. Process nested structures concurrently
-  const nestedPromises: Promise<void>[] = [];
-
+  // 3. Process nested structures
   if (Array.isArray(cloned.gameplayPillars)) {
-    nestedPromises.push(
-      (async () => {
-        await Promise.all(
-          cloned.gameplayPillars.map(async (pillar: any, idx: number) => {
-            if (pillar && typeof pillar.image === "string") {
-              const processedUrl = await processAndVerifyUrl(pillar.image, "gameplayPillar", idx + 1);
-              if (processedUrl) pillar.image = processedUrl;
-            }
-          })
-        );
-      })()
+    await Promise.all(
+      cloned.gameplayPillars.map(async (pillar: any, idx: number) => {
+        if (pillar && typeof pillar.image === "string") {
+          const processedUrl = await processAndVerifyUrl(pillar.image, "gameplayPillar", idx + 1);
+          if (processedUrl) pillar.image = processedUrl;
+        }
+      })
     );
   }
 
   if (cloned.story && Array.isArray(cloned.story.chapters)) {
-    nestedPromises.push(
-      (async () => {
-        await Promise.all(
-          cloned.story.chapters.map(async (ch: any, idx: number) => {
-            if (ch && typeof ch.image === "string") {
-              const processedUrl = await processAndVerifyUrl(ch.image, "storyChapter", idx + 1);
-              if (processedUrl) ch.image = processedUrl;
-            }
-          })
-        );
-      })()
+    await Promise.all(
+      cloned.story.chapters.map(async (ch: any, idx: number) => {
+        if (ch && typeof ch.image === "string") {
+          const processedUrl = await processAndVerifyUrl(ch.image, "storyChapter", idx + 1);
+          if (processedUrl) ch.image = processedUrl;
+        }
+      })
     );
   }
 
   if (Array.isArray(cloned.dlcs)) {
-    nestedPromises.push(
-      (async () => {
-        await Promise.all(
-          cloned.dlcs.map(async (dlc: any, idx: number) => {
-            if (dlc && typeof dlc.image === "string") {
-              const processedUrl = await processAndVerifyUrl(dlc.image, "dlc", idx + 1);
-              if (processedUrl) dlc.image = processedUrl;
-            }
-          })
-        );
-      })()
+    await Promise.all(
+      cloned.dlcs.map(async (dlc: any, idx: number) => {
+        if (dlc && typeof dlc.image === "string") {
+          const processedUrl = await processAndVerifyUrl(dlc.image, "dlc", idx + 1);
+          if (processedUrl) dlc.image = processedUrl;
+        }
+      })
     );
   }
 
   if (Array.isArray(cloned.editions)) {
-    nestedPromises.push(
-      (async () => {
-        await Promise.all(
-          cloned.editions.map(async (ed: any, idx: number) => {
-            if (ed && typeof ed.cover === "string") {
-              const processedUrl = await processAndVerifyUrl(ed.cover, "editionCover", idx + 1);
-              if (processedUrl) ed.cover = processedUrl;
-            }
-          })
-        );
-      })()
+    await Promise.all(
+      cloned.editions.map(async (ed: any, idx: number) => {
+        if (ed && typeof ed.cover === "string") {
+          const processedUrl = await processAndVerifyUrl(ed.cover, "editionCover", idx + 1);
+          if (processedUrl) ed.cover = processedUrl;
+        }
+      })
     );
   }
-
-  await Promise.all([...singlePromises, ...arrayPromises, ...nestedPromises]);
 
   // 4. Ensure automatic square derivative fallback if nintendoCardImage is missing but cartridgeImage/coverImage exists
   if (!cloned.nintendoCardImage) {
@@ -198,6 +178,8 @@ export async function sanitizeAndVerifyProductImages(
       cloned.nintendoCardImage = cloned.cartridgeImage;
     } else if (cloned.coverImage) {
       cloned.nintendoCardImage = cloned.coverImage;
+    } else if (cloned.mainImage) {
+      cloned.nintendoCardImage = cloned.mainImage;
     }
   }
 
