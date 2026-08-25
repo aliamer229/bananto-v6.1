@@ -46,6 +46,7 @@ export const isScriptImportError = (errString: unknown) => {
       (errString as any)?.stack ||
       (errString as any)?.reason?.message ||
       (errString as any)?.reason ||
+      (errString as any)?.target?.src ||
       errString ||
       "",
   ).toLowerCase();

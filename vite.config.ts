@@ -28,14 +28,15 @@ export default defineConfig(({ mode, command }) => {
       {
         name: "three-ssr-stub",
         enforce: "pre" as const,
-        resolveId(this: { environment?: { name?: string } }, source: string) {
+        resolveId(this: { environment?: { name?: string } }, source: string, _importer?: string, options?: { ssr?: boolean }) {
           if (
             source === "three" ||
             source === "@react-three/fiber" ||
             source === "@react-three/drei" ||
             source.startsWith("three/examples/")
           ) {
-            if (this.environment?.name === "client") return null;
+            const isSsr = Boolean(options?.ssr || this.environment?.name === "ssr" || this.environment?.name === "server");
+            if (!isSsr) return null;
             return threeStub;
           }
           if (source === "cloudflare:workers") {
