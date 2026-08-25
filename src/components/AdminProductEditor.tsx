@@ -357,13 +357,13 @@ export default function AdminProductEditor({
     const result = await mirrorCoverTextureSource(sourceUrl);
     setFormData((prev: any) => {
       if (prev[COVER_TEXTURE_FIELD] !== sourceUrl) return prev;
-      return { ...prev, [COVER_TEXTURE_FIELD]: result.ok ? result.url : "" };
+      return { ...prev, [COVER_TEXTURE_FIELD]: result.ok ? result.url : sourceUrl };
     });
     if (result.ok) {
       toast.success("تم تنزيل صورة 3D Texture Source وتخزينها");
     } else {
       setCoverTextureError({ url: sourceUrl });
-      toast.error(COVER_TEXTURE_FETCH_FAILED);
+      toast.error(`${COVER_TEXTURE_FETCH_FAILED} (${result.reason})`);
     }
   }, []);
 

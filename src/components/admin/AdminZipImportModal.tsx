@@ -114,8 +114,13 @@ export default function AdminZipImportModal({
           const wrap = prepared.payload[COVER_TEXTURE_FIELD];
           if (needsStorageMirror(wrap)) {
             const mirrored = await mirrorCoverTextureSource(String(wrap));
-            prepared.payload[COVER_TEXTURE_FIELD] = mirrored.ok ? mirrored.url : "";
-            if (!mirrored.ok) setTextureFailures((prev) => [...prev, entry.baseName]);
+            if (mirrored.ok) {
+              prepared.payload[COVER_TEXTURE_FIELD] = mirrored.url;
+            } else {
+              // Keep original URL for fallback/audit rather than failing
+              prepared.payload[COVER_TEXTURE_FIELD] = String(wrap);
+              setTextureFailures((prev) => [...prev, entry.baseName]);
+            }
           }
 
           const res = await fetch("/api/admin/products", {

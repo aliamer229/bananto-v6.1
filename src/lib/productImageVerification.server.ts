@@ -1,7 +1,4 @@
-import { hasObject, writeBinary, readBinary } from "./storage.server";
-import { processImageToWebP, isWebP } from "./imageProcessor";
-import { fetchRemoteImage, readLimitedBody } from "./security.server";
-import { coverTextureFetchHeaders } from "./coverTexture";
+import { ingestRemoteImage, type IngestResult } from "./mediaIngest.server";
 import type { Product } from "./types";
 
 export const SINGLE_IMAGE_FIELDS = [
@@ -31,139 +28,183 @@ export const ARRAY_IMAGE_FIELDS = [
 ] as const;
 
 /**
- * Ensures all image fields in a product are valid, persisted in Cloudflare R2 as WebP,
- * and have no lingering local `blob:` URLs or unpersisted raw data.
+ * Ensures all image fields in a product are ingested into Cloudflare R2 as WebP,
+ * and canonical internal URLs are stored.
+ *
+ * CRITICAL ISOLATION GUARANTEE:
+ * Media download/network errors (HTTP 503, 403, 429, timeouts, etc.) will NEVER
+ * cause this function to return ok: false or fail the product import/save.
+ * If remote media fails, the product data saves normally with the original URL preserved
+ * and a warning recorded.
  */
 export async function sanitizeAndVerifyProductImages(
   product: Partial<Product>
-): Promise<{ ok: boolean; error?: string; product: Partial<Product> }> {
+): Promise<{
+  ok: boolean;
+  error?: string;
+  product: Partial<Product>;
+  warnings?: string[];
+  results?: IngestResult[];
+}> {
   const productId = String(product.id || "general").replace(/[^a-zA-Z0-9_-]/g, "");
   const cloned: Record<string, any> = { ...product };
+  const warnings: string[] = [];
+  const results: IngestResult[] = [];
 
   // Helper to ingest and verify a single URL
   const processAndVerifyUrl = async (
     url: string | null | undefined,
-    fieldName: string
-  ): Promise<{ url: string | null; error?: string }> => {
-    if (!url || typeof url !== "string") return { url: null };
+    fieldName: string,
+    index?: number
+  ): Promise<string | null> => {
+    if (!url || typeof url !== "string") return null;
     const trimmed = url.trim();
-    if (!trimmed) return { url: null };
+    if (!trimmed) return null;
 
-    // Reject uncommitted blob URLs
+    // Clean uncommitted blob URLs without blocking the save
     if (trimmed.startsWith("blob:")) {
-      return {
-        url: null,
-        error: `حقل الصورة (${fieldName}) يحتوي على رابط مؤقت (blob:) لم يكتمل رفعه بعد. يرجى الانتظار حتى اكتمال الرفع أو إعادة اختيار الصورة.`,
-      };
+      warnings.push(`حقل الصورة (${fieldName}) يحتوي على رابط مؤقت (blob:) تم استبعاده.`);
+      return null;
     }
 
-    // If it's already an internal storage URL
-    if (trimmed.startsWith("/api/files/")) {
-      const storageKey = trimmed.replace("/api/files/", "files/");
-      const exists = await hasObject(storageKey);
-      if (!exists) {
-        // If file is not in storage, log warning but keep if we can't fetch it
-        console.warn(`[ImageVerification] Storage key not found: ${storageKey}`);
-      }
-      return { url: trimmed };
+    const isHighQuality =
+      fieldName === "coverHiResImage" ||
+      fieldName.includes("3d") ||
+      fieldName === "cartridgeImage";
+
+    const result = await ingestRemoteImage({
+      sourceUrl: trimmed,
+      productId,
+      field: fieldName,
+      index,
+      expectedType: fieldName.includes("gallery")
+        ? "gallery"
+        : fieldName === "coverHiResImage"
+          ? "wrap"
+          : "general",
+      highQuality: isHighQuality,
+    });
+
+    results.push(result);
+
+    if (result.ok && result.storedUrl) {
+      return result.storedUrl;
     }
 
-    // If it's a data: URL, convert and upload to R2
-    if (trimmed.startsWith("data:image/")) {
-      const match = /^data:([\w/+.-]+);base64,(.+)$/.exec(trimmed);
-      if (match) {
-        try {
-          const mime = match[1]!;
-          const base64 = match[2]!;
-          const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-          const isHighQuality = fieldName === "coverHiResImage" || fieldName.includes("3d");
-          const converted = await processImageToWebP(bytes, mime, { highQuality: isHighQuality });
-          const outBytes = converted ? converted.bytes : bytes;
-
-          const hashBuffer = await crypto.subtle.digest("SHA-256", new Uint8Array(outBytes));
-          const hashHex = Array.from(new Uint8Array(hashBuffer))
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("")
-            .substring(0, 16);
-
-          const key = `files/products/${productId}/${fieldName}-${hashHex}.webp`;
-          await writeBinary(key, outBytes, "image/webp", { cacheControl: "public, max-age=31536000, immutable" });
-          return { url: `/api/files/${key.slice("files/".length)}` };
-        } catch (err: any) {
-          console.error(`Failed to ingest data URL for ${fieldName}:`, err);
-        }
-      }
+    if (result.warning) {
+      warnings.push(result.warning);
     }
 
-    // If it's an external HTTP/HTTPS URL, ingest into R2 as WebP
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-      try {
-        const response = await fetchRemoteImage(trimmed, {
-          headers: coverTextureFetchHeaders(trimmed),
-        });
-
-        if (response && response.ok) {
-          const bytes = await readLimitedBody(response, Infinity);
-          if (bytes && bytes.length > 16) {
-            const rawMime = response.headers.get("content-type") || "image/jpeg";
-            const isHighQuality = fieldName === "coverHiResImage" || fieldName.includes("3d");
-            const converted = await processImageToWebP(bytes, rawMime, { highQuality: isHighQuality });
-            const outBytes = converted ? converted.bytes : bytes;
-
-            const hashBuffer = await crypto.subtle.digest("SHA-256", new Uint8Array(outBytes));
-            const hashHex = Array.from(new Uint8Array(hashBuffer))
-              .map((b) => b.toString(16).padStart(2, "0"))
-              .join("")
-              .substring(0, 16);
-
-            const key = `files/products/${productId}/${fieldName}-${hashHex}.webp`;
-            await writeBinary(key, outBytes, "image/webp", { cacheControl: "public, max-age=31536000, immutable" });
-            return { url: `/api/files/${key.slice("files/".length)}` };
-          }
-        }
-      } catch (fetchErr) {
-        console.warn(`[ImageVerification] Could not automatically ingest remote image ${trimmed}:`, fetchErr);
-      }
-      // If remote ingest fails, preserve the original URL so data is not lost
-      return { url: trimmed };
-    }
-
-    return { url: trimmed };
+    // Never drop or break the image field if download was temporarily unavailable;
+    // preserve the original URL so data is not lost and can be repaired later.
+    return trimmed;
   };
 
-  // Process single image fields
-  for (const field of SINGLE_IMAGE_FIELDS) {
-    if (cloned[field]) {
-      const res = await processAndVerifyUrl(cloned[field], field);
-      if (res.error) {
-        return { ok: false, error: res.error, product };
-      }
-      if (res.url) {
-        cloned[field] = res.url;
-      }
+  // 1. Process single image fields concurrently
+  const singlePromises = SINGLE_IMAGE_FIELDS.map(async (field) => {
+    if (cloned[field] && typeof cloned[field] === "string") {
+      const processedUrl = await processAndVerifyUrl(cloned[field], field);
+      cloned[field] = processedUrl || "";
     }
-  }
+  });
 
-  // Process array image fields
-  for (const field of ARRAY_IMAGE_FIELDS) {
+  // 2. Process array image fields concurrently
+  const arrayPromises = ARRAY_IMAGE_FIELDS.map(async (field) => {
     if (Array.isArray(cloned[field]) && cloned[field].length > 0) {
-      const newArray: string[] = [];
-      for (const item of cloned[field]) {
-        if (typeof item === "string") {
-          const res = await processAndVerifyUrl(item, field);
-          if (res.error) {
-            return { ok: false, error: res.error, product };
+      const newArray = await Promise.all(
+        cloned[field].map(async (item: any, idx: number) => {
+          if (typeof item === "string") {
+            const processedUrl = await processAndVerifyUrl(item, field, idx + 1);
+            return processedUrl || item;
+          } else if (item && typeof item === "object" && typeof item.imageUrl === "string") {
+            const processedUrl = await processAndVerifyUrl(item.imageUrl, `${field}_screenshot`, idx + 1);
+            return { ...item, imageUrl: processedUrl || item.imageUrl };
           }
-          if (res.url) {
-            newArray.push(res.url);
-          }
-        } else {
-          newArray.push(item);
-        }
-      }
-      cloned[field] = newArray;
+          return item;
+        })
+      );
+      cloned[field] = newArray.filter(Boolean);
+    }
+  });
+
+  // 3. Process nested structures concurrently
+  const nestedPromises: Promise<void>[] = [];
+
+  if (Array.isArray(cloned.gameplayPillars)) {
+    nestedPromises.push(
+      (async () => {
+        await Promise.all(
+          cloned.gameplayPillars.map(async (pillar: any, idx: number) => {
+            if (pillar && typeof pillar.image === "string") {
+              const processedUrl = await processAndVerifyUrl(pillar.image, "gameplayPillar", idx + 1);
+              if (processedUrl) pillar.image = processedUrl;
+            }
+          })
+        );
+      })()
+    );
+  }
+
+  if (cloned.story && Array.isArray(cloned.story.chapters)) {
+    nestedPromises.push(
+      (async () => {
+        await Promise.all(
+          cloned.story.chapters.map(async (ch: any, idx: number) => {
+            if (ch && typeof ch.image === "string") {
+              const processedUrl = await processAndVerifyUrl(ch.image, "storyChapter", idx + 1);
+              if (processedUrl) ch.image = processedUrl;
+            }
+          })
+        );
+      })()
+    );
+  }
+
+  if (Array.isArray(cloned.dlcs)) {
+    nestedPromises.push(
+      (async () => {
+        await Promise.all(
+          cloned.dlcs.map(async (dlc: any, idx: number) => {
+            if (dlc && typeof dlc.image === "string") {
+              const processedUrl = await processAndVerifyUrl(dlc.image, "dlc", idx + 1);
+              if (processedUrl) dlc.image = processedUrl;
+            }
+          })
+        );
+      })()
+    );
+  }
+
+  if (Array.isArray(cloned.editions)) {
+    nestedPromises.push(
+      (async () => {
+        await Promise.all(
+          cloned.editions.map(async (ed: any, idx: number) => {
+            if (ed && typeof ed.cover === "string") {
+              const processedUrl = await processAndVerifyUrl(ed.cover, "editionCover", idx + 1);
+              if (processedUrl) ed.cover = processedUrl;
+            }
+          })
+        );
+      })()
+    );
+  }
+
+  await Promise.all([...singlePromises, ...arrayPromises, ...nestedPromises]);
+
+  // 4. Ensure automatic square derivative fallback if nintendoCardImage is missing but cartridgeImage/coverImage exists
+  if (!cloned.nintendoCardImage) {
+    if (cloned.cartridgeImage) {
+      cloned.nintendoCardImage = cloned.cartridgeImage;
+    } else if (cloned.coverImage) {
+      cloned.nintendoCardImage = cloned.coverImage;
     }
   }
 
-  return { ok: true, product: cloned as Partial<Product> };
+  return {
+    ok: true,
+    product: cloned as Partial<Product>,
+    warnings: warnings.length > 0 ? warnings : undefined,
+    results,
+  };
 }

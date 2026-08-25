@@ -13,6 +13,8 @@ import { validateGameDevicePerformance } from "@/lib/devicePerformance";
 import { hardDeleteProductRelations, releaseProductIdentity } from "@/lib/product-identity.server";
 import { resolveCategoryType } from "@/lib/productSection";
 
+import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
+
 function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
   const categoryId = String(product.categoryId || product.category || "");
   const category = categories.find((entry) => String(entry.id || "") === categoryId);
@@ -141,6 +143,13 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
             productToSave = await autoTranslateProduct(productToSave);
           } catch (transErr) {
             console.warn("[autoTranslateProduct] Translation fallback triggered:", transErr);
+          }
+
+          try {
+            const verification = await sanitizeAndVerifyProductImages(productToSave);
+            productToSave = verification.product as Product;
+          } catch (imgErr) {
+            console.warn("[sanitizeAndVerifyProductImages] Image verification non-blocking fallback:", imgErr);
           }
 
           try {

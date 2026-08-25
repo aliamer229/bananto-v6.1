@@ -636,7 +636,7 @@ function normalizeTimelineItem(
       }
     }
     const match = text.match(/^(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{4})\s*[:\-\u2013]\s*(.*)$/);
-    if (match) {
+    if (match && match[1] && match[2]) {
       const date = match[1].replace(/\./g, "-");
       const title = match[2].trim() || (locale === "en" ? "Event" : "حدث");
       return {
@@ -866,7 +866,7 @@ function buildSimilar(
     if (candSlug && candSlug === currentSlug) return false;
     if (
       currentSlugTitle &&
-      slugifyTitle(cand["titleEn"] || cand["english_name"] || cand["title"] || "") ===
+      slugifyTitle(String(cand["titleEn"] || cand["english_name"] || cand["title"] || "")) ===
         currentSlugTitle
     )
       return false;

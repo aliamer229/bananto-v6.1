@@ -31,7 +31,7 @@ export class AdminErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
     // Internal diagnostic log (developer console only)
     console.error(`[AdminErrorBoundary:${this.props.sectionName || "Section"}]`, {
@@ -46,7 +46,7 @@ export class AdminErrorBoundary extends Component<
     this.props.onReset?.();
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;

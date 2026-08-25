@@ -83,6 +83,7 @@ import { ChatMessage, Thread, StoreDoc, AccountBundle } from "@/lib/types";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 import AdminProductEditor from "./AdminProductEditor";
 import AdminZipImportModal from "./admin/AdminZipImportModal";
+import { AdminMediaRepairModal } from "./admin/AdminMediaRepairModal";
 import KbEditor from "./admin/KbEditor";
 import ServicesManager from "./admin/ServicesManager";
 import ServicesDiscTradesAdminView from "./admin/services/DiscTradesAdminView";
@@ -1547,6 +1548,7 @@ function ListingsView({
   const [onlyMissingPerformance, setOnlyMissingPerformance] = useState(false);
   const [onlyHidden, setOnlyHidden] = useState(false);
   const [showZipImport, setShowZipImport] = useState(false);
+  const [showMediaRepair, setShowMediaRepair] = useState(false);
 
   const unpricedCount = products.filter((p: any) => !isProductPriced(p)).length;
   const hiddenCount = products.filter((p: any) => isProductHidden(p)).length;
@@ -1870,13 +1872,23 @@ function ListingsView({
         <div className="flex items-center gap-2">
           {/* Nintendo Switch Games only — every other section keeps its own flow. */}
           {isGamesSection && (
-            <button
-              onClick={() => setShowZipImport(true)}
-              className="rounded-full border border-border px-4 py-2 text-sm font-bold text-foreground flex items-center gap-2 transition-colors hover:bg-muted"
-            >
-              <FileArchive className="w-4 h-4" />
-              استيراد مجموعة ألعاب
-            </button>
+            <>
+              <button
+                onClick={() => setShowMediaRepair(true)}
+                className="rounded-full border border-border px-3.5 py-2 text-sm font-bold text-foreground flex items-center gap-2 transition-colors hover:bg-muted"
+                title="فحص وتحميل صور الألعاب الخارجية إلى التخزين السحابي الدائم"
+              >
+                <ImageIcon className="w-4 h-4 text-primary" />
+                فحص وإصلاح الصور
+              </button>
+              <button
+                onClick={() => setShowZipImport(true)}
+                className="rounded-full border border-border px-4 py-2 text-sm font-bold text-foreground flex items-center gap-2 transition-colors hover:bg-muted"
+              >
+                <FileArchive className="w-4 h-4" />
+                استيراد مجموعة ألعاب
+              </button>
+            </>
           )}
           <button
             onClick={() => setIsAdding(true)}
@@ -2096,6 +2108,12 @@ function ListingsView({
           }
         />
       )}
+
+      <AdminMediaRepairModal
+        isOpen={showMediaRepair}
+        onClose={() => setShowMediaRepair(false)}
+        onRefreshProducts={reloadProducts}
+      />
     </div>
   );
 }

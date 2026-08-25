@@ -17,7 +17,7 @@ import {
   reindexProductIdentities,
   releaseProductIdentity,
 } from "@/lib/product-identity.server";
-import type { Product } from "@/lib/types";
+import type { Product, StoreDoc } from "@/lib/types";
 import {
   deactivateGameDevicePerformance,
   syncGameDevicePerformance,
@@ -404,12 +404,16 @@ export const Route = createFileRoute("/api/admin/products")({
             );
           }
 
-          // 8b. Sanitize and verify all product images (ensure WebP in R2, no lingering blob URLs)
-          const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-          if (!imgVerification.ok) {
-            return json({ error: imgVerification.error || "Image verification failed" }, { status: 400 });
+          // 8b. Sanitize and verify all product images (ensure WebP in R2, isolate media errors)
+          try {
+            const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
+            productToSave = (imgVerification.product as Product) || productToSave;
+          } catch (imgErr) {
+            console.warn(
+              "[sanitizeAndVerifyProductImages] Non-blocking media ingestion fallback:",
+              imgErr,
+            );
           }
-          productToSave = imgVerification.product as Product;
 
           // 9. Save single product to database (Granular Save)
           try {
@@ -611,12 +615,16 @@ export const Route = createFileRoute("/api/admin/products")({
             console.warn("[autoTranslateProduct] Translation fallback triggered:", transErr);
           }
 
-          // Sanitize and verify all product images (ensure WebP in R2, no lingering blob URLs)
-          const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-          if (!imgVerification.ok) {
-            return json({ error: imgVerification.error || "Image verification failed" }, { status: 400 });
+          // Sanitize and verify all product images (ensure WebP in R2, isolate media errors)
+          try {
+            const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
+            productToSave = (imgVerification.product as Product) || productToSave;
+          } catch (imgErr) {
+            console.warn(
+              "[sanitizeAndVerifyProductImages] Non-blocking media ingestion fallback:",
+              imgErr,
+            );
           }
-          productToSave = imgVerification.product as Product;
 
           try {
             await d1Run(

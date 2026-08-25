@@ -6,6 +6,7 @@ import {
   getMessages,
   getAdminAvailabilityStatus,
 } from "./db.server";
+import { d1All } from "./d1.server";
 import { chatRealtime } from "./chat-realtime.server";
 import type { Thread, ChatMessage } from "./types";
 
@@ -500,13 +501,13 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
   const lastCustomerActivityAt =
     targetThread?.lastUserMessageAt ||
     targetThread?.lastUserActivityAt ||
-    (targetThread?.senderRole === "user" ? targetThread?.lastMessageAt : null) ||
+    ((targetThread as any)?.senderRole === "user" ? targetThread?.lastMessageAt : null) ||
     null;
 
   const lastAdminActivityAt =
     targetThread?.lastAdminMessageAt ||
     targetThread?.lastAdminActivityAt ||
-    (targetThread?.senderRole === "admin" ? targetThread?.lastMessageAt : null) ||
+    ((targetThread as any)?.senderRole === "admin" ? targetThread?.lastMessageAt : null) ||
     null;
 
   if (index === -1) {

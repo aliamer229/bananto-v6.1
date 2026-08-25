@@ -65,7 +65,7 @@ export function useNintendoCover(
 ) {
   const resolved = resolveNintendoImage(product, usage);
   const targetWidth =
-    usage === "square-card" || usage === "cartridge-label"
+    usage === "square-card"
       ? 360
       : usage === "listing-card" || usage === "bundle-card" || usage === "cart" || usage === "toast"
       ? 480
@@ -131,7 +131,7 @@ export function NintendoCover({
 
   const avifSrcSet = !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "avif", [240, 480, 800]) : "";
   const webpSrcSet = !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "webp", [240, 480, 800]) : "";
-  const sizesAttr = usage === "square-card" || usage === "cartridge-label"
+  const sizesAttr = usage === "square-card"
     ? "(max-width: 640px) 180px, 320px"
     : "(max-width: 640px) 240px, (max-width: 1024px) 480px, 800px";
 

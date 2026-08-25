@@ -143,7 +143,7 @@ function InnerMessageCard({
   const body = message.body || {};
   const isFailed = Boolean(rawMessage.isFailed || body["_failed"]);
   const isPending = Boolean(rawMessage.pending);
-  const errorReason = rawMessage.errorReason || body["_errorReason"];
+  const errorReason = typeof rawMessage.errorReason === "string" ? rawMessage.errorReason : typeof body["_errorReason"] === "string" ? (body["_errorReason"] as string) : undefined;
 
   const copyText = (text: string, label: string) => {
     if (!text) return;
@@ -264,9 +264,9 @@ function InnerMessageCard({
             <span>طلب تقييم الطلب</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            {body.text || "تم إرسال بطاقة التقييم إلى العميل ⭐"}
+            {typeof body.text === "string" ? body.text : "تم إرسال بطاقة التقييم إلى العميل ⭐"}
           </p>
-          {body.orderCode && (
+          {Boolean(body.orderCode) && (
             <div className="text-[10px] font-mono text-muted-foreground font-semibold">
               #{String(body.orderCode)}
             </div>

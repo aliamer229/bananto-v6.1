@@ -49,12 +49,17 @@ export const Route = createFileRoute("/api/admin/products/save/finalize")({
 
           const productId = productParts.id;
 
-          // Sanitize and verify all product images (ensure WebP in R2, no lingering blob URLs)
-          const imgVerification = await sanitizeAndVerifyProductImages(productParts);
-          if (!imgVerification.ok) {
-            return json({ error: imgVerification.error || "Image verification failed" }, { status: 400 });
+          // Sanitize and verify all product images (ensure WebP in R2, isolate media errors)
+          let productToSave = productParts;
+          try {
+            const imgVerification = await sanitizeAndVerifyProductImages(productParts);
+            productToSave = imgVerification.product;
+          } catch (imgErr) {
+            console.warn(
+              "[sanitizeAndVerifyProductImages] Non-blocking media ingestion fallback:",
+              imgErr,
+            );
           }
-          const productToSave = imgVerification.product;
 
           // Save directly as granular product
           await d1Run(

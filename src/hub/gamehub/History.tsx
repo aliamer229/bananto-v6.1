@@ -31,7 +31,10 @@ const EVENT_META: Record<
   expansion: { icon: Package, key: "timeline.expansion" },
 };
 
-const DEFAULT_EVENT_META = { icon: Wrench, key: "timeline.update" };
+const DEFAULT_EVENT_META: { icon: typeof Rocket; key: string; accent?: boolean } = {
+  icon: Wrench,
+  key: "timeline.update",
+};
 
 /** Visual timeline from announcement through post-launch content. */
 export function TimelineSection() {

@@ -88,29 +88,16 @@ function sniffImageMime(bytes: Uint8Array): string | undefined {
   return undefined;
 }
 
+import { fetchRemoteImageWithRetry, sniffImageMimeType } from "@/lib/mediaIngest.server";
+
 type RemoteImage = { ok: true; bytes: Uint8Array; mime: string } | { ok: false; error: string };
 
 async function downloadRemoteImage(sourceUrl: string): Promise<RemoteImage> {
-  let response: Response | undefined;
-  try {
-    response = await fetchRemoteImage(sourceUrl, { headers: coverTextureFetchHeaders(sourceUrl) });
-  } catch {
-    return { ok: false, error: "remote_fetch_failed" };
+  const result = await fetchRemoteImageWithRetry(sourceUrl, { maxAttempts: 4 });
+  if (!result.ok || !result.bytes) {
+    return { ok: false, error: result.error || "remote_fetch_failed" };
   }
-  if (!response) return { ok: false, error: "remote_url_rejected" };
-  if (!response.ok) return { ok: false, error: `remote_status_${response.status}` };
-
-  const declared = (response.headers.get("content-type") || "").split(";")[0]?.trim().toLowerCase();
-  if (declared && !declared.startsWith("image/")) {
-    return { ok: false, error: `remote_not_an_image_${declared}` };
-  }
-
-  const bytes = await readLimitedBody(response, Infinity);
-  if (!bytes) return { ok: false, error: "remote_image_fetch_empty" };
-  if (bytes.length < MIN_REMOTE_IMAGE_BYTES) return { ok: false, error: "remote_image_too_small" };
-
-  const mime = sniffImageMime(bytes) || declared || "image/jpeg";
-  return { ok: true, bytes, mime };
+  return { ok: true, bytes: result.bytes, mime: result.mime || "image/jpeg" };
 }
 
 /**

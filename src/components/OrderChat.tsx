@@ -114,7 +114,7 @@ function DigitalOrderCard({ body }: { body: Record<string, any> }) {
   );
 }
 
-function CredentialsCard({ message }: { message: ChatMessage; order: Order }) {
+function CredentialsCard({ message, order }: { message: ChatMessage; order: Order }) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const email = cleanCredentialValue(message.body["email"]);
   const password = cleanCredentialValue(message.body["password"]);
@@ -230,8 +230,8 @@ function CredentialsCard({ message }: { message: ChatMessage; order: Order }) {
               if (!file) return;
               try {
                 const toastId = toast.loading("جارٍ رفع صورة الإثبات...");
-                const { uploadFileWithProgress } = await import("@/lib/uploads");
-                const { url } = await uploadFile(file, "orders");
+                const { uploadFileWithProgress } = await import("@/lib/api");
+                const { url } = await uploadFileWithProgress(file, "orders");
                 const itemId = String(message.body["itemId"] || order.items[0]?.id || "");
                 const deliveryItemId = message.body["deliveryItemId"]
                   ? String(message.body["deliveryItemId"])
@@ -271,8 +271,7 @@ function MessageBody({ message, order }: { message: ChatMessage; order: Order })
   }
 
   switch (message.kind) {
-    case "login_proof":
-    case "proof": {
+    case "login_proof": {
       const mediaUrl = String(message.body["imageUrl"] ?? "");
       return (
         <div className="space-y-2">
