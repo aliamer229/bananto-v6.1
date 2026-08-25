@@ -3,6 +3,7 @@ import { guard, body, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { d1All, d1Run } from "@/lib/d1.server";
 import { invalidateStoreCache } from "@/lib/db.server";
+import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
 
 export const Route = createFileRoute("/api/admin/products/save/finalize")({
   server: {
@@ -46,23 +47,41 @@ export const Route = createFileRoute("/api/admin/products/save/finalize")({
 
           const productId = productParts.id;
 
+          // Sanitize and verify all product images (ensure WebP in R2, no lingering blob URLs)
+          const imgVerification = await sanitizeAndVerifyProductImages(productParts);
+          if (!imgVerification.ok) {
+            return json({ error: imgVerification.error || "Image verification failed" }, { status: 400 });
+          }
+          const productToSave = imgVerification.product;
+
           // Save directly as granular product
           await d1Run(
             `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
             `store:product:${productId}`,
-            JSON.stringify(productParts),
+            JSON.stringify(productToSave),
             new Date().toISOString(),
           );
 
           // Clean up staged chunks
           await d1Run(`DELETE FROM store_kv WHERE key LIKE ?`, `staged_save:${sessionId}:%`);
-
+          
           invalidateStoreCache();
+          
+          // Read-after-write verification
+          const verifyRows = await d1All<{ key: string; value: string }>(
+            `SELECT key, value FROM store_kv WHERE key = ?`,
+            `store:product:${productId}`
+          );
+          
+          if (verifyRows.length === 0) {
+            return json({ error: "Failed to verify product save (Read-after-write failed)" }, { status: 500 });
+          }
 
-          return json({ success: true, product: productParts });
+          return json({ success: true, product: JSON.parse(verifyRows[0]?.value || "{}") });
         }),
     },
   },
 });
+
 

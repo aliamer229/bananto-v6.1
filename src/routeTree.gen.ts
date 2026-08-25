@@ -74,6 +74,8 @@ import { Route as ApiAdminBinanceTopupsRouteImport } from './routes/api/admin/bi
 import { Route as ApiAdminCouponsRouteImport } from './routes/api/admin/coupons'
 import { Route as ApiAdminDeliveryItemsRouteImport } from './routes/api/admin/delivery-items'
 import { Route as ApiAdminImportGameRouteImport } from './routes/api.admin.import-game'
+import { Route as ApiAdminKnowledgeBaseRouteImport } from './routes/api/admin/knowledge-base'
+import { Route as ApiAdminMigrateImagesRouteImport } from './routes/api/admin/migrate-images'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin.orders'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminPurgeRouteImport } from './routes/api/admin/purge'
@@ -107,6 +109,9 @@ import { Route as ApiWalletBinanceActiveIntentRouteImport } from './routes/api/w
 import { Route as ApiWalletBinanceConfigRouteImport } from './routes/api/wallet.binance.config'
 import { Route as ApiWalletBinanceTopupIntentRouteImport } from './routes/api/wallet.binance.topup-intent'
 import { Route as ApiWalletBinanceVerifyRouteImport } from './routes/api/wallet.binance.verify'
+import { Route as ApiAdminProductsSaveChunkRouteImport } from './routes/api/admin/products/save/chunk'
+import { Route as ApiAdminProductsSaveFinalizeRouteImport } from './routes/api/admin/products/save/finalize'
+import { Route as ApiAdminProductsSaveStartRouteImport } from './routes/api/admin/products/save/start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -433,6 +438,16 @@ const ApiAdminImportGameRoute = ApiAdminImportGameRouteImport.update({
   path: '/api/admin/import-game',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminKnowledgeBaseRoute = ApiAdminKnowledgeBaseRouteImport.update({
+  id: '/api/admin/knowledge-base',
+  path: '/api/admin/knowledge-base',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMigrateImagesRoute = ApiAdminMigrateImagesRouteImport.update({
+  id: '/api/admin/migrate-images',
+  path: '/api/admin/migrate-images',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminOrdersRoute = ApiAdminOrdersRouteImport.update({
   id: '/api/admin/orders',
   path: '/api/admin/orders',
@@ -610,6 +625,24 @@ const ApiWalletBinanceVerifyRoute = ApiWalletBinanceVerifyRouteImport.update({
   path: '/binance/verify',
   getParentRoute: () => ApiWalletRoute,
 } as any)
+const ApiAdminProductsSaveChunkRoute =
+  ApiAdminProductsSaveChunkRouteImport.update({
+    id: '/save/chunk',
+    path: '/save/chunk',
+    getParentRoute: () => ApiAdminProductsRoute,
+  } as any)
+const ApiAdminProductsSaveFinalizeRoute =
+  ApiAdminProductsSaveFinalizeRouteImport.update({
+    id: '/save/finalize',
+    path: '/save/finalize',
+    getParentRoute: () => ApiAdminProductsRoute,
+  } as any)
+const ApiAdminProductsSaveStartRoute =
+  ApiAdminProductsSaveStartRouteImport.update({
+    id: '/save/start',
+    path: '/save/start',
+    getParentRoute: () => ApiAdminProductsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -677,6 +710,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/coupons': typeof ApiAdminCouponsRoute
   '/api/admin/delivery-items': typeof ApiAdminDeliveryItemsRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
+  '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
+  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
@@ -710,6 +745,9 @@ export interface FileRoutesByFullPath {
   '/api/wallet/binance/config': typeof ApiWalletBinanceConfigRoute
   '/api/wallet/binance/topup-intent': typeof ApiWalletBinanceTopupIntentRoute
   '/api/wallet/binance/verify': typeof ApiWalletBinanceVerifyRoute
+  '/api/admin/products/save/chunk': typeof ApiAdminProductsSaveChunkRoute
+  '/api/admin/products/save/finalize': typeof ApiAdminProductsSaveFinalizeRoute
+  '/api/admin/products/save/start': typeof ApiAdminProductsSaveStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -777,6 +815,8 @@ export interface FileRoutesByTo {
   '/api/admin/coupons': typeof ApiAdminCouponsRoute
   '/api/admin/delivery-items': typeof ApiAdminDeliveryItemsRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
+  '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
+  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
@@ -810,6 +850,9 @@ export interface FileRoutesByTo {
   '/api/wallet/binance/config': typeof ApiWalletBinanceConfigRoute
   '/api/wallet/binance/topup-intent': typeof ApiWalletBinanceTopupIntentRoute
   '/api/wallet/binance/verify': typeof ApiWalletBinanceVerifyRoute
+  '/api/admin/products/save/chunk': typeof ApiAdminProductsSaveChunkRoute
+  '/api/admin/products/save/finalize': typeof ApiAdminProductsSaveFinalizeRoute
+  '/api/admin/products/save/start': typeof ApiAdminProductsSaveStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -878,6 +921,8 @@ export interface FileRoutesById {
   '/api/admin/coupons': typeof ApiAdminCouponsRoute
   '/api/admin/delivery-items': typeof ApiAdminDeliveryItemsRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
+  '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
+  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
@@ -911,6 +956,9 @@ export interface FileRoutesById {
   '/api/wallet/binance/config': typeof ApiWalletBinanceConfigRoute
   '/api/wallet/binance/topup-intent': typeof ApiWalletBinanceTopupIntentRoute
   '/api/wallet/binance/verify': typeof ApiWalletBinanceVerifyRoute
+  '/api/admin/products/save/chunk': typeof ApiAdminProductsSaveChunkRoute
+  '/api/admin/products/save/finalize': typeof ApiAdminProductsSaveFinalizeRoute
+  '/api/admin/products/save/start': typeof ApiAdminProductsSaveStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -980,6 +1028,8 @@ export interface FileRouteTypes {
     | '/api/admin/coupons'
     | '/api/admin/delivery-items'
     | '/api/admin/import-game'
+    | '/api/admin/knowledge-base'
+    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
@@ -1013,6 +1063,9 @@ export interface FileRouteTypes {
     | '/api/wallet/binance/config'
     | '/api/wallet/binance/topup-intent'
     | '/api/wallet/binance/verify'
+    | '/api/admin/products/save/chunk'
+    | '/api/admin/products/save/finalize'
+    | '/api/admin/products/save/start'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1080,6 +1133,8 @@ export interface FileRouteTypes {
     | '/api/admin/coupons'
     | '/api/admin/delivery-items'
     | '/api/admin/import-game'
+    | '/api/admin/knowledge-base'
+    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
@@ -1113,6 +1168,9 @@ export interface FileRouteTypes {
     | '/api/wallet/binance/config'
     | '/api/wallet/binance/topup-intent'
     | '/api/wallet/binance/verify'
+    | '/api/admin/products/save/chunk'
+    | '/api/admin/products/save/finalize'
+    | '/api/admin/products/save/start'
   id:
     | '__root__'
     | '/'
@@ -1180,6 +1238,8 @@ export interface FileRouteTypes {
     | '/api/admin/coupons'
     | '/api/admin/delivery-items'
     | '/api/admin/import-game'
+    | '/api/admin/knowledge-base'
+    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
@@ -1213,6 +1273,9 @@ export interface FileRouteTypes {
     | '/api/wallet/binance/config'
     | '/api/wallet/binance/topup-intent'
     | '/api/wallet/binance/verify'
+    | '/api/admin/products/save/chunk'
+    | '/api/admin/products/save/finalize'
+    | '/api/admin/products/save/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1281,6 +1344,8 @@ export interface RootRouteChildren {
   ApiAdminCouponsRoute: typeof ApiAdminCouponsRoute
   ApiAdminDeliveryItemsRoute: typeof ApiAdminDeliveryItemsRoute
   ApiAdminImportGameRoute: typeof ApiAdminImportGameRoute
+  ApiAdminKnowledgeBaseRoute: typeof ApiAdminKnowledgeBaseRoute
+  ApiAdminMigrateImagesRoute: typeof ApiAdminMigrateImagesRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRouteWithChildren
   ApiAdminPurgeRoute: typeof ApiAdminPurgeRoute
@@ -1766,6 +1831,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminImportGameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/knowledge-base': {
+      id: '/api/admin/knowledge-base'
+      path: '/api/admin/knowledge-base'
+      fullPath: '/api/admin/knowledge-base'
+      preLoaderRoute: typeof ApiAdminKnowledgeBaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/migrate-images': {
+      id: '/api/admin/migrate-images'
+      path: '/api/admin/migrate-images'
+      fullPath: '/api/admin/migrate-images'
+      preLoaderRoute: typeof ApiAdminMigrateImagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/orders': {
       id: '/api/admin/orders'
       path: '/api/admin/orders'
@@ -1997,6 +2076,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWalletBinanceVerifyRouteImport
       parentRoute: typeof ApiWalletRoute
     }
+    '/api/admin/products/save/chunk': {
+      id: '/api/admin/products/save/chunk'
+      path: '/save/chunk'
+      fullPath: '/api/admin/products/save/chunk'
+      preLoaderRoute: typeof ApiAdminProductsSaveChunkRouteImport
+      parentRoute: typeof ApiAdminProductsRoute
+    }
+    '/api/admin/products/save/finalize': {
+      id: '/api/admin/products/save/finalize'
+      path: '/save/finalize'
+      fullPath: '/api/admin/products/save/finalize'
+      preLoaderRoute: typeof ApiAdminProductsSaveFinalizeRouteImport
+      parentRoute: typeof ApiAdminProductsRoute
+    }
+    '/api/admin/products/save/start': {
+      id: '/api/admin/products/save/start'
+      path: '/save/start'
+      fullPath: '/api/admin/products/save/start'
+      preLoaderRoute: typeof ApiAdminProductsSaveStartRouteImport
+      parentRoute: typeof ApiAdminProductsRoute
+    }
   }
 }
 
@@ -2020,10 +2120,16 @@ const ApiWalletRouteWithChildren = ApiWalletRoute._addFileChildren(
 
 interface ApiAdminProductsRouteChildren {
   ApiAdminProductsProductIdRoute: typeof ApiAdminProductsProductIdRoute
+  ApiAdminProductsSaveChunkRoute: typeof ApiAdminProductsSaveChunkRoute
+  ApiAdminProductsSaveFinalizeRoute: typeof ApiAdminProductsSaveFinalizeRoute
+  ApiAdminProductsSaveStartRoute: typeof ApiAdminProductsSaveStartRoute
 }
 
 const ApiAdminProductsRouteChildren: ApiAdminProductsRouteChildren = {
   ApiAdminProductsProductIdRoute: ApiAdminProductsProductIdRoute,
+  ApiAdminProductsSaveChunkRoute: ApiAdminProductsSaveChunkRoute,
+  ApiAdminProductsSaveFinalizeRoute: ApiAdminProductsSaveFinalizeRoute,
+  ApiAdminProductsSaveStartRoute: ApiAdminProductsSaveStartRoute,
 }
 
 const ApiAdminProductsRouteWithChildren =
@@ -2118,6 +2224,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCouponsRoute: ApiAdminCouponsRoute,
   ApiAdminDeliveryItemsRoute: ApiAdminDeliveryItemsRoute,
   ApiAdminImportGameRoute: ApiAdminImportGameRoute,
+  ApiAdminKnowledgeBaseRoute: ApiAdminKnowledgeBaseRoute,
+  ApiAdminMigrateImagesRoute: ApiAdminMigrateImagesRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRouteWithChildren,
   ApiAdminPurgeRoute: ApiAdminPurgeRoute,

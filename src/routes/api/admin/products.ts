@@ -24,6 +24,7 @@ import {
 } from "@/lib/devicePerformance.server";
 import { validateGameDevicePerformance } from "@/lib/devicePerformance";
 import { resolveCategoryType } from "@/lib/productSection";
+import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
 
 function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
   const categoryId = String(product.categoryId || product.category || "");
@@ -371,6 +372,13 @@ export const Route = createFileRoute("/api/admin/products")({
             );
           }
 
+          // 8b. Sanitize and verify all product images (ensure WebP in R2, no lingering blob URLs)
+          const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
+          if (!imgVerification.ok) {
+            return json({ error: imgVerification.error || "Image verification failed" }, { status: 400 });
+          }
+          productToSave = imgVerification.product as Product;
+
           // 9. Save single product to database (Granular Save)
           try {
             await d1Run(
@@ -570,6 +578,13 @@ export const Route = createFileRoute("/api/admin/products")({
           } catch (transErr) {
             console.warn("[autoTranslateProduct] Translation fallback triggered:", transErr);
           }
+
+          // Sanitize and verify all product images (ensure WebP in R2, no lingering blob URLs)
+          const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
+          if (!imgVerification.ok) {
+            return json({ error: imgVerification.error || "Image verification failed" }, { status: 400 });
+          }
+          productToSave = imgVerification.product as Product;
 
           try {
             await d1Run(

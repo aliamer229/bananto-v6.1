@@ -16,7 +16,7 @@ import {
   randomId,
 } from "@/lib/db.server";
 import { body, guard, json } from "@/lib/http.server";
-import { stageCredentials, evaluateOrderAutoCompletion } from "@/lib/orders.server";
+import { evaluateOrderAutoCompletion } from "@/lib/orders.server";
 import { completeOrder, withDeliveryDeadline } from "@/lib/order-completion.server";
 import {
   getDeliveryOrderState,
@@ -819,13 +819,7 @@ export const Route = createFileRoute("/api/admin/orders")({
           // Notify customer via Telegram (Safe)
           try {
             const { notifyUserOrderStatus } = await import("@/lib/telegram-notifications.server");
-            if (data.action === "send_credentials") {
-              await notifyUserOrderStatus({
-                userId: next.userId,
-                order: next,
-                credentialsDelivered: true,
-              });
-            } else if (
+            if (
               data.action === "set_status" ||
               data.action === "complete_order" ||
               data.action === "set_payment"

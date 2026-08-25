@@ -267,6 +267,26 @@ export async function readBinaryStream(key: string): Promise<BinaryStreamResult 
   return undefined;
 }
 
+export async function hasObject(key: string): Promise<boolean> {
+  if (!safeStorageKey(key)) return false;
+  const bucket = getPrivateBucket();
+  if (bucket) {
+    const obj = await bucket.get(key);
+    return obj !== null && obj !== undefined;
+  }
+  if (memoryBinary.has(key) || memory.has(key)) return true;
+  const mod = await fsModule();
+  if (mod) {
+    try {
+      await mod.fs.access(filePath(key));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 export async function readBinary(
   key: string,
 ): Promise<{ bytes: Uint8Array; mime: string } | undefined> {
@@ -320,3 +340,54 @@ export async function deleteObject(key: string): Promise<boolean> {
 }
 
 export const deleteStoreKey = deleteObject;
+
+export async function writeStream(
+  key: string,
+  stream: ReadableStream,
+  contentType: string,
+  options?: { cacheControl?: string },
+) {
+  if (!safeStorageKey(key)) throw new Error("INVALID_STORAGE_KEY");
+  const cacheControl = options?.cacheControl ?? "private, no-store";
+
+  const bucket = getPrivateBucket();
+  if (bucket) {
+    await bucket.put(key, stream, {
+      httpMetadata: { contentType, cacheControl },
+    });
+    return;
+  }
+
+  // Local/memory fallback for dev - requires buffering the stream
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLen = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      totalLen += value.byteLength;
+    }
+  }
+  const combined = new Uint8Array(totalLen);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  memoryBinary.set(key, { bytes: combined, mime: contentType });
+
+  const mod = await fsModule();
+  if (mod) {
+    try {
+      const target = filePath(key);
+      await mod.fs.mkdir(mod.path.dirname(target), { recursive: true });
+      await mod.fs.writeFile(target, combined);
+      await mod.fs.writeFile(`${target}.meta`, JSON.stringify({ mime: contentType }));
+    } catch {
+      /* memory copy already stored */
+    }
+  }
+}

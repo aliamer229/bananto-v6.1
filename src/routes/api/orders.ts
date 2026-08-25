@@ -40,7 +40,7 @@ function redactItems(items: OrderItem[]) {
 }
 
 export function redactOrder(order: Order) {
-  return { ...order, items: redactItems(order.items) };
+  return { ...order, items: redactItems(order!.items) };
 }
 
 async function canTransition(oldStatus: string, newStatus: string, kind: string): Promise<boolean> {
@@ -62,11 +62,11 @@ export const Route = createFileRoute("/api/orders")({
 
           if (orderId) {
             let order = await getOrder(orderId);
-            if (!order || (order.userId !== user.id && !user.isAdmin)) {
+            if (!order || (order!.userId !== user.id && !user.isAdmin)) {
               return json({ error: "not_found" }, { status: 404 });
             }
             // Check 1-hour auto-completion window
-            order = await evaluateOrderAutoCompletion(order);
+            order = await evaluateOrderAutoCompletion(order!);
 
             const thread = await getThread(order.threadId);
             const messages = await getMessages(order.threadId);
@@ -76,7 +76,7 @@ export const Route = createFileRoute("/api/orders")({
             );
 
             return json({
-              order: redactOrder(order),
+              order: redactOrder(order!),
               thread,
               messages: user.isAdmin ? messages : messages.map(redactMessageForMember),
               history: user.isAdmin ? history : history.map(redactOrderHistoryForMember),
@@ -128,7 +128,7 @@ export const Route = createFileRoute("/api/orders")({
               data.source || "checkout_web",
               data.checkoutSessionId,
             );
-            return json({ order: redactOrder(order) });
+            return json({ order: redactOrder(order!) });
           } catch (error) {
             console.error("[api:orders:create_failed]", error);
             const code = error instanceof Error ? error.message : "order_failed";
@@ -164,7 +164,7 @@ export const Route = createFileRoute("/api/orders")({
           }>(request);
 
           const order = await getOrder(data.orderId);
-          if (!order || (order.userId !== user.id && !user.isAdmin))
+          if (!order || (order!.userId !== user.id && !user.isAdmin))
             return json({ error: "not_found" }, { status: 404 });
 
           /**
@@ -175,7 +175,7 @@ export const Route = createFileRoute("/api/orders")({
            * image: staff need to see which account line it belongs to.
            */
           if (data.action === "submit_login_proof") {
-            if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
+            if (order!.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
             let itemId = String(data.itemId ?? "");
             let deliveryItemId = String(data.deliveryItemId ?? "");
             const imageUrl = String(data.imageUrl ?? "");
@@ -185,7 +185,7 @@ export const Route = createFileRoute("/api/orders")({
               return json({ error: "invalid_image" }, { status: 400 });
             }
 
-            const state = await getDeliveryOrderState(order);
+            const state = await getDeliveryOrderState(order!);
 
             // Resolve exact delivery item from D1 state
             let exactDeliveryItem = deliveryItemId
@@ -219,12 +219,12 @@ export const Route = createFileRoute("/api/orders")({
             itemId = exactDeliveryItem.orderItemId;
 
             await recordDeliveryProof({
-              orderId: order.id,
+              orderId: order!.id,
               deliveryItemId,
               imageUrl,
               userId: user.id,
             });
-            const next = await getOrder(order.id);
+            const next = await getOrder(order!.id);
             return json({ order: redactOrder(next || order) });
           }
 
@@ -236,18 +236,18 @@ export const Route = createFileRoute("/api/orders")({
            * staff, and a finished line says so.
            */
           if (data.action === "account_next") {
-            if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
+            if (order!.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
             const itemId = String(data.itemId ?? "");
-            if (!order.items.some((entry) => entry.id === itemId)) {
+            if (!order!.items.some((entry) => entry.id === itemId)) {
               return json({ error: "item_not_found" }, { status: 404 });
             }
 
-            const normalizedDelivery = await getDeliveryOrderState(order);
+            const normalizedDelivery = await getDeliveryOrderState(order!);
             if (normalizedDelivery.progress.total > 0) {
               return json({
                 released: null,
                 waiting: true,
-                order: redactOrder(order),
+                order: redactOrder(order!),
                 message:
                   "الحساب التالي يُرسل من سجل delivery_item مستقل عندما يصبح جاهزًا لدى الإدارة",
               });
@@ -255,8 +255,8 @@ export const Route = createFileRoute("/api/orders")({
 
             const { markAccountRegistered, claimNextAccount, getBatchProgress } =
               await import("@/lib/account-batch.server");
-            await markAccountRegistered(order.id, itemId);
-            const nextAccount = await claimNextAccount(order.id, itemId);
+            await markAccountRegistered(order!.id, itemId);
+            const nextAccount = await claimNextAccount(order!.id, itemId);
 
             if (nextAccount && order.threadId) {
               await appendMessage(order.threadId, {
@@ -265,31 +265,31 @@ export const Route = createFileRoute("/api/orders")({
                 kind: "item_credentials",
                 body: {
                   itemId,
-                  title: order.items.find((entry) => entry.id === itemId)?.title ?? "",
+                  title: order!.items.find((entry) => entry.id === itemId)?.title ?? "",
                   email: nextAccount.email,
                   ...(nextAccount.password ? { password: nextAccount.password } : {}),
                 },
               });
             }
 
-            const progress = await getBatchProgress(order.id, itemId);
+            const progress = await getBatchProgress(order!.id, itemId);
             return json({
               released: nextAccount ? nextAccount.seq : null,
               waiting: !nextAccount && progress.staged === 0 && progress.sent === 0,
               progress,
-              order: redactOrder((await getOrder(order.id)) ?? order),
+              order: redactOrder((await getOrder(order!.id)) ?? order),
             });
           }
 
           // Customer confirms receipt of order/accounts
           if (data.action === "confirm_received") {
-            if (order.userId !== user.id && !user.isAdmin) {
+            if (order!.userId !== user.id && !user.isAdmin) {
               return json({ error: "forbidden" }, { status: 403 });
             }
 
             try {
-              const next = await confirmDeliveredOrder(order.id, user.id);
-              return json({ order: redactOrder(next) });
+              const next = await confirmDeliveredOrder(order!.id, user.id);
+              return json({ order: redactOrder(next!) });
             } catch (error) {
               const code = error instanceof Error ? error.message : "confirm_failed";
               const status = code === "ORDER_HAS_OPEN_DELIVERY_ISSUE" ? 409 : 400;
@@ -317,15 +317,15 @@ export const Route = createFileRoute("/api/orders")({
           });
           return json({ order: redactOrder(confirmed.order) });
           if (data.action === "report_delivery_issue") {
-            if (order.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
+            if (order!.userId !== user.id) return json({ error: "forbidden" }, { status: 403 });
             try {
               const next = await openDeliveryIssue({
-                orderId: order.id,
+                orderId: order!.id,
                 userId: user.id,
                 deliveryItemId: data.deliveryItemId,
                 reason: data.reason,
               });
-              return json({ order: redactOrder(next) });
+              return json({ order: redactOrder(next!) });
             } catch (error) {
               const code = error instanceof Error ? error.message : "delivery_issue_failed";
               return json({ error: code }, { status: 409 });
@@ -350,11 +350,11 @@ export const Route = createFileRoute("/api/orders")({
           }
 
           // Only admin can change status manually
-          if (data.status && data.status !== order.status) {
+          if (data.status && data.status !== order!.status) {
             if (!user.isAdmin) return json({ error: "forbidden" }, { status: 403 });
 
             if (data.status === "completed" || data.status === "awaiting_customer_confirmation") {
-              const delivery = await getDeliveryOrderState(order);
+              const delivery = await getDeliveryOrderState(order!);
               if (delivery.progress.total > 0) {
                 return json(
                   {
@@ -366,8 +366,8 @@ export const Route = createFileRoute("/api/orders")({
               }
             }
 
-            const firstKind = order.items[0]?.kind || "account";
-            if (!(await canTransition(order.status, data.status, firstKind))) {
+            const firstKind = order!.items[0]?.kind || "account";
+            if (!(await canTransition(order!.status, data.status, firstKind))) {
               return json({ error: "invalid_transition" }, { status: 400 });
             }
 
@@ -376,8 +376,8 @@ export const Route = createFileRoute("/api/orders")({
               `INSERT INTO order_status_history (id, order_id, old_status, new_status, changed_by, note, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
               randomId("osh"),
-              order.id,
-              order.status,
+              order!.id,
+              order!.status,
               data.status,
               user.id,
               data.note || null,
@@ -391,8 +391,8 @@ export const Route = createFileRoute("/api/orders")({
             ...(data.address ? { address: data.address } : {}),
             updatedAt: new Date().toISOString(),
           };
-          await saveOrder(next);
-          return json({ order: redactOrder(next) });
+          await saveOrder(next!);
+          return json({ order: redactOrder(next!) });
         }),
       DELETE: async ({ request }) =>
         guard(async () => {
@@ -400,7 +400,7 @@ export const Route = createFileRoute("/api/orders")({
           if (!user.isAdmin) return json({ error: "forbidden" }, { status: 403 });
 
           const url = new URL(request.url);
-          let orderId = url.searchParams.get("orderId") || url.searchParams.get("id");
+          let orderId = url.searchParams.get("orderId") || url.searchParams.get("id") || "";
           if (!orderId) {
             const bodyData = (await body<{ orderId?: string; id?: string }>(request).catch(
               () => ({}),
@@ -412,7 +412,7 @@ export const Route = createFileRoute("/api/orders")({
           const order = await getOrder(orderId);
           if (!order) return json({ error: "الطلب غير موجود" }, { status: 404 });
 
-          if (order.paymentStatus === "paid" && order.status !== "cancelled") {
+          if (order.paymentStatus === "paid" && order!.status !== "cancelled") {
             return json(
               { error: "لا يمكن حذف طلب مدفوع ونشط. يجب إلغاء الطلب واسترجاع الرصيد أولاً." },
               { status: 400 },
@@ -431,7 +431,7 @@ export const Route = createFileRoute("/api/orders")({
               "delete_order",
               "order",
               orderId,
-              JSON.stringify({ code: order.code, status: order.status, total: order.total }),
+              JSON.stringify({ code: order!.code, status: order!.status, total: order!.total }),
               new Date().toISOString(),
             );
           } catch {

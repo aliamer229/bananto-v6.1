@@ -231,7 +231,7 @@ function CredentialsCard({ message }: { message: ChatMessage; order: Order }) {
               try {
                 const toastId = toast.loading("جارٍ رفع صورة الإثبات...");
                 const { uploadFileWithProgress } = await import("@/lib/uploads");
-                const { url } = await uploadFileWithProgress(file, "orders");
+                const { url } = await uploadFile(file, "orders");
                 const itemId = String(message.body["itemId"] || order.items[0]?.id || "");
                 const deliveryItemId = message.body["deliveryItemId"]
                   ? String(message.body["deliveryItemId"])
@@ -581,7 +581,7 @@ export default function OrderChat({
   }
 
   const { order } = data;
-  const isCompleted = order.status === "completed";
+  const isCompleted = (order as any)?.status === "completed";
 
   return (
     <div className="flex min-h-[70vh] flex-col overflow-hidden rounded-3xl border border-border bg-[#faf8f2] dark:bg-card/40">
@@ -590,9 +590,9 @@ export default function OrderChat({
         <div>
           <p className="text-sm font-bold text-foreground">طلب {order.code}</p>
           <p className="text-xs text-muted-foreground">
-            {order.status === "completed"
+            {(order as any)?.status === "completed"
               ? "مكتمل ✅"
-              : order.status === "delivering"
+              : (order as any)?.status === "delivering"
                 ? "قيد التسليم 📦"
                 : "قيد المعالجة ⏳"}{" "}
             · {order.paymentStatus === "paid" ? "مدفوع من المحفظة" : "بانتظار الدفع"}

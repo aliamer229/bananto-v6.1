@@ -6,7 +6,7 @@
  * clusters similar questions, and updates the knowledge base safely.
  */
 
-import { listThreads, getMessages, getStore, saveStore } from "../db.server";
+import { listThreads, getMessages, getStore, updateStore } from "../db.server";
 import { norm, surfaces } from "./normalize";
 import type { KbArticle } from "./types";
 import type { Thread, ChatMessage } from "../types";
@@ -188,8 +188,8 @@ export async function mineKnowledgeFromThread(thread: Thread): Promise<MinedKnow
   const pairs: { userMsg: ChatMessage; adminMsg: ChatMessage }[] = [];
 
   for (let i = 0; i < messages.length - 1; i++) {
-    const current = messages[i];
-    const next = messages[i + 1];
+    const current = messages[i]!;
+    const next = messages[i + 1]!;
 
     if (current.senderRole === "user" && next.senderRole === "admin") {
       const userText =
@@ -208,8 +208,8 @@ export async function mineKnowledgeFromThread(thread: Thread): Promise<MinedKnow
   const results: MinedKnowledgeItem[] = [];
 
   for (const pair of pairs) {
-    const rawQuestion = pair.userMsg.body?.["text"] || "";
-    const rawAnswer = pair.adminMsg.body?.["text"] || "";
+    const rawQuestion = (pair.userMsg.body?.["text"] as string) || "";
+    const rawAnswer = (pair.adminMsg.body?.["text"] as string) || "";
 
     const cleanQuestion = sanitizeTextForKnowledge(rawQuestion);
     const cleanAnswer = sanitizeTextForKnowledge(rawAnswer);
@@ -309,7 +309,7 @@ export async function mineAllResolvedThreads(): Promise<{
       currentKb[existingIndex] = {
         ...existing,
         match: combinedMatches.join("، "),
-        usageCount: (existing.usageCount || 1) + 1,
+        usageCount: (existing!.usageCount || 1) + 1,
       };
       mergedCount++;
     } else {
@@ -331,13 +331,7 @@ export async function mineAllResolvedThreads(): Promise<{
   }
 
   // Save updated KB to store settings
-  await saveStore({
-    ...store,
-    settings: {
-      ...settings,
-      kbArticles: currentKb,
-    },
-  });
+  await updateStore((doc) => ({ ...doc, settings: { ...(doc.settings || {}), kbArticles: currentKb } }));
 
   return {
     totalMined: extractedItems.length,

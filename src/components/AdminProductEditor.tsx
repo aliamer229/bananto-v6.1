@@ -178,8 +178,10 @@ export default function AdminProductEditor({
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState(() => {
+    const generateId = () => "prd_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
     if (product) {
       const data = {
+        id: product.id || generateId(),
         ...product,
         titleEn: product.titleEn || product.title || "",
         titleKu: product.titleKu || "",
@@ -328,7 +330,9 @@ export default function AdminProductEditor({
 
     const defaultCat = initialCategoryId || (categories[0] ? categories[0].id : "cat_nintendo");
 
-    return createBlankProductForm(defaultCat);
+    const blank = createBlankProductForm(defaultCat);
+    if (!blank.id) blank.id = generateId();
+    return blank;
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -1204,8 +1208,7 @@ export default function AdminProductEditor({
                   through `resolveNintendoImage` — see src/lib/nintendoImages.ts.
                 */}
                 <ImageUploadField
-                  label="غلاف العلبة الأمامي (Front Box Cover)"
-                  value={formData.cartridgeImage || ""}
+                  productId={formData.id} imageType="front" label="غلاف العلبة الأمامي (Front Box Cover)" value={formData.cartridgeImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="cartridge"
                   folder="cartridges"
@@ -1217,8 +1220,7 @@ export default function AdminProductEditor({
                   compact cartridge cards only. Never a substitute for the cover.
                 */}
                 <ImageUploadField
-                  label="صورة مربعة للبطاقات المصغّرة (Square Card Image)"
-                  value={formData.nintendoCardImage || ""}
+                  productId={formData.id} imageType="square" label="صورة مربعة للبطاقات المصغّرة (Square Card Image)" value={formData.nintendoCardImage || ""}
                   onChange={(url) => handleChange("nintendoCardImage", url)}
                   aspect="square"
                   folder="cards"
@@ -1232,8 +1234,7 @@ export default function AdminProductEditor({
                   its own. See src/lib/coverTexture.ts.
                 */}
                 <ImageUploadField
-                  label="غلاف بدقة عالية للمجسم ثلاثي الأبعاد (3D Texture Source)"
-                  value={formData.coverHiResImage || ""}
+                  productId={formData.id} imageType="3d-texture" label="غلاف بدقة عالية للمجسم ثلاثي الأبعاد (3D Texture Source)" value={formData.coverHiResImage || ""}
                   onChange={(url) => {
                     setCoverTextureError(null);
                     handleChange("coverHiResImage", url);
@@ -1247,8 +1248,7 @@ export default function AdminProductEditor({
 
                 {/* Cover Image */}
                 <ImageUploadField
-                  label="صورة الغلاف للتفاصيل (Cover Image)"
-                  value={formData.coverImage || ""}
+                  productId={formData.id} imageType="cover" label="صورة الغلاف للتفاصيل (Cover Image)" value={formData.coverImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="square"
                   folder="covers"
@@ -1291,9 +1291,7 @@ export default function AdminProductEditor({
                           )}
                         </div>
                         <ImageUploadField
-                          label=""
-                          value={banner}
-                          onChange={(url) => handleBannerImageChange(idx, url)}
+                          productId={formData.id} imageType={"banner-" + idx} label="" value={banner} onChange={(url) => handleBannerImageChange(idx, url)}
                           aspect="banner"
                           folder="banners"
                         />
@@ -1606,16 +1604,14 @@ export default function AdminProductEditor({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ImageUploadField
-                  label="صورة الجهاز الأساسية (Main Console Image)"
-                  value={formData.coverImage || ""}
+                  productId={formData.id} imageType="hardware-main" label="صورة الجهاز الأساسية (Main Console Image)" value={formData.coverImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="square"
                   folder="hardware"
                   helperText="الصورة الأساسية للجهاز في صفحة المنتج."
                 />
                 <ImageUploadField
-                  label="صورة كرتون التغليف أو الملحقات (Box Package Art)"
-                  value={formData.cartridgeImage || ""}
+                  productId={formData.id} imageType="hardware-box" label="صورة كرتون التغليف أو الملحقات (Box Package Art)" value={formData.cartridgeImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="square"
                   folder="hardware"
@@ -1775,16 +1771,14 @@ export default function AdminProductEditor({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ImageUploadField
-                  label="صورة المجسم الأساسية (Main Figure Image)"
-                  value={formData.coverImage || ""}
+                  productId={formData.id} imageType="amiibo-main" label="صورة المجسم الأساسية (Main Figure Image)" value={formData.coverImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="square"
                   folder="amiibo"
                   helperText="صورة مجسم Amiibo عالية الدقة."
                 />
                 <ImageUploadField
-                  label="صورة المكافأة داخل اللعبة أو العلبة (In-Game Reward / Box)"
-                  value={formData.cartridgeImage || ""}
+                  productId={formData.id} imageType="amiibo-box" label="صورة المكافأة داخل اللعبة أو العلبة (In-Game Reward / Box)" value={formData.cartridgeImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="square"
                   folder="amiibo"
@@ -1910,16 +1904,14 @@ export default function AdminProductEditor({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ImageUploadField
-                  label="الصورة الأساسية للإكسسوار (Main Product Image)"
-                  value={formData.coverImage || ""}
+                  productId={formData.id} imageType="accessory-main" label="الصورة الأساسية للإكسسوار (Main Product Image)" value={formData.coverImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="square"
                   folder="accessories"
                   helperText="الصورة الأساسية للإكسسوار في العرض والبطاقة."
                 />
                 <ImageUploadField
-                  label="صورة الزوايا أو أثناء الاستخدام (Fitted / In-Use Image)"
-                  value={formData.cartridgeImage || ""}
+                  productId={formData.id} imageType="accessory-fitted" label="صورة الزوايا أو أثناء الاستخدام (Fitted / In-Use Image)" value={formData.cartridgeImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="square"
                   folder="accessories"
@@ -2051,8 +2043,7 @@ export default function AdminProductEditor({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ImageUploadField
-                  label="صورة بطاقة الشحن (Card Artwork)"
-                  value={formData.coverImage || formData.cardArtwork || formData.mainImage || ""}
+                  productId={formData.id} imageType="giftcard-main" label="صورة بطاقة الشحن (Card Artwork)" value={formData.coverImage || formData.cardArtwork || formData.mainImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="square"
                   folder="giftcards"
@@ -2066,8 +2057,7 @@ export default function AdminProductEditor({
                   rendering.
                 */}
                 <ImageUploadField
-                  label="بانر الريجون التوضيحي (Region Banner)"
-                  value={
+                  productId={formData.id} imageType="giftcard-banner" label="بانر الريجون التوضيحي (Region Banner)" value={
                     formData.regionBanner || formData.bannerImage || formData.cartridgeImage || ""
                   }
                   onChange={(url) => handleChange("regionBanner", url)}
@@ -2195,16 +2185,14 @@ export default function AdminProductEditor({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ImageUploadField
-                  label="صورة حقيقية للشريط أو الجهاز من الأمام (Real Front Photo)"
-                  value={formData.coverImage || ""}
+                  productId={formData.id} imageType="used-front" label="صورة حقيقية للشريط أو الجهاز من الأمام (Real Front Photo)" value={formData.coverImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="square"
                   folder="used"
                   helperText="صورة حقيقية تبرز النظافة والواجهة الأمامية للقطعة."
                 />
                 <ImageUploadField
-                  label="صورة حقيقية للعلبة أو الخلف (Real Back / Box Photo)"
-                  value={formData.cartridgeImage || ""}
+                  productId={formData.id} imageType="used-back" label="صورة حقيقية للعلبة أو الخلف (Real Back / Box Photo)" value={formData.cartridgeImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="square"
                   folder="used"
@@ -2291,16 +2279,14 @@ export default function AdminProductEditor({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ImageUploadField
-                  label="بانر البندل الرئيسي (Main Bundle Poster)"
-                  value={formData.coverImage || ""}
+                  productId={formData.id} imageType="bundle-main" label="بانر البندل الرئيسي (Main Bundle Poster)" value={formData.coverImage || ""}
                   onChange={(url) => handleChange("coverImage", url)}
                   aspect="banner"
                   folder="bundles"
                   helperText="بانر عريض يوضح بوستر الحزمة وتشكيلة الألعاب."
                 />
                 <ImageUploadField
-                  label="صورة الغلاف المصغر (Bundle Thumbnail)"
-                  value={formData.cartridgeImage || ""}
+                  productId={formData.id} imageType="bundle-thumb" label="صورة الغلاف المصغر (Bundle Thumbnail)" value={formData.cartridgeImage || ""}
                   onChange={(url) => handleChange("cartridgeImage", url)}
                   aspect="square"
                   folder="bundles"

@@ -95,6 +95,7 @@ import { StoreAdvisorSection } from "./admin/StoreAdvisorSection";
 import AdminInboxView from "./admin/inbox/AdminInboxView";
 import OrdersManagerView from "./admin/OrdersManagerView";
 import { RechargeReviewPanel } from "./admin/RechargeReviewPanel";
+import { ImageMigrationPanel } from "./admin/ImageMigrationPanel";
 import { adminApi, fileToDataUrl } from "@/lib/api";
 import mascot from "@/assets/bananto_logo.webp.asset.json";
 import { useAuth } from "@/hooks/useAuth";
@@ -559,6 +560,7 @@ export default function AdminDashboard() {
       label: "استيراد بيانات الألعاب",
       subtitle: "Deterministic Import",
     },
+    { id: "image_migration", icon: ImageIcon, label: "نظام صور المنتجات (WebP)" },
 
     { id: "stats", icon: BarChart2, label: "الإحصائيات" },
     { id: "settings", icon: Settings, label: "الإعدادات" },
@@ -681,6 +683,9 @@ export default function AdminDashboard() {
       case "import":
         void navigate({ to: "/admin/import" });
         return null;
+
+      case "image_migration":
+        return <ImageMigrationPanel />;
 
       case "stats":
         return (

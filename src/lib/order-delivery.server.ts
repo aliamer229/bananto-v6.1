@@ -32,7 +32,6 @@ import { getOrder, saveOrder } from "./db.server";
 import { areAllOrderItemsDelivered } from "./orders.server";
 import { randomId } from "./crypto.server";
 import { withDeliveryDeadline } from "./order-completion.server";
-import { d1First } from "./d1.server";
 import { allExpectedDeliveryItemsDelivered } from "./digital-delivery-state";
 import { getDeliveryOrderState, getNextActionableQueuedOrder } from "./order-delivery-items.server";
 import type { Order } from "./types";

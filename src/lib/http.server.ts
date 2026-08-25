@@ -20,7 +20,7 @@ export async function body<T = Record<string, unknown>>(request: Request): Promi
 }
 
 /** Read a request without allowing chunked bodies to bypass the size limit. */
-export async function textBody(request: Request, maxBytes = 6 * 1024 * 1024): Promise<string> {
+export async function textBody(request: Request, maxBytes = 20 * 1024 * 1024): Promise<string> {
   const declared = Number(request.headers.get("content-length") || 0);
   if (declared > maxBytes) {
     throw new Response(JSON.stringify({ error: "payload_too_large" }), { status: 413 });

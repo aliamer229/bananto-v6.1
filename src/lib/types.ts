@@ -804,10 +804,6 @@ export interface Order {
   /** `lastOtpSentAt` + 60 minutes: when the order closes itself. */
   autoCompleteAt?: string;
   /** Timestamp of the final expected delivery item's OTP/code. */
-  lastOtpSentAt?: string;
-  /** Server-owned deadline, exactly 60 minutes after lastOtpSentAt. */
-  autoCompleteAt?: string;
-  /** Set when a member reports a delivery problem; pauses auto-completion. */
   deliveryIssueOpenedAt?: string;
   deliveryViewedAt?: string;
   ratingCardSentAt?: string;

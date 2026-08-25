@@ -179,7 +179,7 @@ export async function processInactivityAndQueue(): Promise<void> {
         // Check if there are active delivery items in D1
         let deliveryItems: Array<{ status: string; sent_at?: string; proof_received_at?: string }> =
           [];
-        if (thread.orderId && (await d1Ready())) {
+        if (thread.orderId && (await import("./d1.server").then(m => m.d1Ready()))) {
           try {
             deliveryItems = await d1All<{
               status: string;
@@ -406,7 +406,7 @@ export async function calculateQueueMetrics(threadOrOrderId: string): Promise<Qu
     otp_sent_at?: string | null;
   }> = [];
 
-  if (orderId && (await d1Ready())) {
+  if (orderId && (await import("./d1.server").then(m => m.d1Ready()))) {
     try {
       deliveryRows = await d1All<{
         id: string;

@@ -7,14 +7,17 @@ import {
   Link as LinkIcon,
   Check,
   AlertTriangle,
+  DownloadCloud,
 } from "lucide-react";
-import { adminApi, fileToDataUrl } from "@/lib/api";
+import { adminApi } from "@/lib/api";
 import { cdnImage } from "@/lib/img";
 import { validateImageUrlShape } from "@/lib/imageValidation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface ImageUploadFieldProps {
+  productId?: string;
+  imageType?: string;
   label: string;
   value: string;
   onChange: (url: string) => void;
@@ -24,21 +27,17 @@ interface ImageUploadFieldProps {
   aspect?: "square" | "video" | "cartridge" | "banner" | "auto";
   required?: boolean;
   className?: string;
-  /**
-   * A problem this field's own value ran into, reported by the screen that
-   * owns it — e.g. an imported URL the source host refused to serve. Optional:
-   * a field that never sets it behaves exactly as before.
-   */
   error?: string;
-  /** The offending value, shown under the message so it can still be read. */
   errorDetail?: string;
 }
 
 export function ImageUploadField({
+  productId,
+  imageType,
   label,
   value,
   onChange,
-  folder = "uploads",
+  folder = "products",
   placeholder = "https://... أو اختر صورة من جهازك",
   helperText,
   aspect = "auto",
@@ -48,62 +47,89 @@ export function ImageUploadField({
   errorDetail,
 }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
+  const [importingRemote, setImportingRemote] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /*
-    Is the stored value something a browser can even try to load?
-
-    A field holding `?`, `[object Object]` or a bare filename used to be handed
-    straight to `<img src>`. A relative junk value resolves against the current
-    page, so the browser fetched the HTML document, failed to decode it as an
-    image, and painted its broken-image glyph — the mysterious "?" in all four
-    image boxes. The value was never shown, so there was no way to tell a
-    broken link from a corrupt one.
-
-    Each field decides this for itself: one bad URL must not affect the other
-    three.
-  */
   const shape = validateImageUrlShape(value);
   const hasValue = Boolean(value && String(value).trim());
   const canPreview = hasValue && shape.ok && !previewFailed;
+  const isRemoteUrl = hasValue && (value.startsWith("http://") || value.startsWith("https://"));
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 15MB)
-    if (file.size > 15 * 1024 * 1024) {
-      toast.error("حجم الصورة كبير جداً (الحد الأقصى 15 ميجابايت)");
-      return;
-    }
-
     try {
       setUploading(true);
-      const dataUrl = await fileToDataUrl(file);
 
-      // Upload to server storage
-      try {
-        const res = await adminApi.upload(dataUrl, folder);
-        if (res?.url) {
-          onChange(res.url);
-          toast.success("تم رفع الصورة وتخزينها بنجاح");
-        } else {
-          toast.error("فشل رفع الصورة: لم يتم إرجاع رابط.");
-        }
-      } catch (uploadErr: any) {
-        console.error("Server upload failed:", uploadErr);
-        toast.error("فشل رفع الصورة: " + (uploadErr?.message || "خطأ غير معروف"));
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", folder);
+      if (productId) formData.append("productId", productId);
+      if (imageType) formData.append("imageType", imageType);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.error || "فشل رفع الصورة إلى التخزين السحابي");
       }
-    } catch (err) {
-      console.error("File read error:", err);
-      toast.error("تعذر قراءة ملف الصورة المحدد");
+
+      const res = await response.json();
+      if (res?.url) {
+        onChange(res.url);
+        setPreviewFailed(false);
+        toast.success("تم رفع الصورة وتحويلها إلى WebP بنجاح");
+      } else {
+        toast.error("فشل رفع الصورة: لم يتم إرجاع رابط.");
+      }
+    } catch (err: any) {
+      console.error("File upload error:", err);
+      toast.error("فشل رفع الصورة: " + (err?.message || "تعذر إكمال الرفع"));
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+    }
+  };
+
+  const handleImportRemoteUrl = async () => {
+    if (!isRemoteUrl) return;
+    try {
+      setImportingRemote(true);
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceUrl: value.trim(),
+          folder,
+          productId,
+          imageType,
+        }),
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.error || "تعذر تنزيل الصورة وتحويلها");
+      }
+
+      const res = await response.json();
+      if (res?.url) {
+        onChange(res.url);
+        setPreviewFailed(false);
+        toast.success("تم استيراد الصورة وتحويلها إلى WebP وحفظها في التخزين");
+      }
+    } catch (err: any) {
+      console.error("Remote import error:", err);
+      toast.error("فشل استيراد الرابط الخارجي: " + (err?.message || ""));
+    } finally {
+      setImportingRemote(false);
     }
   };
 
@@ -142,7 +168,7 @@ export function ImageUploadField({
         type="file"
         ref={fileInputRef}
         onChange={handleFileSelect}
-        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        accept="image/*,.heic,.heif,.avif,.webp,.png,.jpg,.jpeg,.bmp,.tiff"
         className="hidden"
       />
 
@@ -162,14 +188,6 @@ export function ImageUploadField({
                 className="w-full h-full object-contain"
                 referrerPolicy="no-referrer"
                 onError={(e) => {
-                  /*
-                    Try the raw URL once — `cdnImage` mirrors remote hosts and
-                    the mirror can be the thing that is down. Assigning `value`
-                    unconditionally, as this used to, re-fired `onError` against
-                    the same failing URL forever; the guard makes it one retry,
-                    and a second failure switches to the notice below instead of
-                    leaving a broken-image glyph on screen.
-                  */
                   const img = e.target as HTMLImageElement;
                   const direct = value;
                   if (img.getAttribute("data-retried") !== "1" && img.src !== direct) {
@@ -229,7 +247,7 @@ export function ImageUploadField({
 
         {/* Upload Status / Quick Actions */}
         <div className="flex-1 min-w-[200px] space-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -239,20 +257,43 @@ export function ImageUploadField({
               {uploading ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>جارٍ الرفع والتخزين...</span>
+                  <span>جارٍ الرفع والتحويل إلى WebP...</span>
                 </>
               ) : (
                 <>
                   <Upload className="w-3.5 h-3.5" />
                   <span>
-                    {value ? "استبدال الصورة من التخزين" : "رفع صورة من التخزين / الجهاز"}
+                    {value ? "استبدال الصورة من الجهاز" : "رفع صورة غير مقيدة (تحويل تلقائي لـ WebP)"}
                   </span>
                 </>
               )}
             </button>
+
+            {isRemoteUrl && (
+              <button
+                type="button"
+                onClick={handleImportRemoteUrl}
+                disabled={importingRemote}
+                title="تنزيل الصورة وحفظها كـ WebP في التخزين الدائم لـ BananTo"
+                className="px-3 py-1.5 text-xs font-bold rounded-lg border border-blue-500/30 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-blue-700 dark:text-blue-300 flex items-center gap-1.5 transition-colors shadow-2xs"
+              >
+                {importingRemote ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>جارٍ الاستيراد والتحويل...</span>
+                  </>
+                ) : (
+                  <>
+                    <DownloadCloud className="w-3.5 h-3.5" />
+                    <span>استيراد إلى السحابة (WebP)</span>
+                  </>
+                )}
+              </button>
+            )}
+
             {canPreview && (
               <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold">
-                <Check className="w-3.5 h-3.5" /> تم تحديد صورة
+                <Check className="w-3.5 h-3.5" /> تم تحديد صورة {value.endsWith(".webp") && "(WebP)"}
               </span>
             )}
           </div>
@@ -275,11 +316,6 @@ export function ImageUploadField({
             </div>
           )}
 
-          {/*
-            Say what is wrong and show the value, rather than a glyph. The
-            offending text is what an admin needs to recognise a bad import
-            cell; clearing it is one press.
-          */}
           {hasValue && !canPreview && (
             <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-2 space-y-1">
               <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">

@@ -1,3 +1,4 @@
+import type { Product } from "./types";
 import { randomAvatar, randomDisplayName } from "./avatars";
 import { readMessageRow } from "./chat-message-row";
 import { DELIVERY_OTP_TTL_MINUTES, deliveryOtpExpiry } from "./delivery-otp";
