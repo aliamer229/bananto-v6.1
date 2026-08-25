@@ -1668,6 +1668,7 @@ function ListingsView({
           );
           if (existing) {
             toast.error(`منتج بنفس الاسم موجود بالفعل: ${existing.title}`, {
+              id: "save-product",
               duration: 10000,
               action: {
                 label: "فتح المنتج الموجود",
@@ -1680,11 +1681,11 @@ function ListingsView({
           } else {
             toast.error(
               "تم رفض الحفظ بسبب تعارض اسم لم يعد له منتج في القائمة. أعد المحاولة — سيُحرَّر السجل القديم تلقائياً.",
-              { duration: 10000 },
+              { id: "save-product", duration: 10000 },
             );
           }
         } else {
-          toast.error(errorMsg);
+          toast.error(errorMsg, { id: "save-product", duration: 8000 });
         }
         // Already reported above; the outer catch must not toast it twice.
         throw Object.assign(new Error(errorMsg), { reported: true });
@@ -1704,11 +1705,12 @@ function ListingsView({
         }
       });
 
-      toast.success("تم حفظ المنتج");
+      toast.success("تم حفظ المنتج بنجاح", { id: "save-product" });
       setEditingProduct(null);
       setIsAdding(false);
     } catch (err: any) {
       console.error("[handleSave:error]", err);
+      toast.dismiss("save-product");
       if (!err?.reported) toast.error(err?.message || t("admin.saveFailed"));
       throw err;
     }

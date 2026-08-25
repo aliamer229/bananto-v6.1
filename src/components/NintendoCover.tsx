@@ -7,8 +7,8 @@
  *    product cannot show a box cover in a listing, a screenshot in the cart and
  *    a banner in the toast.
  * 2. **Frame the artwork, not the file** — if the source has empty margin
- *    around the box (reference 01), the crop rectangle from `imageTrim` is
- *    applied so the box fills the frame (reference 02). If it does not, or if
+ *    around the box, the crop rectangle from `imageTrim` is
+ *    applied so the box fills the frame. If it does not, or if
  *    detection was not confident, the file is shown untouched.
  *
  * The frame is a fixed ratio per usage, so a row of covers is a row of equal
@@ -16,17 +16,12 @@
  * fitted whole (`contain` semantics) — never stretched, never letterboxed by
  * margin that should have been trimmed away, never cropped through a logo.
  *
- * ## Cost
- *
- * Nothing is measured during render. A stored `cartridgeImageTrim` is used as
- * is; otherwise a cached answer is read synchronously, and only a genuinely
- * unseen URL schedules one idle-time measurement whose result is cached for
- * every later card and every later visit. See `imageTrim.browser.ts`.
+ * Includes AVIF (preferred), WebP (fallback), responsive srcSet, and GPU-safe rendering.
  */
 import { useCallback, useEffect, useState } from "react";
 
 import { useImageTrim } from "@/hooks/useImageTrim";
-import { cdnImage } from "@/lib/img";
+import { cdnImage, buildSrcSet } from "@/lib/img";
 import { trimToImageStyle } from "@/lib/imageTrim";
 import {
   COVER_ASPECT_RATIO,
@@ -71,7 +66,7 @@ export function useNintendoCover(
   const resolved = resolveNintendoImage(product, usage);
   const proxied = cdnImage(resolved.url);
   const { trim, naturalAspect } = useImageTrim(proxied, resolved.trim, !resolved.isPlaceholder);
-  return { resolved, src: proxied, trim, naturalAspect };
+  return { resolved, src: proxied, rawUrl: resolved.url, trim, naturalAspect };
 }
 
 export function NintendoCover({
@@ -86,11 +81,8 @@ export function NintendoCover({
   fetchPriority,
   onClick,
 }: NintendoCoverProps) {
-  const { resolved, src, trim, naturalAspect } = useNintendoCover(product, usage);
+  const { resolved, src, rawUrl, trim, naturalAspect } = useNintendoCover(product, usage);
   const [failed, setFailed] = useState(false);
-  // The element's own load event gives the natural size for free, without the
-  // decode + getImageData the trim pass needs, so the frame settles on the
-  // first paint rather than on the first idle callback.
   const [loadedAspect, setLoadedAspect] = useState<number | null>(null);
 
   useEffect(() => {
@@ -113,26 +105,10 @@ export function NintendoCover({
   const showPlaceholder = resolved.isPlaceholder || failed;
   const finalSrc = showPlaceholder ? NINTENDO_IMAGE_PLACEHOLDER : src;
 
-  /*
-    Two nested boxes do the framing exactly, with no JavaScript at paint time.
-
-    - the outer box is the fixed-ratio slot in the layout.
-    - the inner "window" is the artwork's own rectangle after trimming. It is
-      sized by aspect ratio and capped by the frame, so `contain` fits it whole
-      and `cover` fills the frame. The image inside is scaled and offset by
-      `trimToImageStyle`, which lands the crop on the window exactly — the
-      file's untouched pixels, reframed.
-  */
   const sourceAspect = naturalAspect ?? loadedAspect;
   const artworkAspect =
     trim && sourceAspect ? (sourceAspect * trim.width) / trim.height : sourceAspect;
 
-  /*
-    Which edge the window pins to. `aspect-ratio` alone would leave the box with
-    no definite size — the image inside is absolutely positioned and contributes
-    nothing — so one dimension is always pinned to the frame and the other
-    follows from the ratio.
-  */
   const windowStyle: React.CSSProperties = (() => {
     if (!artworkAspect || !frameRatio || showPlaceholder) {
       return { width: "100%", height: "100%" };
@@ -144,6 +120,23 @@ export function NintendoCover({
       : { height: "100%", aspectRatio: String(artworkAspect) };
   })();
 
+  const avifSrcSet = !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "avif", [240, 480, 800]) : "";
+  const webpSrcSet = !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "webp", [240, 480, 800]) : "";
+  const sizesAttr = usage === "square-card" || usage === "cartridge-label"
+    ? "(max-width: 640px) 180px, 320px"
+    : "(max-width: 640px) 240px, (max-width: 1024px) 480px, 800px";
+
+  const imgStyle: React.CSSProperties =
+    !showPlaceholder && trim
+      ? trimToImageStyle(trim)
+      : {
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: showPlaceholder ? "cover" : fit,
+        };
+
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden ${className}`}
@@ -151,30 +144,35 @@ export function NintendoCover({
       {...(onClick ? { onClick } : {})}
     >
       <div className="relative overflow-hidden" style={windowStyle}>
-        <img
-          src={finalSrc}
-          alt={alt}
-          loading={loading}
-          decoding="async"
-          {...(fetchPriority ? { fetchPriority } : {})}
-          onError={() => setFailed(true)}
-          onLoad={onLoad}
-          className={imgClassName}
-          style={
-            !showPlaceholder && trim
-              ? trimToImageStyle(trim)
-              : {
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  // With the window already at the artwork's aspect this is a
-                  // no-op; before the size is known it is what keeps the image
-                  // whole instead of stretched.
-                  objectFit: showPlaceholder ? "cover" : fit,
-                }
-          }
-        />
+        {!showPlaceholder && (avifSrcSet || webpSrcSet) ? (
+          <picture className="contents">
+            {avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={sizesAttr} />}
+            {webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={sizesAttr} />}
+            <img
+              src={finalSrc}
+              alt={alt}
+              loading={loading}
+              decoding="async"
+              {...(fetchPriority ? { fetchPriority } : {})}
+              onError={() => setFailed(true)}
+              onLoad={onLoad}
+              className={imgClassName}
+              style={imgStyle}
+            />
+          </picture>
+        ) : (
+          <img
+            src={finalSrc}
+            alt={alt}
+            loading={loading}
+            decoding="async"
+            {...(fetchPriority ? { fetchPriority } : {})}
+            onError={() => setFailed(true)}
+            onLoad={onLoad}
+            className={imgClassName}
+            style={imgStyle}
+          />
+        )}
       </div>
     </div>
   );

@@ -124,7 +124,7 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
           if (productSection(productToSave, currentStore.categories || []) === "game") {
             const performanceIssues = validateGameDevicePerformance(
               productToSave as Record<string, unknown>,
-            );
+            ).filter((i) => i.severity === "error");
             if (performanceIssues.length) {
               return json(
                 {

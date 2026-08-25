@@ -19,7 +19,7 @@ import { cn } from "@/hub/utils/cn";
 import type { TimelineEvent } from "@/hub/types";
 
 const EVENT_META: Record<
-  TimelineEvent["kind"],
+  string,
   { icon: typeof Rocket; key: string; accent?: boolean }
 > = {
   announcement: { icon: Megaphone, key: "timeline.announcement" },
@@ -31,78 +31,122 @@ const EVENT_META: Record<
   expansion: { icon: Package, key: "timeline.expansion" },
 };
 
+const DEFAULT_EVENT_META = { icon: Wrench, key: "timeline.update" };
+
 /** Visual timeline from announcement through post-launch content. */
 export function TimelineSection() {
   const { t, intlLocale } = useI18n();
   const { game, videosById, openVideo } = useHub();
   const events = game.timeline ?? [];
 
-  if (events.length === 0) return null;
+  const sorted = [...events].sort((a, b) => {
+    const timeA = a.date ? new Date(a.date).getTime() : 0;
+    const timeB = b.date ? new Date(b.date).getTime() : 0;
+    const validA = Number.isFinite(timeA) && timeA > 0;
+    const validB = Number.isFinite(timeB) && timeB > 0;
+    if (validA && validB) return timeB - timeA; // Newest first
+    if (validA) return -1;
+    if (validB) return 1;
+    return 0;
+  });
 
-  const sorted = [...events].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
   const now = Date.now();
 
   return (
     <Section id="timeline" title={t("timeline.title")} weight="support">
       <Reveal>
         <Panel className="p-5 sm:p-6">
-          <ol className="relative space-y-0">
-            {/* The rail sits behind the markers, inset to align with them. */}
-            <span
-              aria-hidden
-              className="absolute bottom-4 top-2 start-[7px] w-px bg-gradient-to-b from-white/[0.14] via-white/[0.09] to-transparent"
-            />
-            {sorted.map((event) => {
-              const meta = EVENT_META[event.kind];
-              const Icon = meta.icon;
-              const future = new Date(event.date).getTime() > now;
-              const video = event.videoId ? videosById.get(event.videoId) : undefined;
+          {sorted.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-muted">
+                <Rocket className="h-5 w-5 opacity-40" />
+              </span>
+              <p className="text-sm font-bold text-muted">
+                {intlLocale === "ar"
+                  ? "لا توجد أحداث مسجلة لهذه اللعبة بعد"
+                  : "No events recorded for this game yet"}
+              </p>
+            </div>
+          ) : (
+            <ol className="relative space-y-0">
+              {/* The rail sits behind the markers, inset to align with them. */}
+              <span
+                aria-hidden
+                className="absolute bottom-4 top-2 start-[7px] w-px bg-gradient-to-b from-white/[0.14] via-white/[0.09] to-transparent"
+              />
+              {sorted.map((event) => {
+                const meta = EVENT_META[event.kind] || DEFAULT_EVENT_META;
+                const Icon = meta.icon;
+                const eventTime = event.date ? new Date(event.date).getTime() : 0;
+                const future = Number.isFinite(eventTime) && eventTime > now;
+                const video = event.videoId ? videosById.get(event.videoId) : undefined;
+                const linkUrl = event.sourceUrl || event.url;
 
-              return (
-                <li key={event.id} className="relative flex gap-4 pb-5 last:pb-0">
-                  <span
-                    className={cn(
-                      "relative z-10 mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ring-4 ring-ink-900",
-                      meta.accent ? "bg-nin" : future ? "bg-white/20" : "bg-white/35",
-                    )}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline gap-x-3">
-                      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider muted">
-                        <Icon className="h-3 w-3" />
-                        {t(meta.key as never)}
-                      </span>
-                      <span className="text-[11px] tabular-nums muted">
-                        {formatDate(event.date, intlLocale)}
-                      </span>
-                      {future && (
-                        <span className="rounded-full bg-warn/12 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-warn">
-                          {t("series.upcoming")}
-                        </span>
+                return (
+                  <li key={event.id} className="relative flex gap-4 pb-5 last:pb-0">
+                    <span
+                      className={cn(
+                        "relative z-10 mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ring-4 ring-ink-900",
+                        meta.accent ? "bg-nin" : future ? "bg-white/20" : "bg-white/35",
                       )}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider muted">
+                          <Icon className="h-3 w-3" />
+                          {t(meta.key as never) || event.kind}
+                        </span>
+                        {event.date && (
+                          <span className="text-[11px] tabular-nums muted">
+                            {formatDate(event.date, intlLocale)}
+                          </span>
+                        )}
+                        {event.version && (
+                          <span className="rounded bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-mono font-bold text-nin-soft">
+                            {event.version}
+                          </span>
+                        )}
+                        {future && (
+                          <span className="rounded-full bg-warn/12 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-warn">
+                            {t("series.upcoming")}
+                          </span>
+                        )}
+                      </div>
+                      <p className={cn("mt-0.5 text-sm font-bold", meta.accent && "text-nin-soft")}>
+                        {event.title}
+                      </p>
+                      {event.detail && (
+                        <p className="mt-0.5 text-xs leading-relaxed muted">{event.detail}</p>
+                      )}
+                      <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                        {video && (
+                          <button
+                            type="button"
+                            onClick={() => openVideo(video)}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-nin-soft hover:underline"
+                          >
+                            <PlayCircle className="h-3 w-3" />
+                            {video.title}
+                          </button>
+                        )}
+                        {linkUrl && (
+                          <a
+                            href={linkUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-muted hover:text-white"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            <span>{intlLocale === "ar" ? "المصدر" : "Source"}</span>
+                          </a>
+                        )}
+                      </div>
                     </div>
-                    <p className={cn("mt-0.5 text-sm font-bold", meta.accent && "text-nin-soft")}>
-                      {event.title}
-                    </p>
-                    {event.detail && (
-                      <p className="mt-0.5 text-xs leading-relaxed muted">{event.detail}</p>
-                    )}
-                    {video && (
-                      <button
-                        onClick={() => openVideo(video)}
-                        className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-nin-soft hover:underline"
-                      >
-                        <PlayCircle className="h-3 w-3" />
-                        {video.title}
-                      </button>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </Panel>
       </Reveal>
     </Section>

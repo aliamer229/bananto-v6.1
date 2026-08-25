@@ -23,6 +23,7 @@ import {
   checkAdminAvailability,
   DEFAULT_AVAILABILITY_CONFIG,
 } from "./admin-availability";
+import { dedupeDevicePerformance, getDevicePerformanceList } from "./devicePerformance";
 export {
   isOwnerAccount,
   isOwnerEmail,
@@ -298,6 +299,9 @@ export function normalizeProductRecord(p: any): Product {
     gallery: Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [],
     boxContents: Array.isArray(p.boxContents) ? p.boxContents.filter(Boolean) : [],
     modes: Array.isArray(p.modes) ? p.modes.filter(Boolean) : [],
+    ...(p.devicePerformance || p.device_performance
+      ? { devicePerformance: dedupeDevicePerformance(getDevicePerformanceList(p)) }
+      : {}),
   };
 }
 
@@ -471,10 +475,18 @@ async function loadStore(): Promise<StoreDoc> {
                 try {
                   parsed = JSON.parse(baseRow.value);
                 } catch {
-                  parsed = {};
+                  throw new Error(`store_section_unreadable:${section}`);
                 }
               } else {
-                parsed = parseArraySafely(baseRow.value, []);
+                try {
+                  parsed = JSON.parse(baseRow.value);
+                } catch {
+                  const salvaged = parseArraySafely(baseRow.value, null as any);
+                  if (!salvaged || !salvaged.length) {
+                    throw new Error(`store_section_unreadable:${section}`);
+                  }
+                  parsed = salvaged;
+                }
               }
             }
           }
@@ -499,6 +511,12 @@ async function loadStore(): Promise<StoreDoc> {
             }
           }
         } catch (sectionErr) {
+          if (
+            sectionErr instanceof Error &&
+            sectionErr.message.startsWith("store_section_unreadable:")
+          ) {
+            throw sectionErr;
+          }
           console.error(`[store:load_section_failed] section=${section}`, sectionErr);
           doc[section] = section === "content" ? {} : [];
         }

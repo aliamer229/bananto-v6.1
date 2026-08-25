@@ -18,9 +18,12 @@ import {
 } from "@/lib/hub";
 import { resolveNintendoImage, resolveCaseSleeve } from "@/lib/nintendoImages";
 import { buildFitFor, buildFeatures } from "./mappers";
-import { toAmount } from "@/lib/purchasable";
+import { toAmount, isVisibleToPublic } from "@/lib/purchasable";
 import { gb } from "@/hub/utils/format";
 import { getDevicePerformanceList } from "@/lib/devicePerformance";
+import { getProductSlug } from "@/lib/productRouting";
+import { resolveCategoryType } from "@/lib/productSection";
+import { slugifyTitle, normalizeName } from "@/lib/gameData/identity";
 import type {
   Game,
   GameImage,
@@ -42,6 +45,8 @@ import type {
   PatchNote,
   Soundtrack,
   GameSeries,
+  SimilarGame,
+  SimilarityKind,
   NintendoDetail,
   PlayMode,
   Switch2Enhancement,
@@ -612,19 +617,527 @@ function buildFaq(p: Record<string, unknown>, locale: "ar" | "en"): FaqItem[] | 
   }));
 }
 
+function normalizeTimelineItem(
+  raw: unknown,
+  index: number,
+  locale: "ar" | "en",
+  defaultKind: TimelineEvent["kind"] = "update",
+): TimelineEvent | null {
+  if (!raw) return null;
+  if (typeof raw === "string") {
+    const text = raw.trim();
+    if (!text) return null;
+    if (text.startsWith("{") && text.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(text);
+        return normalizeTimelineItem(parsed, index, locale, defaultKind);
+      } catch {
+        // Continue
+      }
+    }
+    const match = text.match(/^(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{4})\s*[:\-\u2013]\s*(.*)$/);
+    if (match) {
+      const date = match[1].replace(/\./g, "-");
+      const title = match[2].trim() || (locale === "en" ? "Event" : "حدث");
+      return {
+        id: `timeline-${index}`,
+        date,
+        kind: inferTimelineKind(title, defaultKind),
+        title,
+      };
+    }
+    return {
+      id: `timeline-${index}`,
+      date: "",
+      kind: inferTimelineKind(text, defaultKind),
+      title: text,
+    };
+  }
+
+  if (typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    const date = str(
+      obj["date"] ||
+        obj["releaseDate"] ||
+        obj["release_date"] ||
+        obj["time"] ||
+        obj["timestamp"] ||
+        obj["createdAt"],
+    );
+    const title =
+      localizedValue(obj, "title", "titleEn", locale) ||
+      localizedValue(obj, "name", "nameEn", locale) ||
+      str(obj["version"] ? `Version ${obj["version"]}` : "") ||
+      (locale === "en" ? "Event" : "حدث");
+    const detail =
+      localizedValue(obj, "body", "bodyEn", locale) ||
+      localizedValue(obj, "details", "detailsEn", locale) ||
+      localizedValue(obj, "description", "descriptionEn", locale) ||
+      (Array.isArray(obj["changes"]) ? (obj["changes"] as string[]).join("\n") : undefined);
+    const kindRaw = str(obj["kind"] || obj["type"] || obj["eventType"] || obj["event_type"]);
+    const kind = inferTimelineKind(kindRaw || title || "", defaultKind);
+    const version = str(obj["version"]) || undefined;
+    const sourceUrl =
+      str(obj["sourceUrl"] || obj["url"] || obj["link"] || obj["source"]) || undefined;
+    const videoId = str(obj["videoId"] || obj["youtubeId"]) || undefined;
+
+    return {
+      id: str(obj["id"]) || `timeline-${index}`,
+      date,
+      kind,
+      title,
+      ...(detail ? { detail } : {}),
+      ...(version ? { version } : {}),
+      ...(sourceUrl ? { sourceUrl } : {}),
+      ...(videoId ? { videoId } : {}),
+    };
+  }
+
+  return null;
+}
+
+function inferTimelineKind(
+  strVal: string,
+  fallback: TimelineEvent["kind"] = "update",
+): TimelineEvent["kind"] {
+  const s = strVal.toLowerCase();
+  if (
+    s.includes("announce") ||
+    s.includes("إعلان") ||
+    s.includes("اعلان") ||
+    s.includes("كشف")
+  )
+    return "announcement";
+  if (s.includes("trailer") || s.includes("تريلر") || s.includes("عرض")) return "trailer";
+  if (s.includes("demo") || s.includes("تجريبي") || s.includes("نسخة تجريبية")) return "demo";
+  if (
+    s.includes("launch") ||
+    s.includes("release") ||
+    s.includes("إصدار") ||
+    s.includes("اصدار") ||
+    s.includes("إطلاق")
+  )
+    return "release";
+  if (s.includes("expansion") || s.includes("توسعة")) return "expansion";
+  if (s.includes("dlc") || s.includes("إضافة") || s.includes("اضافة")) return "dlc";
+  if (
+    s.includes("patch") ||
+    s.includes("update") ||
+    s.includes("تحديث") ||
+    s.includes("تصحيح") ||
+    s.includes("ver") ||
+    s.startsWith("v")
+  )
+    return "update";
+  return fallback;
+}
+
 function buildTimeline(
   p: Record<string, unknown>,
   locale: "ar" | "en",
 ): TimelineEvent[] | undefined {
-  const list = rows(p["timeline"]);
-  if (!list.length) return undefined;
-  return list.map((row, i) => ({
-    id: `timeline-${i}`,
-    date: str(row["date"]),
-    kind: "update" as const,
-    title: localizedValue(row, "title", "titleEn", locale),
-    ...(str(row["body"]) ? { detail: localizedValue(row, "body", "bodyEn", locale) } : {}),
-  }));
+  const events: TimelineEvent[] = [];
+  const seenKeys = new Set<string>();
+
+  const addEvent = (event: TimelineEvent | null) => {
+    if (!event || !event.title) return;
+    const key = `${event.date}_${event.title}`.toLowerCase();
+    if (seenKeys.has(key)) return;
+    seenKeys.add(key);
+    events.push(event);
+  };
+
+  // 1. Explicit timeline field
+  const explicitTimeline = rows(p["timeline"]);
+  explicitTimeline.forEach((item) => {
+    addEvent(normalizeTimelineItem(item, events.length, locale, "update"));
+  });
+
+  // 2. Events / releaseTimeline / milestones / announcements
+  const altEvents = rows(
+    p["events"] ||
+      p["releaseTimeline"] ||
+      p["release_timeline"] ||
+      p["milestones"] ||
+      p["announcements"],
+  );
+  altEvents.forEach((item) => {
+    addEvent(normalizeTimelineItem(item, events.length, locale, "announcement"));
+  });
+
+  // 3. Patch notes / updates
+  const patchNotes = rows(p["patchNotes"] || p["updates"] || p["patches"]);
+  patchNotes.forEach((item) => {
+    if (item && typeof item === "object") {
+      const row = item as Record<string, unknown>;
+      const version = str(row["version"]);
+      const date = str(row["date"]);
+      const body =
+        localizedValue(row, "body", "bodyEn", locale) ||
+        localizedValue(row, "changes", "changesEn", locale);
+      if (version || date || body) {
+        addEvent({
+          id: `patch-${events.length}`,
+          date: date || "",
+          kind: "update",
+          title: version
+            ? locale === "en"
+              ? `Update ${version}`
+              : `تحديث ${version}`
+            : locale === "en"
+              ? "Game Update"
+              : "تحديث اللعبة",
+          ...(body ? { detail: body } : {}),
+          ...(version ? { version } : {}),
+        });
+      }
+    }
+  });
+
+  // 4. DLC items as timeline milestones
+  const dlcList = rows(p["dlc"] || p["dlcs"] || p["DLC"]);
+  dlcList.forEach((item) => {
+    if (item && typeof item === "object") {
+      const row = item as Record<string, unknown>;
+      const title =
+        localizedValue(row, "name", "nameEn", locale) ||
+        localizedValue(row, "title", "titleEn", locale);
+      const date = str(row["releaseDate"] || row["date"]);
+      const desc = localizedValue(row, "description", "descriptionEn", locale);
+      if (title && date) {
+        addEvent({
+          id: `dlc-${events.length}`,
+          date,
+          kind: "dlc",
+          title: locale === "en" ? `DLC: ${title}` : `إضافة: ${title}`,
+          ...(desc ? { detail: desc } : {}),
+        });
+      }
+    }
+  });
+
+  // 5. Official release date event if not already present
+  const releaseDate = str(p["releaseDate"] || p["release_date"]);
+  if (releaseDate && !events.some((e) => e.kind === "release")) {
+    const gameTitle = str(p["titleEn"] || p["title"] || "Game");
+    addEvent({
+      id: `release-${events.length}`,
+      date: releaseDate,
+      kind: "release",
+      title: locale === "en" ? `Official Release: ${gameTitle}` : `الإطلاق الرسمي: ${gameTitle}`,
+    });
+  }
+
+  if (!events.length) return undefined;
+
+  // Sort chronologically (newest first)
+  return events.sort((a, b) => {
+    const timeA = a.date ? new Date(a.date).getTime() : 0;
+    const timeB = b.date ? new Date(b.date).getTime() : 0;
+    const validA = Number.isFinite(timeA) && timeA > 0;
+    const validB = Number.isFinite(timeB) && timeB > 0;
+    if (validA && validB) return timeB - timeA;
+    if (validA) return -1;
+    if (validB) return 1;
+    return 0;
+  });
+}
+
+function buildSimilar(
+  p: Record<string, unknown>,
+  allProducts: Array<Record<string, unknown>> | undefined,
+  locale: "ar" | "en",
+): SimilarGame[] | undefined {
+  const currentId = String(p["id"] ?? "");
+  const currentSlug = getProductSlug(p);
+  const currentTitleEn = str(p["titleEn"] || p["english_name"] || p["title"]);
+  const currentSlugTitle = slugifyTitle(currentTitleEn);
+  const currentSeries = str(p["seriesName"] || p["series"]);
+  const currentDeveloper = str(p["developer"] || p["studioName"] || p["developerEn"]);
+  const currentPublisher = str(p["publisher"] || p["publisherEn"]);
+  const currentGenres = buildGenres(p) ?? [];
+
+  // Eligible products in catalog: must be active Nintendo switch games, not the current game
+  const catalog = (Array.isArray(allProducts) ? allProducts : []).filter((cand) => {
+    if (!cand || typeof cand !== "object") return false;
+    const candId = String(cand["id"] ?? "");
+    if (!candId || candId === currentId) return false;
+    const candSlug = getProductSlug(cand);
+    if (candSlug && candSlug === currentSlug) return false;
+    if (
+      currentSlugTitle &&
+      slugifyTitle(cand["titleEn"] || cand["english_name"] || cand["title"] || "") ===
+        currentSlugTitle
+    )
+      return false;
+
+    // Check if visible to public (not hidden, not draft, not deleted)
+    if (!isVisibleToPublic(cand)) return false;
+
+    // Check category: must be a game
+    const catId = cand["category"] || cand["categoryId"];
+    const catTitle = cand["categoryTitle"] || cand["category_title"];
+    const catType = resolveCategoryType(
+      String(catId || ""),
+      String(catTitle || ""),
+      str(cand["kind"]),
+      str(cand["schemaId"]),
+    );
+    return catType === "game";
+  });
+
+  const similarList: SimilarGame[] = [];
+  const addedIds = new Set<string>();
+
+  const createSimilarGameFromProduct = (
+    cand: Record<string, unknown>,
+    reasons: Array<{ kind: SimilarityKind; text: string }>,
+    matchScore = 0.95,
+  ): SimilarGame => {
+    const slug = str(cand["id"]) || getProductSlug(cand);
+    const title =
+      localizedValue(cand, "title", "titleEn", locale) ||
+      str(cand["titleEn"]) ||
+      str(cand["title"]) ||
+      "Game";
+    const front = resolveNintendoImage(cand, "front-cover");
+    const coverUrl = !front.isPlaceholder
+      ? front.url
+      : str(cand["image"]) || str(cand["coverImage"]) || undefined;
+    const priceAmount = toAmount(cand["price"]);
+    const candPlatform: PlatformId = str(cand["platform"]) === "switch2" ? "switch2" : "switch";
+    const platforms: PlatformId[] = bool(cand["switch2Enhanced"])
+      ? ["switch", "switch2"]
+      : [candPlatform];
+
+    return {
+      slug,
+      title,
+      ...(coverUrl ? { coverUrl } : {}),
+      ...(priceAmount > 0 ? { price: money(priceAmount) } : {}),
+      rating: num(cand["metacriticRating"]) || num(cand["playerScore"]) || undefined,
+      platforms,
+      reasons: reasons.length
+        ? reasons
+        : [
+            {
+              kind: "genre",
+              text: locale === "en" ? "Similar Nintendo Game" : "لعبة نينتندو مشابهة",
+            },
+          ],
+      matchScore: Math.min(0.99, Math.max(0.6, matchScore)),
+    };
+  };
+
+  // Helper to find in catalog
+  const findInCatalog = (ref: unknown): Record<string, unknown> | undefined => {
+    if (!ref) return undefined;
+    const refStr =
+      typeof ref === "string"
+        ? ref.trim()
+        : typeof ref === "object" && ref !== null
+          ? str((ref as any).id || (ref as any).slug || (ref as any).title)
+          : "";
+    if (!refStr) return undefined;
+    const refLower = refStr.toLowerCase();
+    const refSlug = slugifyTitle(refStr);
+    const refNorm = normalizeName(refStr);
+
+    return catalog.find((cand) => {
+      if (String(cand["id"]).toLowerCase() === refLower) return true;
+      if (cand["slug"] && String(cand["slug"]).toLowerCase() === refLower) return true;
+      const cTitle = str(cand["titleEn"] || cand["english_name"] || cand["title"]);
+      if (slugifyTitle(cTitle) === refSlug) return true;
+      if (normalizeName(cTitle) === refNorm) return true;
+      return false;
+    });
+  };
+
+  // 1. Explicit similar_games from product record
+  const explicitRaw = rows(
+    p["similar_games"] ||
+      p["similarGames"] ||
+      p["similarIds"] ||
+      p["similar_ids"] ||
+      p["similarGamesInfo"] ||
+      p["similar"] ||
+      p["related_games"] ||
+      p["relatedGames"],
+  );
+
+  for (const item of explicitRaw) {
+    if (!item) continue;
+    const matched = findInCatalog(item);
+    if (matched) {
+      const matchedId = String(matched["id"]);
+      if (addedIds.has(matchedId)) continue;
+      addedIds.add(matchedId);
+
+      const itemObj =
+        typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {};
+      const customReason = str(
+        itemObj["reason"] || itemObj["description"] || itemObj["matchReason"],
+      );
+      const customScore =
+        num(itemObj["score"] || itemObj["matchScore"] || itemObj["similarityScore"]) || 0.95;
+
+      const reasons: Array<{ kind: SimilarityKind; text: string }> = [];
+      if (customReason) {
+        reasons.push({ kind: "gameplay", text: customReason });
+      } else {
+        const candGenres = Array.isArray(matched["genres"])
+          ? (matched["genres"] as string[])
+          : [];
+        const sharedGenre = currentGenres.find((g) => candGenres.includes(g));
+        if (currentSeries && str(matched["seriesName"] || matched["series"]) === currentSeries) {
+          reasons.push({
+            kind: "story",
+            text:
+              locale === "en"
+                ? `Same series: ${currentSeries}`
+                : `من نفس السلسلة: ${currentSeries}`,
+          });
+        } else if (sharedGenre) {
+          reasons.push({
+            kind: "genre",
+            text: locale === "en" ? `Similar genre: ${sharedGenre}` : `نوع مشابه: ${sharedGenre}`,
+          });
+        } else if (
+          currentDeveloper &&
+          str(matched["developer"] || matched["studioName"]) === currentDeveloper
+        ) {
+          reasons.push({
+            kind: "gameplay",
+            text:
+              locale === "en"
+                ? `From the same developer: ${currentDeveloper}`
+                : `من نفس المطور: ${currentDeveloper}`,
+          });
+        } else {
+          reasons.push({
+            kind: "nintendo",
+            text:
+              locale === "en"
+                ? "Recommended Nintendo Switch title"
+                : "لعبة مميزة مقترحة",
+          });
+        }
+      }
+
+      similarList.push(createSimilarGameFromProduct(matched, reasons, customScore));
+    }
+  }
+
+  // 2. Fallback matching algorithm if we need more candidates (aim for 4 to 8 games)
+  if (similarList.length < 5 && catalog.length > 0) {
+    const scoredCandidates: Array<{
+      cand: Record<string, unknown>;
+      score: number;
+      reasons: Array<{ kind: SimilarityKind; text: string }>;
+    }> = [];
+
+    for (const cand of catalog) {
+      const candId = String(cand["id"]);
+      if (addedIds.has(candId)) continue;
+
+      let score = 0;
+      const reasons: Array<{ kind: SimilarityKind; text: string }> = [];
+
+      // Series match (+40)
+      const candSeries = str(cand["seriesName"] || cand["series"]);
+      if (currentSeries && candSeries && currentSeries.toLowerCase() === candSeries.toLowerCase()) {
+        score += 40;
+        reasons.push({
+          kind: "story",
+          text:
+            locale === "en"
+              ? `Same series: ${currentSeries}`
+              : `من نفس السلسلة: ${currentSeries}`,
+        });
+      }
+
+      // Genre overlap (+15 per genre)
+      const candGenres = Array.isArray(cand["genres"])
+        ? (cand["genres"] as string[])
+        : str(cand["genre"])
+          ? [str(cand["genre"])]
+          : [];
+      const sharedGenres = currentGenres.filter((g) =>
+        candGenres.some((cg) => cg.toLowerCase() === g.toLowerCase()),
+      );
+      if (sharedGenres.length > 0) {
+        score += sharedGenres.length * 15;
+        const mainShared = sharedGenres.slice(0, 2).join(locale === "en" ? " & " : " و ");
+        reasons.push({
+          kind: "genre",
+          text: locale === "en" ? `Similar genre: ${mainShared}` : `نوع مشابه: ${mainShared}`,
+        });
+      }
+
+      // Developer match (+20)
+      const candDev = str(cand["developer"] || cand["studioName"] || cand["developerEn"]);
+      if (
+        currentDeveloper &&
+        candDev &&
+        currentDeveloper.toLowerCase() === candDev.toLowerCase()
+      ) {
+        score += 20;
+        reasons.push({
+          kind: "gameplay",
+          text:
+            locale === "en"
+              ? `Same developer: ${currentDeveloper}`
+              : `من نفس المطور: ${currentDeveloper}`,
+        });
+      }
+
+      // Publisher match (+10)
+      const candPub = str(cand["publisher"] || cand["publisherEn"]);
+      if (
+        currentPublisher &&
+        candPub &&
+        currentPublisher.toLowerCase() === candPub.toLowerCase() &&
+        reasons.length < 2
+      ) {
+        score += 10;
+        reasons.push({
+          kind: "nintendo",
+          text:
+            locale === "en"
+              ? `Published by ${currentPublisher}`
+              : `من نشر ${currentPublisher}`,
+        });
+      }
+
+      // Switch 2 enhancement similarity (+5)
+      if (bool(p["switch2Enhanced"]) && bool(cand["switch2Enhanced"])) {
+        score += 5;
+        if (reasons.length < 2) {
+          reasons.push({
+            kind: "nintendo",
+            text: locale === "en" ? "Enhanced for Switch 2" : "محسنة لجهاز Switch 2",
+          });
+        }
+      }
+
+      if (score > 0) {
+        scoredCandidates.push({ cand, score, reasons });
+      }
+    }
+
+    // Sort by score descending
+    scoredCandidates.sort((a, b) => b.score - a.score);
+
+    const needed = 8 - similarList.length;
+    for (const item of scoredCandidates.slice(0, needed)) {
+      const candId = String(item.cand["id"]);
+      addedIds.add(candId);
+      const normalizedScore = 0.7 + Math.min(0.28, (item.score / 100) * 0.28);
+      similarList.push(createSimilarGameFromProduct(item.cand, item.reasons, normalizedScore));
+    }
+  }
+
+  return similarList.length ? similarList : undefined;
 }
 
 function buildPatchNotes(p: Record<string, unknown>, locale: "ar" | "en"): PatchNote[] | undefined {
@@ -828,6 +1341,7 @@ function buildOffers(
 export function gameFromProduct(
   product: Record<string, unknown>,
   locale: "ar" | "en" = "ar",
+  allProducts?: Array<Record<string, unknown>>,
 ): Game {
   const p = product;
   const id = String(p["id"] ?? "");
@@ -919,6 +1433,7 @@ export function gameFromProduct(
     ...opt("completion", buildCompletion(p)),
     ...opt("faq", buildFaq(p, locale)),
     ...opt("timeline", buildTimeline(p, locale)),
+    ...opt("similar", buildSimilar(p, allProducts, locale)),
     ...opt("patchNotes", buildPatchNotes(p, locale)),
     ...opt("soundtrack", buildSoundtrack(p, locale)),
     ...opt("series", buildSeries(p, locale)),

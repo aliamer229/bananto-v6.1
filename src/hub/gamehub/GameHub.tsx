@@ -186,6 +186,7 @@ function buildNavItems(game: Game, t: ReturnType<typeof useI18n>["t"]): NavItem[
       Boolean(game.reviewSummary) || (game.reviews?.length ?? 0) > 0,
       { id: "reviews", label: t("nav.reviews") },
     ],
+    [(game.timeline?.length ?? 0) > 0, { id: "timeline", label: t("timeline.title") }],
     [(game.similar?.length ?? 0) > 0, { id: "similar", label: t("similar.title") }],
     [Boolean(game.series), { id: "series", label: t("series.title") }],
     [(game.dataSources?.length ?? 0) > 0, { id: "sources", label: t("sources.title") }],

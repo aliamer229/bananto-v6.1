@@ -249,13 +249,150 @@ export function getDevicePerformanceList(product: Record_ | null | undefined): D
   ];
 }
 
+function calculateRecordCompleteness(record: DevicePerformance): number {
+  let score = 0;
+  if (record.informationStatus === "available") score += 2;
+  if (record.handheld?.supported !== undefined) score += 1;
+  if (record.handheld?.resolution) score += 2;
+  if (record.handheld?.fps) score += 2;
+  if (record.tv?.supported !== undefined) score += 1;
+  if (record.tv?.resolution) score += 2;
+  if (record.tv?.fps) score += 2;
+  if (record.modes?.length) score += record.modes.length * 2;
+  if (record.verificationStatus && record.verificationStatus !== "unverified") score += 3;
+  if (record.sourceName || record.sourceUrl) score += 1;
+  if (record.testedDate || record.verifiedAt) score += 2;
+  return score;
+}
+
+function mergeModePerformance(
+  secondary?: DeviceModePerformance,
+  primary?: DeviceModePerformance,
+): DeviceModePerformance | undefined {
+  if (!primary && !secondary) return undefined;
+  if (!primary) return secondary;
+  if (!secondary) return primary;
+
+  const merged: DeviceModePerformance = {
+    supported: primary.supported !== undefined ? primary.supported : secondary.supported,
+    resolution: primary.resolution || secondary.resolution,
+    resolutionDynamic:
+      primary.resolutionDynamic !== undefined
+        ? primary.resolutionDynamic
+        : secondary.resolutionDynamic,
+    renderingResolution: primary.renderingResolution || secondary.renderingResolution,
+    outputResolution: primary.outputResolution || secondary.outputResolution,
+    fps: primary.fps || secondary.fps,
+    fpsMin: primary.fpsMin || secondary.fpsMin,
+    fpsMax: primary.fpsMax || secondary.fpsMax,
+    refreshRate: primary.refreshRate || secondary.refreshRate,
+    hdr: primary.hdr !== undefined ? primary.hdr : secondary.hdr,
+    vrr: primary.vrr !== undefined ? primary.vrr : secondary.vrr,
+    mode: primary.mode || secondary.mode,
+    notes: [primary.notes, secondary.notes]
+      .filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .join(" | "),
+  };
+
+  return compact(merged);
+}
+
+function mergeNamedModes(
+  secondary?: NamedPerformanceMode[],
+  primary?: NamedPerformanceMode[],
+): NamedPerformanceMode[] | undefined {
+  if (!primary && !secondary) return undefined;
+  if (!primary || !primary.length) return secondary;
+  if (!secondary || !secondary.length) return primary;
+
+  const modeMap = new Map<string, NamedPerformanceMode>();
+  for (const m of secondary) {
+    if (m && m.name) modeMap.set(m.name.toLowerCase().trim(), m);
+  }
+  for (const m of primary) {
+    if (!m || !m.name) continue;
+    const key = m.name.toLowerCase().trim();
+    const existing = modeMap.get(key);
+    if (existing) {
+      modeMap.set(key, {
+        name: m.name || existing.name,
+        handheldResolution: m.handheldResolution || existing.handheldResolution,
+        handheldFps: m.handheldFps || existing.handheldFps,
+        tvResolution: m.tvResolution || existing.tvResolution,
+        tvFps: m.tvFps || existing.tvFps,
+        hdr: m.hdr !== undefined ? m.hdr : existing.hdr,
+        vrr: m.vrr !== undefined ? m.vrr : existing.vrr,
+        notes: [m.notes, existing.notes]
+          .filter(Boolean)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .join(" | "),
+      });
+    } else {
+      modeMap.set(key, m);
+    }
+  }
+  const result = [...modeMap.values()];
+  return result.length ? result : undefined;
+}
+
+export function mergeDevicePerformanceRecords(
+  existing: DevicePerformance,
+  incoming: DevicePerformance,
+): DevicePerformance {
+  const existingScore = calculateRecordCompleteness(existing);
+  const incomingScore = calculateRecordCompleteness(incoming);
+
+  const primary = incomingScore >= existingScore ? incoming : existing;
+  const secondary = incomingScore >= existingScore ? existing : incoming;
+
+  const merged: DevicePerformance = {
+    ...secondary,
+    ...primary,
+    device: primary.device || secondary.device,
+    deviceSlug: primary.deviceSlug || secondary.deviceSlug,
+    deviceModel: primary.deviceModel || secondary.deviceModel,
+    hardwareId: primary.hardwareId || secondary.hardwareId,
+    informationStatus: primary.informationStatus || secondary.informationStatus,
+    unavailableReason: primary.unavailableReason || secondary.unavailableReason,
+    handheld: mergeModePerformance(secondary.handheld, primary.handheld),
+    tv: mergeModePerformance(secondary.tv, primary.tv),
+    modes: mergeNamedModes(secondary.modes, primary.modes),
+    upscaling: primary.upscaling || secondary.upscaling,
+    rayTracing: primary.rayTracing !== undefined ? primary.rayTracing : secondary.rayTracing,
+    rayTracingMode: primary.rayTracingMode || secondary.rayTracingMode,
+    loadingTime: primary.loadingTime || secondary.loadingTime,
+    loadingNotes: primary.loadingNotes || secondary.loadingNotes,
+    gameVersion: primary.gameVersion || secondary.gameVersion,
+    patchVersion: primary.patchVersion || secondary.patchVersion,
+    testedDate: primary.testedDate || secondary.testedDate,
+    sourceName: primary.sourceName || secondary.sourceName,
+    sourceUrl: primary.sourceUrl || secondary.sourceUrl,
+    verifiedAt: primary.verifiedAt || secondary.verifiedAt,
+    verificationStatus: primary.verificationStatus || secondary.verificationStatus,
+    performanceNotes: [primary.performanceNotes, secondary.performanceNotes]
+      .filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .join(" | "),
+  };
+
+  return compact(merged);
+}
+
 export function dedupeDevicePerformance(records: DevicePerformance[]): DevicePerformance[] {
   const byDevice = new Map<string, DevicePerformance>();
   for (const record of records) {
     if (!record || typeof record !== "object") continue;
     const key = record.hardwareId || record.deviceSlug || slugifyDevice(record.device);
     if (!key) continue;
-    byDevice.set(key, record);
+
+    const existing = byDevice.get(key);
+    if (existing) {
+      console.warn(`[dedupeDevicePerformance] Merging duplicate performance record for "${key}"`);
+      byDevice.set(key, mergeDevicePerformanceRecords(existing, record));
+    } else {
+      byDevice.set(key, record);
+    }
   }
   return [...byDevice.values()];
 }
@@ -301,7 +438,10 @@ function modeMissing(mode: DeviceModePerformance | undefined, prefix: string): s
   return missing;
 }
 
-export function validateGameDevicePerformance(product: Record_ | null | undefined): PerformanceValidationIssue[] {
+export function validateGameDevicePerformance(
+  product: Record_ | null | undefined,
+  options?: { strict?: boolean },
+): PerformanceValidationIssue[] {
   if (!product || typeof product !== "object") return [];
   const source = product["devicePerformance"] ?? product["device_performance"];
   const rawRecords = (Array.isArray(source) ? source : source ? [source] : [])
@@ -313,29 +453,28 @@ export function validateGameDevicePerformance(product: Record_ | null | undefine
   const duplicate = identities.find(
     (identity, index) => identity && identities.indexOf(identity) !== index,
   );
+  const issues: PerformanceValidationIssue[] = [];
   if (duplicate) {
-    return [
-      {
-        key: "device_performance",
-        severity: "error",
-        message: `Duplicate performance record for ${duplicate}. Keep one active record per game and hardware device.`,
-      },
-    ];
+    console.warn(`[validateGameDevicePerformance] Duplicate performance record detected for ${duplicate}; merging automatically.`);
+    issues.push({
+      key: "device_performance",
+      severity: options?.strict ? "error" : "warning",
+      message: `Duplicate performance record for ${duplicate}. Keep one active record per game and hardware device.`,
+    });
   }
 
-  if (!productSupportsSwitch2(product)) return [];
+  if (!productSupportsSwitch2(product)) return issues;
 
   const records = getDevicePerformanceList(product);
   const record = records.find((item) => item.deviceSlug === "nintendo-switch-2");
   if (!record) {
-    return [
-      {
-        key: "device_performance",
-        severity: "error",
-        message:
-          "Nintendo Switch 2 performance information is required. Please provide Handheld resolution/FPS and TV resolution/FPS, or mark an unsupported mode as Not Supported.",
-      },
-    ];
+    issues.push({
+      key: "device_performance",
+      severity: "error",
+      message:
+        "Nintendo Switch 2 performance information is required. Please provide Handheld resolution/FPS and TV resolution/FPS, or mark an unsupported mode as Not Supported.",
+    });
+    return issues;
   }
 
   if (record.informationStatus === "not_published" || record.informationStatus === "not_tested") {
@@ -343,26 +482,26 @@ export function validateGameDevicePerformance(product: Record_ | null | undefine
     if (!record.unavailableReason) missing.push("unavailable_reason");
     if (!record.sourceName && !record.sourceUrl) missing.push("source_name or source_url");
     if (!record.verificationStatus) missing.push("verification_status");
-    return missing.length
-      ? [
-          {
-            key: "device_performance",
-            severity: "error",
-            message: `Performance information is marked ${record.informationStatus}, but the following fields are required: ${missing.join(", ")}.`,
-          },
-        ]
-      : [];
+    if (missing.length) {
+      issues.push({
+        key: "device_performance",
+        severity: "error",
+        message: `Performance information is marked ${record.informationStatus}, but the following fields are required: ${missing.join(", ")}.`,
+      });
+    }
+    return issues;
   }
 
   const missing = [...modeMissing(record.handheld, "handheld"), ...modeMissing(record.tv, "tv")];
-  if (!missing.length) return [];
-  return [
-    {
+  if (missing.length) {
+    issues.push({
       key: "device_performance",
       severity: "error",
       message: `Import validation error: Nintendo Switch 2 performance data is required. Missing: ${missing.join(", ")}. If a mode is not supported, mark it as Not Supported.`,
-    },
-  ];
+    });
+  }
+
+  return issues;
 }
 
 export function requiresPerformanceReview(product: Record_ | null | undefined): boolean {

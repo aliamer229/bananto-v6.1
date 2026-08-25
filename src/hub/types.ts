@@ -422,6 +422,9 @@ export interface TimelineEvent {
   title: string;
   detail?: string;
   videoId?: string;
+  version?: string;
+  sourceUrl?: string;
+  url?: string;
 }
 
 export interface PatchNote {

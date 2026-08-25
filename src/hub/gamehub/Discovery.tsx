@@ -31,13 +31,11 @@ const REASON_KEY: Record<SimilarityKind, string> = {
  * shortlist than someone who loved the traversal. Every card states its reason.
  */
 export function SimilarGamesSection() {
-  const { t } = useI18n();
+  const { t, intlLocale } = useI18n();
   const { game } = useHub();
   const { formatConverted } = useCurrency();
   const similar = game.similar ?? [];
   const [kind, setKind] = useState<SimilarityKind | "all">("all");
-
-  if (similar.length === 0) return null;
 
   const kinds = [...new Set(similar.flatMap((s) => s.reasons.map((r) => r.kind)))];
   const visible =
@@ -57,7 +55,7 @@ export function SimilarGamesSection() {
             </FilterPill>
             {kinds.map((k) => (
               <FilterPill key={k} active={kind === k} onClick={() => setKind(k)}>
-                {t(REASON_KEY[k] as never)}
+                {REASON_KEY[k] ? t(REASON_KEY[k] as never) : k}
               </FilterPill>
             ))}
           </div>
@@ -65,53 +63,66 @@ export function SimilarGamesSection() {
       }
     >
       <Reveal>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {visible.map((pick) => {
-            const reason =
-              pick.reasons.find((r) => kind === "all" || r.kind === kind) ?? pick.reasons[0];
-            return (
-              <Link
-                key={pick.slug}
-                to={gamePath(pick.slug)}
-                className="group flex flex-col overflow-hidden rounded-panel border border-white/[0.07] bg-white/[0.03] transition-all duration-200 hover:border-white/15 hover:bg-white/[0.06]"
-              >
-                <span className="relative aspect-[3/4] overflow-hidden">
-                  <SmartImage
-                    src={cdnImage(pick.coverUrl)}
-                    alt={pick.title}
-                    wrapperClassName="absolute inset-0"
-                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                  {pick.matchScore != null && (
-                    <span className="absolute end-2 top-2 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] font-extrabold text-good backdrop-blur">
-                      {Math.round(pick.matchScore * 100)}% {t("similar.match")}
-                    </span>
-                  )}
-                </span>
-                <span className="flex flex-1 flex-col p-3">
-                  <span className="line-clamp-2 text-xs font-extrabold leading-snug transition-colors group-hover:text-nin-soft">
-                    {pick.title}
-                  </span>
-                  {reason && (
-                    <span className="mt-1.5 line-clamp-2 flex-1 text-[10px] leading-relaxed muted">
-                      {reason.text}
-                    </span>
-                  )}
-                  <span className="mt-2 flex items-center justify-between gap-2">
-                    {pick.price && (
-                      <span className="num text-xs font-extrabold text-good">
-                        {formatConverted(pick.price)}
+        {similar.length === 0 ? (
+          <Panel className="flex flex-col items-center justify-center p-8 text-center">
+            <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-muted">
+              <Sparkles className="h-5 w-5 opacity-40" />
+            </span>
+            <p className="text-sm font-bold text-muted">
+              {intlLocale === "ar"
+                ? "لا توجد ألعاب مشابهة مسجلة لهذه اللعبة حالياً"
+                : "No similar games available for this title right now"}
+            </p>
+          </Panel>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {visible.map((pick) => {
+              const reason =
+                pick.reasons.find((r) => kind === "all" || r.kind === kind) ?? pick.reasons[0];
+              return (
+                <Link
+                  key={pick.slug}
+                  to={gamePath(pick.slug)}
+                  className="group flex flex-col overflow-hidden rounded-panel border border-white/[0.07] bg-white/[0.03] transition-all duration-200 hover:border-white/15 hover:bg-white/[0.06]"
+                >
+                  <span className="relative aspect-[3/4] overflow-hidden bg-black/40">
+                    <SmartImage
+                      src={cdnImage(pick.coverUrl)}
+                      alt={pick.title}
+                      wrapperClassName="absolute inset-0"
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                    {pick.matchScore != null && (
+                      <span className="absolute end-2 top-2 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] font-extrabold text-good backdrop-blur">
+                        {Math.round(pick.matchScore * 100)}% {t("similar.match")}
                       </span>
                     )}
-                    {pick.platforms?.[0] && (
-                      <PlatformBadge platform={pick.platforms[0]} size="sm" />
-                    )}
                   </span>
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+                  <span className="flex flex-1 flex-col p-3">
+                    <span className="line-clamp-2 text-xs font-extrabold leading-snug transition-colors group-hover:text-nin-soft">
+                      {pick.title}
+                    </span>
+                    {reason && (
+                      <span className="mt-1.5 line-clamp-2 flex-1 text-[10px] leading-relaxed muted">
+                        {reason.text}
+                      </span>
+                    )}
+                    <span className="mt-2 flex items-center justify-between gap-2">
+                      {pick.price && (
+                        <span className="num text-xs font-extrabold text-good">
+                          {formatConverted(pick.price)}
+                        </span>
+                      )}
+                      {pick.platforms?.[0] && (
+                        <PlatformBadge platform={pick.platforms[0]} size="sm" />
+                      )}
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </Reveal>
     </Section>
   );

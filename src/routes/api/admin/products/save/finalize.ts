@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { guard, body, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { d1All, d1Run } from "@/lib/d1.server";
-import { invalidateStoreCache } from "@/lib/db.server";
+import { getStore, invalidateStoreCache } from "@/lib/db.server";
 import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
+import { syncGameDevicePerformance } from "@/lib/devicePerformance.server";
+import { resolveCategoryType } from "@/lib/productSection";
 
 export const Route = createFileRoute("/api/admin/products/save/finalize")({
   server: {
@@ -67,6 +69,38 @@ export const Route = createFileRoute("/api/admin/products/save/finalize")({
           await d1Run(`DELETE FROM store_kv WHERE key LIKE ?`, `staged_save:${sessionId}:%`);
           
           invalidateStoreCache();
+
+          // Sync game device performance in background/await safely
+          try {
+            const currentStore = await getStore();
+            const categories = currentStore.categories || [];
+            const catId = String(productToSave.categoryId || productToSave.category || "");
+            const cat = categories.find((c) => String(c.id || "") === catId);
+            const section = resolveCategoryType(
+              catId,
+              String(cat?.title || cat?.name || ""),
+              String(productToSave.kind || ""),
+              String(productToSave.schemaId || ""),
+            );
+            if (section === "game") {
+              const allProducts = currentStore.products || [];
+              const hardwareProds = allProducts.filter((p) => {
+                const cId = String(p.categoryId || p.category || "");
+                const c = categories.find((entry) => String(entry.id || "") === cId);
+                return (
+                  resolveCategoryType(
+                    cId,
+                    String(c?.title || c?.name || ""),
+                    String(p.kind || ""),
+                    String(p.schemaId || ""),
+                  ) === "hardware"
+                );
+              });
+              await syncGameDevicePerformance(productToSave, hardwareProds);
+            }
+          } catch (perfErr) {
+            console.error("[finalize:syncGameDevicePerformance:error]", perfErr);
+          }
           
           // Read-after-write verification
           const verifyRows = await d1All<{ key: string; value: string }>(

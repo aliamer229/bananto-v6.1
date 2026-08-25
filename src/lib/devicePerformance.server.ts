@@ -193,20 +193,30 @@ export async function syncGameDevicePerformance(
   for (const { record, identity, hash } of prepared) {
     const current = await d1First<{ id?: string; data_hash?: string; revision?: number }>(
       `SELECT id, data_hash, revision FROM game_device_performance
-       WHERE game_id = ? AND hardware_id = ? AND active = 1 LIMIT 1`,
+       WHERE game_id = ? AND hardware_id = ? AND active = 1 ORDER BY revision DESC, updated_at DESC LIMIT 1`,
       gameId,
       identity.hardwareId,
     );
-    if (current?.id && current.data_hash === hash) continue;
-
     const now = new Date().toISOString();
-    if (current?.id) {
+
+    if (current?.id && current.data_hash === hash) {
+      // Ensure any rogue duplicate active records for the same game & hardware are marked inactive
       statements.push({
         sql: `UPDATE game_device_performance
-              SET active = 0, superseded_at = ?, updated_at = ? WHERE id = ?`,
-        binds: [now, now, current.id],
+              SET active = 0, superseded_at = ?, updated_at = ?
+              WHERE game_id = ? AND hardware_id = ? AND active = 1 AND id != ?`,
+        binds: [now, now, gameId, identity.hardwareId, current.id],
       });
+      continue;
     }
+
+    // Deactivate ALL existing active records for this game_id + hardware_id before inserting new record
+    statements.push({
+      sql: `UPDATE game_device_performance
+            SET active = 0, superseded_at = ?, updated_at = ?
+            WHERE game_id = ? AND hardware_id = ? AND active = 1`,
+      binds: [now, now, gameId, identity.hardwareId],
+    });
 
     const performanceId = `gdp_${crypto.randomUUID().replace(/-/g, "")}`;
     const row = databaseRow(

@@ -97,7 +97,8 @@ function setJsonLd(blocks: object[]): void {
 /* -------------------------------------------------------------------------- */
 
 export function gamePath(slug: string, sub?: "guides" | "dlc" | "prices" | "reviews"): string {
-  return sub ? `/games/${slug}/${sub}` : `/games/${slug}`;
+  const cleanSlug = encodeURIComponent(String(slug || "").trim());
+  return sub ? `/product/${cleanSlug}?tab=${sub}` : `/product/${cleanSlug}`;
 }
 
 export function buildProductJsonLd(game: Game): object | null {

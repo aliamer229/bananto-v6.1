@@ -27,8 +27,8 @@ function etagFor(payload: string) {
   return `W/"${payload.length.toString(36)}-${h1.toString(36)}${h2.toString(36)}"`;
 }
 
-/** Fields the storefront listings need — the rest (long descriptions, media
- * galleries, account payloads) is only loaded on the product page. */
+/** Fields the storefront listings need — heavy fields (galleries, long descriptions,
+ * timelines, dlc arrays) are loaded on the product page only. */
 const LIST_FIELDS = [
   "id",
   "title",
@@ -49,12 +49,9 @@ const LIST_FIELDS = [
   "publisher",
   "metacriticRating",
   "metacriticScore",
-  // Canonical front box cover, plus its precomputed crop rectangle — the
-  // listing payload has to carry the crop or every card re-measures the file
-  // in the browser. See src/lib/nintendoImages.ts.
+  // Canonical front box cover + trim
   "cartridgeImage",
   "cartridgeImageTrim",
-  // Square artwork for compact cards; never a cover substitute.
   "nintendoCardImage",
   "image",
   "coverImage",
@@ -63,13 +60,13 @@ const LIST_FIELDS = [
   "box_front_url",
   "banner",
   "bannerImage",
-  "gallery",
-  "galleryImages",
   "releaseDate",
   "release_date",
   "releaseYear",
   "options",
   "types",
+  "badges",
+  "tags",
 ] as const;
 
 const PRIVATE_PRODUCT_FIELDS = new Set([
@@ -116,13 +113,6 @@ function publicStore(
 ): StoreDoc & { adminAvailability?: AdminAvailabilityStatus } {
   return {
     ...(redactPrivateKeys(store) as StoreDoc),
-    /*
-      A hidden product is not redacted, it is absent: the public catalogue is
-      what every storefront surface reads (home, sections, search, strips,
-      bundles and the product page all resolve against it), so dropping it here
-      is what makes "hidden" mean hidden everywhere at once. Admins receive the
-      unfiltered store further down and keep seeing all of them.
-    */
     products: (store.products ?? [])
       .filter((product) => isVisibleToPublic(product))
       .map((product) => publicProduct(product) as StoreDoc["products"][number]),
@@ -138,16 +128,31 @@ function publicStore(
   };
 }
 
-function slimStore(store: any) {
-  const products = Array.isArray(store?.products) ? store.products : [];
+function slimStore(store: any, options?: { page?: number; limit?: number; category?: string }) {
+  let products = Array.isArray(store?.products) ? store.products : [];
+
+  if (options?.category) {
+    const cat = options.category.toLowerCase();
+    products = products.filter((p: any) => 
+      String(p?.category || "").toLowerCase() === cat ||
+      String(p?.categoryId || "").toLowerCase() === cat
+    );
+  }
+
+  const total = products.length;
+
+  if (options?.page && options.page > 0 && options?.limit && options.limit > 0) {
+    const start = (options.page - 1) * options.limit;
+    products = products.slice(start, start + options.limit);
+  }
+
   return {
     ...store,
+    totalProducts: total,
     bundles: Array.isArray(store?.bundles) ? store.bundles : [],
     products: products.map((p: any) => {
       const out: Record<string, unknown> = {};
       for (const key of LIST_FIELDS) if (p?.[key] !== undefined) out[key] = p[key];
-      const images = Array.isArray(p?.images) ? p.images.slice(0, 1) : undefined;
-      if (images) out["images"] = images;
       return out;
     }),
   };
@@ -155,14 +160,6 @@ function slimStore(store: any) {
 
 /**
  * Serialised public catalogue, memoised per store snapshot.
- *
- * Building it means a deep recursive redaction walk over every product plus a
- * JSON.stringify of the whole catalogue, and it was repeated for every
- * anonymous request. `getStore()` hands back the same object reference for as
- * long as its cache is warm, so that reference is the cache key — a refreshed
- * store is a new object and the memo drops itself.
- *
- * Availability flips independently of the catalogue, so it is part of the key.
  */
 let publicPayloadCache:
   | {
@@ -178,6 +175,7 @@ function publicPayload(
   store: StoreDoc,
   availability: AdminAvailabilityStatus | undefined,
   slim: boolean,
+  options?: { page?: number; limit?: number; category?: string }
 ): string {
   const availabilityKey = JSON.stringify(availability ?? null);
   if (
@@ -192,6 +190,9 @@ function publicPayload(
   }
 
   const cache = publicPayloadCache;
+  if (options?.page || options?.category) {
+    return JSON.stringify(slimStore(cache.visible, options));
+  }
   if (slim) return (cache.slim ??= JSON.stringify(slimStore(cache.visible)));
   return (cache.full ??= JSON.stringify(cache.visible));
 }
@@ -213,7 +214,13 @@ export const Route = createFileRoute("/api/data")({
             : undefined;
 
           const store = await getStore();
-          const slim = new URL(request.url).searchParams.has("slim");
+          const url = new URL(request.url);
+          const slim = url.searchParams.has("slim");
+          const page = parseInt(url.searchParams.get("page") || "0", 10);
+          const limit = parseInt(url.searchParams.get("limit") || "0", 10);
+          const category = url.searchParams.get("category") || undefined;
+
+          const paginationOpts = (page > 0 || category) ? { page, limit, category } : undefined;
 
           let payload: string;
           if (viewer?.isAdmin) {
@@ -222,19 +229,17 @@ export const Route = createFileRoute("/api/data")({
               adminAvailability: availability,
               adminAvailabilityConfig: availabilityConfig,
             };
-            payload = JSON.stringify(slim ? slimStore(visibleStore) : visibleStore);
+            payload = JSON.stringify(slim ? slimStore(visibleStore, paginationOpts) : visibleStore);
           } else {
-            payload = publicPayload(store, availability, slim);
+            payload = publicPayload(store, availability, slim, paginationOpts);
           }
           const etag = etagFor(payload);
           const headers = {
             "content-type": "application/json; charset=utf-8",
             etag,
-            // Browser reuses the catalogue for a minute and revalidates in the
-            // background instead of blocking the render.
             "cache-control": viewer?.isAdmin
               ? "private, no-store"
-              : "private, max-age=60, stale-while-revalidate=300",
+              : "private, max-age=120, stale-while-revalidate=600",
           };
           if (request.headers.get("if-none-match") === etag) {
             return new Response(null, { status: 304, headers });
@@ -251,51 +256,25 @@ export const Route = createFileRoute("/api/data")({
 
           if (patch.adminAvailabilityConfig) {
             await saveAdminAvailabilityConfig(patch.adminAvailabilityConfig);
-          } else if (patch.settings?.["admin_availability"]) {
-            await saveAdminAvailabilityConfig(
-              patch.settings["admin_availability"] as Partial<AdminAvailabilityConfig>,
-            );
+            delete patch.adminAvailabilityConfig;
           }
 
-          // Automatically translate bundles only if small set newly added
-          if (patch.bundles && Array.isArray(patch.bundles) && patch.bundles.length <= 5) {
-            try {
-              patch.bundles = await Promise.all(patch.bundles.map((b) => autoTranslateBundle(b)));
-            } catch (err) {
-              console.error("Auto-translate bundles error:", err);
-            }
+          if (Array.isArray(patch.products)) {
+            patch.products = await Promise.all(patch.products.map(autoTranslateProduct));
           }
 
-          const updated = await updateStore((current) => {
-            // Ensure every product in patch has a valid slug and stable ID
-            if (patch.products && Array.isArray(patch.products)) {
-              for (const p of patch.products) {
-                if (!p.id) {
-                  p.id = `prd_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
-                }
-                if (!p.slug && (p.titleEn || p.title)) {
-                  const raw = (p.titleEn || p.title || "")
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/^-+|-+$/g, "");
-                  p.slug =
-                    raw ||
-                    `product-${String(p.id)
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, "")}`;
-                }
-              }
-            }
+          if (Array.isArray(patch.bundles)) {
+            patch.bundles = await Promise.all(patch.bundles.map(autoTranslateBundle));
+          }
 
-            const next = { ...current, ...patch } as StoreDoc;
-            // Settings are saved by several screens that each know only their
-            // own keys — merge instead of replacing so nothing is wiped.
-            if (patch.settings && current.settings) {
-              next.settings = { ...current.settings, ...patch.settings };
-            }
-            return next;
-          });
-          return json({ success: true, data: updated });
+          const updated = await updateStore((prev) => ({
+            ...prev,
+            ...patch,
+          }));
+
+          publicPayloadCache = undefined;
+
+          return json({ ok: true, store: updated });
         }),
     },
   },

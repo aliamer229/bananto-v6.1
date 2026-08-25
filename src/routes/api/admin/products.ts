@@ -39,7 +39,9 @@ function productSection(product: Partial<Product>, categories: Record<string, un
 
 function performanceValidation(product: Partial<Product>, categories: Record<string, unknown>[]) {
   return productSection(product, categories) === "game"
-    ? validateGameDevicePerformance(product as Record<string, unknown>)
+    ? validateGameDevicePerformance(product as Record<string, unknown>).filter(
+        (issue) => issue.severity === "error",
+      )
     : [];
 }
 

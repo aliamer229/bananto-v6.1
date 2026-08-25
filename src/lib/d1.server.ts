@@ -678,6 +678,11 @@ const SCHEMA_PATCHES: string[] = [
   `ALTER TABLE orders ADD COLUMN payment_reference TEXT`,
   `ALTER TABLE orders ADD COLUMN source TEXT`,
   `ALTER TABLE orders ADD COLUMN created_by TEXT`,
+  `ALTER TABLE orders ADD COLUMN last_otp_sent_at TEXT`,
+  `ALTER TABLE orders ADD COLUMN auto_complete_at TEXT`,
+  `ALTER TABLE orders ADD COLUMN customer_confirmed_at TEXT`,
+  `ALTER TABLE orders ADD COLUMN auto_completed_at TEXT`,
+  `ALTER TABLE orders ADD COLUMN delivery_issue_opened_at TEXT`,
   `CREATE UNIQUE INDEX IF NOT EXISTS orders_idempotency_idx ON orders (idempotency_key) WHERE idempotency_key IS NOT NULL`,
   // migrations/0002_otp_phone.sql created otp_codes with only
   // (id, phone, purpose, code_hash, expires_at, attempts, created_at).
@@ -1691,7 +1696,7 @@ export function ensureCouponsSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 17;
+const RUNTIME_SCHEMA_VERSION = 18;
 
 async function runSchemaStatements(
   db: D1Like,
@@ -1844,6 +1849,37 @@ export function ensureSchema(): Promise<void> {
         if (changes > 0) console.info("[d1:queue_released_stale_rows]", { changes });
       } catch (err) {
         console.warn("[d1:queue_cleanup_skipped]", err);
+      }
+
+      /*
+        Clean up any duplicate active game_device_performance records, keeping the highest revision / newest.
+      */
+      try {
+        await db
+          .prepare(
+            `UPDATE game_device_performance
+             SET active = 0, superseded_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+             WHERE active = 1 AND id NOT IN (
+               SELECT id FROM (
+                 SELECT id, ROW_NUMBER() OVER (
+                   PARTITION BY game_id, hardware_id
+                   ORDER BY revision DESC, updated_at DESC, id DESC
+                 ) as rn
+                 FROM game_device_performance
+                 WHERE active = 1
+               ) WHERE rn = 1
+             )`,
+          )
+          .run();
+
+        await db
+          .prepare(
+            `DELETE FROM game_device_performance_modes
+             WHERE performance_id NOT IN (SELECT id FROM game_device_performance)`,
+          )
+          .run();
+      } catch (err) {
+        console.warn("[d1:game_device_performance_dedupe_skipped]", err);
       }
 
       await db

@@ -13,7 +13,7 @@ import { gameFromProduct } from "@/hub/data/fromProduct";
 import { GameHub } from "@/hub/gamehub/GameHub";
 import { I18nProvider } from "@/hub/i18n";
 import { tr, useI18n } from "@/i18n";
-import { api } from "@/lib/api";
+import { useStoreData } from "@/hooks/useStoreData";
 import { detectSchema } from "@/lib/productImport/registry";
 import { getProductCategory, schemaForSection } from "@/lib/productSection";
 import { findProductByIdOrSlug, getProductSlug } from "@/lib/productRouting";
@@ -44,16 +44,35 @@ function ProductPage() {
   const { productId } = Route.useParams();
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({ queryKey: ["store", "full"], queryFn: () => api.store() });
-  const found = useMemo(
-    () => findProductByIdOrSlug(data?.products, productId) as Record<string, unknown> | undefined,
-    [data?.products, productId],
+  // 1. Instant cache access via shared store data
+  const { data: storeData } = useStoreData();
+  const cachedProduct = useMemo(
+    () => findProductByIdOrSlug(storeData?.products, productId) as Record<string, unknown> | undefined,
+    [storeData?.products, productId],
   );
+
+  // 2. Fetch full product payload if needed
+  const { data: singleProductData, isLoading: isSingleLoading } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: async () => {
+      const res = await fetch(`/api/product?id=${encodeURIComponent(productId)}`);
+      if (!res.ok) {
+        if (res.status === 404) return null;
+        throw new Error("failed_to_fetch_product");
+      }
+      const body = await res.json();
+      return body.product as Record<string, unknown>;
+    },
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+  });
+
+  // Merge: single full product takes precedence, fallback to cached product immediately
+  const product = singleProductData || cachedProduct;
+  const isLoading = !product && isSingleLoading && !storeData;
 
   const lang = useI18n((s) => s.lang);
   const locale = lang === "ar" ? "ar" : "en";
-
-  const product = found;
 
   /*
     The Game Hub belongs to Nintendo Switch Games and nothing else. Every other
@@ -61,7 +80,6 @@ function ProductPage() {
     its own schema-driven details page.
   */
   const section = useMemo(() => (product ? getProductCategory(product) : undefined), [product]);
-
   const isGame = section === "game";
 
   const schema = useMemo(
@@ -73,8 +91,8 @@ function ProductPage() {
   );
 
   const game = useMemo(
-    () => (product && isGame ? gameFromProduct(product, locale) : null),
-    [product, isGame, locale],
+    () => (product && isGame ? gameFromProduct(product, locale, storeData?.products as any) : null),
+    [product, isGame, locale, storeData?.products],
   );
 
   // Kept on the user's device; sent with a support message as a hint only.
@@ -114,29 +132,44 @@ function ProductPage() {
     );
   }
 
-  if (product && (!isGame || !game || schema)) {
+  if (game && isGame) {
     return (
-      <AppShell currentView="details" hideNav onBack={() => void navigate({ to: "/" })}>
-        <ProductDetails product={product} schema={schema} />
-        <ProductReviews productId={String(product["id"] ?? productId)} />
-      </AppShell>
+      <I18nProvider>
+        <CurrencyProvider>
+          <UserProvider>
+            <NotificationProvider>
+              <div className="relative min-h-screen bg-[rgb(var(--bg))] text-[rgb(var(--text))]">
+                <GameHub
+                  game={game}
+                  onNavigateGuide={(slug) => {
+                    const el = document.getElementById("guides");
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                />
+              </div>
+            </NotificationProvider>
+          </UserProvider>
+        </CurrencyProvider>
+      </I18nProvider>
     );
   }
 
-  if (!game) return null;
-
   return (
-    <AppShell currentView="details" hideNav onBack={() => void navigate({ to: "/" })}>
-      <I18nProvider>
-        <CurrencyProvider>
-          <NotificationProvider>
-            <UserProvider>
-              <GameHub game={game} />
-              <ProductReviews productId={String(product?.["id"] ?? productId)} />
-            </UserProvider>
-          </NotificationProvider>
-        </CurrencyProvider>
-      </I18nProvider>
+    <AppShell currentView="details" hideNav>
+      <div className="min-h-screen bg-[var(--page)]">
+        <ProductDetails
+          product={product}
+          schema={schema}
+          onBack={() => void navigate({ to: "/" })}
+          onViewSection={(sec) => {
+            const path = sec === "hardware" ? "/hardware" : `/?category=${sec}`;
+            void navigate({ to: path as any });
+          }}
+        />
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <ProductReviews productId={String(product["id"])} productName={String(product["title"])} />
+        </div>
+      </div>
     </AppShell>
   );
 }

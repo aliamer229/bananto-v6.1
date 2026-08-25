@@ -12,6 +12,7 @@ import { boxContentsToText } from "./boxContentsText";
 import { toStepList } from "./stepsText";
 import { safeRandomUUID } from "./polyfills";
 import { parseGameImport } from "./gameImportParser";
+import { dedupeDevicePerformance, getDevicePerformanceList } from "./devicePerformance";
 
 /** The state a brand new product form starts with. */
 export function createBlankProductForm(defaultCategoryId: string): Record<string, any> {
@@ -213,6 +214,11 @@ export function buildProductSavePayload(
     cleanedData.bannerImages = cleanedData.bannerImages.filter(
       (img: any) => typeof img === "string" && !img.startsWith("data:image/") && !img.startsWith("blob:")
     );
+  }
+
+  // Deduplicate and normalize devicePerformance
+  if (cleanedData.devicePerformance || cleanedData.device_performance) {
+    cleanedData.devicePerformance = dedupeDevicePerformance(getDevicePerformanceList(cleanedData));
   }
 
   return {

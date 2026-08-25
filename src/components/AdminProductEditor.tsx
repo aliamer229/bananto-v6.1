@@ -651,8 +651,9 @@ export default function AdminProductEditor({
 
     if (isGameCategory) {
       const performanceIssues = validateGameDevicePerformance(formData);
-      if (performanceIssues.length) {
-        toast.error(performanceIssues.map((issue) => issue.message).join("\n"), {
+      const blockingIssues = performanceIssues.filter((i) => i.severity === "error");
+      if (blockingIssues.length) {
+        toast.error(blockingIssues.map((issue) => issue.message).join("\n"), {
           duration: 9000,
         });
         return;

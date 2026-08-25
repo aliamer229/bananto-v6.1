@@ -39,11 +39,19 @@ export function isProductPriced(product: unknown): boolean {
 export function isProductHidden(product: unknown): boolean {
   if (!product || typeof product !== "object") return false;
   const p = product as Record<string, unknown>;
-  if (p["isHidden"] === true || p["is_hidden"] === true || p["hidden"] === true) return true;
+  if (
+    p["isHidden"] === true ||
+    p["is_hidden"] === true ||
+    p["hidden"] === true ||
+    p["isDeleted"] === true ||
+    p["deleted"] === true ||
+    p["is_deleted"] === true
+  )
+    return true;
   const vis = String(p["visibility"] ?? "").trim().toLowerCase();
-  if (vis === "hidden" || vis === "private" || vis === "draft") return true;
+  if (vis === "hidden" || vis === "private" || vis === "draft" || vis === "deleted") return true;
   const st = String(p["status"] ?? "").trim().toLowerCase();
-  if (st === "مخفي" || st === "hidden") return true;
+  if (st === "مخفي" || st === "hidden" || st === "deleted" || st === "محذوف") return true;
   return false;
 }
 
@@ -55,7 +63,7 @@ export function isVisibleToPublic(product: unknown): boolean {
   if (!product || typeof product !== "object") return false;
   const p = product as Record<string, unknown>;
   if (isProductHidden(p)) return false;
-  if (p["isActive"] === false) return false;
+  if (p["isActive"] === false || p["active"] === false) return false;
   const st = String(p["status"] ?? "").trim().toLowerCase();
   if (
     st === "غير نشط" ||

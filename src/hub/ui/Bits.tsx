@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/hub/utils/cn";
 import { useCountUp } from "@/hub/hooks/useCountUp";
-import { cdnImage } from "@/lib/img";
+import { cdnImage, buildSrcSet } from "@/lib/img";
 
 /* -------------------------------------------------------------------------- */
 /* Reveal                                                                     */
@@ -284,14 +284,14 @@ export function CountUp({
 /* Media                                                                      */
 /* -------------------------------------------------------------------------- */
 
-/** Lazy image that fades in and never leaves a raw broken-image icon behind. */
+/** Lazy image that fades in with AVIF/WebP picture support and never leaves a raw broken-image icon behind. */
 export function SmartImage({
   src,
   alt,
   className,
   wrapperClassName,
   eager,
-  sizes,
+  sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px",
 }: {
   src?: string | undefined;
   alt: string;
@@ -316,22 +316,29 @@ export function SmartImage({
     );
   }
 
+  const avifSrcSet = buildSrcSet(src, "avif", [320, 640, 960, 1280]);
+  const webpSrcSet = buildSrcSet(src, "webp", [320, 640, 960, 1280]);
+
   return (
     <span className={cn("relative block overflow-hidden bg-ink-850", wrapperClassName)}>
-      <img
-        src={cdnImage(src)}
-        alt={alt}
-        sizes={sizes}
-        loading={eager ? "eager" : "lazy"}
-        decoding="async"
-        onLoad={() => setState("ready")}
-        onError={() => setState("failed")}
-        className={cn(
-          "transition-opacity duration-500",
-          state === "ready" ? "opacity-100" : "opacity-0",
-          className,
-        )}
-      />
+      <picture className="contents">
+        {avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />}
+        {webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />}
+        <img
+          src={cdnImage(src)}
+          alt={alt}
+          sizes={sizes}
+          loading={eager ? "eager" : "lazy"}
+          decoding="async"
+          onLoad={() => setState("ready")}
+          onError={() => setState("failed")}
+          className={cn(
+            "transition-opacity duration-500",
+            state === "ready" ? "opacity-100" : "opacity-0",
+            className,
+          )}
+        />
+      </picture>
     </span>
   );
 }

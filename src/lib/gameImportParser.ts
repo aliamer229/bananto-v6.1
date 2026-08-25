@@ -108,7 +108,7 @@ export function parseGameImport(rawText: string): ParseResult {
   // Platform/compatibility-aware validation belongs to the parser as well as
   // the save endpoint, so an import preview explains exactly what is missing
   // instead of failing later with a generic save error.
-  result.errors.push(...validateGameDevicePerformance(structuredData));
+  result.errors.push(...validateGameDevicePerformance(structuredData, { strict: true }));
 
   result.data = structuredData;
   return result;

@@ -271,14 +271,17 @@ function RootInner() {
   // Re-key the tree when a language pack lands so a runtime switch re-reads it.
   const assetsVersion = useI18n((state) => state.assetsVersion);
 
-  // catalogue response: fetched in background. We no longer wait for it here.
+  // Catalogue response: fetched in background and shared across the application.
   const catalogue = useQuery({
-    queryKey: ["catalogue"],
+    queryKey: ["store"],
     queryFn: async () => {
-      const res = await fetch("/api/data?slim=1");
+      const res = await fetch("/api/data?slim=1", { credentials: "include" });
+      if (!res.ok) throw new Error("failed_to_load_store");
       return res.json();
     },
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
   });
   const store = catalogue.data;
 
