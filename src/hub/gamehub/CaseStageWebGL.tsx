@@ -17,7 +17,6 @@ export default function CaseStageWebGL({
   // [3D Texture] source priority: 3D Texture Source (coverTextureUrl) > Front Box Cover (coverUrl)
   let source = "";
   let sourceType = "";
-  // eslint-disable-next-line prefer-const
   if (caseProps.coverTextureUrl) {
     source = caseProps.coverTextureUrl;
     sourceType = "3D_TEXTURE_SOURCE";
@@ -58,6 +57,8 @@ export default function CaseStageWebGL({
         <SwitchBox3D
           ref={controllerRef}
           coverImage={source}
+          platform={caseProps.platform || (caseProps.isSwitch2 ? "ns2" : "ns")}
+          gameName={caseProps.title}
           isHiRes={sourceType === "3D_TEXTURE_SOURCE"}
           coverTrim={trim}
           onReady={onReady}

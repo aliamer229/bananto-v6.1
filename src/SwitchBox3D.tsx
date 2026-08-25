@@ -1,8 +1,6 @@
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { OrbitControls, useGLTF } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { isValidTrim, type TrimBox } from "@/lib/imageTrim";
 
 export interface SwitchBox3DHandle {
   resetView: () => void;
@@ -11,166 +9,303 @@ export interface SwitchBox3DHandle {
 }
 
 export interface SwitchBox3DProps {
-  coverImage: string | null;
-  isHiRes?: boolean;
-  coverTrim?: TrimBox | null | undefined;
+  coverImage?: string | null;
   platform?: string;
   gameName?: string;
+  isHiRes?: boolean;
+  coverTrim?: unknown;
   onReady?: () => void;
 }
 
+// Global cached assets for 3D boxes
+let cachedBaseTextureImg: HTMLImageElement | null = null;
+const coverImageElementCache = new Map<string, HTMLImageElement>();
+
+function loadCoverImage(src: string): Promise<HTMLImageElement | null> {
+  const existing = coverImageElementCache.get(src);
+  if (existing && existing.complete && existing.naturalWidth > 0) {
+    return Promise.resolve(existing);
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    if (/^https?:\/\//i.test(src)) {
+      try {
+        if (new URL(src).origin !== window.location.origin) {
+          img.crossOrigin = "anonymous";
+        }
+      } catch {
+        img.crossOrigin = "anonymous";
+      }
+    } else if (!src.startsWith("data:")) {
+      img.crossOrigin = "anonymous";
+    }
+
+    img.onload = () => {
+      coverImageElementCache.set(src, img);
+      resolve(img);
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function loadBaseTexture(): Promise<HTMLImageElement | null> {
+  if (cachedBaseTextureImg && cachedBaseTextureImg.complete && cachedBaseTextureImg.naturalWidth > 0) {
+    return Promise.resolve(cachedBaseTextureImg);
+  }
+
+  return new Promise((resolve) => {
+    const baseImg = new Image();
+    baseImg.src = "/textures/GZAfvAF3.jpg";
+    baseImg.onload = () => {
+      cachedBaseTextureImg = baseImg;
+      resolve(baseImg);
+    };
+    baseImg.onerror = () => resolve(null);
+  });
+}
+
 export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
-  ({ coverImage, isHiRes, coverTrim, onReady }, ref) => {
-    const { camera } = useThree();
+  ({ coverImage, platform = "ns", gameName = "Nintendo Switch", onReady }, ref) => {
+    const { nodes, materials } = useGLTF("/source/SwitchCase.glb") as any;
+    const group = useRef<THREE.Group>(null);
     const controlsRef = useRef<any>(null);
-    const groupRef = useRef<THREE.Group>(null);
-    const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
     useImperativeHandle(ref, () => ({
       resetView: () => {
-        if (controlsRef.current) {
-          controlsRef.current.reset();
-        }
+        if (controlsRef.current) controlsRef.current.reset();
       },
       zoomIn: () => {},
       zoomOut: () => {},
     }));
 
-    // 1. Load the GLB from R2
-    // Added a cache-busting query parameter derived from today's date so it updates if changed
-    const gltfUrl = "https://assets.banan.to/Pages/Glb/SwitchCase.glb?v=1";
-    const gltf = useGLTF(gltfUrl);
-
     useEffect(() => {
-      console.log("[3D] resolved R2 URL:", gltfUrl);
-      console.log("[3D] loaded GLB:", gltf);
-    }, [gltf, gltfUrl]);
-
-    // 2. Load the Texture
-    useEffect(() => {
-      if (!coverImage) return;
-      const loader = new THREE.TextureLoader();
-      loader.load(
-        coverImage,
-        (loadedTexture) => {
-          loadedTexture.colorSpace = THREE.SRGBColorSpace;
-          loadedTexture.anisotropy = 16; // high quality filtering
-          loadedTexture.minFilter = THREE.LinearMipmapLinearFilter;
-          loadedTexture.magFilter = THREE.LinearFilter;
-          
-          if (coverTrim) {
-             loadedTexture.repeat.set(coverTrim.width, coverTrim.height);
-             loadedTexture.offset.set(coverTrim.x, 1 - coverTrim.y - coverTrim.height);
-          }
-          
-          setTexture(loadedTexture);
-        },
-        undefined,
-        (err) => {
-          console.error("[3D] Error loading texture:", err);
-          // If texture fails, don't crash, let it render the blank case
-        }
-      );
-    }, [coverImage, coverTrim]);
-
-    // 3. Apply Texture to GLB & Center it
-    useEffect(() => {
-      if (!gltf || !texture || !groupRef.current) return;
-
-      // Clone scene so mutations don't pollute the cached GLTF
-      const model = gltf.scene.clone();
-      
-      // Center the model using bounding box
-      const box = new THREE.Box3().setFromObject(model);
-      const center = box.getCenter(new THREE.Vector3());
-      model.position.x = -center.x;
-      model.position.y = -center.y;
-      model.position.z = -center.z;
-
-      // Fit camera to bounding box
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      
-      // Don't update camera z if it's already far enough, or do it once
-      if (camera.position.z < maxDim) {
-         camera.position.z = maxDim * 1.2;
-         camera.updateProjectionMatrix();
+      if (nodes && materials) {
+        onReady?.();
       }
+    }, [nodes, materials, onReady]);
 
-      const meshNames: string[] = [];
-      let targetMeshName = "";
+    const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
-      model.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          meshNames.push(mesh.name);
+    useEffect(() => {
+      let isMounted = true;
+      const canvas = document.createElement("canvas");
+      // Standard Nintendo Switch Case sleeve template resolution (1236 x 951)
+      canvas.width = 1236;
+      canvas.height = 951;
+      const ctx = canvas.getContext("2d", { alpha: false });
+      if (!ctx) return;
 
-          // We create a new material to override the mesh's material with our texture
-          const newMat = new THREE.MeshStandardMaterial({
-             map: texture,
-             roughness: 0.4,
-             metalness: 0.1,
-          });
-          
-          if (mesh.material) {
-             // Apply to material
-             if (Array.isArray(mesh.material)) {
-                mesh.material = mesh.material.map((m) => {
-                   const matName = m.name.toLowerCase();
-                   // If it's a fallback, only target the front
-                   if (!isHiRes) {
-                      if (matName.includes("front") || matName.includes("cover") || matName.includes("box")) {
-                         targetMeshName = `${mesh.name}.${m.name}`;
-                         return newMat;
-                      }
-                      return m;
-                   } else {
-                      // 3D Texture source applies to all relevant sleeve parts
-                      if (matName.includes("front") || matName.includes("cover") || matName.includes("spine") || matName.includes("back") || matName.includes("box")) {
-                         targetMeshName = `${mesh.name}.${m.name}`;
-                         return newMat;
-                      }
-                      return m;
-                   }
-                });
-             } else {
-                const matName = mesh.material.name.toLowerCase();
-                const mName = mesh.name.toLowerCase();
-                
-                // If it's the fallback front cover, we only want to texture the front face/mesh.
-                if (!isHiRes) {
-                   if (mName.includes("front") || matName.includes("front") || mName.includes("cover") || matName.includes("cover")) {
-                      mesh.material = newMat;
-                      targetMeshName = mesh.name;
-                   }
-                } else {
-                   // Full wrap: replace anything that looks like the sleeve
-                   if (mName.includes("sleeve") || mName.includes("cover") || mName.includes("front") || mName.includes("box") || mName.includes("plane") || mName.includes("mesh") || matName.includes("sleeve") || matName.includes("cover")) {
-                       mesh.material = newMat;
-                       targetMeshName = mesh.name;
-                   } else {
-                       // If no specific names, just replace it if it's the main mesh
-                       mesh.material = newMat;
-                       targetMeshName = mesh.name;
-                   }
-                }
-             }
+      // Spine and Cover Dimensions
+      const backWidth = 588;
+      const spineWidth = 60;
+      const frontWidth = 588;
+      const spineX = backWidth;
+      const frontX = backWidth + spineWidth;
+
+      const isSwitch2 = platform === "ns2";
+      const brandColor = isSwitch2 ? "#d60012" : "#e60012";
+
+      const drawTexture = async () => {
+        try {
+          // Base fill
+          ctx.fillStyle = "#111317";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          try {
+            const baseImg = await loadBaseTexture();
+            if (isMounted && baseImg && baseImg.complete && baseImg.naturalWidth > 0) {
+              ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+            }
+          } catch {
+            // base texture is optional
           }
+
+          let artworkDrawn = false;
+
+          // 2. Draw uploaded cover image
+          if (coverImage) {
+            const img = await loadCoverImage(coverImage);
+
+            if (isMounted && img && img.complete && img.naturalWidth > 0) {
+              artworkDrawn = true;
+              const aspect = img.naturalWidth / img.naturalHeight;
+
+              // The uploaded cover is a full retail box insert (FRONT + SPINE + BACK)
+              if (aspect > 1.15) {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              } else {
+                // Front-only cover: draw on front, draw spine & back
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(frontX, 0, frontWidth, canvas.height);
+                ctx.clip();
+                ctx.drawImage(img, frontX, 0, frontWidth, canvas.height);
+                ctx.restore();
+
+                // Spine
+                ctx.save();
+                ctx.fillStyle = brandColor;
+                ctx.fillRect(spineX, 0, spineWidth, canvas.height);
+
+                ctx.fillStyle = "#ffffff";
+                ctx.textAlign = "center";
+                ctx.font = "900 13px system-ui, -apple-system, sans-serif";
+                ctx.fillText("NINTENDO", spineX + spineWidth / 2, 48);
+                ctx.font = "900 15px system-ui, -apple-system, sans-serif";
+                ctx.fillText(isSwitch2 ? "SWITCH 2" : "SWITCH", spineX + spineWidth / 2, 66);
+
+                ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(spineX + 8, 80);
+                ctx.lineTo(spineX + spineWidth - 8, 80);
+                ctx.stroke();
+
+                const titleText = (gameName || "NINTENDO SWITCH GAME").toUpperCase();
+                ctx.save();
+                ctx.translate(spineX + spineWidth / 2, 110);
+                ctx.rotate(Math.PI / 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.textAlign = "left";
+                ctx.font = "bold 22px system-ui, -apple-system, sans-serif";
+                const maxSpineLength = canvas.height - 240;
+                let renderedTitle = titleText;
+                if (ctx.measureText(renderedTitle).width > maxSpineLength) {
+                  while (
+                    ctx.measureText(renderedTitle + "...").width > maxSpineLength &&
+                    renderedTitle.length > 5
+                  ) {
+                    renderedTitle = renderedTitle.slice(0, -1);
+                  }
+                  renderedTitle += "...";
+                }
+                ctx.fillText(renderedTitle, 0, 7);
+                ctx.restore();
+
+                ctx.fillStyle = "#ffffff";
+                ctx.textAlign = "center";
+                ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
+                ctx.fillText("Nintendo", spineX + spineWidth / 2, canvas.height - 40);
+                ctx.restore();
+
+                // Back
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(0, 0, backWidth, canvas.height);
+                ctx.clip();
+
+                ctx.filter = "blur(18px) brightness(0.55)";
+                ctx.drawImage(img, -40, -40, backWidth + 80, canvas.height + 80);
+                ctx.filter = "none";
+
+                const backGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                backGrad.addColorStop(0, "rgba(10, 12, 16, 0.65)");
+                backGrad.addColorStop(0.5, "rgba(10, 12, 16, 0.45)");
+                backGrad.addColorStop(1, "rgba(10, 12, 16, 0.95)");
+                ctx.fillStyle = backGrad;
+                ctx.fillRect(0, 0, backWidth, canvas.height);
+
+                ctx.fillStyle = brandColor;
+                ctx.fillRect(24, 28, backWidth - 48, 4);
+
+                ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(36, 70, backWidth - 72, 340);
+                ctx.drawImage(img, 38, 72, backWidth - 76, 336);
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 26px system-ui, -apple-system, sans-serif";
+                ctx.textAlign = "right";
+                ctx.fillText(gameName || "Nintendo Switch", backWidth - 36, 460);
+
+                ctx.fillStyle = "rgba(255,255,255,0.7)";
+                ctx.font = "12px system-ui, -apple-system, sans-serif";
+                ctx.fillText("TV Mode • Tabletop Mode • Handheld Mode", backWidth - 36, 490);
+                ctx.fillText("1-4 Players • Pro Controller Compatible", backWidth - 36, 510);
+
+                ctx.fillStyle = "rgba(255,255,255,0.4)";
+                ctx.font = "10px monospace";
+                ctx.fillText(
+                  "Official Nintendo Licensed Product",
+                  backWidth - 36,
+                  canvas.height - 45,
+                );
+                ctx.restore();
+              }
+            }
+          }
+
+          if (!artworkDrawn) {
+            // Fallback if no cover image
+            ctx.fillStyle = brandColor;
+            ctx.fillRect(spineX, 0, spineWidth, canvas.height);
+
+            // Draw Spine Text and Logo
+            ctx.save();
+            ctx.translate(spineX + spineWidth / 2, 80);
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "center";
+            ctx.font = "bold 16px sans-serif";
+            ctx.fillText("SWITCH" + (isSwitch2 ? " 2" : ""), 0, 0);
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(spineX + spineWidth / 2, 200);
+            ctx.rotate(Math.PI / 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 28px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(gameName || "Game Title", 0, 10);
+            ctx.restore();
+          }
+
+          const tex = new THREE.CanvasTexture(canvas);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.flipY = false;
+          tex.needsUpdate = true;
+
+          if (isMounted) {
+            setTexture((prev) => {
+              if (prev) prev.dispose();
+              return tex;
+            });
+          }
+        } catch (err) {
+          console.error("Error drawing texture:", err);
         }
-      });
+      };
 
-      console.log(`[3D] mesh names:`, meshNames.join(", "));
-      console.log(`[3D] cover texture target mesh:`, targetMeshName || "None found");
-      
-      // Clear previous children and add the newly cloned/textured model
-      groupRef.current.clear();
-      groupRef.current.add(model);
+      drawTexture();
 
-      if (onReady) onReady();
-    }, [gltf, texture, camera, onReady, isHiRes]);
+      return () => {
+        isMounted = false;
+      };
+    }, [coverImage, platform, gameName]);
+
+    // Make sure foil has alpha
+    if (materials?.foil) {
+      materials.foil.transparent = true;
+      materials.foil.opacity = 0.5;
+      materials.foil.depthWrite = false; // depthWrite: false
+    }
+
+    if (materials?.plastic) {
+      materials.plastic.transparent = true;
+      materials.plastic.opacity = platform === "ns2" ? 0.4 : 0.25; // opacity: platform === "ns2" ? 0.4 : 0.25
+      materials.plastic.depthWrite = false; // depthWrite: false
+      materials.plastic.color.set(platform === "ns2" ? "#e60012" : "#ffffff");
+    }
 
     return (
-      <group>
+      <group
+        ref={group}
+        dispose={null}
+        scale={0.65}
+        position={[0, -0.5, 0]}
+        rotation={[0, -Math.PI / 6, 0]}
+      >
         <OrbitControls
           ref={controlsRef}
           enablePan={false}
@@ -180,13 +315,35 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
           minDistance={2}
           maxDistance={30}
         />
-        {/* We mount the modified scene in groupRef inside the effect */}
-        <group ref={groupRef} />
+        {nodes?.box?.geometry && (
+          <mesh geometry={nodes.box.geometry} material={materials?.plastic} />
+        )}
+
+        {nodes?.placeholder?.geometry && (
+          <mesh geometry={nodes.placeholder.geometry}>
+            <meshStandardMaterial
+              map={texture || undefined}
+              roughness={0.6}
+              metalness={0.1}
+              side={THREE.DoubleSide}
+              transparent={false}
+              opacity={1}
+              depthWrite={true}
+              depthTest={true}
+              color={texture ? "#ffffff" : "#1a1d24"}
+            />
+          </mesh>
+        )}
+
+        {nodes?.foil?.geometry && (
+          <mesh geometry={nodes.foil.geometry} material={materials?.foil} />
+        )}
       </group>
     );
-  }
+  },
 );
+
 SwitchBox3D.displayName = "SwitchBox3D";
 
-// Preload the GLB
-useGLTF.preload("https://assets.banan.to/Pages/Glb/SwitchCase.glb?v=1");
+useGLTF.preload("/source/SwitchCase.glb");
+

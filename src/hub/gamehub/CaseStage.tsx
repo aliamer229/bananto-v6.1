@@ -48,8 +48,10 @@ export function CaseStage({ className, ...rest }: GameCase3DProps & { className?
      const source = caseProps.coverTextureUrl || caseProps.coverUrl || caseProps.sleeve?.url;
      return (
         <img 
-           src={source} 
-           alt="Cover Fallback" 
+           src={cdnImage(source, { width: 800 })} 
+           alt={caseProps.title || "Game Cover"} 
+           loading="eager"
+           decoding="async"
            className="w-full h-auto max-w-[300px] object-cover rounded-md shadow-lg" 
         />
      );

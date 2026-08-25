@@ -12,6 +12,7 @@ import { resolveNintendoImageUrl } from "@/lib/nintendoImages";
 import { filterPurchasable } from "@/lib/purchasable";
 import { isGameProduct } from "@/lib/productSection";
 import { playSound } from "@/utils/audio";
+import { preloadGameCovers } from "@/lib/imagePreloader";
 
 export const Route = createFileRoute("/games")({
   head: () => ({
@@ -48,6 +49,12 @@ function GamesPage() {
     () => filterPurchasable<RawProduct>((store?.products ?? []) as RawProduct[]),
     [store?.products],
   );
+
+  useEffect(() => {
+    if (products.length > 0) {
+      preloadGameCovers(products, 30);
+    }
+  }, [products]);
 
   const games: (CartridgeGame & { genres: string[] })[] = useMemo(
     () =>

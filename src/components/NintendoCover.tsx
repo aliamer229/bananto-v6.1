@@ -64,7 +64,13 @@ export function useNintendoCover(
   usage: NintendoImageUsage,
 ) {
   const resolved = resolveNintendoImage(product, usage);
-  const proxied = cdnImage(resolved.url);
+  const targetWidth =
+    usage === "square-card" || usage === "cartridge-label"
+      ? 360
+      : usage === "listing-card" || usage === "bundle-card" || usage === "cart" || usage === "toast"
+      ? 480
+      : 800;
+  const proxied = cdnImage(resolved.url, { width: targetWidth });
   const { trim, naturalAspect } = useImageTrim(proxied, resolved.trim, !resolved.isPlaceholder);
   return { resolved, src: proxied, rawUrl: resolved.url, trim, naturalAspect };
 }
@@ -83,14 +89,17 @@ export function NintendoCover({
 }: NintendoCoverProps) {
   const { resolved, src, rawUrl, trim, naturalAspect } = useNintendoCover(product, usage);
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [loadedAspect, setLoadedAspect] = useState<number | null>(null);
 
   useEffect(() => {
     setFailed(false);
+    setLoaded(false);
     setLoadedAspect(null);
   }, [src]);
 
   const onLoad = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
+    setLoaded(true);
     const img = event.currentTarget;
     if (img.naturalWidth > 0 && img.naturalHeight > 0) {
       setLoadedAspect(img.naturalWidth / img.naturalHeight);
@@ -139,7 +148,7 @@ export function NintendoCover({
 
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden ${className}`}
+      className={`relative flex items-center justify-center overflow-hidden bg-muted/20 ${className}`}
       style={frameRatio ? { aspectRatio: String(frameRatio) } : undefined}
       {...(onClick ? { onClick } : {})}
     >
@@ -156,7 +165,7 @@ export function NintendoCover({
               {...(fetchPriority ? { fetchPriority } : {})}
               onError={() => setFailed(true)}
               onLoad={onLoad}
-              className={imgClassName}
+              className={`${imgClassName} ${loaded ? "opacity-100" : "opacity-90 transition-opacity duration-200"}`}
               style={imgStyle}
             />
           </picture>
@@ -169,7 +178,7 @@ export function NintendoCover({
             {...(fetchPriority ? { fetchPriority } : {})}
             onError={() => setFailed(true)}
             onLoad={onLoad}
-            className={imgClassName}
+            className={`${imgClassName} ${loaded ? "opacity-100" : "opacity-90 transition-opacity duration-200"}`}
             style={imgStyle}
           />
         )}

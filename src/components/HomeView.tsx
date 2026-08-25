@@ -16,6 +16,7 @@ import { rankByPreference } from "@/lib/recommend";
 import { useAuth } from "@/hooks/useAuth";
 import { cdnImage } from "@/lib/img";
 import { NINTENDO_IMAGE_PLACEHOLDER, resolveNintendoImageUrl } from "@/lib/nintendoImages";
+import { preloadGameCovers, preloadImage, preload3DBoxAssets } from "@/lib/imagePreloader";
 import { LazySection } from "./LazySection";
 import NintendoNews from "./NintendoNews";
 import { HomeBananaMarket } from "./HomeBananaMarket";
@@ -74,6 +75,18 @@ export default function HomeView({
   const adminCategories: any[] = store?.categories ?? [];
 
   const activeBanners = banners.filter((b) => b.isActive !== false);
+
+  useEffect(() => {
+    // Preload top game covers & 3D box assets on home load
+    if (adminProducts.length > 0) {
+      preloadGameCovers(adminProducts, 35);
+    }
+    preload3DBoxAssets();
+    // Preload active banners
+    activeBanners.slice(0, 3).forEach((b) => {
+      if (b.imageUrl) preloadImage(b.imageUrl, { width: 1200 });
+    });
+  }, [adminProducts, activeBanners]);
 
   useEffect(() => {
     if (activeBanners.length <= 1) return;

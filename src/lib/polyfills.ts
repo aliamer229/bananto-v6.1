@@ -47,6 +47,7 @@ export const isScriptImportError = (errString: unknown) => {
       (errString as any)?.reason?.message ||
       (errString as any)?.reason ||
       (errString as any)?.target?.src ||
+      (errString as any)?.target?.outerHTML ||
       errString ||
       "",
   ).toLowerCase();
@@ -65,6 +66,7 @@ export const isScriptImportError = (errString: unknown) => {
     s.includes("failed to resolve module") ||
     s.includes("javascript mime type") ||
     s.includes("mime type") ||
+    s.includes("failed to load resource") ||
     s.includes("networkerror when attempting to fetch resource")
   );
 };

@@ -10,6 +10,36 @@ const MAX_BYTES = 12 * 1024 * 1024;
 // banan.to for any attacker-supplied URL.
 const ALLOWED = /^image\/(?:png|jpeg|webp|gif|avif)$/i;
 
+interface CachedImageEntry {
+  buffer: Uint8Array;
+  mime: string;
+  timestamp: number;
+}
+
+// In-memory LRU cache for ultra-fast instant delivery of game covers
+const memoryCache = new Map<string, CachedImageEntry>();
+const inFlightRequests = new Map<string, Promise<{ buffer: Uint8Array; mime: string } | null>>();
+const MAX_CACHE_ENTRIES = 350;
+
+function getCached(key: string): CachedImageEntry | undefined {
+  const entry = memoryCache.get(key);
+  if (entry) {
+    // Refresh LRU order
+    memoryCache.delete(key);
+    memoryCache.set(key, entry);
+    return entry;
+  }
+  return undefined;
+}
+
+function setCached(key: string, buffer: Uint8Array, mime: string) {
+  if (memoryCache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = memoryCache.keys().next().value;
+    if (oldestKey) memoryCache.delete(oldestKey);
+  }
+  memoryCache.set(key, { buffer, mime, timestamp: Date.now() });
+}
+
 function detectMime(buffer: Uint8Array, fallbackUrl: string, headerMime?: string | null): string {
   if (headerMime && ALLOWED.test(headerMime)) {
     return headerMime;
@@ -76,10 +106,25 @@ export const Route = createFileRoute("/api/img")({
           const safeUrl = safeRemoteImageUrl(remote);
           if (!safeUrl) return new Response("Bad request", { status: 400 });
 
+          const cacheKey = `${safeUrl.toString()}_w${targetWidth}_f${formatParam}_q${targetQuality}`;
+          const cached = getCached(cacheKey);
+          if (cached) {
+            return new Response(cached.buffer as unknown as BodyInit, {
+              headers: {
+                "content-type": cached.mime,
+                "cache-control": "public, max-age=31536000, immutable",
+                "x-image-proxy": "memory-hit",
+                "x-content-type-options": "nosniff",
+                "content-security-policy": "default-src 'none'; sandbox",
+                vary: "Accept",
+              },
+            });
+          }
+
           const throttle = await consumeRateLimit(
             request,
             "image-proxy",
-            2400,
+            5000,
             60 * 60,
             safeUrl.hostname,
           );
@@ -89,56 +134,74 @@ export const Route = createFileRoute("/api/img")({
           const prefersAvif = formatParam === "avif" || (!formatParam && acceptHeader.includes("image/avif"));
           const prefersWebp = formatParam === "webp" || (!formatParam && acceptHeader.includes("image/webp"));
 
-          const res = await fetchRemoteImage(safeUrl.toString(), {
-            headers: {
-              accept: "image/avif,image/webp,image/*,*/*;q=0.8",
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            },
-          });
-          if (!res?.ok) return new Response("Upstream error", { status: 502 });
-          const rawBuffer = await readLimitedBody(res, MAX_BYTES);
-          if (!rawBuffer) return new Response("Image too large", { status: 413 });
+          // De-duplicate concurrent upstream fetches
+          let fetchPromise = inFlightRequests.get(cacheKey);
+          if (!fetchPromise) {
+            fetchPromise = (async () => {
+              const res = await fetchRemoteImage(safeUrl.toString(), {
+                headers: {
+                  accept: "image/avif,image/webp,image/*,*/*;q=0.8",
+                  "User-Agent":
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                },
+              });
+              if (!res?.ok) return null;
+              const rawBuffer = await readLimitedBody(res, MAX_BYTES);
+              if (!rawBuffer) return null;
 
-          let finalBuffer: Uint8Array = rawBuffer;
-          let mime = detectMime(rawBuffer, safeUrl.toString(), res.headers.get("content-type"));
+              let finalBuffer: Uint8Array = rawBuffer;
+              let mime = detectMime(rawBuffer, safeUrl.toString(), res.headers.get("content-type"));
 
-          // Perform smart Sharp dynamic optimization if needed (width resize or format conversion)
-          try {
-            const sharpModule = await import("sharp");
-            const sharp = sharpModule.default || sharpModule;
-            if (typeof sharp === "function" && mime !== "image/gif") {
-              let pipeline = sharp(rawBuffer, { failOnError: false }).rotate();
+              // Perform fast Sharp dynamic optimization
+              try {
+                const sharpModule = await import("sharp");
+                const sharp = sharpModule.default || sharpModule;
+                if (typeof sharp === "function" && mime !== "image/gif") {
+                  let pipeline = sharp(rawBuffer, { failOnError: false }).rotate();
 
-              if (targetWidth > 0) {
-                pipeline = pipeline.resize({ width: targetWidth, fit: "inside", withoutEnlargement: true });
+                  if (targetWidth > 0) {
+                    pipeline = pipeline.resize({ width: targetWidth, fit: "inside", withoutEnlargement: true });
+                  }
+
+                  if (prefersAvif) {
+                    // Effort 2 gives 10x faster encoding than effort 4 with virtually identical file size
+                    const avifBuf = await pipeline.avif({ quality: targetQuality, effort: 2 }).toBuffer();
+                    finalBuffer = new Uint8Array(avifBuf);
+                    mime = "image/avif";
+                  } else if (prefersWebp || !formatParam) {
+                    // Fast webp conversion with smart subsampling
+                    const webpBuf = await pipeline.webp({ quality: targetQuality, effort: 2, smartSubsample: true }).toBuffer();
+                    finalBuffer = new Uint8Array(webpBuf);
+                    mime = "image/webp";
+                  } else if (targetWidth > 0) {
+                    const outBuf = await pipeline.toBuffer();
+                    finalBuffer = new Uint8Array(outBuf);
+                  }
+                }
+              } catch {
+                // Silently fallback to raw upstream image
               }
 
-              if (prefersAvif) {
-                const avifBuf = await pipeline.avif({ quality: targetQuality, effort: 4 }).toBuffer();
-                finalBuffer = new Uint8Array(avifBuf);
-                mime = "image/avif";
-              } else if (prefersWebp) {
-                const webpBuf = await pipeline.webp({ quality: targetQuality, effort: 4, smartSubsample: true }).toBuffer();
-                finalBuffer = new Uint8Array(webpBuf);
-                mime = "image/webp";
-              } else if (targetWidth > 0) {
-                const outBuf = await pipeline.toBuffer();
-                finalBuffer = new Uint8Array(outBuf);
-              }
-            }
-          } catch (transformErr) {
-            // Silently fallback to raw upstream image
+              setCached(cacheKey, finalBuffer, mime);
+              return { buffer: finalBuffer, mime };
+            })().finally(() => {
+              inFlightRequests.delete(cacheKey);
+            });
+
+            inFlightRequests.set(cacheKey, fetchPromise);
           }
+
+          const processed = await fetchPromise;
+          if (!processed) return new Response("Upstream image error", { status: 502 });
 
           const isImmutable = url.searchParams.has("v") || url.searchParams.has("h") || safeUrl.pathname.includes("/v/");
           const cacheControl = isImmutable
             ? "public, max-age=31536000, immutable"
-            : "public, max-age=604800, stale-while-revalidate=2592000";
+            : "public, max-age=2592000, stale-while-revalidate=31536000";
 
-          return new Response(finalBuffer as unknown as BodyInit, {
+          return new Response(processed.buffer as unknown as BodyInit, {
             headers: {
-              "content-type": mime,
+              "content-type": processed.mime,
               "cache-control": cacheControl,
               "x-image-proxy": "edge-optimizer",
               "x-content-type-options": "nosniff",

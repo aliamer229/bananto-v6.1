@@ -4,8 +4,9 @@ import { Star, Sparkles } from "lucide-react";
 import NintendoCover from "@/components/NintendoCover";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getProductSlug } from "@/lib/productRouting";
+import { preloadImage } from "@/lib/imagePreloader";
 
-export function GameCard({ product }: { product: any }) {
+export function GameCard({ product, priority = false }: { product: any; priority?: boolean }) {
   const { formatIQDPrice } = useCurrency();
   const slug = getProductSlug(product) || String(product.id || "");
   const title = product.titleEn || product.english_name || product.title || "";
@@ -19,10 +20,24 @@ export function GameCard({ product }: { product: any }) {
       .toLowerCase()
       .includes("switch 2");
 
+  const handleHover = () => {
+    const rawUrl =
+      product.coverUrl ||
+      product.image ||
+      product.coverImage ||
+      product.cartridgeImage ||
+      product.backdropUrl;
+    if (rawUrl) {
+      preloadImage(rawUrl, { width: 800 });
+    }
+  };
+
   return (
     <Link
       to="/product/$productId"
       params={{ productId: slug }}
+      onMouseEnter={handleHover}
+      onPointerDown={handleHover}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50"
     >
       <div className="relative mb-3 aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted/30">
@@ -30,6 +45,8 @@ export function GameCard({ product }: { product: any }) {
           product={product}
           usage="listing-card"
           alt={title}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           className="h-full w-full object-cover"
           imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />

@@ -1,5 +1,5 @@
 /* Banana Store service worker — Cloudflare-only asset + data caching. */
-const VERSION = "banana-v7";
+const VERSION = "banana-v8";
 const IMAGE_CACHE = `${VERSION}-images`;
 const DATA_CACHE = `${VERSION}-data`;
 
