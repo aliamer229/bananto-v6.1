@@ -108,21 +108,6 @@ export default function AppShell({
             transition={{ duration: 0.1 }}
             className="flex-1"
           >
-            {/* We only show a global loader if the shell itself hasn't mounted yet or for heavy transitions */}
-            {isLoading && pathname !== "/" && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="relative">
-                    <div className="h-12 w-12 rounded-2xl border-4 border-[var(--brand-red)]/10" />
-                    <div className="absolute inset-0 h-12 w-12 rounded-2xl border-4 border-[var(--brand-red)] border-t-transparent animate-spin" />
-                  </div>
-                  <p className="text-xs font-black tracking-widest text-[var(--ink-base)] uppercase pointer-events-none">
-                    {t("جاري التحميل...")}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {children}
           </motion.div>
         </AnimatePresence>

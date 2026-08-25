@@ -836,21 +836,35 @@ export async function getStore(): Promise<StoreDoc> {
     return Promise.race([
       loadStore(),
       new Promise<StoreDoc>((_, reject) =>
-        setTimeout(() => reject(new Error("loadStore_timeout_exceeded")), 5000),
+        setTimeout(() => reject(new Error("loadStore_timeout_exceeded")), 12000),
       ),
     ]);
   };
 
   storeInFlight = loadWithTimeout()
     .then((doc) => {
-      storeCache = { doc, at: Date.now() };
+      // Only cache if doc has meaningful data
+      if (doc && (doc.products?.length > 0 || doc.categories?.length > 0)) {
+        storeCache = { doc, at: Date.now() };
+      } else if (storeCache?.doc && (storeCache.doc.products?.length ?? 0) > 0) {
+        // Retain previous cache if loaded doc was unexpectedly empty
+        return storeCache.doc;
+      }
       return doc;
     })
-    .catch((err) => {
+    .catch(async (err) => {
       console.error("[getStore:failed_or_timed_out]", err);
-      if (storeCache?.doc) {
+      if (storeCache?.doc && (storeCache.doc.products?.length ?? 0) > 0) {
         console.warn("[getStore:serving_stale_cache_on_error]");
         return storeCache.doc;
+      }
+      try {
+        const fileDoc = await readJson<StoreDoc>(STORE_KEY, emptyStore);
+        if (fileDoc && (fileDoc.products?.length ?? 0) > 0) {
+          return fileDoc;
+        }
+      } catch {
+        // ignore fallback error
       }
       return emptyStore;
     })

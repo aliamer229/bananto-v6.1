@@ -412,7 +412,7 @@ export async function fetchRemoteMedia(
   }
 
   const initialHost = initialSafeUrl.hostname.toLowerCase();
-  let currentUrl = initialSafeUrl.toString();
+  const currentUrl = initialSafeUrl.toString();
   let lastHttpStatus = 0;
   let lastError = "";
   let lastRayId = "";

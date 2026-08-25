@@ -5,7 +5,7 @@ import { useStoreData } from "../hooks/useStoreData";
 import { useI18n } from "../i18n";
 import { useCurrency } from "../context/CurrencyContext";
 import { BananaIcon } from "./Icons";
-import { Headset, CreditCard, Wallet, Star, Trophy } from "lucide-react";
+import { Headset, CreditCard, Wallet, Star, Trophy, Sparkles } from "lucide-react";
 import { playSound, preloadSound } from "../utils/audio";
 import { filterPurchasable } from "@/lib/purchasable";
 import { getProductCategory, isGameProduct } from "@/lib/productSection";
@@ -21,6 +21,7 @@ import { LazySection } from "./LazySection";
 import NintendoNews from "./NintendoNews";
 import { HomeBananaMarket } from "./HomeBananaMarket";
 import { StoreServices } from "./StoreServices";
+import { SectionErrorBoundary } from "./SectionErrorBoundary";
 
 preloadSound("hover");
 preloadSound("hover_s");
@@ -59,32 +60,26 @@ export default function HomeView({
 }) {
   const [clickedCartridgeId, setClickedCartridgeId] = useState<number | string | null>(null);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [failedBanners, setFailedBanners] = useState<Record<string | number, boolean>>({});
   const { t } = useI18n();
   const { formatGenericPrice } = useCurrency();
 
   const { data: store, isPending, isError, refetch, isFetching } = useStoreData();
   const hasProducts = Array.isArray(store?.products) && store.products.length > 0;
 
-  // Maximum 4-second safety fallback: never stay in full-page skeleton forever
-  useEffect(() => {
-    if (hasProducts) return;
-    const timer = setTimeout(() => {
-      setHasTimedOut(true);
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [hasProducts]);
-
-  const banners: any[] = store?.banners ?? [];
+  const banners: any[] = Array.isArray(store?.banners) ? store.banners : [];
   const { user } = useAuth();
   // Suggestions follow the genres the member picked at signup / in preferences.
   const adminProducts: any[] = useMemo(
-    () => rankByPreference(filterPurchasable<any>(store?.products ?? []), user?.preferredGenres),
+    () => rankByPreference(filterPurchasable<any>(Array.isArray(store?.products) ? store.products : []), user?.preferredGenres),
     [store?.products, user?.preferredGenres],
   );
-  const adminCategories: any[] = store?.categories ?? [];
+  const adminCategories: any[] = Array.isArray(store?.categories) ? store.categories : [];
 
-  const activeBanners = banners.filter((b) => b.isActive !== false);
+  const activeBanners = useMemo(
+    () => banners.filter((b) => b && b.isActive !== false),
+    [banners],
+  );
 
   useEffect(() => {
     // Preload top game covers & 3D box assets on home load
@@ -94,7 +89,7 @@ export default function HomeView({
     preload3DBoxAssets();
     // Preload active banners
     activeBanners.slice(0, 3).forEach((b) => {
-      if (b.imageUrl) preloadImage(b.imageUrl, { width: 1200 });
+      if (b?.imageUrl) preloadImage(b.imageUrl, { width: 1200 });
     });
   }, [adminProducts, activeBanners]);
 
@@ -122,30 +117,21 @@ export default function HomeView({
     onGameClick(game, true);
   };
 
-  const PageSkeleton = () => (
-    <div className="relative z-10 flex flex-1 flex-col bg-[var(--page)] pt-24 min-h-screen">
-      <div className="mx-4 h-[250px] md:h-[400px] rounded-3xl bg-[var(--surface)] animate-pulse animate-skeleton-shimmer" />
-      {[0, 1].map((row) => (
-        <div key={row} className="mt-8 space-y-3 px-4">
-          <div className="h-6 w-48 rounded-full bg-[var(--surface)] animate-pulse" />
-          <div className="flex gap-4 overflow-hidden">
-            {[0, 1, 2, 3].map((cell) => (
-              <div
-                key={cell}
-                className="h-[200px] w-[140px] shrink-0 rounded-2xl bg-[var(--surface)] animate-pulse animate-skeleton-shimmer"
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+  const defaultHeroFallback = (
+    <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-gradient-to-br from-[#E60012] via-[#C40010] to-[#80000A] text-white select-none">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="bg-white/20 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
+          Banana Store
+        </span>
+      </div>
+      <h2 className="text-white text-2xl sm:text-4xl font-black mb-2 drop-shadow-md">
+        Nintendo Switch Games & Accounts
+      </h2>
+      <p className="text-white/90 text-sm sm:text-lg max-w-lg font-medium drop-shadow-sm">
+        ألعاب وحسابات نينتندو سويتش مع تسليم فوري ودعم مباشر
+      </p>
     </div>
   );
-
-  // If initial load takes less than 4 seconds and no cached data is present, show graceful skeleton.
-  // After 4 seconds, always break out and render full structure.
-  if (isPending && !store && !hasTimedOut) {
-    return <PageSkeleton />;
-  }
 
   return (
     <motion.div
@@ -153,305 +139,306 @@ export default function HomeView({
       animate={{ opacity: 1 }}
       className="relative z-10 flex flex-col"
     >
-      {/* Degraded mode / Network issue banner */}
-      {(isError || (hasTimedOut && !hasProducts)) && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-xs flex items-center justify-between text-amber-700 dark:text-amber-300">
-          <span>{t("جاري عرض البيانات المخزنة مؤقتاً لضمان سرعة التصفح.")}</span>
-          <button
-            onClick={() => {
-              setHasTimedOut(false);
-              void refetch();
-            }}
-            disabled={isFetching}
-            className="font-bold underline hover:opacity-80 px-2 py-0.5"
-          >
-            {isFetching ? t("جاري التحديث...") : t("إعادة المحاولة")}
-          </button>
-        </div>
-      )}
-      {/* Hero Banner */}
-      <div className="w-full aspect-[16/9] md:aspect-[21/9] relative z-0 overflow-hidden flex bg-[var(--shell-2)]">
-        {activeBanners.length > 0 ? (
-          <div
-            className="w-full h-full relative"
-            style={{ backgroundColor: activeBanners[currentBannerIndex]?.bgColor || "transparent" }}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              {(() => {
-                const banner = activeBanners[currentBannerIndex];
-                if (!banner) return null;
-                return (
-                  <motion.div
-                    key={banner.id}
-                    className="absolute inset-0 cursor-pointer"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    onClick={() => {
-                      if (banner.targetUrl) {
-                        try {
-                          const opened = window.open(
-                            banner.targetUrl,
-                            "_blank",
-                            "noopener,noreferrer",
-                          );
-                          if (!opened) {
-                            window.location.href = banner.targetUrl;
-                          }
-                        } catch (err) {
-                          console.warn("Frame blocked window.open:", err);
-                        }
-                      } else {
-                        onGameClick({ title: "Banner", id: banner.id }, false);
-                      }
-                    }}
-                  >
-                    {banner.imageUrl ? (
-                      <img
-                        src={cdnImage(banner.imageUrl)}
-                        alt="Hero"
-                        className="w-full h-full object-cover"
-                        decoding="async"
-                        loading="eager"
-                        fetchPriority={currentBannerIndex === 0 ? "high" : "auto"}
-                        style={{
-                          transform: `translate(${banner.posX || 0}px, ${banner.posY || 0}px) scale(${banner.scale || 1})`,
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-gradient-to-br from-blue-900 to-black">
-                        {banner.title && (
-                          <h2 className="text-white text-3xl font-black mb-2">{banner.title}</h2>
-                        )}
-                        {banner.subtitle && (
-                          <p className="text-white/80 text-lg">{banner.subtitle}</p>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })()}
-            </AnimatePresence>
+      {/* Hero Banner Section */}
+      <SectionErrorBoundary sectionName="HeroBanner" fallback={defaultHeroFallback}>
+        <div className="w-full aspect-[16/9] sm:aspect-[21/9] min-h-[220px] max-h-[360px] sm:max-h-[440px] md:max-h-[500px] relative z-0 overflow-hidden flex bg-gradient-to-br from-[#1b1c20] to-[#2d1215]">
+          {activeBanners.length > 0 ? (
+            <div
+              className="w-full h-full relative"
+              style={{ backgroundColor: activeBanners[currentBannerIndex]?.bgColor || "transparent" }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {(() => {
+                  const banner = activeBanners[currentBannerIndex];
+                  if (!banner) return defaultHeroFallback;
+                  const isImgFailed = failedBanners[banner.id];
 
-            {activeBanners.length > 1 && (
-              <div className="absolute bottom-12 sm:bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 flex-row-reverse z-10">
-                {activeBanners.map((_, idx) => (
-                  <button
-                    key={idx}
-                    className={`h-1.5 rounded-full transition-all ${currentBannerIndex === idx ? "w-4 bg-card" : "w-1.5 bg-card/40"}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentBannerIndex(idx);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : isPending ? (
-          <div className="w-full h-full bg-[var(--surface)] animate-pulse animate-skeleton-shimmer" />
-        ) : (
-          <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-gradient-to-br from-[#E60012] to-[#B3000E]">
-            <h2 className="text-white text-3xl font-black mb-2">Nintendo Switch 2</h2>
-            <p className="text-white/80 text-lg">Coming soon to Banana Store</p>
-          </div>
-        )}
-      </div>
+                  return (
+                    <motion.div
+                      key={banner.id}
+                      className="absolute inset-0 cursor-pointer"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      onClick={() => {
+                        if (banner.targetUrl) {
+                          try {
+                            const opened = window.open(
+                              banner.targetUrl,
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                            if (!opened) {
+                              window.location.href = banner.targetUrl;
+                            }
+                          } catch (err) {
+                            console.warn("Frame blocked window.open:", err);
+                          }
+                        } else {
+                          onGameClick({ title: "Banner", id: banner.id }, false);
+                        }
+                      }}
+                    >
+                      {banner.imageUrl && !isImgFailed ? (
+                        <img
+                          src={cdnImage(banner.imageUrl, { width: 1400 })}
+                          alt="Hero"
+                          className="w-full h-full object-cover"
+                          decoding="async"
+                          loading="eager"
+                          fetchPriority={currentBannerIndex === 0 ? "high" : "auto"}
+                          onError={() => {
+                            setFailedBanners((prev) => ({ ...prev, [banner.id]: true }));
+                          }}
+                          style={{
+                            transform: `translate(${banner.posX || 0}px, ${banner.posY || 0}px) scale(${banner.scale || 1})`,
+                          }}
+                        />
+                      ) : banner.title || banner.subtitle ? (
+                        <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-gradient-to-br from-[#E60012] to-[#80000A] text-white">
+                          {banner.title && (
+                            <h2 className="text-white text-2xl sm:text-3xl font-black mb-2">{banner.title}</h2>
+                          )}
+                          {banner.subtitle && (
+                            <p className="text-white/80 text-base sm:text-lg">{banner.subtitle}</p>
+                          )}
+                        </div>
+                      ) : (
+                        defaultHeroFallback
+                      )}
+                    </motion.div>
+                  );
+                })()}
+              </AnimatePresence>
+
+              {activeBanners.length > 1 && (
+                <div className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 flex-row-reverse z-10">
+                  {activeBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      className={`h-1.5 rounded-full transition-all ${currentBannerIndex === idx ? "w-5 bg-white shadow" : "w-1.5 bg-white/40"}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentBannerIndex(idx);
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : isPending && !hasProducts ? (
+            <div className="w-full h-full bg-[var(--surface)] animate-pulse animate-skeleton-shimmer" />
+          ) : (
+            defaultHeroFallback
+          )}
+        </div>
+      </SectionErrorBoundary>
 
       {/* Main Content Area */}
       <div
         className={`bg-[var(--page)] rounded-t-[24px] pt-0 -mt-6 pb-12 px-0 space-y-8 relative shadow-[0_-10px_20px_rgba(0,0,0,0.1)] z-10 flex-1 max-w-full overflow-hidden`}
       >
         {/* Store Services and Guides - Moved outside categories loop to ensure it always renders */}
-        <Suspense
-          fallback={
-            <div className="h-20 animate-pulse animate-skeleton-shimmer bg-muted/10 rounded-2xl mx-4" />
-          }
-        >
-          <StoreServices />
-        </Suspense>
+        <SectionErrorBoundary sectionName="StoreServices">
+          <Suspense
+            fallback={
+              <div className="h-20 animate-pulse animate-skeleton-shimmer bg-muted/10 rounded-2xl mx-4" />
+            }
+          >
+            <StoreServices />
+          </Suspense>
+        </SectionErrorBoundary>
 
         {/* Section 1: Cartridge Shelf (Nintendo Switch Games) */}
-        <section className="relative mt-2 pb-2 w-full max-w-full">
-          <div className="mb-3 px-4 sm:px-8 flex items-center justify-between">
-            <h3 className="truncate text-xl font-bold text-foreground">
-              {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
-                ? "ألعاب نينتندو سويتش"
-                : t("home.nintendoSwitchGames")}
-            </h3>
-            <Link
-              to="/category/$categoryId"
-              params={{ categoryId: "nintendo_games" }}
-              className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
-            >
-              {t("common.viewAll")}
-            </Link>
-          </div>
-
-          <div className="relative mb-6 mt-2 min-h-[200px] w-full max-w-full">
-            {isPending && adminProducts.length === 0 ? (
-              <CartridgeSkeleton />
-            ) : (
-              <CartridgeStrip
-                games={adminProducts
-                  .filter((p) => isGameProduct(p))
-                  .map((p) => ({
-                    id: p.id,
-                    slug: p.slug,
-                    title: p.titleEn || p.english_name || p.title,
-                    price: p.price,
-                    image: resolveNintendoImageUrl(p, "listing-card"),
-                    source: p,
-                    subtitle: p.developer || p.publisher || "Nintendo Switch",
-                    rating: p.metacriticRating ?? null,
-                    platform: p.platform,
-                  }))}
-                clickedId={clickedCartridgeId}
-                onSelect={(game: any) => {
-                  if (clickedCartridgeId != null) return;
-                  setClickedCartridgeId(game.id);
-                  setTimeout(() => {
-                    onGameClick(game, true);
-                  }, 400);
-                  setTimeout(() => setClickedCartridgeId(null), 6000);
-                }}
-              />
-            )}
-
-            <div className="absolute bottom-[-18px] left-0 right-0 flex flex-col z-0">
-              <div className="h-[6px] w-full bg-gradient-to-b from-[var(--gray-1)] to-[var(--gray-2)]"></div>
-              <div className="h-[12px] w-full bg-gradient-to-b from-[var(--gray-3)] to-[var(--gray-4)] shadow-[0_15px_25px_rgba(0,0,0,0.15)]"></div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 2: Account Bundles (Horizontal Strip) */}
-        <BundleStrip
-          bundles={(store?.bundles ?? []) as AccountBundle[]}
-          products={store?.products ?? []}
-        />
-
-        {/* Section 3: Latest Nintendo Games Added by Release Date */}
-        <LazySection>
-          <section className="mt-2 w-full max-w-full">
-            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-foreground">
-                  {t("home.latestNintendoGames") === "home.latestNintendoGames"
-                    ? "Latest Nintendo releases"
-                    : t("home.latestNintendoGames")}
-                </h3>
-                <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                  New
-                </span>
-              </div>
+        <SectionErrorBoundary sectionName="CartridgeShelf">
+          <section className="relative mt-2 pb-2 w-full max-w-full">
+            <div className="mb-3 px-4 sm:px-8 flex items-center justify-between">
+              <h3 className="truncate text-xl font-bold text-foreground">
+                {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
+                  ? "ألعاب نينتندو سويتش"
+                  : t("home.nintendoSwitchGames")}
+              </h3>
+              <Link
+                to="/category/$categoryId"
+                params={{ categoryId: "nintendo_games" }}
+                className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
+              >
+                {t("common.viewAll")}
+              </Link>
             </div>
 
-            <div dir="ltr" className="w-full max-w-full">
-              <ProductStrip
-                products={adminProducts
-                  .filter((p) => isGameProduct(p))
-                  .sort((a, b) => {
-                    const getVal = (p: any) => {
-                      const d =
-                        p.releaseDate ||
-                        p.release_date ||
-                        p.metadata?.releaseDate ||
-                        p.metadata?.release_date ||
-                        p.releaseYear ||
-                        p.release_year;
-                      if (!d) return 0;
-
-                      const dStr = String(d).trim();
-
-                      // 1. Try YYYY-MM-DD or YYYY-M-D (like 2026-7-23)
-                      const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
-                      if (ymdMatch && ymdMatch[1] && ymdMatch[2] && ymdMatch[3]) {
-                        return new Date(
-                          `${ymdMatch[1]}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[3].padStart(2, "0")}`,
-                        ).getTime();
-                      }
-
-                      // 2. Try DD/MM/YYYY or DD-MM-YYYY
-                      const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-                      if (dmMatch && dmMatch[1] && dmMatch[2] && dmMatch[3]) {
-                        return new Date(
-                          `${dmMatch[3]}-${dmMatch[2].padStart(2, "0")}-${dmMatch[1].padStart(2, "0")}`,
-                        ).getTime();
-                      }
-
-                      // 3. Try YYYYMMDD (Nintendo eShop format)
-                      const ymdCompact = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
-                      if (ymdCompact) {
-                        return new Date(
-                          `${ymdCompact[1]}-${ymdCompact[2]}-${ymdCompact[3]}`,
-                        ).getTime();
-                      }
-
-                      // 4. Fallback to standard Date parsing
-                      const parsed = new Date(dStr).getTime();
-                      if (!isNaN(parsed) && parsed > 0) return parsed;
-
-                      // 5. Fallback to just extracting a year
-                      const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
-                      if (yearMatch) return new Date(`${yearMatch[0]}-01-01`).getTime();
-
-                      return 0;
-                    };
-
-                    const valA = getVal(a);
-                    const valB = getVal(b);
-
-                    // Sort descending purely by release date
-                    if (valA !== valB) return valB - valA;
-                    return String(b.id || "").localeCompare(String(a.id || ""));
-                  })
-                  .slice(0, 12)
-                  .map((p) => {
-                    const getYear = (val: any) => {
-                      const dateStr = String(val || "");
-                      const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
-                      return match ? match[0] : null;
-                    };
-                    const year = getYear(
-                      p.releaseDate ||
-                        p.release_date ||
-                        p.metadata?.releaseDate ||
-                        p.metadata?.release_date ||
-                        p.releaseYear ||
-                        p.release_year,
-                    );
-
-                    return {
+            <div className="relative mb-6 mt-2 min-h-[200px] w-full max-w-full">
+              {isPending && adminProducts.length === 0 ? (
+                <CartridgeSkeleton />
+              ) : (
+                <CartridgeStrip
+                  games={adminProducts
+                    .filter((p) => isGameProduct(p))
+                    .map((p) => ({
                       id: p.id,
-                      title: p.titleEn || p.english_name || p.title,
-                      price: p.price,
+                      slug: p.slug,
+                      title: p.titleEn || p.english_name || p.title || "Game",
+                      price: p.price ?? 0,
                       image: resolveNintendoImageUrl(p, "listing-card"),
                       source: p,
-                      subtitle: year
-                        ? `${year} · ${p.developer || p.publisher || ""}`
-                        : p.releaseDate || p.release_date || p.developer || p.publisher,
+                      subtitle: p.developer || p.publisher || "Nintendo Switch",
                       rating: p.metacriticRating ?? null,
                       platform: p.platform,
-                    };
-                  })}
-                onSelect={(product: any) => onGameClick(product)}
-                formatPrice={formatGenericPrice}
-                onPress={() => playSound("bumper_end", 0.6)}
-                ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-                loading={isPending}
-              />
+                    }))}
+                  clickedId={clickedCartridgeId}
+                  onSelect={(game: any) => {
+                    if (clickedCartridgeId != null) return;
+                    setClickedCartridgeId(game.id);
+                    setTimeout(() => {
+                      onGameClick(game, true);
+                    }, 400);
+                    setTimeout(() => setClickedCartridgeId(null), 6000);
+                  }}
+                />
+              )}
+
+              <div className="absolute bottom-[-18px] left-0 right-0 flex flex-col z-0">
+                <div className="h-[6px] w-full bg-gradient-to-b from-[var(--gray-1)] to-[var(--gray-2)]"></div>
+                <div className="h-[12px] w-full bg-gradient-to-b from-[var(--gray-3)] to-[var(--gray-4)] shadow-[0_15px_25px_rgba(0,0,0,0.15)]"></div>
+              </div>
             </div>
           </section>
-        </LazySection>
+        </SectionErrorBoundary>
 
-        {/* Dynamic / Custom Categories (excluding standard sections handled above and below) */}
+        {/* Section 2: Account Bundles (Horizontal Strip) */}
+        <SectionErrorBoundary sectionName="BundleStrip">
+          <BundleStrip
+            bundles={(store?.bundles ?? []) as AccountBundle[]}
+            products={store?.products ?? []}
+          />
+        </SectionErrorBoundary>
+
+        {/* Section 3: Latest Nintendo Games Added by Release Date */}
+        <SectionErrorBoundary sectionName="LatestReleases">
+          <LazySection>
+            <section className="mt-2 w-full max-w-full">
+              <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-foreground">
+                    {t("home.latestNintendoGames") === "home.latestNintendoGames"
+                      ? "Latest Nintendo releases"
+                      : t("home.latestNintendoGames")}
+                  </h3>
+                  <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    New
+                  </span>
+                </div>
+              </div>
+
+              <div dir="ltr" className="w-full max-w-full">
+                <ProductStrip
+                  products={adminProducts
+                    .filter((p) => isGameProduct(p))
+                    .sort((a, b) => {
+                      const getVal = (p: any) => {
+                        try {
+                          const d =
+                            p.releaseDate ||
+                            p.release_date ||
+                            p.metadata?.releaseDate ||
+                            p.metadata?.release_date ||
+                            p.releaseYear ||
+                            p.release_year;
+                          if (!d) return 0;
+
+                          const dStr = String(d).trim();
+
+                          // 1. Try YYYY-MM-DD or YYYY-M-D (like 2026-7-23)
+                          const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+                          if (ymdMatch && ymdMatch[1] && ymdMatch[2] && ymdMatch[3]) {
+                            return new Date(
+                              `${ymdMatch[1]}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[3].padStart(2, "0")}`,
+                            ).getTime() || 0;
+                          }
+
+                          // 2. Try DD/MM/YYYY or DD-MM-YYYY
+                          const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                          if (dmMatch && dmMatch[1] && dmMatch[2] && dmMatch[3]) {
+                            return new Date(
+                              `${dmMatch[3]}-${dmMatch[2].padStart(2, "0")}-${dmMatch[1].padStart(2, "0")}`,
+                            ).getTime() || 0;
+                          }
+
+                          // 3. Try YYYYMMDD (Nintendo eShop format)
+                          const ymdCompact = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
+                          if (ymdCompact) {
+                            return new Date(
+                              `${ymdCompact[1]}-${ymdCompact[2]}-${ymdCompact[3]}`,
+                            ).getTime() || 0;
+                          }
+
+                          // 4. Fallback to standard Date parsing
+                          const parsed = new Date(dStr).getTime();
+                          if (!isNaN(parsed) && parsed > 0) return parsed;
+
+                          // 5. Fallback to just extracting a year
+                          const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
+                          if (yearMatch) return new Date(`${yearMatch[0]}-01-01`).getTime() || 0;
+                        } catch {
+                          return 0;
+                        }
+                        return 0;
+                      };
+
+                      const valA = getVal(a);
+                      const valB = getVal(b);
+
+                      // Sort descending purely by release date
+                      if (valA !== valB) return valB - valA;
+                      return String(b.id || "").localeCompare(String(a.id || ""));
+                    })
+                    .slice(0, 12)
+                    .map((p) => {
+                      const getYear = (val: any) => {
+                        const dateStr = String(val || "");
+                        const match = dateStr.match(/\b(20\d{2}|19\d{2})\b/);
+                        return match ? match[0] : null;
+                      };
+                      const year = getYear(
+                        p.releaseDate ||
+                          p.release_date ||
+                          p.metadata?.releaseDate ||
+                          p.metadata?.release_date ||
+                          p.releaseYear ||
+                          p.release_year,
+                      );
+
+                      return {
+                        id: p.id,
+                        title: p.titleEn || p.english_name || p.title || "Game",
+                        price: p.price ?? 0,
+                        image: resolveNintendoImageUrl(p, "listing-card"),
+                        source: p,
+                        subtitle: year
+                          ? `${year} · ${p.developer || p.publisher || ""}`
+                          : p.releaseDate || p.release_date || p.developer || p.publisher || "Nintendo Switch",
+                        rating: p.metacriticRating ?? null,
+                        platform: p.platform,
+                      };
+                    })}
+                  onSelect={(product: any) => onGameClick(product)}
+                  formatPrice={formatGenericPrice}
+                  onPress={() => playSound("bumper_end", 0.6)}
+                  ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                  loading={isPending && adminProducts.length === 0}
+                />
+              </div>
+            </section>
+          </LazySection>
+        </SectionErrorBoundary>
+
+        {/* Dynamic / Custom Categories */}
         {adminCategories
           .filter((category) => {
+            if (!category) return false;
             const catId = String(category.id || category.key || "").toLowerCase();
             const catTitle = String(category.title || category.name || "").toLowerCase();
-            // Skip categories that correspond to known standard sections to prevent duplicate rendering
             if (
               catId === "nintendo-switch-games" ||
               catId === "cat_nintendo" ||
@@ -483,11 +470,11 @@ export default function HomeView({
             const mapGame = (p: any) => ({
               id: p.id,
               slug: p.slug,
-              title: p.titleEn || p.english_name || p.title,
-              price: p.price,
+              title: p.titleEn || p.english_name || p.title || "Item",
+              price: p.price ?? 0,
               image: resolveNintendoImageUrl(p, "listing-card"),
               source: p,
-              subtitle: p.developer || p.publisher || category.title || category.name,
+              subtitle: p.developer || p.publisher || category.title || category.name || "",
               rating: p.metacriticRating ?? null,
               platform: p.platform,
             });
@@ -499,207 +486,222 @@ export default function HomeView({
             if (categoryProducts.length === 0) return null;
 
             return (
-              <LazySection key={category.id}>
-                <section className="mt-6 w-full max-w-full">
-                  <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-                    <h3 className="text-xl font-bold text-foreground">
-                      {t(category.title || category.name)}
-                    </h3>
-                    <Link
-                      to="/category/$categoryId"
-                      params={{ categoryId: category.id }}
-                      className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
-                    >
-                      {t("common.viewAll")}
-                    </Link>
-                  </div>
-                  <ProductStrip
-                    products={categoryProducts}
-                    onSelect={(product: any) => onGameClick(product)}
-                    formatPrice={formatGenericPrice}
-                    onPress={() => playSound("bumper_end", 0.6)}
-                    ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-                    loading={isPending}
-                  />
-                </section>
-              </LazySection>
+              <SectionErrorBoundary key={category.id} sectionName={`Category_${category.id}`}>
+                <LazySection>
+                  <section className="mt-6 w-full max-w-full">
+                    <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
+                      <h3 className="text-xl font-bold text-foreground">
+                        {t(category.title || category.name || "Category")}
+                      </h3>
+                      <Link
+                        to="/category/$categoryId"
+                        params={{ categoryId: category.id }}
+                        className="text-orange-500 hover:text-orange-600 px-2 py-1 text-sm font-bold transition-colors"
+                      >
+                        {t("common.viewAll")}
+                      </Link>
+                    </div>
+                    <ProductStrip
+                      products={categoryProducts}
+                      onSelect={(product: any) => onGameClick(product)}
+                      formatPrice={formatGenericPrice}
+                      onPress={() => playSound("bumper_end", 0.6)}
+                      ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                      loading={isPending && adminProducts.length === 0}
+                    />
+                  </section>
+                </LazySection>
+              </SectionErrorBoundary>
             );
           })}
 
-        {/* Section 5: Hardware & Accessories (Single Unified Section) */}
-        <LazySection>
-          <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-              <h3 className="text-xl font-bold text-foreground">أجهزة الهاردوير وملحقاتها</h3>
-              <Link
-                to="/category/$categoryId"
-                params={{ categoryId: "hardware" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline"
-              >
-                عرض الكل
-              </Link>
-            </div>
-            <ProductStrip
-              products={adminProducts
-                .filter((p) => {
-                  const resolved = getProductCategory(p);
-                  return resolved === "hardware" || resolved === "accessory";
-                })
-                .slice(0, 12)
-                .map((p) => ({
-                  id: p.id,
-                  slug: p.slug,
-                  title: p.titleEn || p.english_name || p.title,
-                  subtitle: p.developer || p.publisher || "Hardware & Accessories",
-                  price: p.price,
-                  image: resolveNintendoImageUrl(p, "listing-card"),
-                  source: p,
-                  rating: p.metacriticRating,
-                }))}
-              onSelect={(product: any) => onGameClick(product)}
-              formatPrice={formatGenericPrice}
-              onPress={() => playSound("bumper_end", 0.6)}
-              ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-              loading={isPending}
-            />
-          </section>
-        </LazySection>
+        {/* Section 5: Hardware & Accessories */}
+        <SectionErrorBoundary sectionName="HardwareAccessories">
+          <LazySection>
+            <section className="mt-8 w-full max-w-full">
+              <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
+                <h3 className="text-xl font-bold text-foreground">أجهزة الهاردوير وملحقاتها</h3>
+                <Link
+                  to="/category/$categoryId"
+                  params={{ categoryId: "hardware" }}
+                  className="text-[#EA8918] text-sm font-bold hover:underline"
+                >
+                  عرض الكل
+                </Link>
+              </div>
+              <ProductStrip
+                products={adminProducts
+                  .filter((p) => {
+                    const resolved = getProductCategory(p);
+                    return resolved === "hardware" || resolved === "accessory";
+                  })
+                  .slice(0, 12)
+                  .map((p) => ({
+                    id: p.id,
+                    slug: p.slug,
+                    title: p.titleEn || p.english_name || p.title || "Hardware",
+                    subtitle: p.developer || p.publisher || "Hardware & Accessories",
+                    price: p.price ?? 0,
+                    image: resolveNintendoImageUrl(p, "listing-card"),
+                    source: p,
+                    rating: p.metacriticRating,
+                  }))}
+                onSelect={(product: any) => onGameClick(product)}
+                formatPrice={formatGenericPrice}
+                onPress={() => playSound("bumper_end", 0.6)}
+                ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                loading={isPending && adminProducts.length === 0}
+              />
+            </section>
+          </LazySection>
+        </SectionErrorBoundary>
 
         {/* Section 6: Amiibo */}
-        <LazySection>
-          <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-              <h3 className="text-xl font-bold text-foreground">مجسمات amiibo</h3>
-              <Link
-                to="/category/$categoryId"
-                params={{ categoryId: "amiibo" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline"
-              >
-                عرض الكل
-              </Link>
-            </div>
-            <ProductStrip
-              products={adminProducts
-                .filter((p) => getProductCategory(p) === "amiibo")
-                .slice(0, 12)
-                .map((p) => ({
-                  id: p.id,
-                  slug: p.slug,
-                  title: p.titleEn || p.english_name || p.title,
-                  subtitle: p.developer || "Amiibo",
-                  price: p.price,
-                  image: resolveNintendoImageUrl(p, "listing-card"),
-                  source: p,
-                  rating: p.metacriticRating,
-                }))}
-              onSelect={(product: any) => onGameClick(product)}
-              formatPrice={formatGenericPrice}
-              onPress={() => playSound("bumper_end", 0.6)}
-              ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-              loading={isPending}
-            />
-          </section>
-        </LazySection>
+        <SectionErrorBoundary sectionName="Amiibo">
+          <LazySection>
+            <section className="mt-8 w-full max-w-full">
+              <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
+                <h3 className="text-xl font-bold text-foreground">مجسمات amiibo</h3>
+                <Link
+                  to="/category/$categoryId"
+                  params={{ categoryId: "amiibo" }}
+                  className="text-[#EA8918] text-sm font-bold hover:underline"
+                >
+                  عرض الكل
+                </Link>
+              </div>
+              <ProductStrip
+                products={adminProducts
+                  .filter((p) => getProductCategory(p) === "amiibo")
+                  .slice(0, 12)
+                  .map((p) => ({
+                    id: p.id,
+                    slug: p.slug,
+                    title: p.titleEn || p.english_name || p.title || "Amiibo",
+                    subtitle: p.developer || "Amiibo",
+                    price: p.price ?? 0,
+                    image: resolveNintendoImageUrl(p, "listing-card"),
+                    source: p,
+                    rating: p.metacriticRating,
+                  }))}
+                onSelect={(product: any) => onGameClick(product)}
+                formatPrice={formatGenericPrice}
+                onPress={() => playSound("bumper_end", 0.6)}
+                ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                loading={isPending && adminProducts.length === 0}
+              />
+            </section>
+          </LazySection>
+        </SectionErrorBoundary>
 
         {/* Section 7: Gift Cards */}
-        <LazySection>
-          <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-              <h3 className="text-xl font-bold text-foreground">
-                كروت التعبئة Nintendo Gift Cards
-              </h3>
-              <Link
-                to="/category/$categoryId"
-                params={{ categoryId: "gift-cards" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline"
-              >
-                عرض الكل
-              </Link>
-            </div>
-            <ProductStrip
-              products={adminProducts
-                .filter((p) => getProductCategory(p) === "gift_card")
-                .slice(0, 12)
-                .map((p) => ({
-                  id: p.id,
-                  slug: p.slug,
-                  title: p.titleEn || p.english_name || p.title,
-                  subtitle: p.developer || "Gift Card",
-                  price: p.price,
-                  image: resolveNintendoImageUrl(p, "listing-card"),
-                  source: p,
-                  rating: p.metacriticRating,
-                }))}
-              onSelect={(product: any) => onGameClick(product)}
-              formatPrice={formatGenericPrice}
-              onPress={() => playSound("bumper_end", 0.6)}
-              ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-              loading={isPending}
-            />
-          </section>
-        </LazySection>
+        <SectionErrorBoundary sectionName="GiftCards">
+          <LazySection>
+            <section className="mt-8 w-full max-w-full">
+              <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
+                <h3 className="text-xl font-bold text-foreground">
+                  كروت التعبئة Nintendo Gift Cards
+                </h3>
+                <Link
+                  to="/category/$categoryId"
+                  params={{ categoryId: "gift-cards" }}
+                  className="text-[#EA8918] text-sm font-bold hover:underline"
+                >
+                  عرض الكل
+                </Link>
+              </div>
+              <ProductStrip
+                products={adminProducts
+                  .filter((p) => getProductCategory(p) === "gift_card")
+                  .slice(0, 12)
+                  .map((p) => ({
+                    id: p.id,
+                    slug: p.slug,
+                    title: p.titleEn || p.english_name || p.title || "Gift Card",
+                    subtitle: p.developer || "Gift Card",
+                    price: p.price ?? 0,
+                    image: resolveNintendoImageUrl(p, "listing-card"),
+                    source: p,
+                    rating: p.metacriticRating,
+                  }))}
+                onSelect={(product: any) => onGameClick(product)}
+                formatPrice={formatGenericPrice}
+                onPress={() => playSound("bumper_end", 0.6)}
+                ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                loading={isPending && adminProducts.length === 0}
+              />
+            </section>
+          </LazySection>
+        </SectionErrorBoundary>
 
         {/* Section 8: Used Parts & Games */}
-        <LazySection>
-          <section className="mt-8 w-full max-w-full">
-            <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
-              <h3 className="text-xl font-bold text-foreground">القطع والألعاب المستخدمة</h3>
-              <Link
-                to="/category/$categoryId"
-                params={{ categoryId: "used" }}
-                className="text-[#EA8918] text-sm font-bold hover:underline"
-              >
-                عرض الكل
-              </Link>
-            </div>
-            <ProductStrip
-              products={adminProducts
-                .filter((p) => getProductCategory(p) === "used")
-                .slice(0, 12)
-                .map((p) => ({
-                  id: p.id,
-                  slug: p.slug,
-                  title: p.titleEn || p.english_name || p.title,
-                  subtitle: p.developer || "Used",
-                  price: p.price,
-                  image: resolveNintendoImageUrl(p, "listing-card"),
-                  source: p,
-                  rating: p.metacriticRating,
-                }))}
-              onSelect={(product: any) => onGameClick(product)}
-              formatPrice={formatGenericPrice}
-              onPress={() => playSound("bumper_end", 0.6)}
-              ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
-              loading={isPending}
-            />
-          </section>
-        </LazySection>
+        <SectionErrorBoundary sectionName="Used">
+          <LazySection>
+            <section className="mt-8 w-full max-w-full">
+              <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
+                <h3 className="text-xl font-bold text-foreground">القطع والألعاب المستخدمة</h3>
+                <Link
+                  to="/category/$categoryId"
+                  params={{ categoryId: "used" }}
+                  className="text-[#EA8918] text-sm font-bold hover:underline"
+                >
+                  عرض الكل
+                </Link>
+              </div>
+              <ProductStrip
+                products={adminProducts
+                  .filter((p) => getProductCategory(p) === "used")
+                  .slice(0, 12)
+                  .map((p) => ({
+                    id: p.id,
+                    slug: p.slug,
+                    title: p.titleEn || p.english_name || p.title || "Used",
+                    subtitle: p.developer || "Used",
+                    price: p.price ?? 0,
+                    image: resolveNintendoImageUrl(p, "listing-card"),
+                    source: p,
+                    rating: p.metacriticRating,
+                  }))}
+                onSelect={(product: any) => onGameClick(product)}
+                formatPrice={formatGenericPrice}
+                onPress={() => playSound("bumper_end", 0.6)}
+                ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                loading={isPending && adminProducts.length === 0}
+              />
+            </section>
+          </LazySection>
+        </SectionErrorBoundary>
 
-        <LazySection>
-          <Suspense
-            fallback={
-              <div className="h-40 animate-pulse animate-skeleton-shimmer bg-muted/10 rounded-3xl mx-4" />
-            }
-          >
-            <HomeBananaMarket />
-          </Suspense>
-        </LazySection>
-
-        {/* Section 11: News */}
-        <LazySection>
-          <section className="mt-8 mb-12 w-full max-w-full">
-            <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
-              <h3 className="text-xl font-bold text-foreground">{t("أحدث أخبار نينتندو")}</h3>
-            </div>
+        {/* Section 9: Banana Market */}
+        <SectionErrorBoundary sectionName="BananaMarket">
+          <LazySection>
             <Suspense
               fallback={
                 <div className="h-40 animate-pulse animate-skeleton-shimmer bg-muted/10 rounded-3xl mx-4" />
               }
             >
-              <NintendoNews />
+              <HomeBananaMarket />
             </Suspense>
-          </section>
-        </LazySection>
+          </LazySection>
+        </SectionErrorBoundary>
+
+        {/* Section 10: News */}
+        <SectionErrorBoundary sectionName="NintendoNews">
+          <LazySection>
+            <section className="mt-8 mb-12 w-full max-w-full">
+              <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
+                <h3 className="text-xl font-bold text-foreground">{t("أحدث أخبار نينتندو")}</h3>
+              </div>
+              <Suspense
+                fallback={
+                  <div className="h-40 animate-pulse animate-skeleton-shimmer bg-muted/10 rounded-3xl mx-4" />
+                }
+              >
+                <NintendoNews />
+              </Suspense>
+            </section>
+          </LazySection>
+        </SectionErrorBoundary>
       </div>
     </motion.div>
   );

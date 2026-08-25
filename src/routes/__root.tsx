@@ -17,9 +17,9 @@ import { readPrefs } from "../lib/prefs";
 import { ensureLanguageAssets, useI18n, tr } from "../i18n";
 import GlobalMusicPlayer from "../components/GlobalMusicPlayer";
 import { Toaster } from "../components/ui/sonner";
-import { useQuery } from "@tanstack/react-query";
 import { ensureNintendoCategory } from "../lib/nintendo-setup";
 import { isScriptImportError, handleModuleReload } from "../lib/polyfills";
+import { useStoreData } from "../hooks/useStoreData";
 
 function NotFoundComponent() {
   return (
@@ -271,19 +271,8 @@ function RootInner() {
   // Re-key the tree when a language pack lands so a runtime switch re-reads it.
   const assetsVersion = useI18n((state) => state.assetsVersion);
 
-  // Catalogue response: fetched in background and shared across the application.
-  const catalogue = useQuery({
-    queryKey: ["store"],
-    queryFn: async () => {
-      const res = await fetch("/api/data?slim=1", { credentials: "include" });
-      if (!res.ok) throw new Error("failed_to_load_store");
-      return res.json();
-    },
-    staleTime: 5 * 60_000,
-    gcTime: 30 * 60_000,
-    refetchOnWindowFocus: false,
-  });
-  const store = catalogue.data;
+  // Catalogue response: fetched with SWR and shared across the application.
+  const { data: store } = useStoreData();
 
   // Any image that fails through the edge proxy (rate limit, upstream 4xx/5xx)
   // is retried once against its original URL, so a proxy hiccup never leaves a

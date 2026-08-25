@@ -35,12 +35,13 @@ function saveCachedStoreData(data: StoreData) {
       // Don't store oversized fields in localStorage
       const compact: StoreData = {
         products: data.products,
-        categories: data.categories || [],
-        banners: data.banners || [],
-        bundles: data.bundles || [],
-        settings: data.settings || {},
+        categories: Array.isArray(data.categories) ? data.categories : [],
+        banners: Array.isArray(data.banners) ? data.banners : [],
+        bundles: Array.isArray(data.bundles) ? data.bundles : [],
+        settings: data.settings && typeof data.settings === "object" ? data.settings : {},
       };
       localStorage.setItem(LOCAL_STORAGE_CACHE_KEY, JSON.stringify(compact));
+      console.log(`[HOME_CACHE_SAVED] productsCount=${compact.products?.length ?? 0}`);
     }
   } catch {
     // Ignore quota issues
@@ -56,13 +57,10 @@ async function fetchStoreData(): Promise<StoreData> {
   const fetchPromise = (async () => {
     const startTime = Date.now();
     const reqId = `req_${Math.random().toString(36).slice(2, 7)}`;
-    if (typeof window !== "undefined" && (window as any).__BANAN_DEBUG__) {
-      console.log(`[STORE_FETCH_START] reqId=${reqId}`);
-    }
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 9000);
+      const timeoutId = setTimeout(() => controller.abort(), 8500);
 
       const res = await fetch("/api/data?slim=1", {
         credentials: "include",
@@ -80,12 +78,24 @@ async function fetchStoreData(): Promise<StoreData> {
       }
 
       const json = (await res.json()) as StoreData;
-      saveCachedStoreData(json);
-      return json;
+      if (json && Array.isArray(json.products) && json.products.length > 0) {
+        console.log(`[HOME_REFRESH_SUCCESS] reqId=${reqId} duration=${elapsed}ms count=${json.products.length}`);
+        saveCachedStoreData(json);
+        return json;
+      } else {
+        // If the server returned an empty products payload unexpectedly, fallback to cached snapshot
+        const cached = getCachedStoreData();
+        if (cached && Array.isArray(cached.products) && cached.products.length > 0) {
+          console.warn(`[HOME_REFRESH_EMPTY_FALLBACK] Server returned empty payload, retaining local cache.`);
+          return cached;
+        }
+        return json || { products: [], categories: [], banners: [], bundles: [] };
+      }
     } catch (err: any) {
+      console.warn(`[HOME_REFRESH_FAILED] reqId=${reqId} error=${err?.message}`);
       const cached = getCachedStoreData();
-      if (cached) {
-        console.warn("[STORE_FETCH_FALLBACK] Network/DB failed, serving local cache:", err?.message);
+      if (cached && Array.isArray(cached.products) && cached.products.length > 0) {
+        console.log("[HOME_CACHE_HIT] Network/DB unavailable, seamlessly serving local cache.");
         return cached;
       }
       throw err;
@@ -102,9 +112,10 @@ async function fetchStoreData(): Promise<StoreData> {
 
 /**
  * Single cached read of /api/data for every storefront screen.
- * Employs Stale-While-Revalidate with localStorage persistence:
+ * Employs true Stale-While-Revalidate with localStorage persistence:
  * - Immediately mounts with local cached data if available (0ms delay)
- * - Validates in background with a 9s timeout & automatic fallback
+ * - Retains previous data across background revalidations (no flash/empty state)
+ * - Validates in background with an 8.5s timeout & automatic fallback
  * - Deduplicates concurrent calls
  */
 export function useStoreData() {
@@ -112,12 +123,13 @@ export function useStoreData() {
     queryKey: ["store"],
     queryFn: fetchStoreData,
     initialData: getCachedStoreData,
-    staleTime: 60_000,
-    gcTime: 30 * 60_000,
+    placeholderData: (previousData) => previousData,
+    staleTime: 2 * 60_000,
+    gcTime: 24 * 60 * 60_000,
     refetchOnWindowFocus: false,
-    retry: (failureCount, error) => {
-      // Don't retry indefinitely
-      return failureCount < 2;
+    retry: (failureCount) => {
+      // Don't retry more than once on error to prevent infinite spin
+      return failureCount < 1;
     },
     retryDelay: 1500,
   });
