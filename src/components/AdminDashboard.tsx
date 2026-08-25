@@ -319,7 +319,7 @@ export default function AdminDashboard() {
     const timer = setTimeout(() => fetchController.abort(), 12000);
 
     try {
-      res = await fetch("/api/data", {
+      res = await fetch("/api/admin/store", {
         credentials: "include",
         signal: fetchController.signal,
       });

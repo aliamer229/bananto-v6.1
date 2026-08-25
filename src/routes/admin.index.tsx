@@ -1,8 +1,8 @@
 import { checkAdminAccess } from "@/lib/admin-access.functions";
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 
-import AdminDashboard from "@/components/AdminDashboard";
+const AdminDashboard = lazy(() => import("@/components/AdminDashboard"));
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/")({
@@ -80,7 +80,9 @@ function AdminPage() {
           </Link>
         </div>
       </div>
-      <AdminDashboard />
+      <Suspense fallback={<div className="p-10 text-center text-sm text-muted-foreground animate-pulse">جاري تحميل لوحة الإدارة...</div>}>
+        <AdminDashboard />
+      </Suspense>
     </div>
   );
 }
