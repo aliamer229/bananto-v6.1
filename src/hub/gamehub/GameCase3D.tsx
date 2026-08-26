@@ -62,6 +62,13 @@ export interface GameCase3DProps {
    */
   coverTextureUrl?: string | undefined;
   /**
+   * The detail page's own cover image. Shown by the flat 2D case (while the 3D
+   * one loads, on reduced motion, or when WebGL is unavailable). Never
+   * substituted from another role: with no cover image the case shows its
+   * lettered placeholder instead.
+   */
+  detailCoverUrl?: string | undefined;
+  /**
    * Crop rectangle for `coverUrl` — the artwork's real bounds inside the file.
    *
    * Store packshots often float the box in a white field. Without this the face

@@ -8,7 +8,7 @@ import StaggerItem from "@/components/StaggerItem";
 import { useBatches } from "@/hooks/useBatches";
 import { useStoreData } from "@/hooks/useStoreData";
 import { GAME_GENRES } from "@/lib/genres";
-import { resolveNintendoImageUrl } from "@/lib/nintendoImages";
+import { getNintendoMediaUrl } from "@/lib/nintendoImages";
 import { filterPurchasable } from "@/lib/purchasable";
 import { isGameProduct } from "@/lib/productSection";
 import { playSound } from "@/utils/audio";
@@ -64,7 +64,7 @@ function GamesPage() {
           id: p["id"],
           title: p["titleEn"] || p["english_name"] || p["title"],
           subtitle: p["developer"] || p["publisher"] || "Nintendo Switch",
-          image: resolveNintendoImageUrl(p, "square-card"),
+          image: getNintendoMediaUrl(p, "square-card"),
           // The cartridge label window reads `nintendo_card_image` when the
           // record has one, so hand it the whole record rather than a URL.
           source: p,

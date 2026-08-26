@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import { BananaIcon } from "./Icons";
-import { resolveNintendoImageUrl } from "@/lib/nintendoImages";
+import { getNintendoMedia, getNintendoMediaUrl } from "@/lib/nintendoImages";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { useI18n, tr } from "../i18n";
@@ -31,14 +31,21 @@ export default function DetailsView({ game }: { game: any }) {
   const title = game?.title || game?.name || "لعبة غير معنونة";
   const description =
     game?.description || game?.desc || "لا يوجد وصف تفصيلي متاح لهذه اللعبة حالياً.";
-  // Same resolver as every other surface, so this view cannot drift back into
-  // its own fallback chain (it used to end at a stock photo of a games shelf).
-  const coverImg = resolveNintendoImageUrl(game, "front-cover");
+  // The detail page's primary cover has its own field. It is not the listing
+  // box shot and not the square card, so it asks for its own role and shows the
+  // detail placeholder when the product has no cover of its own.
+  const coverImg = getNintendoMediaUrl(game, "detail-cover");
 
-  const bannerImages =
+  // The hero is a promotional surface: banner artwork only. It used to fall
+  // back to the cover, which is how a portrait box shot ended up stretched
+  // across a landscape hero. With no banner the gradient stands alone.
+  const resolvedBanner = getNintendoMedia(game, "banner");
+  const bannerImages: string[] =
     Array.isArray(game?.bannerImages) && game.bannerImages.length > 0 && game.bannerImages[0] !== ""
       ? game.bannerImages
-      : [coverImg];
+      : resolvedBanner.isPlaceholder
+        ? []
+        : [resolvedBanner.url];
 
   const trailerUrl = game?.youtubeTrailer || game?.trailer_url || "";
 

@@ -162,3 +162,112 @@ export function getDefaultRadioTracks(): RadioTrack[] {
 
   return tracks;
 }
+
+/* ------------------------------------------------------------------ *
+ * Nintendo case geometry — canonical 3D models
+ * ------------------------------------------------------------------ */
+
+/**
+ * The reusable Nintendo keep-case geometry lives in Cloudflare R2 and nowhere
+ * else. R2 is the production source of truth for it; the frontend bundle never
+ * carries a copy.
+ *
+ * ## Why it is not fetched from `assets.banan.to` directly
+ *
+ * It used to be, at `https://assets.banan.to/Pages/Glb/SwitchCase.glb`, and that
+ * is still the object's home. What broke was not the object: a Cloudflare rule
+ * on the zone answers **any request whose path ends in `.glb`** with a managed
+ * challenge — an HTML "Just a moment…" page carrying `403` and
+ * `content-type: text/html`. Verified against the live zone:
+ *
+ * ```
+ * /Pages/Glb/SwitchCase.glb   -> 403 text/html  (cf-mitigated: challenge)
+ * /Images/Services/test.glb   -> 403 text/html  (different path, same extension)
+ * /Pages/Glb/test.webp        -> 404            (same path, different extension)
+ * /Images/Services/Hang_Banner.webp -> 200 image/webp
+ * ```
+ *
+ * So the extension is the trigger, not the object and not the prefix.
+ * `GLTFLoader` received `<!DOCTYPE html>` where it expected the `glTF` magic
+ * and threw a parse error, which reads exactly like a corrupted file. It is
+ * not one.
+ *
+ * The fix keeps R2 canonical and stops feeding the loader a URL the edge will
+ * challenge: the Worker streams the same R2 object from a same-origin,
+ * extension-less path (`/api/model/...`, see src/routes/api/model/$.ts). That
+ * also makes the fetch same-origin, so the model needs no CORS grant at all.
+ */
+export const NINTENDO_MODEL_R2_PREFIX = "Pages/Glb/";
+
+/** Same-origin Worker path that streams a model out of the R2 bucket. */
+export const NINTENDO_MODEL_ROUTE = "/api/model/";
+
+/**
+ * Bumped only when the bytes behind a key change. It rides the URL so a
+ * replaced model invalidates just this object's cache entry, never the site's.
+ */
+export const NINTENDO_MODEL_VERSION = "1";
+
+/**
+ * Platform → canonical R2 object key.
+ *
+ * Both platforms resolve to the same geometry **on purpose**. A Switch 2 game
+ * ships in the same physical keep case as a Switch 1 game — same dimensions,
+ * same sleeve, same fold — and only the shell tint differs, which is a material
+ * property the renderer already sets from `platform`. Duplicating 200 KB of
+ * identical vertices to recolour plastic would be waste, and Part 18 of the
+ * media contract is explicit that a product does not need its own GLB just
+ * because its artwork differs.
+ *
+ * The map exists so that if a genuinely different Switch 2 geometry is ever
+ * authored, it is added here as one line and every viewer picks it up — no
+ * component learns a filename.
+ */
+export const NINTENDO_CASE_MODELS = {
+  /** Nintendo Switch (and everything that ships in the standard keep case). */
+  switch: "SwitchCase.glb",
+  /** Nintendo Switch 2 — same keep-case geometry, red shell set by material. */
+  switch2: "SwitchCase.glb",
+} as const;
+
+export type NintendoCasePlatform = keyof typeof NINTENDO_CASE_MODELS;
+
+/**
+ * Normalises the many spellings the catalogue uses for a platform down to the
+ * two the model map knows. Anything unrecognised is a Switch 1 case, which is
+ * the physical default for a Nintendo game.
+ *
+ * `both` (a game sold for Switch and Switch 2) deliberately resolves to
+ * Switch 1: backward compatibility is not evidence that the copy in the
+ * customer's hand is a Switch 2 edition.
+ */
+export function normalizeCasePlatform(platform: unknown): NintendoCasePlatform {
+  const raw = String(platform ?? "")
+    .toLowerCase()
+    .replace(/[\s_-]/g, "");
+  if (raw === "switch2" || raw === "ns2" || raw === "nintendoswitch2") return "switch2";
+  return "switch";
+}
+
+/** The canonical R2 object key for a platform's case geometry. */
+export function nintendoCaseModelKey(platform: unknown): string {
+  return `${NINTENDO_MODEL_R2_PREFIX}${NINTENDO_CASE_MODELS[normalizeCasePlatform(platform)]}`;
+}
+
+/**
+ * The URL the 3D viewer loads. Same-origin and extension-less by design — see
+ * the note on {@link NINTENDO_MODEL_R2_PREFIX}.
+ */
+export function nintendoCaseModelUrl(platform: unknown): string {
+  const file = NINTENDO_CASE_MODELS[normalizeCasePlatform(platform)];
+  const name = file.replace(/\.glb$/i, "");
+  return `${NINTENDO_MODEL_ROUTE}${name}?v=${NINTENDO_MODEL_VERSION}`;
+}
+
+/**
+ * Direct R2 address of a model. Kept for diagnostics and for tooling that talks
+ * to the bucket; **not** what the browser loads, because of the `.glb` rule.
+ */
+export function nintendoCaseModelR2Url(platform: unknown): string {
+  return `${ASSET_BASE_URL}/${nintendoCaseModelKey(platform)}`;
+}

@@ -129,11 +129,16 @@ cover_texture_url=${WRAP}
     expect(TRIM_FIELDS[COVER_TEXTURE_FIELD]).toBeUndefined();
   });
 
-  it("falls back to the front cover only when there is no wrap at all", () => {
+  it("does not quietly hand the sleeve a front cover when no wrap exists", () => {
+    // The sleeve's UVs span back + spine + front. A front-only cover mapped
+    // straight onto them paints the same artwork across all three panels, so
+    // the resolver reports "no wrap" and the viewer (CaseStageWebGL) decides
+    // out loud whether to compose one from the front box cover.
     const texture = resolveNintendoImage(
       { cartridgeImage: "/api/files/cartridges/usr_1/f_front.jpg" },
       "3d-texture",
     );
-    expect(texture.source).toBe("cartridgeImage");
+    expect(texture.isPlaceholder).toBe(true);
+    expect(texture.source).toBe("placeholder");
   });
 });

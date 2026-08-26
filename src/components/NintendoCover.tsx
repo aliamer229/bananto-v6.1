@@ -69,9 +69,13 @@ export function useNintendoCover(
   const targetWidth =
     usage === "square-card"
       ? 360
-      : usage === "listing-card" || usage === "bundle-card" || usage === "cart" || usage === "toast"
-      ? 480
-      : 800;
+      : usage === "front-box" ||
+          usage === "listing-card" ||
+          usage === "bundle-card" ||
+          usage === "cart" ||
+          usage === "toast"
+        ? 480
+        : 800;
   const proxied = cdnImage(rawUrl, { width: targetWidth });
   const { trim, naturalAspect } = useImageTrim(proxied, resolved.trim, !resolved.isPlaceholder);
   return { resolved, src: proxied, rawUrl, trim, naturalAspect };

@@ -51,7 +51,12 @@ export function CaseStage({ className, ...rest }: GameCase3DProps & { className?
   
   // Fallback: visual fallback (image only) requested by user
   const SimpleFallback = () => {
-     const source = caseProps.coverTextureUrl || caseProps.coverUrl || caseProps.sleeve?.url;
+     // This is the product detail page's primary cover, so it shows the detail
+     // cover image. The 3D wrap texture is deliberately not used: it is a flat
+     // back+spine+front insert and reads as a smear when shown as a cover. With
+     // no cover image the lettered placeholder below stands in, rather than
+     // another role's artwork.
+     const source = caseProps.detailCoverUrl;
      if (!source) {
        return (
          <div className="w-[240px] h-[320px] rounded-xl bg-ink-900/80 border border-white/10 flex flex-col items-center justify-center p-4 text-center shadow-xl">

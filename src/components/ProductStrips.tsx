@@ -3,6 +3,7 @@ import Cartridge, { type CartridgeGame } from "./Cartridge";
 import StaggerItem from "./StaggerItem";
 import { useBatches } from "@/hooks/useBatches";
 import NintendoCover from "./NintendoCover";
+import type { NintendoMediaRole } from "@/lib/nintendoImages";
 
 /**
  * Horizontal cartridge shelf. Renders in batches: reaching the end of the strip
@@ -63,7 +64,13 @@ export function CartridgeSkeleton() {
   );
 }
 
-/** Horizontal card strip used by the non-cartridge sections. */
+/**
+ * Horizontal card strip used by the non-cartridge sections.
+ *
+ * The strip is reused by sections that want different pictures — "Latest
+ * Nintendo releases" wants the vertical retail box — so the section names the
+ * role and the strip passes it through unchanged.
+ */
 
 export function ProductStrip({
   products,
@@ -71,6 +78,7 @@ export function ProductStrip({
   formatPrice,
   onPress,
   ratingIcon,
+  imageRole = "front-box",
   loading = false,
 }: {
   products: any[];
@@ -78,6 +86,8 @@ export function ProductStrip({
   formatPrice: (value: any) => string;
   onPress: () => void;
   ratingIcon: React.ReactNode;
+  /** Which picture this section wants. See src/lib/nintendoImages.ts. */
+  imageRole?: NintendoMediaRole;
   loading?: boolean;
 }) {
   const [clickedId, setClickedId] = useState<string | number | null>(null);
@@ -125,7 +135,7 @@ export function ProductStrip({
               */}
               <NintendoCover
                 product={product.source ?? product}
-                usage="listing-card"
+                usage={imageRole}
                 alt={product.title}
                 className="w-full rounded-xl"
                 imgClassName="group-hover:scale-105 transition-transform duration-300"
