@@ -314,151 +314,162 @@ export default function AdminDashboard() {
   };
 
   const loadFromDb = React.useCallback(async (signal: AbortSignal): Promise<boolean> => {
-    let res: Response | null = null;
     let isTimeout = false;
     const fetchController = new AbortController();
     
     const timer = setTimeout(() => {
       isTimeout = true;
       fetchController.abort();
-    }, 25000);
+    }, 30000);
 
     const onOuterAbort = () => fetchController.abort();
     if (signal.aborted) return true;
     signal.addEventListener("abort", onOuterAbort);
 
     try {
-      res = await fetch("/api/admin/store", {
-        credentials: "include",
-        signal: fetchController.signal,
-      });
-      clearTimeout(timer);
+      // Fetch store metadata and products concurrently in parallel
+      const [storeResult, productsResult] = await Promise.allSettled([
+        fetch("/api/admin/store", {
+          credentials: "include",
+          signal: fetchController.signal,
+        }),
+        fetch("/api/admin/products", {
+          credentials: "include",
+          signal: fetchController.signal,
+        }),
+      ]);
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      clearTimeout(timer);
+      signal.removeEventListener("abort", onOuterAbort);
       if (signal.aborted) return true;
 
-      for (const key of [
-        "products",
-        "bundles",
-        "banners",
-        "categories",
-        "orders",
-        "messages",
-        "musicList",
-        "notifications",
-        "gameRequests",
-        "discTrades",
-        "problemSolutions",
-      ]) {
-        hydrated.current[key] = true;
-        if (data[key] !== undefined) {
-          loadedSnapshots.current[key] = safeStringify(data[key]);
-        }
-      }
+      let storeOk = false;
+      let productsOk = false;
+      let storeResponse: Response | null = null;
+      let productsResponse: Response | null = null;
 
-            let fetchedProducts: any[] | undefined = undefined;
-      let d1Count: number | null = typeof data.totalProducts === "number" ? data.totalProducts : null;
-      
-      try {
-        let adminTimeout = false;
-        const adminCtrl = new AbortController();
-        const adminTimer = setTimeout(() => {
-          adminTimeout = true;
-          adminCtrl.abort();
-        }, 20000);
+      // Handle /api/admin/store
+      if (storeResult.status === "fulfilled" && storeResult.value.ok) {
+        storeResponse = storeResult.value;
+        const data = await storeResult.value.json();
+        storeOk = true;
 
-        const onAdminSignalAbort = () => adminCtrl.abort();
-        signal.addEventListener("abort", onAdminSignalAbort);
-
-        const adminRes = await fetch("/api/admin/products", {
-          credentials: "include",
-          signal: adminCtrl.signal,
-        });
-        clearTimeout(adminTimer);
-        signal.removeEventListener("abort", onAdminSignalAbort);
-
-        if (adminRes.ok) {
-          const adminData = await adminRes.json();
-          if (Array.isArray(adminData?.products)) {
-            fetchedProducts = adminData.products;
-            d1Count = adminData.d1Count ?? adminData.products.length;
+        for (const key of [
+          "products",
+          "bundles",
+          "banners",
+          "categories",
+          "orders",
+          "messages",
+          "musicList",
+          "notifications",
+          "gameRequests",
+          "discTrades",
+          "problemSolutions",
+        ]) {
+          hydrated.current[key] = true;
+          if (data[key] !== undefined) {
+            loadedSnapshots.current[key] = safeStringify(data[key]);
           }
-        } else {
-           throw new Error(`Admin products HTTP ${adminRes.status}`);
         }
-      } catch (adminErr) {
-        console.warn("[AdminDashboard:adminProductsFetchFailed]", adminErr);
-        throw adminErr;
+
+        const cleanArray = <T,>(arr: unknown): T[] =>
+          (Array.isArray(arr) ? arr : []).filter((x) => x && typeof x === "object") as T[];
+
+        if (Array.isArray(data.bundles)) setBundles(cleanArray(data.bundles));
+        if (Array.isArray(data.banners)) setBanners(cleanArray(data.banners));
+        if (Array.isArray(data.categories))
+          setCategories(
+            cleanArray<any>(data.categories).map((c) => ({
+              ...c,
+              id: String(c.id || ""),
+              title: String(c.title || c.name || ""),
+            })),
+          );
+        if (Array.isArray(data.orders)) setOrders(cleanArray(data.orders));
+        if (Array.isArray(data.messages)) setMessages(cleanArray(data.messages));
+        if (Array.isArray(data.musicList)) setMusicList(cleanArray(data.musicList));
+        if (Array.isArray(data.notifications)) setNotifications(cleanArray(data.notifications));
+        if (Array.isArray(data.gameRequests)) setGameRequests(cleanArray(data.gameRequests));
+        if (Array.isArray(data.discTrades)) setDiscTrades(cleanArray(data.discTrades));
+        if (Array.isArray(data.problemSolutions)) setProblemSolutions(cleanArray(data.problemSolutions));
+
+        if (typeof data.visits === "number") setVisits(data.visits);
+        if (typeof data.views === "number") setViews(data.views);
+      } else if (storeResult.status === "fulfilled") {
+        storeResponse = storeResult.value;
       }
 
-      if (Array.isArray(fetchedProducts)) {
-        const safeProducts = fetchedProducts
-          .filter((p: any) => p && typeof p === "object")
-          .map((p: any) => ({
-            ...p,
-            id: String(p.id || ""),
-            title:
-              typeof p.title === "string" && p.title.trim()
-                ? p.title.trim()
-                : typeof p.titleEn === "string" && p.titleEn.trim()
-                  ? p.titleEn.trim()
-                  : String(p.id || ""),
-            titleEn:
-              typeof p.titleEn === "string" && p.titleEn.trim()
-                ? p.titleEn.trim()
-                : typeof p.title === "string" && p.title.trim()
+      // Handle /api/admin/products
+      if (productsResult.status === "fulfilled" && productsResult.value.ok) {
+        productsResponse = productsResult.value;
+        const adminData = await productsResult.value.json();
+        productsOk = true;
+
+        if (Array.isArray(adminData?.products)) {
+          const safeProducts = adminData.products
+            .filter((p: any) => p && typeof p === "object")
+            .map((p: any) => ({
+              ...p,
+              id: String(p.id || ""),
+              title:
+                typeof p.title === "string" && p.title.trim()
                   ? p.title.trim()
-                  : String(p.id || ""),
-            slug: typeof p.slug === "string" ? p.slug : String(p.id || ""),
-          }));
+                  : typeof p.titleEn === "string" && p.titleEn.trim()
+                    ? p.titleEn.trim()
+                    : String(p.id || ""),
+              titleEn:
+                typeof p.titleEn === "string" && p.titleEn.trim()
+                  ? p.titleEn.trim()
+                  : typeof p.title === "string" && p.title.trim()
+                    ? p.title.trim()
+                    : String(p.id || ""),
+              slug: typeof p.slug === "string" ? p.slug : String(p.id || ""),
+            }));
 
-        if (safeProducts.length > 0) {
-          setProducts(safeProducts);
-          setD1ProductCount(d1Count ?? safeProducts.length);
-          setProductLoadStatus("loaded_with_data");
-        } else {
-          setD1ProductCount(0);
-          setProducts((prev) => {
-            if (prev && prev.length > 0) {
-              setProductLoadStatus("loaded_with_data");
-              return prev;
-            }
-            setProductLoadStatus("loaded_empty");
-            return [];
-          });
+          const d1Count = adminData.d1Count ?? safeProducts.length;
+          if (safeProducts.length > 0) {
+            setProducts(safeProducts);
+            setD1ProductCount(d1Count);
+            setProductLoadStatus("loaded_with_data");
+          } else {
+            setD1ProductCount(0);
+            setProducts((prev) => {
+              if (prev && prev.length > 0) {
+                setProductLoadStatus("loaded_with_data");
+                return prev;
+              }
+              setProductLoadStatus("loaded_empty");
+              return [];
+            });
+          }
         }
+      } else if (productsResult.status === "fulfilled") {
+        productsResponse = productsResult.value;
       }
 
-      const cleanArray = <T,>(arr: unknown): T[] =>
-        (Array.isArray(arr) ? arr : []).filter((x) => x && typeof x === "object") as T[];
+      if (storeOk && productsOk) {
+        canWrite.current = true;
+        setDbError("");
+        setDbErrorDetail("");
+        setIsLoaded(true);
+        return true;
+      }
 
-      if (Array.isArray(data.bundles)) setBundles(cleanArray(data.bundles));
-      if (Array.isArray(data.banners)) setBanners(cleanArray(data.banners));
-      if (Array.isArray(data.categories))
-        setCategories(
-          cleanArray<any>(data.categories).map((c) => ({
-            ...c,
-            id: String(c.id || ""),
-            title: String(c.title || c.name || ""),
-          })),
-        );
-      if (Array.isArray(data.orders)) setOrders(cleanArray(data.orders));
-      if (Array.isArray(data.messages)) setMessages(cleanArray(data.messages));
-      if (Array.isArray(data.musicList)) setMusicList(cleanArray(data.musicList));
-      if (Array.isArray(data.notifications)) setNotifications(cleanArray(data.notifications));
-      if (Array.isArray(data.gameRequests)) setGameRequests(cleanArray(data.gameRequests));
-      if (Array.isArray(data.discTrades)) setDiscTrades(cleanArray(data.discTrades));
-      if (Array.isArray(data.problemSolutions)) setProblemSolutions(cleanArray(data.problemSolutions));
+      if (!productsOk) {
+        setProductLoadStatus((prev) => (prev === "loaded_with_data" || prev === "loaded_empty" ? prev : "failed"));
+      }
 
-      if (typeof data.visits === "number") setVisits(data.visits);
-      if (typeof data.views === "number") setViews(data.views);
-      canWrite.current = true;
+      if (storeOk && !productsOk) {
+        canWrite.current = true;
+        setIsLoaded(true);
+        console.warn("[AdminDashboard] Store metadata loaded but products fetch failed");
+        return false;
+      }
 
-      setDbError("");
-      setDbErrorDetail("");
-      setIsLoaded(true);
-      return true;
+      throw new Error(
+        `Store HTTP ${storeResponse?.status || "err"}, Products HTTP ${productsResponse?.status || "err"}`
+      );
     } catch (err) {
       clearTimeout(timer);
       signal.removeEventListener("abort", onOuterAbort);
@@ -475,7 +486,7 @@ export default function AdminDashboard() {
         setDbError("");
       } else {
         setDbError("تعذر قراءة البيانات من قاعدة البيانات — تم تفعيل وضع الحماية.");
-        describeLoadFailure(res, err).then(setDbErrorDetail);
+        describeLoadFailure(null, err).then(setDbErrorDetail);
       }
       setIsLoaded(true);
       setProductLoadStatus((prev) => (prev === "loaded_with_data" || prev === "loaded_empty" ? prev : "failed"));

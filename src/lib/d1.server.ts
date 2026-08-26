@@ -136,33 +136,34 @@ let restCacheKey = "";
 
 export function getD1(): D1Like | undefined {
   // `bananto` is the binding in wrangler.jsonc. Older deployments and some
-  // Lovable/Cloudflare setups expose the same D1 database as `DB` instead.
+  // Cloudflare setups expose the same D1 database as `DB` instead.
   const envData = getEnv();
   const db =
     (envData["bananto"] as D1Like) ||
     (envData["DB"] as D1Like) ||
     (envData["BANANTO_DB"] as D1Like);
 
+  // If a native Cloudflare D1 binding is present, ALWAYS prefer it for
+  // direct zero-latency in-worker execution.
+  if (db && typeof db.prepare === "function") {
+    return db;
+  }
+
+  // When native binding is not present (e.g. Node.js local dev / preview container),
+  // fall back to Cloudflare REST API if credentials are provided.
   const restConfigAvailable = Boolean(
     envVar("CLOUDFLARE_ACCOUNT_ID") && envVar("CLOUDFLARE_API_TOKEN") && envVar("D1_DATABASE_ID"),
   );
 
-  // In local dev / preview the platform hands us an *empty local* D1 binding.
-  // Writes there vanish and the admin sees "nothing was saved", so whenever
-  // REST credentials for the real database are configured we prefer them.
-  const preferRest = restConfigAvailable && process.env.NODE_ENV !== "test";
-
-  if (!preferRest && db && typeof db.prepare === "function") return db;
-
-  const nextCacheKey = restConfigAvailable
-    ? `${envVar("CLOUDFLARE_ACCOUNT_ID")}:${envVar("D1_DATABASE_ID")}:${envVar("CLOUDFLARE_API_TOKEN")}`
-    : "";
-  if (restCacheKey !== nextCacheKey || restCache === null || (!restCache && restConfigAvailable)) {
-    restCacheKey = nextCacheKey;
-    restCache = restD1();
+  if (restConfigAvailable) {
+    const nextCacheKey = `${envVar("CLOUDFLARE_ACCOUNT_ID")}:${envVar("D1_DATABASE_ID")}:${envVar("CLOUDFLARE_API_TOKEN")}`;
+    if (restCacheKey !== nextCacheKey || restCache === null || (!restCache && restConfigAvailable)) {
+      restCacheKey = nextCacheKey;
+      restCache = restD1();
+    }
+    if (restCache) return restCache;
   }
-  if (restCache) return restCache;
-  if (db && typeof db.prepare === "function") return db;
+
   return undefined;
 }
 

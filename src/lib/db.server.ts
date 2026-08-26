@@ -426,130 +426,120 @@ async function readStoreRev(): Promise<number> {
 
 async function loadStore(): Promise<StoreDoc> {
   if (await d1Ready()) {
-    const [baseRows, rev] = await Promise.all([
+    const [allStoreRows, rev] = await Promise.all([
       d1RawAll<{ key: string; value: string }>(
-        `SELECT key, value FROM store_kv WHERE key = 'store' OR key LIKE 'analytics:%'`,
+        `SELECT key, value FROM store_kv WHERE key = 'store' OR key LIKE 'store:%' OR key LIKE 'analytics:%' ORDER BY key ASC`,
       ).catch(() => []),
       readStoreRev(),
     ]);
     storeRev = rev;
-    const base = baseRows.find((r) => r.key === "store");
+    const base = allStoreRows.find((r) => r.key === "store");
     const doc = { ...emptyStore, ...parse<Partial<StoreDoc>>(base?.value, {}) } as Record<
       string,
       unknown
     >;
 
-    // Load each heavy section independently to avoid exceeding query payload limits
-    await Promise.all(
-      HEAVY_SECTIONS.map(async (section) => {
-        try {
-          const rows = await d1RawAll<{ key: string; value: string }>(
-            `SELECT key, value FROM store_kv WHERE key = ? OR key LIKE ? ORDER BY key ASC`,
-            `store:${section}`,
-            `store:${section}#%`,
-          );
+    // Process each heavy section from the fetched rows
+    for (const section of HEAVY_SECTIONS) {
+      try {
+        const chunkRegex = new RegExp(`^store:${section}#(\\d+)$`);
+        const chunkRows = allStoreRows
+          .map((r) => {
+            const m = r.key.match(chunkRegex);
+            return m && m[1] ? { index: parseInt(m[1], 10), key: r.key, value: r.value } : null;
+          })
+          .filter((c): c is { index: number; key: string; value: string } => c !== null);
 
-          const chunkRegex = new RegExp(`^store:${section}#(\\d+)$`);
-          const chunkRows = rows
-            .map((r) => {
-              const m = r.key.match(chunkRegex);
-              return m ? { index: parseInt(m[1], 10), key: r.key, value: r.value } : null;
-            })
-            .filter((c): c is { index: number; key: string; value: string } => c !== null);
-
-          let parsed: unknown;
-          if (chunkRows.length > 0) {
-            // Deduplicate chunks by numeric index
-            const chunkMap = new Map<number, string>();
-            for (const r of chunkRows) {
-              chunkMap.set(r.index, r.value);
-            }
-            const sortedIndices = Array.from(chunkMap.keys()).sort((a, b) => a - b);
-            const chunkedParts = sortedIndices.map((idx) => chunkMap.get(idx)!).join("");
-
-            if (chunkedParts.trim()) {
-              if (section === "content") {
-                try {
-                  parsed = JSON.parse(chunkedParts);
-                } catch {
-                  parsed = {};
-                }
-              } else {
-                parsed = parseArraySafely(chunkedParts, []);
-              }
-            }
-
-            // If joined chunks yielded empty or failed, salvage item-by-item from individual chunk rows
-            if ((parsed === undefined || (Array.isArray(parsed) && parsed.length === 0)) && section !== "content") {
-              const salvagedFromChunks: any[] = [];
-              for (const r of chunkRows) {
-                if (r.value && r.value.trim()) {
-                  const items = parseArraySafely(r.value, []);
-                  if (Array.isArray(items) && items.length > 0) {
-                    salvagedFromChunks.push(...items);
-                  }
-                }
-              }
-              if (salvagedFromChunks.length > 0) {
-                parsed = salvagedFromChunks;
-                console.warn(`[store:load_section:chunk_salvage_success] section=${section} salvagedCount=${salvagedFromChunks.length}`);
-              }
-            }
+        let parsed: unknown;
+        if (chunkRows.length > 0) {
+          // Deduplicate chunks by numeric index
+          const chunkMap = new Map<number, string>();
+          for (const r of chunkRows) {
+            chunkMap.set(r.index, r.value);
           }
+          const sortedIndices = Array.from(chunkMap.keys()).sort((a, b) => a - b);
+          const chunkedParts = sortedIndices.map((idx) => chunkMap.get(idx)!).join("");
 
-          if (parsed === undefined || (Array.isArray(parsed) && parsed.length === 0)) {
-            const baseRow = rows.find((r) => r.key === `store:${section}`);
-            if (baseRow?.value && baseRow.value.trim()) {
-              if (section === "content") {
-                try {
-                  parsed = JSON.parse(baseRow.value);
-                } catch {
-                  console.warn(`[store:corrupt_content_isolated] section=${section}`);
-                  parsed = {};
-                }
-              } else {
-                try {
-                  parsed = JSON.parse(baseRow.value);
-                } catch {
-                  const salvaged = parseArraySafely(baseRow.value, []);
-                  console.warn(`[store:corrupt_section_salvaged] section=${section} salvagedCount=${salvaged.length}`);
-                  parsed = salvaged;
-                }
+          if (chunkedParts.trim()) {
+            if (section === "content") {
+              try {
+                parsed = JSON.parse(chunkedParts);
+              } catch {
+                parsed = {};
               }
-            }
-          }
-
-          if (parsed !== undefined) {
-            if (section === "products" && Array.isArray(parsed)) {
-              const validProducts: Product[] = [];
-              for (const item of parsed) {
-                if (isValidProductRecord(item)) {
-                  validProducts.push(normalizeProductRecord(item));
-                } else {
-                  console.warn(`[store:corrupt_product_isolated] Skipping invalid product record:`, {
-                    id: (item as any)?.id,
-                    title: (item as any)?.title,
-                    type: typeof (item as any)?.title,
-                  });
-                }
-              }
-              doc[section] = validProducts;
             } else {
-              doc[section] = parsed;
+              parsed = parseArraySafely(chunkedParts, []);
             }
           }
-        } catch (sectionErr) {
-          console.error(`[store:load_section_failed] section=${section}`, sectionErr);
-          doc[section] = section === "content" ? {} : [];
+
+          // If joined chunks yielded empty or failed, salvage item-by-item from individual chunk rows
+          if ((parsed === undefined || (Array.isArray(parsed) && parsed.length === 0)) && section !== "content") {
+            const salvagedFromChunks: any[] = [];
+            for (const r of chunkRows) {
+              if (r.value && r.value.trim()) {
+                const items = parseArraySafely(r.value, []);
+                if (Array.isArray(items) && items.length > 0) {
+                  salvagedFromChunks.push(...items);
+                }
+              }
+            }
+            if (salvagedFromChunks.length > 0) {
+              parsed = salvagedFromChunks;
+              console.warn(`[store:load_section:chunk_salvage_success] section=${section} salvagedCount=${salvagedFromChunks.length}`);
+            }
+          }
         }
-      }),
-    );
+
+        if (parsed === undefined || (Array.isArray(parsed) && parsed.length === 0)) {
+          const baseRow = allStoreRows.find((r) => r.key === `store:${section}`);
+          if (baseRow?.value && baseRow.value.trim()) {
+            if (section === "content") {
+              try {
+                parsed = JSON.parse(baseRow.value);
+              } catch {
+                console.warn(`[store:corrupt_content_isolated] section=${section}`);
+                parsed = {};
+              }
+            } else {
+              try {
+                parsed = JSON.parse(baseRow.value);
+              } catch {
+                const salvaged = parseArraySafely(baseRow.value, []);
+                console.warn(`[store:corrupt_section_salvaged] section=${section} salvagedCount=${salvaged.length}`);
+                parsed = salvaged;
+              }
+            }
+          }
+        }
+
+        if (parsed !== undefined) {
+          if (section === "products" && Array.isArray(parsed)) {
+            const validProducts: Product[] = [];
+            for (const item of parsed) {
+              if (isValidProductRecord(item)) {
+                validProducts.push(normalizeProductRecord(item));
+              } else {
+                console.warn(`[store:corrupt_product_isolated] Skipping invalid product record:`, {
+                  id: (item as any)?.id,
+                  title: (item as any)?.title,
+                  type: typeof (item as any)?.title,
+                });
+              }
+            }
+            doc[section] = validProducts;
+          } else {
+            doc[section] = parsed;
+          }
+        }
+      } catch (sectionErr) {
+        console.error(`[store:load_section_failed] section=${section}`, sectionErr);
+        doc[section] = section === "content" ? {} : [];
+      }
+    }
 
     // Load granular products and merge them
     try {
-      const granularRows = await d1RawAll<{ key: string; value: string }>(
-        `SELECT key, value FROM store_kv WHERE key LIKE 'store:product:%'`
-      );
+      const granularRows = allStoreRows.filter((r) => r.key.startsWith("store:product:"));
       if (granularRows.length > 0) {
         if (!Array.isArray(doc.products)) {
           doc.products = [];
@@ -583,7 +573,7 @@ async function loadStore(): Promise<StoreDoc> {
     }
 
     for (const [field, key] of Object.entries(COUNTER_KEYS)) {
-      const row = baseRows.find((r) => r.key === key);
+      const row = allStoreRows.find((r) => r.key === key);
       if (!row) continue;
       const value = Number(row.value);
       if (Number.isFinite(value)) doc[field] = value;
@@ -596,7 +586,8 @@ async function loadStore(): Promise<StoreDoc> {
     doc.products = cleanList<Product>(doc.products).filter(isValidProductRecord).map(normalizeProductRecord);
 
     // If products is completely empty, attempt recovery from game_catalog table
-    if (doc.products.length === 0) {
+    const currentProducts = doc.products as Product[];
+    if (currentProducts.length === 0) {
       try {
         const catalogRows = await d1RawAll<any>(
           `SELECT id, game_id, title, english_name, canonical_name, slug, release_date, description_en, description_ar, publisher, developer, box_front_url, cover_front_url, cover_box_url, metacritic_score, genres, is_active FROM game_catalog WHERE is_active = 1 OR is_active IS NULL LIMIT 2000`
@@ -836,7 +827,7 @@ export async function getStore(): Promise<StoreDoc> {
     return Promise.race([
       loadStore(),
       new Promise<StoreDoc>((_, reject) =>
-        setTimeout(() => reject(new Error("loadStore_timeout_exceeded")), 12000),
+        setTimeout(() => reject(new Error("loadStore_timeout_exceeded")), 25000),
       ),
     ]);
   };
