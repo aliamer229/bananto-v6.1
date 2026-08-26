@@ -133,6 +133,8 @@ export async function hardDeleteProductRelations(productId: string): Promise<voi
   try {
     await Promise.allSettled([
       d1Run(`DELETE FROM product_identity WHERE product_id = ?`, productId),
+      d1Run(`DELETE FROM game_catalog WHERE id = ? OR game_id = ?`, productId, productId),
+      d1Run(`DELETE FROM game_records WHERE game_id = ?`, productId),
       d1Run(
         `DELETE FROM game_device_performance_modes WHERE performance_id IN (SELECT id FROM game_device_performance WHERE game_id = ?)`,
         productId,
@@ -143,6 +145,7 @@ export async function hardDeleteProductRelations(productId: string): Promise<voi
       d1Run(`DELETE FROM game_aliases WHERE game_id = ?`, productId),
       d1Run(`DELETE FROM game_price_history WHERE game_id = ?`, productId),
       d1Run(`DELETE FROM game_import_logs WHERE game_id = ?`, productId),
+      d1Run(`DELETE FROM store_kv WHERE key = ?`, `store:product:${productId}`),
     ]);
   } catch (err) {
     console.warn("[product-relations:hard_delete_failed]", { productId }, err);

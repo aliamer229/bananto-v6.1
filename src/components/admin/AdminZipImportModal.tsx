@@ -158,6 +158,8 @@ export default function AdminZipImportModal({
         };
       }
       setOutcomes((prev) => [...prev, outcome]);
+      // Small pause between items to keep D1 writes steady
+      await new Promise((r) => setTimeout(r, 50));
     }
 
     setIsRunning(false);

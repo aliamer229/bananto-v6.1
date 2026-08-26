@@ -320,7 +320,7 @@ export default function AdminDashboard() {
     const timer = setTimeout(() => {
       isTimeout = true;
       fetchController.abort();
-    }, 30000);
+    }, 45000);
 
     const onOuterAbort = () => fetchController.abort();
     if (signal.aborted) return true;

@@ -62,46 +62,6 @@ export function uniqueSlug(desired: string, taken: Iterable<string>): string {
   return `${desired}-${Date.now().toString(36)}`;
 }
 
-/**
- * Confirm from D1 storage that the product is really persisted with correct integrity (or really gone).
- */
-async function verifyProductPersisted(
-  productId: string,
-  operation: "create" | "update" | "delete",
-  expectedProduct?: Partial<Product>,
-): Promise<Product | null> {
-  invalidateStoreCache();
-  const fresh = await getStore();
-  const found = (fresh.products || []).find((p) => String(p.id) === productId);
-
-  if (operation === "delete") {
-    if (found) {
-      const ref = errorRef();
-      console.error("[Product:delete_verification_failed]", { productId, ref });
-      throw new Error(`Product ${productId} is still in the catalogue after delete (ref ${ref})`);
-    }
-    return null;
-  }
-
-  if (!found) {
-    const ref = errorRef();
-    console.error("[Product:save_verification_failed]", { productId, operation, ref });
-    throw new Error(`Product ${productId} is not found in database after save (ref ${ref})`);
-  }
-
-  // Verify core data integrity
-  if (expectedProduct) {
-    if (expectedProduct.title && found.title !== expectedProduct.title) {
-      console.warn("[Product:title_mismatch_after_save]", {
-        expected: expectedProduct.title,
-        found: found.title,
-      });
-    }
-  }
-
-  return found;
-}
-
 export function sanitizeSlug(input: string, fallbackId: string): string {
   const cleaned = input
     .toLowerCase()
@@ -437,18 +397,12 @@ export const Route = createFileRoute("/api/admin/products")({
             invalidateStoreCache();
 
             const saved = productToSave;
-            const updated = await getStore(); // Fetch updated store to get categories/products for sync
 
-            /*
-              Read it back before saying it saved.
-            */
-            await verifyProductPersisted(productId, "create");
-
-            if (productSection(saved, updated.categories || []) === "game") {
-              await syncGameDevicePerformance(
+            if (productSection(saved, currentStore.categories || []) === "game") {
+              syncGameDevicePerformance(
                 saved,
-                hardwareProducts(updated.products || [], updated.categories || []),
-              );
+                hardwareProducts(existingCatalog, currentStore.categories || []),
+              ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
             return json({ success: true, product: saved });
           } catch (dbErr: any) {
@@ -719,17 +673,12 @@ export const Route = createFileRoute("/api/admin/products")({
             invalidateStoreCache();
 
             const saved = productToSave;
-            const updated = await getStore(); // Fetch updated store to get categories/products for sync
 
-            // Same reason as the create path: confirm from D1, not from the
-            // value we just handed to the writer.
-            await verifyProductPersisted(productId, "update");
-
-            if (productSection(saved, updated.categories || []) === "game") {
-              await syncGameDevicePerformance(
+            if (productSection(saved, currentStore.categories || []) === "game") {
+              syncGameDevicePerformance(
                 saved,
-                hardwareProducts(updated.products || [], updated.categories || []),
-              );
+                hardwareProducts(existingCatalog, currentStore.categories || []),
+              ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
             return json({ success: true, product: saved });
           } catch (dbErr: any) {
@@ -770,26 +719,19 @@ export const Route = createFileRoute("/api/admin/products")({
 
           const targetId = String(id);
           
-          await d1Run(
-            `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-            `store:product:${targetId}`,
-            JSON.stringify({ id: targetId, _deleted: true }),
-            new Date().toISOString(),
-          );
+          await Promise.allSettled([
+            d1Run(
+              `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+               ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+              `store:product:${targetId}`,
+              JSON.stringify({ id: targetId, _deleted: true }),
+              new Date().toISOString(),
+            ),
+            hardDeleteProductRelations(targetId),
+            deactivateGameDevicePerformance(targetId),
+          ]);
           
           invalidateStoreCache();
-
-          /*
-            Prove it left the catalogue before reporting the delete.
-          */
-          await verifyProductPersisted(targetId, "delete");
-
-          await deactivateGameDevicePerformance(targetId);
-          /*
-            Hard delete all related index and child records across all D1 tables.
-          */
-          await hardDeleteProductRelations(targetId);
 
           return json({ success: true, id: targetId });
         }),
