@@ -234,7 +234,7 @@ export const Route = createFileRoute("/api/upload")({
 
           const rawFolder = targetFolder.replace(/[^a-z0-9/_-]/gi, "");
           const rootMatch =
-            /^(uploads|products|cartridges|covers|banners|hardware|amiibo|accessories|bundles|used|giftcards|wallets|chat|avatars|orders|support|receipts|documents|reviews)/i.exec(
+            /^(uploads|products|cartridges|covers|banners|cards|hardware|amiibo|accessories|bundles|used|giftcards|guides|wallets|chat|avatars|orders|support|receipts|documents|reviews|categories|music|audio|assets|pages)/i.exec(
               rawFolder,
             );
           if (!rootMatch) {
@@ -251,7 +251,12 @@ export const Route = createFileRoute("/api/upload")({
           let key: string;
           const ext = MIME_EXT[mime] || (mime === "image/webp" ? "webp" : "bin");
 
-          if (root === "products" || root === "covers" || root === "cartridges" || root === "banners") {
+          const isProductCatalogFolder =
+            /^(products|covers|cartridges|banners|cards|hardware|amiibo|accessories|bundles|used|giftcards|categories)$/i.test(
+              root,
+            );
+
+          if (isProductCatalogFolder) {
             const targetProdId = productId || "general";
             if (imageType === "gallery" || imageType === "screenshots") {
               key = `files/products/${targetProdId}/gallery/${hashHex}.${ext}`;
