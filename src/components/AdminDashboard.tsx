@@ -2118,7 +2118,7 @@ function ListingsView({
       <AdminMediaRepairModal
         isOpen={showMediaRepair}
         onClose={() => setShowMediaRepair(false)}
-        onRefreshProducts={reloadProducts}
+        onRefreshProducts={onRetry}
       />
     </div>
   );
