@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export type StoreData = {
   products?: any[];
@@ -119,10 +120,19 @@ async function fetchStoreData(): Promise<StoreData> {
  * - Deduplicates concurrent calls
  */
 export function useStoreData() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Only inject local cache after first client render to avoid SSR hydration mismatch
+    const cached = getCachedStoreData();
+    if (cached && !queryClient.getQueryData(["store"])) {
+      queryClient.setQueryData(["store"], cached);
+    }
+  }, [queryClient]);
+
   return useQuery<StoreData>({
     queryKey: ["store"],
     queryFn: fetchStoreData,
-    initialData: getCachedStoreData,
     placeholderData: (previousData) => previousData,
     staleTime: 2 * 60_000,
     gcTime: 24 * 60 * 60_000,

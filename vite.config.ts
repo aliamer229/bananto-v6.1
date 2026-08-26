@@ -1,7 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
-import viteTsconfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
 import react from "@vitejs/plugin-react";
@@ -46,7 +45,6 @@ export default defineConfig(({ mode, command }) => {
         },
       },
       tailwindcss(),
-      viteTsconfigPaths({ projects: ["./tsconfig.json"] }),
       tanstackStart(),
       ...(command === "build"
         ? [
@@ -105,6 +103,7 @@ export default defineConfig(({ mode, command }) => {
     css: { transformer: "lightningcss" },
     build: {},
     resolve: {
+      tsconfigPaths: true,
       alias: {
         "@": `${process.cwd()}/src`,
         "h3-v2": "h3",

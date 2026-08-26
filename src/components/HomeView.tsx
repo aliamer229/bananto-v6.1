@@ -61,6 +61,12 @@ export default function HomeView({
   const [clickedCartridgeId, setClickedCartridgeId] = useState<number | string | null>(null);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [failedBanners, setFailedBanners] = useState<Record<string | number, boolean>>({});
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const { t } = useI18n();
   const { formatGenericPrice } = useCurrency();
 
@@ -142,7 +148,9 @@ export default function HomeView({
       {/* Hero Banner Section */}
       <SectionErrorBoundary sectionName="HeroBanner" fallback={defaultHeroFallback}>
         <div className="w-full aspect-[16/9] sm:aspect-[21/9] min-h-[220px] max-h-[360px] sm:max-h-[440px] md:max-h-[500px] relative z-0 overflow-hidden flex bg-gradient-to-br from-[#1b1c20] to-[#2d1215]">
-          {activeBanners.length > 0 ? (
+          {!isClient || (isPending && !hasProducts) ? (
+            <div className="w-full h-full bg-[var(--surface)] animate-pulse animate-skeleton-shimmer" />
+          ) : activeBanners.length > 0 ? (
             <div
               className="w-full h-full relative"
               style={{ backgroundColor: activeBanners[currentBannerIndex]?.bgColor || "transparent" }}
@@ -227,8 +235,6 @@ export default function HomeView({
                 </div>
               )}
             </div>
-          ) : isPending && !hasProducts ? (
-            <div className="w-full h-full bg-[var(--surface)] animate-pulse animate-skeleton-shimmer" />
           ) : (
             defaultHeroFallback
           )}
@@ -269,9 +275,7 @@ export default function HomeView({
             </div>
 
             <div className="relative mb-6 mt-2 min-h-[200px] w-full max-w-full">
-              {isPending && adminProducts.length === 0 ? (
-                <CartridgeSkeleton />
-              ) : (
+              <LazySection placeholder={<CartridgeSkeleton />}>
                 <CartridgeStrip
                   games={adminProducts
                     .filter((p) => isGameProduct(p))
@@ -296,7 +300,7 @@ export default function HomeView({
                     setTimeout(() => setClickedCartridgeId(null), 6000);
                   }}
                 />
-              )}
+              </LazySection>
 
               <div className="absolute bottom-[-18px] left-0 right-0 flex flex-col z-0">
                 <div className="h-[6px] w-full bg-gradient-to-b from-[var(--gray-1)] to-[var(--gray-2)]"></div>
@@ -308,10 +312,12 @@ export default function HomeView({
 
         {/* Section 2: Account Bundles (Horizontal Strip) */}
         <SectionErrorBoundary sectionName="BundleStrip">
-          <BundleStrip
-            bundles={(store?.bundles ?? []) as AccountBundle[]}
-            products={store?.products ?? []}
-          />
+          <LazySection>
+            <BundleStrip
+              bundles={(store?.bundles ?? []) as AccountBundle[]}
+              products={store?.products ?? []}
+            />
+          </LazySection>
         </SectionErrorBoundary>
 
         {/* Section 3: Latest Nintendo Games Added by Release Date */}
@@ -434,7 +440,7 @@ export default function HomeView({
         </SectionErrorBoundary>
 
         {/* Dynamic / Custom Categories */}
-        {adminCategories
+        {isClient && adminCategories
           .filter((category) => {
             if (!category) return false;
             const catId = String(category.id || category.key || "").toLowerCase();
