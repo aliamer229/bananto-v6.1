@@ -1550,16 +1550,16 @@ function ListingsView({
   const [showZipImport, setShowZipImport] = useState(false);
   const [showMediaRepair, setShowMediaRepair] = useState(false);
 
-  const unpricedCount = products.filter((p: any) => !isProductPriced(p)).length;
-  const hiddenCount = products.filter((p: any) => isProductHidden(p)).length;
+  const unpricedCount = (products || []).filter((p: any) => !isProductPriced(p)).length;
+  const hiddenCount = (products || []).filter((p: any) => isProductHidden(p)).length;
   const isGameProduct = (product: any) => {
-    const categoryId = product.category || product.categoryId;
-    const category = categories.find((item: any) => item.id === categoryId);
+    const categoryId = typeof product.category === "string" ? product.category : (typeof product.categoryId === "string" ? product.categoryId : product.category?.id);
+    const category = categories.find((item: any) => String(item.id) === String(categoryId));
     return (
       resolveCategoryType(categoryId, category?.title, product.kind, product.schemaId) === "game"
     );
   };
-  const missingPerformanceCount = products.filter(
+  const missingPerformanceCount = (products || []).filter(
     (product: any) => isGameProduct(product) && requiresPerformanceReview(product),
   ).length;
   /* The batch importer belongs to Nintendo Switch Games and nowhere else. */
@@ -1568,9 +1568,9 @@ function ListingsView({
     Boolean(initialCategoryId) &&
     resolveCategoryType(initialCategoryId || undefined, sectionCategory?.title) === "game";
 
-  const hardwareProducts = products.filter((product: any) => {
-    const categoryId = product.category || product.categoryId;
-    const category = categories.find((item: any) => item.id === categoryId);
+  const hardwareProducts = (products || []).filter((product: any) => {
+    const categoryId = typeof product.category === "string" ? product.category : (typeof product.categoryId === "string" ? product.categoryId : product.category?.id);
+    const category = categories.find((item: any) => String(item.id) === String(categoryId));
     return (
       resolveCategoryType(categoryId, category?.title, product.kind, product.schemaId) ===
       "hardware"
@@ -2027,10 +2027,17 @@ function ListingsView({
                 </tr>
               )}
 
-              {sortedProducts.map((p: any) => (
-                <tr key={p.id} className="hover:bg-muted transition-colors">
+              {sortedProducts.map((p: any) => {
+                const safeTitle = typeof p.title === "string" ? p.title : (typeof p.titleEn === "string" ? p.titleEn : String(p.id || ""));
+                const catId = typeof p.category === "string" ? p.category : (typeof p.categoryId === "string" ? p.categoryId : (p.category?.id || ""));
+                const catTitle = categories.find((c: any) => String(c.id) === String(catId))?.title || t("category.uncategorized");
+                const safeStock = p.isInfiniteStock ? t("admin.infiniteStock") : String(p.stock ?? "0");
+                const safeSales = String(p.sales ?? "0");
+                const safeStatus = String(p.status ?? "نشط");
+                return (
+                <tr key={String(p.id || Math.random())} className="hover:bg-muted transition-colors">
                   <td className="px-4 py-3 font-medium text-[var(--admin-ink)]">
-                    {p.title}
+                    {safeTitle}
                     {!isProductPriced(p) && (
                       <span className="ms-2 inline-block rounded-md bg-[var(--bad-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--brand-red-dark)]">
                         مخفي — بحاجة سعر/تكلفة
@@ -2056,18 +2063,17 @@ function ListingsView({
                     {(Number(p.price) || 0).toLocaleString()} د.ع
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {categories.find((c: any) => c.id === (p.category || p.categoryId))?.title ||
-                      t("category.uncategorized")}
+                    {catTitle}
                   </td>
                   <td className="px-4 py-3 text-foreground" dir="ltr">
-                    {p.isInfiniteStock ? t("admin.infiniteStock") : p.stock}
+                    {safeStock}
                   </td>
-                  <td className="px-4 py-3 text-foreground">{p.sales}</td>
+                  <td className="px-4 py-3 text-foreground">{safeSales}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`px-2 py-0.5 rounded-md text-[12px] font-medium ${p.status === "نشط" ? "bg-[var(--ok-bg)] text-[var(--ok-ink)]" : "bg-[var(--bad-bg)] text-[var(--brand-red-dark)]"}`}
+                      className={`px-2 py-0.5 rounded-md text-[12px] font-medium ${safeStatus === "نشط" ? "bg-[var(--ok-bg)] text-[var(--ok-ink)]" : "bg-[var(--bad-bg)] text-[var(--brand-red-dark)]"}`}
                     >
-                      {p.status}
+                      {safeStatus}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -2087,7 +2093,7 @@ function ListingsView({
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
