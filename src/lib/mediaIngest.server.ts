@@ -171,6 +171,7 @@ function isPrivateOrReservedIpv4(host: string): boolean {
 export function isSafeRemoteImageUrl(raw: string): URL | null {
   if (!raw || typeof raw !== "string" || raw.length > 4096) return null;
   // Remove zero-width spaces and control characters
+  // eslint-disable-next-line no-control-regex
   let cleanStr = raw.replace(/[\u200B-\u200D\uFEFF\x00-\x1F\x7F]/g, "").trim();
   // Quick unescape of common HTML entities if present
   cleanStr = cleanStr.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
@@ -228,36 +229,75 @@ export function isSafeRemoteImageUrl(raw: string): URL | null {
  */
 
 export function buildMediaRequestHeaders(urlStr: string, attempt: number = 1): Record<string, string> {
+  const defaultChromeUA =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+  const safariUA =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15";
+  const botUA =
+    "BanantoStore/2.0 (compatible; GameStoreAssetFetcher/2.0; +https://banantostore.com)";
+
+  let host = "";
+  let origin = "";
+  try {
+    const u = new URL(urlStr);
+    host = u.hostname.toLowerCase();
+    origin = u.origin;
+  } catch {
+    // Ignore invalid URL parsing for header builder
+  }
+
+  const isWikimedia = host.includes("wikimedia.org") || host.includes("wikipedia.org");
+
   const headers: Record<string, string> = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "User-Agent": isWikimedia ? botUA : attempt === 3 ? safariUA : defaultChromeUA,
     "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Language": "en-US,en;q=0.9,ar;q=0.8",
+    "Sec-Fetch-Dest": "image",
+    "Sec-Fetch-Mode": "no-cors",
+    "Sec-Fetch-Site": "cross-site",
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
   };
 
-  try {
-    const urlObj = new URL(urlStr);
-    
+  if (origin) {
     if (attempt === 1) {
-      headers["Referer"] = urlObj.origin + "/";
+      headers["Referer"] = origin + "/";
     } else if (attempt === 2) {
-      // minimal headers
-      delete headers["User-Agent"];
-      delete headers["Accept-Language"];
-      delete headers["Cache-Control"];
-      delete headers["Pragma"];
-      delete headers["Referer"];
-    } else if (attempt >= 3) {
-      headers["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15";
       headers["Referer"] = "https://www.google.com/";
+    } else {
+      headers["Referer"] = "";
     }
-  } catch (e) {}
+  }
+
+  // Domain-specific custom referrers
+  if (host.includes("nintendo.com")) {
+    headers["Referer"] = "https://www.nintendo.com/";
+  } else if (host.includes("gamespot.com") || host.includes("gamefaqs")) {
+    headers["Referer"] = "https://gamefaqs.gamespot.com/";
+  }
 
   return headers;
 }
 
 
+
+const hostSemaphores = new Map<string, number>();
+const MAX_CONCURRENT_PER_HOST = 3;
+
+async function acquireDownloadSlot(host: string): Promise<() => void> {
+  const current = hostSemaphores.get(host) || 0;
+  if (current >= MAX_CONCURRENT_PER_HOST) {
+    await new Promise((r) => setTimeout(r, 200 + Math.random() * 300));
+  }
+  hostSemaphores.set(host, (hostSemaphores.get(host) || 0) + 1);
+  return () => {
+    const val = hostSemaphores.get(host) || 1;
+    if (val <= 1) hostSemaphores.delete(host);
+    else hostSemaphores.set(host, val - 1);
+  };
+}
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function fetchRemoteMedia(
   sourceUrl: string,
@@ -273,7 +313,7 @@ export async function fetchRemoteMedia(
   }
 
   const initialHost = initialSafeUrl.hostname.toLowerCase();
-  let currentUrl = initialSafeUrl.toString();
+  const currentUrl = initialSafeUrl.toString();
   let lastHttpStatus = 0;
   let lastError = "";
   let lastRayId = "";
@@ -491,11 +531,6 @@ async function recordMediaAudit(
  * This function NEVER throws an unhandled exception. It always returns an IngestResult.
  */
 export async function ingestRemoteImage(options: RemoteImageIngestOptions): Promise<IngestResult> {
-
-  console.log(`RAW_URL_RECEIVED=${sourceUrl}`);
-  console.log(`RAW_URL_LENGTH=${sourceUrl.length}`);
-  console.log(`RAW_URL_LAST_100_CHARS=${sourceUrl.slice(-100)}`);
-
   const {
     sourceUrl,
     productId,
@@ -504,6 +539,12 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
     expectedType = "general",
     highQuality = false,
   } = options;
+
+  console.log(`[INGEST_IMAGE] RAW_URL_RECEIVED=${sourceUrl || ""}`);
+  if (sourceUrl) {
+    console.log(`[INGEST_IMAGE] RAW_URL_LENGTH=${sourceUrl.length}`);
+    console.log(`[INGEST_IMAGE] RAW_URL_LAST_100_CHARS=${sourceUrl.slice(-100)}`);
+  }
 
   const cleanProductId = String(productId || "general").replace(/[^a-zA-Z0-9_-]/g, "");
 
