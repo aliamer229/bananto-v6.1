@@ -60,7 +60,7 @@ export function HardwareCard({ product }: { product: any }) {
           ) : null}
           <h4
             className="line-clamp-2 text-base font-extrabold text-foreground transition-colors group-hover:text-primary"
-            title={title}
+            title={title} dir="auto"
           >
             {title}
           </h4>

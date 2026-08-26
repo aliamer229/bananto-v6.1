@@ -31,3 +31,21 @@ export const getTextValue = (item: unknown): string => {
   }
   return item == null ? "" : String(item);
 };
+
+export function optimizedImageUrl(url: string | null | undefined, width: number, quality = 85): string {
+  if (!url) return "";
+  if (url.startsWith("/api/files/")) {
+    return `${url}?w=${width}&q=${quality}`;
+  }
+  if (url.startsWith("/api/img")) {
+     // already optimized proxy
+     if (!url.includes("w=")) {
+        return `${url}&w=${width}&q=${quality}`;
+     }
+     return url;
+  }
+  if (url.startsWith("http")) {
+    return `/api/img?u=${encodeURIComponent(url)}&w=${width}&q=${quality}&format=webp`;
+  }
+  return url;
+}

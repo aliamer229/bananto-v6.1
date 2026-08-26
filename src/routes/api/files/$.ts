@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { guard } from "@/lib/http.server";
-import { readBinaryStream } from "@/lib/storage.server";
+import { readBinaryStream, readBinary } from "@/lib/storage.server";
 import { getSessionUser } from "@/lib/session.server";
 
 export const Route = createFileRoute("/api/files/$")({
@@ -38,7 +38,11 @@ export const Route = createFileRoute("/api/files/$")({
             }
           }
 
-          const file = await readBinaryStream(`files/${path}`);
+          const url = new URL(request.url);
+          const targetWidth = Math.min(2400, Math.max(0, parseInt(url.searchParams.get("w") || "0", 10)));
+          const targetQuality = Math.min(100, Math.max(40, parseInt(url.searchParams.get("q") || "85", 10)));
+          
+          let file: any = targetWidth > 0 ? await readBinary(`files/${path}`) : await readBinaryStream(`files/${path}`);
           if (!file) return new Response("Not found", { status: 404 });
 
           const etag = file.etag || `"${path}-${file.size || 0}"`;

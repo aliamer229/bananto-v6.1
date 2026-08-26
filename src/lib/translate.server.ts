@@ -74,8 +74,8 @@ export async function translateProductContent(data: {
   const sourceDesc = (data.descriptionEn || data.description || "").trim();
 
   const [titleAr, titleKu, descAr, descKu, badgeAr, badgeKu, genreAr, genreKu] = await Promise.all([
-    sourceTitle ? translateText(sourceTitle, "ar") : Promise.resolve(""),
-    sourceTitle ? translateText(sourceTitle, "ckb") : Promise.resolve(""),
+    Promise.resolve(""), // Skip translating titles
+    Promise.resolve(""), // Skip translating titles
     sourceDesc ? translateText(sourceDesc, "ar") : Promise.resolve(""),
     sourceDesc ? translateText(sourceDesc, "ckb") : Promise.resolve(""),
     data.badge ? translateText(data.badge, "ar") : Promise.resolve(""),
@@ -134,7 +134,7 @@ export async function autoTranslateProduct(product: Product): Promise<Product> {
 
     return {
       ...product,
-      title: result.titleAr || product.title || sourceTitle,
+      title: sourceTitle, // explicitly keep English title as the main title
       titleEn: sourceTitle,
       titleKu: result.titleKu || sourceTitle,
       description: result.descriptionAr || product.description || sourceDesc,

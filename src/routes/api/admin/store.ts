@@ -10,7 +10,8 @@ export const Route = createFileRoute("/api/admin/store")({
         guard(async () => {
           await requireAdmin(request);
           const store = await getStore();
-          return json(store);
+          const { products, ...storeWithoutProducts } = store as any;
+          return json(storeWithoutProducts);
         }),
     },
   },

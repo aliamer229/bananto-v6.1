@@ -164,6 +164,10 @@ export function translate(
   const fallback = resolve(DICTIONARIES[DEFAULT_LOCALE], key);
   if (fallback !== undefined) return interpolate(fallback, vars);
 
+  // Fallback to English UI string temporarily
+  const enFallback = DICTIONARIES["en"] ? resolve(DICTIONARIES["en"], key) : undefined;
+  if (enFallback !== undefined) return interpolate(enFallback, vars);
+
   return key;
 }
 

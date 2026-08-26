@@ -12,6 +12,11 @@ export interface ConvertedImage {
   width?: number;
   height?: number;
   size: number;
+  variants?: {
+    thumb?: Uint8Array;
+    card?: Uint8Array;
+    large?: Uint8Array;
+  };
 }
 
 export interface ImageVariant {

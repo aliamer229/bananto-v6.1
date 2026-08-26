@@ -31,11 +31,13 @@ interface I18nStore {
 
 function initialLang(): Language {
   if (typeof document === "undefined") return "ar";
-  const match = /(?:^|;\s*)bananto_lang=([^;]+)/.exec(document.cookie);
-  const value = match?.[1];
-  if (isLang(value)) return value;
-  const docLang = document.documentElement.lang;
-  return isLang(docLang) ? docLang : "ar";
+  const match = /(?:^|;\s*)bananto_lang_manual=([^;]+)/.exec(document.cookie);
+  const manual = match?.[1];
+  const langMatch = /(?:^|;\s*)bananto_lang=([^;]+)/.exec(document.cookie);
+  const langValue = langMatch?.[1];
+  
+  if (manual === "1" && isLang(langValue)) return langValue;
+  return "ar"; // Default to Arabic if not manually selected
 }
 
 /** Kurdish predates the key-based dictionaries; it reads Arabic there. */

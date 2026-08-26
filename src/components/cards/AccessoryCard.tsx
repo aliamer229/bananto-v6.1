@@ -44,11 +44,11 @@ export function AccessoryCard({ product }: { product: any }) {
         <div>
           <h4
             className="line-clamp-2 text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-primary sm:text-base"
-            title={title}
+            title={title} dir="auto"
           >
             {title}
           </h4>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground" dir="auto">{subtitle}</p>
         </div>
 
         <div className="flex items-baseline justify-between border-t border-border/50 pt-2">
