@@ -44,10 +44,10 @@ export function FaqSection() {
     <Section id="faq" title={t("faq.title")} subtitle={t("faq.subtitle")} weight="primary">
       <Reveal>
         <Panel className="divide-y divide-white/[0.05] overflow-hidden">
-          {faq.map((item) => {
+          {faq.map((item, index) => {
             const expanded = open === item.id;
             return (
-              <div key={item.id}>
+              <div key={`${item.id || item.question}-${index}`}>
                 <button
                   onClick={() => setOpen(expanded ? null : item.id)}
                   aria-expanded={expanded}
@@ -106,7 +106,7 @@ export function PurchaseSection() {
           <Panel className="overflow-hidden p-5 sm:p-6">
             <ol className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
               {purchase.steps.map((step, index) => (
-                <li key={step.title} className="flex gap-3">
+                <li key={`${step.title}-${index}`} className="flex gap-3">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-nin text-xs font-extrabold text-white">
                     {index + 1}
                   </span>
@@ -151,9 +151,9 @@ export function PurchaseSection() {
           </Panel>
 
           <div className="space-y-3">
-            {purchase.warnings?.map((warning) => (
+            {purchase.warnings?.map((warning, index) => (
               <div
-                key={warning}
+                key={`${warning}-${index}`}
                 className="flex items-start gap-3 rounded-panel border border-warn/25 bg-warn/[0.08] p-4"
               >
                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" />
@@ -170,8 +170,8 @@ export function PurchaseSection() {
                   {t("purchase.notes")}
                 </p>
                 <ul className="space-y-1.5 text-xs leading-relaxed muted">
-                  {purchase.notes.map((note) => (
-                    <li key={note} className="flex gap-2">
+                  {purchase.notes.map((note, index) => (
+                    <li key={`${note}-${index}`} className="flex gap-2">
                       <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-white/25" />
                       {note}
                     </li>
@@ -323,8 +323,8 @@ export function DataSourcesNote() {
       </p>
       <p className="mt-2 text-xs leading-relaxed muted">{t("data.transparencyNote")}</p>
       <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[11px]">
-        {sources.map((source) => (
-          <li key={source.label} className="muted">
+        {sources.map((source, index) => (
+          <li key={`${source.label || source.url}-${index}`} className="muted">
             {source.url ? (
               <a
                 href={source.url}

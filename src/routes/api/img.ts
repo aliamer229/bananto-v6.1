@@ -192,7 +192,10 @@ export const Route = createFileRoute("/api/img")({
           }
 
           const processed = await fetchPromise;
-          if (!processed) return new Response("Upstream image error", { status: 502 });
+          if (!processed) {
+            // Graceful fallback: redirect directly to upstream URL so client fetches it natively
+            return Response.redirect(safeUrl.toString(), 302);
+          }
 
           const isImmutable = url.searchParams.has("v") || url.searchParams.has("h") || safeUrl.pathname.includes("/v/");
           const cacheControl = isImmutable

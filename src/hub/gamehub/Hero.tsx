@@ -181,9 +181,9 @@ export function Hero() {
             {/* SKU selector — only when both cases genuinely exist. */}
             {skus.length > 1 && (
               <div className="mt-4 flex gap-1 rounded-full bg-black/30 p-1">
-                {skus.map((option) => (
+                {skus.map((option, optIdx) => (
                   <button
-                    key={option}
+                    key={`${option}-${optIdx}`}
                     onClick={() => {
                       setSku(option);
                       playSound("select");
@@ -221,7 +221,7 @@ export function Hero() {
                 )}
                 {images.slice(0, 4).map((image: any, index: number) => (
                   <button
-                    key={image.id}
+                    key={`${image.id || image.url}-${index}`}
                     onMouseEnter={() => setThumbIndex(index)}
                     onFocus={() => setThumbIndex(index)}
                     onClick={() => openLightbox(image.id)}
@@ -280,12 +280,12 @@ export function Hero() {
               {game.platforms
                 .filter((p) => PLATFORM_META[p])
                 .sort((a, b) => nintendoRank(a) - nintendoRank(b))
-                .map((platform) => {
+                .map((platform, platIdx) => {
                   const meta = PLATFORM_META[platform];
                   const { Icon } = meta;
                   return (
                     <span
-                      key={platform}
+                      key={`${platform}-${platIdx}`}
                       className={cn(
                         "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-bold",
                         meta.nintendo
@@ -298,9 +298,9 @@ export function Hero() {
                     </span>
                   );
                 })}
-              {game.nintendo?.formats?.map((format) => (
+              {game.nintendo?.formats?.map((format, fmtIdx) => (
                 <span
-                  key={format}
+                  key={`${format}-${fmtIdx}`}
                   className="inline-flex items-center rounded-md border border-white/12 px-2 py-1 text-[11px] font-bold muted"
                 >
                   {format === "digital"
@@ -426,9 +426,9 @@ export function Hero() {
         {/* ---- Quick stats strip: compact, seamed, full width ---- */}
         {stats.length > 0 && (
           <div className="mt-9 grid grid-cols-2 gap-2 overflow-hidden rounded-xl border border-white/15 bg-white/[0.07] p-2 backdrop-blur-md sm:grid-cols-3 lg:grid-cols-6">
-            {stats.map((stat) => (
+            {stats.map((stat, statIdx) => (
               <div
-                key={stat.label}
+                key={`${stat.label}-${statIdx}`}
                 className="min-w-0 rounded-lg border border-white/10 bg-white/[0.08] px-3.5 py-3"
               >
                 <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/80">

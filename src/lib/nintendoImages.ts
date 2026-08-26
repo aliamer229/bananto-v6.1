@@ -62,6 +62,8 @@ export interface ResolvedImage {
   trim?: unknown;
   /** True when `url` is the shared placeholder rather than product artwork. */
   isPlaceholder: boolean;
+  /** Ordered list of secondary fallback URLs if the primary URL fails to load. */
+  fallbackUrls?: string[];
 }
 
 /**
@@ -164,30 +166,56 @@ function firstFromList(value: unknown): string | null {
   return null;
 }
 
+function collectCandidates(
+  product: Record<string, unknown>,
+  fields: readonly string[],
+): { url: string; source: string }[] {
+  const seen = new Set<string>();
+  const candidates: { url: string; source: string }[] = [];
+  for (const field of fields) {
+    const value = product[field];
+    if (isUsableImageUrl(value)) {
+      const trimmed = value.trim();
+      if (!seen.has(trimmed)) {
+        seen.add(trimmed);
+        candidates.push({ url: trimmed, source: field });
+      }
+    }
+  }
+  return candidates;
+}
+
 function pick(
   product: Record<string, unknown>,
   fields: readonly string[],
-): { url: string; source: string } | null {
-  for (const field of fields) {
-    const value = product[field];
-    if (isUsableImageUrl(value)) return { url: value.trim(), source: field };
-  }
-  return null;
+): { url: string; source: string; fallbacks: string[] } | null {
+  const candidates = collectCandidates(product, fields);
+  if (candidates.length === 0) return null;
+  const primary = candidates[0];
+  const fallbacks = candidates.slice(1).map((c) => c.url);
+  return { ...primary, fallbacks };
 }
 
 const PLACEHOLDER: ResolvedImage = {
   url: NINTENDO_IMAGE_PLACEHOLDER,
   source: "placeholder",
   isPlaceholder: true,
+  fallbackUrls: [],
 };
 
 function withTrim(
   product: Record<string, unknown>,
-  hit: { url: string; source: string },
+  hit: { url: string; source: string; fallbacks?: string[] },
 ): ResolvedImage {
   const trimField = TRIM_FIELDS[hit.source];
   const trim = trimField ? product[trimField] : undefined;
-  return { url: hit.url, source: hit.source, isPlaceholder: false, ...(trim ? { trim } : {}) };
+  return {
+    url: hit.url,
+    source: hit.source,
+    isPlaceholder: false,
+    fallbackUrls: hit.fallbacks || [],
+    ...(trim ? { trim } : {}),
+  };
 }
 
 /**
@@ -226,7 +254,7 @@ export function resolveNintendoImage(
       firstFromList(product["galleryImages"]) ??
       firstFromList(product["gallery"]) ??
       firstFromList(product["images"]);
-    if (gallery) return { url: gallery, source: "gallery", isPlaceholder: false };
+    if (gallery) return { url: gallery, source: "gallery", isPlaceholder: false, fallbackUrls: [] };
     return PLACEHOLDER;
   }
 

@@ -198,10 +198,17 @@ function parse<T>(raw: unknown, fallback: T): T {
  */
 let storeCache: { doc: StoreDoc; at: number } | undefined;
 let storeInFlight: Promise<StoreDoc> | undefined;
+let storeCacheVersion = 0;
 const STORE_TTL_MS = 60_000;
+
+export function getStoreCacheVersion(): number {
+  return storeCacheVersion;
+}
 
 export function invalidateStoreCache() {
   storeCache = undefined;
+  storeInFlight = undefined;
+  storeCacheVersion++;
 }
 
 /**
@@ -241,6 +248,34 @@ export function isValidProductRecord(item: unknown): item is Product {
   if (!title) return false;
 
   return true;
+}
+
+const KNOWN_GAME_COVERS: Record<string, string> = {
+  prd_ca9a9392db394624: "https://art.gametdb.com/switch/cover/US/AC4NA.jpg",
+  prd_ebcb11cda2854251: "https://art.gametdb.com/switch/cover/US/AKZRA.jpg",
+  prd_ed0f0c2742ab46d8: "https://art.gametdb.com/switch/cover/US/A24MA.jpg",
+  prd_032470e4f7dd4cf0: "https://gamesdb-images.launchbox.gg/r2_a1a586f9-c64e-4401-9fa0-073209704dbe.jpg",
+  prd_6e23a34819ac4bc6: "https://assets.nintendo.com/image/upload/ar_16:9,b_auto:border,c_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000101665/3a8331b2f7b73d1fdb9b92dd9afdb2aff9602f1d89a9cfa171bf2561e480076e",
+  prd_91e34a020d374ca5: "https://cdn.switch-images-julio.com/file/switch-images-julio/A7HLA/front.png",
+  prd_6143c4166fc84049: "https://cdn.essential-japan.com/wp-content/uploads/2025/09/super-mario-galaxy-1-2-switch-2.webp",
+  prd_7037e22716fa4681: "https://www.jnlgame.com/cdn/shop/files/71-VuMoP_vL.jpg?v=1772148408&width=5760",
+  prd_7415614215294c49: "https://www.nintendo.com/my/games/switch2/aaaca/assets/img/product-img.jpg",
+  prd_34be2de35cbe4d6b: "https://www.nintendo.com/ph/games/switch2/aaaaa/assets/img/product/package.webp",
+  prd_3c36dc21c4964b5e: "https://www.nintendo.com/my/games/switch2/aadla/img/package.jpg",
+  prd_10cbc863226547e2: "https://art.gametdb.com/switch/cover/US/AXN7A.jpg",
+  prd_c5e13fa3f0c84edd: "https://cdn.switch-images-julio.com/file/switch-images-julio/AZ89A/front.png",
+  prd_0dbec174d9834d8e: "https://art.gametdb.com/switch/cover/US/AAAAA.jpg",
+  prd_8305beacb7f14685: "https://art.gametdb.com/switch/cover/US/AAACA.jpg",
+};
+
+function fixDisplayUrl(url?: string | null): string | undefined {
+  if (!url || typeof url !== "string") return undefined;
+  const trimmed = url.trim();
+  const julioMatch = /switch-images-julio\.com\/.*\/display\/index\.html\?code=([A-Z0-9]+)/i.exec(trimmed);
+  if (julioMatch && julioMatch[1]) {
+    return `https://cdn.switch-images-julio.com/file/switch-images-julio/${julioMatch[1]}/front.png`;
+  }
+  return trimmed;
 }
 
 export function normalizeProductRecord(p: any): Product {
@@ -289,16 +324,46 @@ export function normalizeProductRecord(p: any): Product {
         ? p.id.trim()
         : `product-${Date.now().toString(36)}`;
 
+  const createdAt =
+    p.createdAt ||
+    p.created_at ||
+    p.created_time ||
+    p.createdTime ||
+    (id.startsWith("prd_") ? new Date().toISOString() : undefined);
+  const updatedAt = p.updatedAt || p.updated_at || createdAt || new Date().toISOString();
+
+  // Normalize image fields and inject verified covers for known catalogue games
+  const knownCover = KNOWN_GAME_COVERS[id];
+  const boxFront = fixDisplayUrl(p.box_front_url || p.boxFrontUrl || (knownCover ? knownCover : undefined));
+  const coverUrl = fixDisplayUrl(p.coverUrl || p.cover_front_url || p.cover_box_url || (knownCover ? knownCover : undefined));
+  const cartridgeImage = fixDisplayUrl(p.cartridgeImage);
+  const coverImage = fixDisplayUrl(p.coverImage);
+  const image = fixDisplayUrl(p.image || boxFront || coverUrl || knownCover);
+
   return {
     ...p,
     id,
     title,
     titleEn,
     slug,
+    ...(boxFront ? { box_front_url: boxFront, boxFrontUrl: boxFront } : {}),
+    ...(coverUrl ? { coverUrl } : {}),
+    ...(cartridgeImage ? { cartridgeImage } : {}),
+    ...(coverImage ? { coverImage } : {}),
+    ...(image ? { image } : {}),
     price: Number(p.price) || 0,
     cost: Number(p.cost) || 0,
     stock: Number(p.stock) || 0,
     sales: Number(p.sales) || 0,
+    status: p.status || "نشط",
+    isActive: p.isActive !== false,
+    isHidden: p.isHidden === true,
+    categoryId: p.categoryId || p.category || "cat_nintendo",
+    category: p.category || p.categoryId || "cat_nintendo",
+    createdAt,
+    created_at: createdAt,
+    updatedAt,
+    updated_at: updatedAt,
     options: Array.isArray(p.options) ? p.options.filter(Boolean) : [],
     types: Array.isArray(p.types)
       ? p.types.filter(Boolean)
@@ -554,18 +619,39 @@ async function loadStore(): Promise<StoreDoc> {
 
         // Deduplicate: granular products overwrite chunked products
         const productsMap = new Map<string, any>();
-        for (const p of doc.products as any[]) {
-          if (p && p.id) productsMap.set(String(p.id), p);
-        }
+        const existingIds = new Set((doc.products as any[]).map((p) => String(p?.id || "")));
+        
+        // 1. First add newly created granular products that aren't in base chunks yet (so they appear first!)
         for (const p of granularProducts) {
-          if (p && p.id) {
-            if (p._deleted) {
-              productsMap.delete(String(p.id));
-            } else if (isValidProductRecord(p)) {
-              productsMap.set(String(p.id), normalizeProductRecord(p));
+          if (p && p.id && !p._deleted && isValidProductRecord(p)) {
+            const pid = String(p.id);
+            if (!existingIds.has(pid)) {
+              productsMap.set(pid, normalizeProductRecord(p));
             }
           }
         }
+
+        // 2. Add base chunked products, overlaying any granular updates
+        const granularMap = new Map<string, any>();
+        for (const p of granularProducts) {
+          if (p && p.id) {
+            granularMap.set(String(p.id), p);
+          }
+        }
+
+        for (const p of doc.products as any[]) {
+          if (!p || !p.id) continue;
+          const pid = String(p.id);
+          const override = granularMap.get(pid);
+          if (override) {
+            if (!override._deleted && isValidProductRecord(override)) {
+              productsMap.set(pid, normalizeProductRecord(override));
+            }
+          } else {
+            productsMap.set(pid, p);
+          }
+        }
+
         doc.products = Array.from(productsMap.values());
       }
     } catch (err) {

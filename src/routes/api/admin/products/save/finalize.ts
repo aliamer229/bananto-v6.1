@@ -48,11 +48,22 @@ export const Route = createFileRoute("/api/admin/products/save/finalize")({
           }
 
           const productId = productParts.id;
+          const nowIso = new Date().toISOString();
 
           // Sanitize and verify all product images (ensure WebP in R2, isolate media errors)
-          let productToSave = productParts;
+          let productToSave = {
+            ...productParts,
+            isActive: productParts.isActive !== false,
+            status: productParts.status || "نشط",
+            categoryId: productParts.categoryId || productParts.category || "cat_nintendo",
+            category: productParts.category || productParts.categoryId || "cat_nintendo",
+            createdAt: productParts.createdAt || productParts.created_at || nowIso,
+            created_at: productParts.created_at || productParts.createdAt || nowIso,
+            updatedAt: nowIso,
+            updated_at: nowIso,
+          };
           try {
-            const imgVerification = await sanitizeAndVerifyProductImages(productParts);
+            const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
             productToSave = imgVerification.product;
           } catch (imgErr) {
             console.warn(

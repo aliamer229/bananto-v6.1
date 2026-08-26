@@ -262,9 +262,7 @@ function CategoryPage() {
           return (Number(b.price) || 0) - (Number(a.price) || 0);
         case "rating":
           return (Number(b.metacriticRating) || 0) - (Number(a.metacriticRating) || 0);
-        case "release_date":
-        case "newest":
-        default: {
+        case "release_date": {
           const getVal = (p: any) => {
             let val = 0;
             const d =
@@ -275,16 +273,13 @@ function CategoryPage() {
               p.releaseYear ||
               p.release_year;
             if (d) {
-              // Attempt to parse standard dates
               val = new Date(d).getTime();
               if (isNaN(val)) {
-                // Handle DD/MM/YYYY or DD-MM-YYYY
                 const dmMatch = String(d).match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
                 if (dmMatch) {
                   val = new Date(`${dmMatch[3]}-${dmMatch[2]}-${dmMatch[1]}`).getTime();
                 }
                 if (isNaN(val)) {
-                  // Fallback: extract year
                   const match = String(d).match(/\b(20\d{2}|19\d{2})\b/);
                   if (match) val = new Date(match[0]).getTime();
                 }
@@ -295,16 +290,41 @@ function CategoryPage() {
 
           const valA = getVal(a);
           const valB = getVal(b);
+          if (valA !== valB) return valB - valA;
+          return String(b.id || "").localeCompare(String(a.id || ""));
+        }
+        case "newest":
+        default: {
+          const getScore = (p: any) => {
+            const createTime = new Date(p.createdAt || p.created_at || p.updatedAt || p.updated_at || 0).getTime() || 0;
+            let rel = 0;
+            const d =
+              p.releaseDate ||
+              p.release_date ||
+              p.metadata?.releaseDate ||
+              p.metadata?.release_date ||
+              p.releaseYear ||
+              p.release_year;
+            if (d) {
+              rel = new Date(d).getTime();
+              if (isNaN(rel)) {
+                const dmMatch = String(d).match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                if (dmMatch) {
+                  rel = new Date(`${dmMatch[3]}-${dmMatch[2]}-${dmMatch[1]}`).getTime();
+                }
+                if (isNaN(rel)) {
+                  const match = String(d).match(/\b(20\d{2}|19\d{2})\b/);
+                  if (match) rel = new Date(match[0]).getTime();
+                }
+              }
+            }
+            return Math.max(createTime, isNaN(rel) ? 0 : rel);
+          };
 
-          if (valA !== valB) {
-            return valB - valA; // Descending by release date
-          }
-
-          // Secondary sort by created_at if release dates are exactly the same or missing
-          const createA = new Date(a.createdAt || a.created_at || a.created_time || 0).getTime();
-          const createB = new Date(b.createdAt || b.created_at || b.created_time || 0).getTime();
-          if (createA !== createB && !isNaN(createA) && !isNaN(createB)) {
-            return createB - createA;
+          const scoreA = getScore(a);
+          const scoreB = getScore(b);
+          if (scoreA !== scoreB) {
+            return scoreB - scoreA;
           }
 
           return String(b.id || "").localeCompare(String(a.id || ""));

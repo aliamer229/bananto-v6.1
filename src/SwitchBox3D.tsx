@@ -21,32 +21,32 @@ export interface SwitchBox3DProps {
 let cachedBaseTextureImg: HTMLImageElement | null = null;
 const coverImageElementCache = new Map<string, HTMLImageElement>();
 
-function loadCoverImage(src: string): Promise<HTMLImageElement | null> {
-  const existing = coverImageElementCache.get(src);
+function loadCoverImage(coverImage: string): Promise<HTMLImageElement | null> {
+  const existing = coverImageElementCache.get(coverImage);
   if (existing && existing.complete && existing.naturalWidth > 0) {
     return Promise.resolve(existing);
   }
 
   return new Promise((resolve) => {
     const img = new Image();
-    if (/^https?:\/\//i.test(src)) {
+    if (/^https?:\/\//i.test(coverImage)) {
       try {
-        if (new URL(src).origin !== window.location.origin) {
+        if (new URL(coverImage).origin !== window.location.origin) {
           img.crossOrigin = "anonymous";
         }
       } catch {
         img.crossOrigin = "anonymous";
       }
-    } else if (!src.startsWith("data:")) {
+    } else if (!coverImage.startsWith("data:")) {
       img.crossOrigin = "anonymous";
     }
 
     img.onload = () => {
-      coverImageElementCache.set(src, img);
+      coverImageElementCache.set(coverImage, img);
       resolve(img);
     };
     img.onerror = () => resolve(null);
-    img.src = src;
+    img.src = coverImage;
   });
 }
 
@@ -68,9 +68,17 @@ function loadBaseTexture(): Promise<HTMLImageElement | null> {
 
 export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
   ({ coverImage, platform = "ns", gameName = "Nintendo Switch", onReady }, ref) => {
-    const { nodes, materials } = useGLTF("/source/SwitchCase.glb") as any;
+    const gltf = useGLTF("/source/SwitchCase.glb") as any;
+    const nodes = gltf?.nodes || {};
+    const materials = gltf?.materials || {};
+    const scene = gltf?.scene;
     const group = useRef<THREE.Group>(null);
     const controlsRef = useRef<any>(null);
+
+    // Resolve mesh nodes from nodes object or scene traverse
+    const boxMesh = (nodes.box || scene?.getObjectByName?.("box")) as THREE.Mesh | undefined;
+    const placeholderMesh = (nodes.placeholder || scene?.getObjectByName?.("placeholder")) as THREE.Mesh | undefined;
+    const foilMesh = (nodes.foil || scene?.getObjectByName?.("foil")) as THREE.Mesh | undefined;
 
     useImperativeHandle(ref, () => ({
       resetView: () => {
@@ -81,10 +89,8 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
     }));
 
     useEffect(() => {
-      if (nodes && materials) {
-        onReady?.();
-      }
-    }, [nodes, materials, onReady]);
+      onReady?.();
+    }, [onReady, nodes, scene]);
 
     const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
@@ -284,6 +290,19 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
       };
     }, [coverImage, platform, gameName]);
 
+    // Fallback plastic material when GLTF materials are generic
+    const plasticMaterial = materials?.plastic || new THREE.MeshPhysicalMaterial({
+      transparent: true,
+      opacity: platform === "ns2" ? 0.4 : 0.25, // opacity: platform === "ns2" ? 0.4 : 0.25
+      roughness: 0.1,
+      metalness: 0.05,
+      transmission: 0.85,
+      ior: 1.5,
+      thickness: 0.1,
+      depthWrite: false, // depthWrite: false
+      color: new THREE.Color(platform === "ns2" ? "#e60012" : "#ffffff"),
+    });
+
     // Make sure foil has alpha
     if (materials?.foil) {
       materials.foil.transparent = true;
@@ -297,6 +316,10 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
       materials.plastic.depthWrite = false; // depthWrite: false
       materials.plastic.color.set(platform === "ns2" ? "#e60012" : "#ffffff");
     }
+
+    const boxGeometry = boxMesh?.geometry || nodes?.box?.geometry;
+    const placeholderGeometry = placeholderMesh?.geometry || nodes?.placeholder?.geometry;
+    const foilGeometry = foilMesh?.geometry || nodes?.foil?.geometry;
 
     return (
       <group
@@ -315,12 +338,12 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
           minDistance={2}
           maxDistance={30}
         />
-        {nodes?.box?.geometry && (
-          <mesh geometry={nodes.box.geometry} material={materials?.plastic} />
+        {boxGeometry && (
+          <mesh geometry={boxGeometry} material={materials?.plastic || plasticMaterial} />
         )}
 
-        {nodes?.placeholder?.geometry && (
-          <mesh geometry={nodes.placeholder.geometry}>
+        {placeholderGeometry && (
+          <mesh geometry={placeholderGeometry}>
             <meshStandardMaterial
               map={texture || undefined}
               roughness={0.6}
@@ -335,8 +358,8 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
           </mesh>
         )}
 
-        {nodes?.foil?.geometry && (
-          <mesh geometry={nodes.foil.geometry} material={materials?.foil} />
+        {foilGeometry && (
+          <mesh geometry={foilGeometry} material={materials?.foil || foilMesh?.material} />
         )}
       </group>
     );

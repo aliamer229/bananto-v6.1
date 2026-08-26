@@ -58,7 +58,7 @@ export function DlcSection() {
         {dlc.map((pack, index) => {
           const verdict = pack.necessity ? NECESSITY_TONE[pack.necessity.verdict] : null;
           return (
-            <Reveal key={pack.id} delay={index * 60}>
+            <Reveal key={`${pack.id || pack.name}-${index}`} delay={index * 60}>
               <Panel className="overflow-hidden">
                 <div className="flex flex-col gap-5 p-5 sm:flex-row sm:p-6">
                   <SmartImage
@@ -93,8 +93,8 @@ export function DlcSection() {
 
                     {pack.contents && pack.contents.length > 0 && (
                       <ul className="mt-3 grid gap-1 text-xs muted sm:grid-cols-2">
-                        {pack.contents.map((line) => (
-                          <li key={line} className="flex items-start gap-1.5">
+                        {pack.contents.map((line, lineIdx) => (
+                          <li key={`${line}-${lineIdx}`} className="flex items-start gap-1.5">
                             <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-nin-soft" />
                             {line}
                           </li>
@@ -236,11 +236,11 @@ export function GuidesSection() {
       {rest.length > 0 && (
         <Reveal delay={80}>
           <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
-            {rest.map((guide) => {
+            {rest.map((guide, guideIdx) => {
               const Icon = GUIDE_META[guide.category].icon;
               return (
                 <button
-                  key={guide.slug}
+                  key={`${guide.slug}-${guideIdx}`}
                   onClick={() => openGuide(guide.slug)}
                   className="group flex w-56 shrink-0 flex-col rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 text-start transition-all duration-200 hover:border-white/15 hover:bg-white/[0.06]"
                 >
@@ -322,9 +322,9 @@ export function CompletionSection() {
           {durations.length > 0 && (
             <Panel className="p-5 sm:p-6">
               <div className="space-y-3">
-                {durations.map((duration) => (
+                {durations.map((duration, durIdx) => (
                   <div
-                    key={duration.label}
+                    key={`${duration.label}-${durIdx}`}
                     className="flex items-baseline justify-between gap-3 border-b border-white/[0.05] pb-2.5 last:border-b-0 last:pb-0"
                   >
                     <span className="text-xs muted">{duration.label}</span>
@@ -340,13 +340,13 @@ export function CompletionSection() {
           {hasTrackables && (
             <Panel className="p-5 sm:p-6">
               <div className="flex flex-wrap gap-2">
-                {completion.collectibles?.map((item) => (
-                  <Chip key={item.label} icon={Gem}>
+                {completion.collectibles?.map((item, itemIdx) => (
+                  <Chip key={`${item.label}-${itemIdx}`} icon={Gem}>
                     {item.label} · <b>{item.total}</b>
                   </Chip>
                 ))}
-                {completion.challenges?.map((item) => (
-                  <Chip key={item.label} icon={Target}>
+                {completion.challenges?.map((item, itemIdx) => (
+                  <Chip key={`${item.label}-${itemIdx}`} icon={Target}>
                     {item.label}
                     {item.total != null && (
                       <>

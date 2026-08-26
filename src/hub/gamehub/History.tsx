@@ -77,7 +77,7 @@ export function TimelineSection() {
                 aria-hidden
                 className="absolute bottom-4 top-2 start-[7px] w-px bg-gradient-to-b from-white/[0.14] via-white/[0.09] to-transparent"
               />
-              {sorted.map((event) => {
+              {sorted.map((event, index) => {
                 const meta = EVENT_META[event.kind] || DEFAULT_EVENT_META;
                 const Icon = meta.icon;
                 const eventTime = event.date ? new Date(event.date).getTime() : 0;
@@ -86,7 +86,7 @@ export function TimelineSection() {
                 const linkUrl = event.sourceUrl || event.url;
 
                 return (
-                  <li key={event.id} className="relative flex gap-4 pb-5 last:pb-0">
+                  <li key={`${event.id || event.title}-${index}`} className="relative flex gap-4 pb-5 last:pb-0">
                     <span
                       className={cn(
                         "relative z-10 mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ring-4 ring-ink-900",
@@ -179,10 +179,10 @@ export function PatchNotesSection() {
     <Section id="patches" title={t("patches.title")} weight="support">
       <Reveal>
         <Panel className="divide-y divide-white/[0.05] overflow-hidden">
-          {notes.map((note) => {
+          {notes.map((note, noteIdx) => {
             const open = expanded === note.version;
             return (
-              <div key={note.version}>
+              <div key={`${note.version}-${noteIdx}`}>
                 <button
                   onClick={() => setExpanded(open ? null : note.version)}
                   aria-expanded={open}
@@ -196,11 +196,11 @@ export function PatchNotesSection() {
                 </button>
                 {open && (
                   <div className="grid gap-4 px-5 pb-5 sm:grid-cols-2">
-                    {groups.map((group) => {
+                    {groups.map((group, groupIdx) => {
                       const items = note[group.key];
                       if (!items || items.length === 0) return null;
                       return (
-                        <div key={group.key}>
+                        <div key={`${group.key}-${groupIdx}`}>
                           <p
                             className={cn(
                               "mb-1.5 text-[10px] font-extrabold uppercase tracking-wider",
@@ -210,8 +210,8 @@ export function PatchNotesSection() {
                             {group.label}
                           </p>
                           <ul className="space-y-1 text-xs leading-relaxed muted">
-                            {items.map((item) => (
-                              <li key={item} className="flex gap-2">
+                            {items.map((item, itemIdx) => (
+                              <li key={`${item}-${itemIdx}`} className="flex gap-2">
                                 <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-white/25" />
                                 {item}
                               </li>
@@ -272,9 +272,9 @@ export function SoundtrackSection() {
           )}
           {ost.links && ost.links.length > 0 && (
             <span className="ms-auto flex flex-wrap gap-2">
-              {ost.links.map((link) => (
+              {ost.links.map((link, linkIdx) => (
                 <a
-                  key={link.url}
+                  key={`${link.url || link.label}-${linkIdx}`}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"

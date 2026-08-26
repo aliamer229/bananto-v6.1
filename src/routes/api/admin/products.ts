@@ -324,6 +324,7 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           // 7. Assemble product object with all fields
+          const nowIso = new Date().toISOString();
           let productToSave: Product = {
             ...payload,
             ...duplicateFields,
@@ -336,7 +337,13 @@ export const Route = createFileRoute("/api/admin/products")({
             stock: payload.isInfiniteStock ? 999999 : Number(payload.stock) || 0,
             status: payload.status || "نشط",
             isActive: payload.isActive !== false,
+            isHidden: payload.isHidden === true,
             categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
+            category: (payload as any).category || payload.categoryId || "cat_nintendo",
+            createdAt: payload.createdAt || payload.created_at || nowIso,
+            created_at: payload.created_at || payload.createdAt || nowIso,
+            updatedAt: nowIso,
+            updated_at: nowIso,
           };
 
           const performanceIssues = performanceValidation(
@@ -606,6 +613,7 @@ export const Route = createFileRoute("/api/admin/products")({
             );
           }
 
+          const nowIso = new Date().toISOString();
           let productToSave: Product = {
             ...payload,
             id: productId,
@@ -617,7 +625,13 @@ export const Route = createFileRoute("/api/admin/products")({
             stock: payload.isInfiniteStock ? 999999 : Number(payload.stock) || 0,
             status: payload.status || "نشط",
             isActive: payload.isActive !== false,
+            isHidden: payload.isHidden === true,
             categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
+            category: (payload as any).category || payload.categoryId || "cat_nintendo",
+            createdAt: payload.createdAt || payload.created_at || stored?.createdAt || stored?.created_at || nowIso,
+            created_at: payload.created_at || payload.createdAt || stored?.created_at || stored?.createdAt || nowIso,
+            updatedAt: nowIso,
+            updated_at: nowIso,
           };
 
           const performanceIssues = performanceValidation(

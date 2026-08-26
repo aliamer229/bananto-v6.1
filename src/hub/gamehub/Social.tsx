@@ -108,8 +108,8 @@ export function VerdictSection() {
                     {t("verdict.buyIf")}
                   </p>
                   <ul className="space-y-1.5 text-xs leading-relaxed muted">
-                    {verdict.buyIf.map((line) => (
-                      <li key={line} className="flex gap-2">
+                    {verdict.buyIf.map((line, lineIdx) => (
+                      <li key={`${line}-${lineIdx}`} className="flex gap-2">
                         <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-good" />
                         {line}
                       </li>
@@ -122,8 +122,8 @@ export function VerdictSection() {
                     {t("verdict.skipIf")}
                   </p>
                   <ul className="space-y-1.5 text-xs leading-relaxed muted">
-                    {verdict.skipIf.map((line) => (
-                      <li key={line} className="flex gap-2">
+                    {verdict.skipIf.map((line, lineIdx) => (
+                      <li key={`${line}-${lineIdx}`} className="flex gap-2">
                         <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-warn" />
                         {line}
                       </li>

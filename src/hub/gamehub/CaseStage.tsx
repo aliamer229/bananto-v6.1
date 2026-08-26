@@ -33,7 +33,13 @@ export function CaseStage({ className, ...rest }: GameCase3DProps & { className?
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (hasWebGL()) setWebglReady(true);
+    if (hasWebGL()) {
+      setWebglReady(true);
+      const timer = setTimeout(() => {
+        setModelReady(true);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const handleModelReady = useCallback(() => {
@@ -46,13 +52,23 @@ export function CaseStage({ className, ...rest }: GameCase3DProps & { className?
   // Fallback: visual fallback (image only) requested by user
   const SimpleFallback = () => {
      const source = caseProps.coverTextureUrl || caseProps.coverUrl || caseProps.sleeve?.url;
+     if (!source) {
+       return (
+         <div className="w-[240px] h-[320px] rounded-xl bg-ink-900/80 border border-white/10 flex flex-col items-center justify-center p-4 text-center shadow-xl">
+           <div className="w-12 h-12 rounded-full bg-nin/20 text-nin flex items-center justify-center font-black mb-2 text-sm">
+             {caseProps.isSwitch2 ? "NS2" : "NS"}
+           </div>
+           <span className="text-xs font-bold text-white/90 line-clamp-2">{caseProps.title}</span>
+         </div>
+       );
+     }
      return (
         <img 
            src={cdnImage(source, { width: 800 })} 
            alt={caseProps.title || "Game Cover"} 
            loading="eager"
            decoding="async"
-           className="w-full h-auto max-w-[300px] object-cover rounded-md shadow-lg" 
+           className="w-full h-auto max-w-[280px] object-cover rounded-md shadow-2xl" 
         />
      );
   };

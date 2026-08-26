@@ -40,7 +40,7 @@ export function StorySection() {
           const flip = index % 2 === 1;
 
           return (
-            <Reveal key={section.id} delay={index * 60}>
+            <Reveal key={`${section.id}-${index}`} delay={index * 60}>
               <Panel className="overflow-hidden">
                 <div className={cn("grid lg:grid-cols-2", flip && "lg:[&>*:first-child]:order-2")}>
                   {image && (
@@ -138,7 +138,7 @@ export function GameplaySection() {
           const flip = index % 2 === 1;
 
           return (
-            <Reveal key={pillar.id} delay={index * 50}>
+            <Reveal key={`${pillar.id}-${index}`} delay={index * 50}>
               <div
                 className={cn(
                   "group relative grid overflow-hidden rounded-panel border border-white/[0.07] sm:grid-cols-[1.15fr_1fr]",
@@ -195,9 +195,9 @@ export function FeaturesSection() {
       <Reveal>
         <Panel className="p-5 sm:p-6">
           <div className="flex flex-wrap gap-2">
-            {features.map((feature) => (
+            {features.map((feature, index) => (
               <span
-                key={feature.id}
+                key={`${feature.id || feature.label}-${index}`}
                 className="rounded-xl bg-white/[0.05] px-3.5 py-2 text-xs font-bold transition-colors hover:bg-white/[0.09]"
               >
                 {feature.label}

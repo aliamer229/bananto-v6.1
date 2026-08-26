@@ -76,12 +76,12 @@ export function SimilarGamesSection() {
           </Panel>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {visible.map((pick) => {
+            {visible.map((pick, pickIdx) => {
               const reason =
                 pick.reasons.find((r) => kind === "all" || r.kind === kind) ?? pick.reasons[0];
               return (
                 <Link
-                  key={pick.slug}
+                  key={`${pick.slug}-${pickIdx}`}
                   to={gamePath(pick.slug)}
                   className="group flex flex-col overflow-hidden rounded-panel border border-white/[0.07] bg-white/[0.03] transition-all duration-200 hover:border-white/15 hover:bg-white/[0.06]"
                 >
@@ -193,7 +193,7 @@ export function SeriesSection() {
     >
       <Reveal>
         <ol className="relative grid gap-3 sm:grid-cols-3">
-          {sorted.map((entry) => {
+          {sorted.map((entry, entryIdx) => {
             const current = entry.status === "current";
             const inner = (
               <>
@@ -223,7 +223,7 @@ export function SeriesSection() {
             );
 
             return (
-              <li key={entry.slug}>
+              <li key={`${entry.slug}-${entryIdx}`}>
                 {current ? (
                   <div className="flex gap-3 rounded-panel border border-nin/30 bg-nin/[0.08] p-3">
                     {inner}
@@ -343,8 +343,8 @@ export function SetupSection() {
     <Section id="setup" title={t("setup.title")} subtitle={t("setup.subtitle")} weight="support">
       <Reveal>
         <div className="grid gap-3 sm:grid-cols-3">
-          {accessories.map((item) => (
-            <Panel key={item.id} interactive className="flex flex-col overflow-hidden">
+          {accessories.map((item, accIdx) => (
+            <Panel key={`${item.id || item.name}-${accIdx}`} interactive className="flex flex-col overflow-hidden">
               <SmartImage
                 src={cdnImage(item.imageUrl)}
                 alt={item.name}
@@ -408,9 +408,9 @@ export function RecommendationStrip({
         {title}
       </h2>
       <div className="no-scrollbar flex gap-3 overflow-x-auto pb-2">
-        {items.map((item) => (
+        {items.map((item, itemIdx) => (
           <Link
-            key={item.slug}
+            key={`${item.slug}-${itemIdx}`}
             to={gamePath(item.slug)}
             className="group w-40 shrink-0 overflow-hidden rounded-panel border border-white/[0.07] bg-white/[0.03] transition-colors hover:border-white/15"
           >

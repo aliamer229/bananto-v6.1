@@ -344,6 +344,8 @@ export default function HomeView({
                     .sort((a, b) => {
                       const getVal = (p: any) => {
                         try {
+                          const created = new Date(p.createdAt || p.created_at || p.updatedAt || p.updated_at || 0).getTime() || 0;
+                          let rel = 0;
                           const d =
                             p.releaseDate ||
                             p.release_date ||
@@ -351,55 +353,42 @@ export default function HomeView({
                             p.metadata?.release_date ||
                             p.releaseYear ||
                             p.release_year;
-                          if (!d) return 0;
-
-                          const dStr = String(d).trim();
-
-                          // 1. Try YYYY-MM-DD or YYYY-M-D (like 2026-7-23)
-                          const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
-                          if (ymdMatch && ymdMatch[1] && ymdMatch[2] && ymdMatch[3]) {
-                            return new Date(
-                              `${ymdMatch[1]}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[3].padStart(2, "0")}`,
-                            ).getTime() || 0;
+                          if (d) {
+                            const dStr = String(d).trim();
+                            const ymdMatch = dStr.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+                            if (ymdMatch && ymdMatch[1] && ymdMatch[2] && ymdMatch[3]) {
+                              rel = new Date(
+                                `${ymdMatch[1]}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[3].padStart(2, "0")}`,
+                              ).getTime() || 0;
+                            } else {
+                              const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+                              if (dmMatch && dmMatch[1] && dmMatch[2] && dmMatch[3]) {
+                                rel = new Date(
+                                  `${dmMatch[3]}-${dmMatch[2].padStart(2, "0")}-${dmMatch[1].padStart(2, "0")}`,
+                                ).getTime() || 0;
+                              } else {
+                                const parsed = new Date(dStr).getTime();
+                                if (!isNaN(parsed) && parsed > 0) rel = parsed;
+                                else {
+                                  const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
+                                  if (yearMatch) rel = new Date(`${yearMatch[0]}-01-01`).getTime() || 0;
+                                }
+                              }
+                            }
                           }
-
-                          // 2. Try DD/MM/YYYY or DD-MM-YYYY
-                          const dmMatch = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-                          if (dmMatch && dmMatch[1] && dmMatch[2] && dmMatch[3]) {
-                            return new Date(
-                              `${dmMatch[3]}-${dmMatch[2].padStart(2, "0")}-${dmMatch[1].padStart(2, "0")}`,
-                            ).getTime() || 0;
-                          }
-
-                          // 3. Try YYYYMMDD (Nintendo eShop format)
-                          const ymdCompact = dStr.match(/^(\d{4})(\d{2})(\d{2})$/);
-                          if (ymdCompact) {
-                            return new Date(
-                              `${ymdCompact[1]}-${ymdCompact[2]}-${ymdCompact[3]}`,
-                            ).getTime() || 0;
-                          }
-
-                          // 4. Fallback to standard Date parsing
-                          const parsed = new Date(dStr).getTime();
-                          if (!isNaN(parsed) && parsed > 0) return parsed;
-
-                          // 5. Fallback to just extracting a year
-                          const yearMatch = dStr.match(/\b(20\d{2}|19\d{2})\b/);
-                          if (yearMatch) return new Date(`${yearMatch[0]}-01-01`).getTime() || 0;
+                          return Math.max(created, rel);
                         } catch {
                           return 0;
                         }
-                        return 0;
                       };
 
                       const valA = getVal(a);
                       const valB = getVal(b);
 
-                      // Sort descending purely by release date
                       if (valA !== valB) return valB - valA;
                       return String(b.id || "").localeCompare(String(a.id || ""));
                     })
-                    .slice(0, 12)
+                    .slice(0, 16)
                     .map((p) => {
                       const getYear = (val: any) => {
                         const dateStr = String(val || "");

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import {
   getStore,
+  getStoreCacheVersion,
   updateStore,
   getAdminAvailabilityStatus,
   getAdminAvailabilityConfig,
@@ -43,12 +44,15 @@ const LIST_FIELDS = [
   "platform",
   "category",
   "categoryId",
+  "categoryTitle",
+  "schemaId",
   "genre",
   "genres",
   "developer",
   "publisher",
   "metacriticRating",
   "metacriticScore",
+  "rating",
   // Canonical front box cover + trim
   "cartridgeImage",
   "cartridgeImageTrim",
@@ -63,6 +67,16 @@ const LIST_FIELDS = [
   "releaseDate",
   "release_date",
   "releaseYear",
+  "release_year",
+  "createdAt",
+  "created_at",
+  "updatedAt",
+  "updated_at",
+  "stock",
+  "sales",
+  "displayOrder",
+  "isHidden",
+  "visibility",
   "options",
   "types",
   "badges",
@@ -164,12 +178,17 @@ function slimStore(store: any, options?: { page?: number; limit?: number; catego
 let publicPayloadCache:
   | {
       store: StoreDoc;
+      version: number;
       availabilityKey: string;
       visible: ReturnType<typeof publicStore>;
       full?: string;
       slim?: string;
     }
   | undefined;
+
+export function invalidatePublicPayloadCache() {
+  publicPayloadCache = undefined;
+}
 
 function publicPayload(
   store: StoreDoc,
@@ -178,12 +197,15 @@ function publicPayload(
   options?: { page?: number; limit?: number; category?: string }
 ): string {
   const availabilityKey = JSON.stringify(availability ?? null);
+  const currentVersion = getStoreCacheVersion();
   if (
     publicPayloadCache?.store !== store ||
-    publicPayloadCache.availabilityKey !== availabilityKey
+    publicPayloadCache?.version !== currentVersion ||
+    publicPayloadCache?.availabilityKey !== availabilityKey
   ) {
     publicPayloadCache = {
       store,
+      version: currentVersion,
       availabilityKey,
       visible: publicStore(store, availability),
     };
@@ -244,7 +266,7 @@ export const Route = createFileRoute("/api/data")({
             etag,
             "cache-control": viewer?.isAdmin
               ? "private, no-store"
-              : "public, max-age=60, s-maxage=300, stale-while-revalidate=86400",
+              : "public, max-age=0, s-maxage=5, must-revalidate",
             "server-timing": `db;dur=${duration}`,
           };
           if (request.headers.get("if-none-match") === etag) {

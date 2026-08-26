@@ -170,8 +170,23 @@ export async function fetchRemoteImage(
 ): Promise<Response | undefined> {
   let current = safeRemoteImageUrl(raw);
   if (!current) return undefined;
+
+  const headers = new Headers(init.headers);
+  if (!headers.has("User-Agent")) {
+    headers.set(
+      "User-Agent",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    );
+  }
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
+  }
+  if (!headers.has("Referer")) {
+    headers.set("Referer", current.origin + "/");
+  }
+
   for (let redirects = 0; redirects <= 3; redirects += 1) {
-    const response = await fetch(current, { ...init, redirect: "manual" });
+    const response = await fetch(current, { ...init, headers, redirect: "manual" });
     if (response.status < 300 || response.status >= 400) return response;
     const location = response.headers.get("location");
     if (!location) return undefined;

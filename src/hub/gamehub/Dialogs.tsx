@@ -152,11 +152,11 @@ export function BuySheet({
           <div>
             <p className="eyebrow mb-2">{t("purchase.title")}</p>
             <div className="grid gap-2">
-              {options.map((opt) => {
+              {options.map((opt, optIdx) => {
                 const selected = opt.id === selectedOptionId;
                 return (
                   <button
-                    key={opt.id}
+                    key={`${opt.id || opt.name}-${optIdx}`}
                     type="button"
                     onClick={() => handleSelectOption(opt.id)}
                     className={cn(
@@ -202,11 +202,11 @@ export function BuySheet({
           <div>
             <p className="eyebrow mb-2">{t("prices.format")}</p>
             <div className="grid gap-2">
-              {availableTypes.map((typ) => {
+              {availableTypes.map((typ, typIdx) => {
                 const selected = typ.id === selectedTypeId;
                 return (
                   <button
-                    key={typ.id}
+                    key={`${typ.id || typ.name}-${typIdx}`}
                     type="button"
                     onClick={() => {
                       setSelectedTypeId(typ.id);
@@ -255,11 +255,11 @@ export function BuySheet({
           <div>
             <p className="eyebrow mb-2">{t("prices.edition")}</p>
             <div className="grid gap-2">
-              {editions.map((edition) => {
+              {editions.map((edition, edIdx) => {
                 const selected = edition.id === selectedEdition;
                 return (
                   <button
-                    key={edition.id}
+                    key={`${edition.id || edition.name}-${edIdx}`}
                     type="button"
                     onClick={() => {
                       setSelectedEdition(edition.id);
@@ -633,8 +633,8 @@ export function FollowDialog({ open, onClose }: { open: boolean; onClose: () => 
       </p>
 
       <ul className="mt-4 space-y-1">
-        {rows.map((row) => (
-          <li key={row.key}>
+        {rows.map((row, rowIdx) => (
+          <li key={`${row.key}-${rowIdx}`}>
             <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/[0.04]">
               <span className="text-sm">{row.label}</span>
               <input

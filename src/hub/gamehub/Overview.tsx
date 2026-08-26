@@ -182,8 +182,8 @@ export function FitSection() {
             <Panel className="h-full p-5 sm:p-6">
               <p className="eyebrow mb-4">{t("fit.tags")}</p>
               <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <Chip key={tag.id} tone={tag.positive ? "good" : "default"}>
+                {tags.map((tag, index) => (
+                  <Chip key={`${tag.id || tag.label}-${index}`} tone={tag.positive ? "good" : "default"}>
                     {tag.label}
                   </Chip>
                 ))}
@@ -200,8 +200,8 @@ export function FitSection() {
                 {t("fit.perfectIf")}
               </p>
               <ul className="space-y-2.5">
-                {picks.map((pick) => (
-                  <li key={pick.slug}>
+                {picks.map((pick, index) => (
+                  <li key={`${pick.slug || pick.title}-${index}`}>
                     <Link
                       to={gamePath(pick.slug)}
                       className="group flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/[0.04]"

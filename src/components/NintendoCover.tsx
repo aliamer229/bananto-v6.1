@@ -62,17 +62,19 @@ export interface NintendoCoverProps {
 export function useNintendoCover(
   product: Record<string, unknown> | null | undefined,
   usage: NintendoImageUsage,
+  activeRawUrlOverride?: string,
 ) {
   const resolved = resolveNintendoImage(product, usage);
+  const rawUrl = activeRawUrlOverride || resolved.url;
   const targetWidth =
     usage === "square-card"
       ? 360
       : usage === "listing-card" || usage === "bundle-card" || usage === "cart" || usage === "toast"
       ? 480
       : 800;
-  const proxied = cdnImage(resolved.url, { width: targetWidth });
+  const proxied = cdnImage(rawUrl, { width: targetWidth });
   const { trim, naturalAspect } = useImageTrim(proxied, resolved.trim, !resolved.isPlaceholder);
-  return { resolved, src: proxied, rawUrl: resolved.url, trim, naturalAspect };
+  return { resolved, src: proxied, rawUrl, trim, naturalAspect };
 }
 
 export function NintendoCover({
@@ -87,16 +89,30 @@ export function NintendoCover({
   fetchPriority,
   onClick,
 }: NintendoCoverProps) {
-  const { resolved, src, rawUrl, trim, naturalAspect } = useNintendoCover(product, usage);
+  const resolved = resolveNintendoImage(product, usage);
+  const candidateUrls = [resolved.url, ...(resolved.fallbackUrls || [])].filter(
+    (u) => Boolean(u) && u !== NINTENDO_IMAGE_PLACEHOLDER
+  );
+
+  const [candidateIndex, setCandidateIndex] = useState(0);
+  const activeRawUrl = candidateUrls[candidateIndex] || resolved.url;
+
+  const { src, rawUrl, trim, naturalAspect } = useNintendoCover(
+    product,
+    usage,
+    activeRawUrl
+  );
+
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loadedAspect, setLoadedAspect] = useState<number | null>(null);
 
   useEffect(() => {
+    setCandidateIndex(0);
     setFailed(false);
     setLoaded(false);
     setLoadedAspect(null);
-  }, [src]);
+  }, [resolved.url, product]);
 
   const onLoad = useCallback((event: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
@@ -106,12 +122,21 @@ export function NintendoCover({
     }
   }, []);
 
+  const onError = useCallback(() => {
+    if (candidateIndex < candidateUrls.length - 1) {
+      setCandidateIndex((prev) => prev + 1);
+      setLoaded(false);
+    } else {
+      setFailed(true);
+    }
+  }, [candidateIndex, candidateUrls.length]);
+
   const frameRatio =
     ratio === null
       ? null
       : (ratio ?? (usage === "square-card" ? SQUARE_CARD_ASPECT_RATIO : COVER_ASPECT_RATIO));
 
-  const showPlaceholder = resolved.isPlaceholder || failed;
+  const showPlaceholder = resolved.isPlaceholder || failed || candidateUrls.length === 0;
   const finalSrc = showPlaceholder ? NINTENDO_IMAGE_PLACEHOLDER : src;
 
   const sourceAspect = naturalAspect ?? loadedAspect;
@@ -158,12 +183,13 @@ export function NintendoCover({
             {avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={sizesAttr} />}
             {webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={sizesAttr} />}
             <img
+              key={`${rawUrl}-${candidateIndex}`}
               src={finalSrc}
               alt={alt}
               loading={loading}
               decoding="async"
               {...(fetchPriority ? { fetchPriority } : {})}
-              onError={() => setFailed(true)}
+              onError={onError}
               onLoad={onLoad}
               className={`${imgClassName} ${loaded ? "opacity-100" : "opacity-90 transition-opacity duration-200"}`}
               style={imgStyle}
@@ -171,12 +197,13 @@ export function NintendoCover({
           </picture>
         ) : (
           <img
+            key={`${rawUrl}-${candidateIndex}`}
             src={finalSrc}
             alt={alt}
             loading={loading}
             decoding="async"
             {...(fetchPriority ? { fetchPriority } : {})}
-            onError={() => setFailed(true)}
+            onError={onError}
             onLoad={onLoad}
             className={`${imgClassName} ${loaded ? "opacity-100" : "opacity-90 transition-opacity duration-200"}`}
             style={imgStyle}

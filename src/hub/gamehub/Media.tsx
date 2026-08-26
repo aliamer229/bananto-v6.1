@@ -107,9 +107,9 @@ export function VideosSection() {
 
           {rest.length > 0 && (
             <div className="no-scrollbar flex gap-3 overflow-x-auto lg:max-h-[420px] lg:flex-col lg:overflow-y-auto lg:pe-1">
-              {rest.map((video) => (
+              {rest.map((video, vIdx) => (
                 <button
-                  key={video.id}
+                  key={`${video.id || video.title}-${vIdx}`}
                   onClick={() => openVideo(video)}
                   className="group flex w-64 shrink-0 items-start gap-3 rounded-xl p-2 text-start transition-colors hover:bg-white/[0.05] lg:w-full"
                 >
@@ -190,7 +190,7 @@ export function GallerySection() {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {visible.map((image, index) => (
             <button
-              key={image.id}
+              key={`${image.id || image.url}-${index}`}
               onClick={() => openLightbox(image.id)}
               className={cn(
                 "group relative aspect-[16/10] overflow-hidden rounded-xl border border-white/[0.06]",

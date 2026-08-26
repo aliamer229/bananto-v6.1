@@ -43,7 +43,106 @@ export const Route = createFileRoute("/api/files/$")({
           const targetQuality = Math.min(100, Math.max(40, parseInt(url.searchParams.get("q") || "85", 10)));
           
           const file: any = targetWidth > 0 ? await readBinary(`files/${path}`) : await readBinaryStream(`files/${path}`);
-          if (!file) return new Response("Not found", { status: 404 });
+          if (!file) {
+            // If this is a product cover / cartridge / game image, attempt on-demand recovery
+            const isProductMedia =
+              path.startsWith("products/") ||
+              path.startsWith("cartridges/") ||
+              path.startsWith("covers/") ||
+              path.startsWith("images/");
+
+            if (isProductMedia) {
+              try {
+                const { getStore } = await import("@/lib/db.server");
+                const { fetchRemoteImage, readLimitedBody } = await import("@/lib/security.server");
+                const { writeBinary } = await import("@/lib/storage.server");
+
+                const store = await getStore();
+                const prdMatch = /prd_[a-zA-Z0-9_-]+/i.exec(path);
+                const targetPrdId = prdMatch ? prdMatch[0] : null;
+
+                // Find matching product
+                let matchingProduct = targetPrdId
+                  ? store.products.find((p) => p.id === targetPrdId)
+                  : null;
+
+                if (!matchingProduct) {
+                  matchingProduct =
+                    store.products.find(
+                      (p) =>
+                        String(p.cartridgeImage || "").includes(path) ||
+                        String(p.coverImage || "").includes(path) ||
+                        String(p.nintendoCardImage || "").includes(path) ||
+                        String(p.image || "").includes(path) ||
+                        String(p.mainImage || "").includes(path),
+                    ) ?? null;
+                }
+
+                // Collect candidate external URLs
+                const candidateUrls: string[] = [];
+                if (matchingProduct) {
+                  const potentialFields = [
+                    matchingProduct.box_front_url,
+                    matchingProduct.coverUrl,
+                    matchingProduct.cartridgeImage,
+                    matchingProduct.coverImage,
+                    matchingProduct.image,
+                    matchingProduct.mainImage,
+                    matchingProduct.bannerImage,
+                    matchingProduct.banner,
+                  ];
+                  for (const f of potentialFields) {
+                    if (typeof f === "string" && /^https?:\/\//i.test(f.trim())) {
+                      candidateUrls.push(f.trim());
+                    }
+                  }
+                }
+
+                // If we have remote candidate URLs, try to fetch the first working one
+                for (const remoteUrl of candidateUrls) {
+                  try {
+                    const res = await fetchRemoteImage(remoteUrl, {
+                      headers: {
+                        accept: "image/avif,image/webp,image/*,*/*;q=0.8",
+                        "User-Agent":
+                          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                      },
+                    });
+                    if (res && res.ok) {
+                      const bytes = await readLimitedBody(res, 15 * 1024 * 1024);
+                      if (bytes && bytes.length > 0) {
+                        const mime = res.headers.get("content-type") || "image/jpeg";
+                        // Cache in local storage for fast subsequent loads
+                        await writeBinary(`files/${path}`, bytes, mime, {
+                          cacheControl: "public, max-age=31536000, immutable",
+                        });
+
+                        return new Response(bytes as unknown as BodyInit, {
+                          headers: {
+                            "content-type": mime,
+                            "cache-control": "public, max-age=31536000, immutable",
+                            "x-recovered-from": "upstream",
+                            "x-content-type-options": "nosniff",
+                          },
+                        });
+                      }
+                    }
+                  } catch {
+                    // Continue to next candidate
+                  }
+                }
+
+                // If we found a candidate URL but failed to buffer it, redirect to it directly
+                if (candidateUrls.length > 0) {
+                  return Response.redirect(candidateUrls[0], 302);
+                }
+              } catch {
+                // Fallback
+              }
+            }
+
+            return new Response("Not found", { status: 404 });
+          }
 
           const etag = file.etag || `"${path}-${file.size || 0}"`;
           const cacheControl = isPrivateFolder

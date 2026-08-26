@@ -116,12 +116,12 @@ export default function GlobalPriceTracker({
         </div>
 
         <ul>
-          {visible.map(({ offer, isBest }) => {
+          {visible.map(({ offer, isBest }, index) => {
             const unavailable =
               offer.availability === "out-of-stock" || offer.availability === "delisted";
             return (
               <li
-                key={offer.id}
+                key={`${offer.id || offer.storeName}-${index}`}
                 className={cn(
                   "relative border-b border-white/[0.05] px-4 py-3.5 transition-colors last:border-b-0",
                   "lg:grid lg:grid-cols-[1.6fr_0.7fr_1fr_0.8fr_1fr_auto] lg:items-center lg:gap-3",

@@ -48,13 +48,13 @@ export function EditionsSection() {
             style={{ gridTemplateColumns: `minmax(180px, 1.4fr) repeat(${editions.length}, 1fr)` }}
           >
             <div className="border-b border-white/[0.06] p-4" />
-            {editions.map((edition) => (
-              <EditionHeader key={edition.id} edition={edition} onBuy={() => openBuy(edition.id)} />
+            {editions.map((edition, index) => (
+              <EditionHeader key={`${edition.id || edition.name}-${index}`} edition={edition} onBuy={() => openBuy(edition.id)} />
             ))}
 
             {rows.map((row, rowIndex) => (
               <FragmentRow
-                key={row.id}
+                key={`${row.id || row.label}-${rowIndex}`}
                 id={row.id}
                 label={row.label}
                 editions={editions}
@@ -68,16 +68,16 @@ export function EditionsSection() {
       {/* Mobile: stacked */}
       <div className="space-y-3 lg:hidden">
         {editions.map((edition, index) => (
-          <Reveal key={edition.id} delay={index * 60}>
+          <Reveal key={`${edition.id || edition.name}-${index}`} delay={index * 60}>
             <Panel
               tone={edition.recommendation ? "accent" : "default"}
               className="overflow-hidden p-5"
             >
               <EditionTitle edition={edition} />
               <ul className="mt-4 space-y-1.5 text-xs">
-                {edition.contents.map((item) => (
+                {edition.contents.map((item, itemIdx) => (
                   <li
-                    key={item.id}
+                    key={`${item.id || item.label}-${itemIdx}`}
                     className={cn("flex items-start gap-2", !item.included && "muted")}
                   >
                     {item.included ? (
@@ -119,8 +119,8 @@ export function EditionsSection() {
             <div className="grid gap-3 sm:grid-cols-2">
               {editions
                 .filter((e) => e.recommendation)
-                .map((edition) => (
-                  <div key={edition.id} className="inset p-4">
+                .map((edition, idx) => (
+                  <div key={`${edition.id || edition.name}-${idx}`} className="inset p-4">
                     <p className="text-[11px] font-extrabold uppercase tracking-wider text-warn">
                       {recommendationLabel(edition.recommendation!.kind, t)}
                     </p>
@@ -202,11 +202,11 @@ function FragmentRow({
       >
         {label}
       </div>
-      {editions.map((edition) => {
+      {editions.map((edition, idx) => {
         const item = edition.contents.find((c) => c.id === id);
         return (
           <div
-            key={edition.id}
+            key={`${edition.id || edition.name}-${idx}`}
             className={cn(
               "flex flex-col items-center justify-center gap-0.5 border-b border-s border-white/[0.04] px-3 py-2.5",
               zebra && "bg-white/[0.015]",

@@ -168,9 +168,9 @@ export function NintendoSection() {
                   <Seam className="my-5" />
                   <p className="eyebrow mb-3">{t("nintendo.formats")}</p>
                   <div className="flex flex-wrap gap-2">
-                    {nin.formats.map((format) => (
+                    {nin.formats.map((format, formatIdx) => (
                       <Chip
-                        key={format}
+                        key={`${format}-${formatIdx}`}
                         icon={format === "game-key-card" ? KeyRound : Package}
                         tone={format === "game-key-card" ? "warn" : "default"}
                       >
@@ -248,9 +248,9 @@ export function NintendoSection() {
           <Panel className="mt-4 p-5 sm:p-6">
             <p className="eyebrow mb-4">{t("nintendo.features")}</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-              {nin.features.map((feature) => (
+              {nin.features.map((feature, featureIdx) => (
                 <div
-                  key={feature.id}
+                  key={`${feature.id}-${featureIdx}`}
                   className={cn(
                     "rounded-xl px-3 py-2.5 text-xs",
                     feature.supported ? "bg-white/[0.05]" : "bg-black/20",
@@ -777,7 +777,7 @@ export function SourcesSection() {
           <ul className="grid gap-3 sm:grid-cols-2">
             {sources.map((source, i) => (
               <li
-                key={i}
+                key={`${source.url || source.label}-${i}`}
                 className="flex items-center gap-3 rounded-xl bg-white/[0.035] px-3 py-2.5"
               >
                 <Globe className="h-4 w-4 text-nin-soft" />
@@ -911,9 +911,9 @@ export function LanguagesSection() {
       <Reveal>
         <Panel className="p-5 sm:p-6">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {visible.map((language) => (
+            {visible.map((language, langIdx) => (
               <div
-                key={language.code}
+                key={`${language.code || language.name}-${langIdx}`}
                 className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.035] px-3 py-2.5"
               >
                 <span className="min-w-0">
