@@ -1697,6 +1697,53 @@ function ListingsView({
 
   const handleSave = async (productData: any) => {
     try {
+      if (!isAdding && editingProduct) {
+        const dirtyFields: any = { id: editingProduct.id };
+        let hasChanges = false;
+        for (const key in productData) {
+          if (JSON.stringify(productData[key]) !== JSON.stringify(editingProduct[key])) {
+            dirtyFields[key] = productData[key];
+            hasChanges = true;
+          }
+        }
+        
+        if (!hasChanges) {
+          toast.success("لم يتم إجراء أي تعديلات", { id: "save-product" });
+          setEditingProduct(null);
+          setIsAdding(false);
+          return;
+        }
+        
+        toast.loading("جاري الحفظ...", { id: "save-product" });
+        const res = await fetch("/api/admin/products", {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: safeStringify(dirtyFields),
+        });
+        const result = await res.json().catch(() => null);
+        if (!res.ok || !result?.success) {
+          const errorMsg = result?.error || `HTTP ${res.status}: Failed to update product`;
+          toast.error(errorMsg, { id: "save-product", duration: 8000 });
+          throw Object.assign(new Error(errorMsg), { reported: true });
+        }
+        
+        const savedProduct = result.product || { ...editingProduct, ...dirtyFields };
+        setProducts((prev: any[]) => {
+          const index = prev.findIndex((p: any) => String(p.id) === String(savedProduct.id));
+          if (index >= 0) {
+            const next = [...prev];
+            next[index] = savedProduct;
+            return next;
+          }
+          return [savedProduct, ...prev];
+        });
+        toast.success("تم تحديث المنتج بنجاح", { id: "save-product" });
+        setEditingProduct(null);
+        setIsAdding(false);
+        return;
+      }
+
       const payloadString = safeStringify(productData);
       
       // If the payload is larger than 50KB, use staged/chunked save

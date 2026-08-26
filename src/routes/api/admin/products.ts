@@ -404,16 +404,24 @@ export const Route = createFileRoute("/api/admin/products")({
             );
           }
 
-          // 8b. Sanitize and verify all product images (ensure WebP in R2, isolate media errors)
-          try {
-            const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-            productToSave = (imgVerification.product as Product) || productToSave;
-          } catch (imgErr) {
-            console.warn(
-              "[sanitizeAndVerifyProductImages] Non-blocking media ingestion fallback:",
-              imgErr,
-            );
-          }
+          // 8b. Background Image WebP Ingestion
+          // Run detached to prevent blocking the save response.
+          void (async () => {
+            try {
+              const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
+              if (imgVerification.results && imgVerification.results.some((r: any) => r.status === "stored")) {
+                 await d1Run(
+                    `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
+                    JSON.stringify(imgVerification.product),
+                    new Date().toISOString(),
+                    `store:product:${productId}`
+                 );
+                 invalidateStoreCache();
+              }
+            } catch (imgErr) {
+              console.warn("[BackgroundImgIngestError]", imgErr);
+            }
+          })();
 
           // 9. Save single product to database (Granular Save)
           try {
@@ -457,6 +465,70 @@ export const Route = createFileRoute("/api/admin/products")({
                 error: `Database save failed: ${dbErr?.message || "Internal database error"}`,
                 code: "DATABASE_SAVE_FAILED",
                 ref,
+              },
+              { status: 500 },
+            );
+          }
+        }),
+
+      PATCH: async ({ request }) =>
+        guard(async () => {
+          await requireAdmin(request);
+          const payload = await body<Partial<Product>>(request);
+
+          const productId =
+            payload.id !== undefined && payload.id !== null ? String(payload.id).trim() : "";
+          if (!productId) {
+            return json(
+              { error: "Missing product id for patch", code: "MISSING_PRODUCT_ID" },
+              { status: 400 },
+            );
+          }
+
+          const currentStore = await getStore();
+          const existingCatalog = currentStore.products || [];
+          const stored = existingCatalog.find((p) => String(p.id) === productId);
+
+          if (!stored) {
+             return json(
+               { error: "Product not found", code: "PRODUCT_NOT_FOUND" },
+               { status: 404 }
+             );
+          }
+
+          // Dirty fields overlay
+          let productToSave: Product = { ...stored, ...payload };
+
+          // Fast DB Update (UPSERT style on KV value)
+          try {
+            await d1Run(
+              `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
+               ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+              `store:product:${productId}`,
+              JSON.stringify(productToSave),
+              new Date().toISOString(),
+            );
+
+            // Invalidate the store cache so loadStore picks up the new granular product
+            invalidateStoreCache();
+
+            // Background syncing for Game Device Performance (only if performance arrays changed)
+            if (payload.devicePerformance !== undefined && productSection(productToSave, currentStore.categories || []) === "game") {
+               // Fire-and-forget sync to avoid blocking the patch response
+               // Uses standard Promise chain to run in background.
+               syncGameDevicePerformance(
+                  productToSave,
+                  hardwareProducts(existingCatalog, currentStore.categories || [])
+               ).catch(e => console.error("[BackgroundSyncError]", e));
+            }
+
+            return json({ success: true, product: productToSave });
+          } catch (dbErr: any) {
+            console.error("[PatchProduct:DatabaseError]", dbErr);
+            return json(
+              {
+                error: `Database save failed: ${dbErr?.message || "Internal database error"}`,
+                code: "DATABASE_SAVE_FAILED",
               },
               { status: 500 },
             );
@@ -615,16 +687,24 @@ export const Route = createFileRoute("/api/admin/products")({
             console.warn("[autoTranslateProduct] Translation fallback triggered:", transErr);
           }
 
-          // Sanitize and verify all product images (ensure WebP in R2, isolate media errors)
-          try {
-            const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-            productToSave = (imgVerification.product as Product) || productToSave;
-          } catch (imgErr) {
-            console.warn(
-              "[sanitizeAndVerifyProductImages] Non-blocking media ingestion fallback:",
-              imgErr,
-            );
-          }
+          // Background Image WebP Ingestion
+          // Run detached to prevent blocking the save response.
+          void (async () => {
+            try {
+              const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
+              if (imgVerification.results && imgVerification.results.some((r: any) => r.status === "stored")) {
+                 await d1Run(
+                    `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
+                    JSON.stringify(imgVerification.product),
+                    new Date().toISOString(),
+                    `store:product:${productId}`
+                 );
+                 invalidateStoreCache();
+              }
+            } catch (imgErr) {
+              console.warn("[BackgroundImgIngestError]", imgErr);
+            }
+          })();
 
           try {
             await d1Run(
