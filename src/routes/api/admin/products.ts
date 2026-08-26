@@ -497,7 +497,7 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           // Dirty fields overlay
-          let productToSave: Product = { ...stored, ...payload };
+          const productToSave: Product = { ...stored, ...payload };
 
           // Fast DB Update (UPSERT style on KV value)
           try {

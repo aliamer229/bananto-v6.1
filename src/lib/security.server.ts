@@ -127,20 +127,20 @@ function isPrivateIpv4(host: string): boolean {
   );
 }
 
-/** Reject local/private targets and non-HTTPS URLs before an edge fetch. */
+/** Reject local/private targets and non-public URLs before an edge fetch. */
 export function safeRemoteImageUrl(raw: string): URL | undefined {
-  if (!raw || raw.length > 2048) return undefined;
+  if (!raw || raw.length > 4096) return undefined;
   let url: URL;
   try {
-    url = new URL(raw);
+    url = new URL(raw.trim());
   } catch {
     return undefined;
   }
   if (
-    url.protocol !== "https:" ||
+    (url.protocol !== "https:" && url.protocol !== "http:") ||
     url.username ||
     url.password ||
-    (url.port && url.port !== "443")
+    (url.port && url.port !== "443" && url.port !== "80" && url.port !== "8080" && url.port !== "8443")
   ) {
     return undefined;
   }
@@ -150,9 +150,14 @@ export function safeRemoteImageUrl(raw: string): URL | undefined {
     host === "localhost" ||
     host.endsWith(".localhost") ||
     host.endsWith(".local") ||
+    host.endsWith(".internal") ||
     host === "metadata.google.internal" ||
+    host === "169.254.169.254" ||
     isPrivateIpv4(host) ||
-    host.includes(":")
+    host === "::1" ||
+    host.startsWith("fe80:") ||
+    host.startsWith("fc00:") ||
+    host.startsWith("fd00:")
   ) {
     return undefined;
   }

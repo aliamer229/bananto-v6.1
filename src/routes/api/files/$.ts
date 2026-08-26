@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/files/$")({
           const targetWidth = Math.min(2400, Math.max(0, parseInt(url.searchParams.get("w") || "0", 10)));
           const targetQuality = Math.min(100, Math.max(40, parseInt(url.searchParams.get("q") || "85", 10)));
           
-          let file: any = targetWidth > 0 ? await readBinary(`files/${path}`) : await readBinaryStream(`files/${path}`);
+          const file: any = targetWidth > 0 ? await readBinary(`files/${path}`) : await readBinaryStream(`files/${path}`);
           if (!file) return new Response("Not found", { status: 404 });
 
           const etag = file.etag || `"${path}-${file.size || 0}"`;

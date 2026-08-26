@@ -88,7 +88,7 @@ function sniffImageMime(bytes: Uint8Array): string | undefined {
   return undefined;
 }
 
-import { fetchRemoteImageWithRetry, sniffImageMimeType } from "@/lib/mediaIngest.server";
+import { fetchRemoteImageWithRetry, sniffImageMimeType, ingestRemoteImage } from "@/lib/mediaIngest.server";
 
 type RemoteImage = { ok: true; bytes: Uint8Array; mime: string } | { ok: false; error: string };
 
@@ -158,13 +158,43 @@ export const Route = createFileRoute("/api/upload")({
 
             if (typeof sourceUrl === "string" && sourceUrl.trim()) {
               await requireAdmin(request);
-              const downloaded = await downloadRemoteImage(sourceUrl.trim());
-              if (!downloaded.ok) {
-                return json({ error: downloaded.error }, { status: 422 });
+              const isHigh =
+                imageType === "3d-texture" ||
+                imageType === "coverHiResImage" ||
+                imageType.includes("3d") ||
+                imageType === "texture" ||
+                imageType === "wrap";
+
+              const result = await ingestRemoteImage({
+                sourceUrl: sourceUrl.trim(),
+                productId: productId || "general",
+                field: imageType || "image",
+                expectedType: imageType === "wrap" ? "wrap" : imageType === "gallery" ? "gallery" : "general",
+                highQuality: isHigh,
+              });
+
+              if (!result.ok || !result.storedUrl) {
+                return json(
+                  {
+                    error: result.error || "تعذر تنزيل الصورة من المصدر الخارجي",
+                    httpStatus: result.httpStatus,
+                    attempts: result.attempts,
+                    sourceHost: result.sourceHost,
+                  },
+                  { status: 422 }
+                );
               }
 
-              bytes = downloaded.bytes;
-              mime = downloaded.mime;
+              return json({
+                success: true,
+                url: result.storedUrl,
+                storedUrl: result.storedUrl,
+                objectKey: result.storedUrl.replace("/api/files/", "files/"),
+                mime: result.mime || "image/webp",
+                size: result.sizeBytes || 0,
+                hash: result.sha256 || "",
+                status: result.status,
+              });
             } else {
               const match = /^data:([\w/+.-]+);base64,(.+)$/.exec(dataUrl ?? "");
               if (!match) return json({ error: "invalid_data_url" }, { status: 400 });

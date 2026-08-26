@@ -1,37 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { safeRemoteImageUrl } from "@/lib/security.server";
 
 /**
- * Image proxy for news thumbnails. Some feeds block hotlinking (referrer
- * checks) which makes the <img> render blank in the app, so the picture is
- * fetched server-side from a small allowlist of news CDNs and re-served.
+ * Image proxy for news thumbnails. Fetches public image URLs server-side
+ * with safe headers and re-serves them cleanly.
  */
-const ALLOWED_HOSTS = [
-  "images.nintendolife.com",
-  "nintendolife.com",
-  "www.nintendolife.com",
-  "nintendoeverything.com",
-  "www.nintendoeverything.com",
-  "gonintendo.com",
-  "www.gonintendo.com",
-  "images.pushsquare.com",
-  "assets.nintendo.com",
-  "www.nintendo.com",
-  "cdn.mos.cms.futurecdn.net",
-];
-
 export const Route = createFileRoute("/api/public/news-image")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const raw = new URL(request.url).searchParams.get("u") || "";
-        let target: URL;
-        try {
-          target = new URL(raw);
-        } catch {
-          return new Response("bad url", { status: 400 });
-        }
-        if (target.protocol !== "https:" || !ALLOWED_HOSTS.includes(target.hostname)) {
-          return new Response("forbidden host", { status: 403 });
+        const target = safeRemoteImageUrl(raw);
+        if (!target) {
+          return new Response("bad or forbidden url", { status: 400 });
         }
 
         try {
@@ -40,7 +21,7 @@ export const Route = createFileRoute("/api/public/news-image")({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
               Accept: "image/avif,image/webp,image/*,*/*;q=0.8",
-              Referer: `https://${target.hostname}/`,
+              Referer: `${target.origin}/`,
             },
             signal: AbortSignal.timeout(8000),
           });

@@ -535,8 +535,15 @@ export async function fetchRemoteMedia(
         continue;
       }
 
-      // Non-2xx and non-retryable response (e.g. 404, 403, 401)
+      // Non-2xx response handling
       if (!response.ok) {
+        let errDesc = `HTTP_${response.status}`;
+        if (response.status === 404) errDesc = "HTTP_404_NOT_FOUND";
+        else if (response.status === 403) errDesc = "HTTP_403_FORBIDDEN";
+        else if (response.status === 401) errDesc = "HTTP_401_UNAUTHORIZED";
+        else if (response.status === 429) errDesc = "HTTP_429_TOO_MANY_REQUESTS";
+        else if (response.status >= 500) errDesc = `HTTP_${response.status}_SERVER_ERROR`;
+
         return {
           ok: false,
           sourceUrl,
@@ -545,7 +552,7 @@ export async function fetchRemoteMedia(
           httpStatus: response.status,
           attempts: attempt,
           rayId: lastRayId,
-          error: `HTTP_${response.status}`,
+          error: errDesc,
         };
       }
 
@@ -580,7 +587,7 @@ export async function fetchRemoteMedia(
           sourceHost: host,
           httpStatus: response.status,
           attempts: attempt,
-          error: `NON_IMAGE_CONTENT_TYPE: ${rawContentType}`,
+          error: `REMOTE_SERVER_RETURNED_HTML: ${rawContentType}`,
         };
       }
 
@@ -602,10 +609,10 @@ export async function fetchRemoteMedia(
       // Sniff magic bytes for accurate MIME identification
       const sniffedMime = sniffImageMimeType(bytes);
 
-      // Protect against spoofed HTML responses (e.g. captive portals or bad links)
+      // Protect against spoofed HTML responses (e.g. captive portals, 200 OK error pages)
       if (!sniffedMime) {
-        const startStr = new TextDecoder().decode(bytes.slice(0, 50)).toLowerCase().trim();
-        if (startStr.startsWith("<html") || startStr.startsWith("<!doctype")) {
+        const startStr = new TextDecoder().decode(bytes.slice(0, 80)).toLowerCase().trim();
+        if (startStr.startsWith("<html") || startStr.startsWith("<!doctype") || startStr.includes("<body")) {
           return {
             ok: false,
             sourceUrl,
@@ -613,7 +620,7 @@ export async function fetchRemoteMedia(
             sourceHost: host,
             httpStatus: response.status,
             attempts: attempt,
-            error: `SPOOFED_HTML_RESPONSE`,
+            error: `REMOTE_SERVER_RETURNED_HTML`,
           };
         }
       }
@@ -890,9 +897,11 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
 
   // 4. If it's an external HTTP/HTTPS URL
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    console.log(`[IMAGE_IMPORT_START] productSlug=${cleanProductId} field=${field} url=${trimmed}`);
     const fetchResult = await fetchRemoteMedia(trimmed, { maxAttempts: 4 });
 
     if (!fetchResult.ok || !fetchResult.bytes) {
+      console.warn(`[IMAGE_IMPORT_FAILED] stage=fetch reason=${fetchResult.error || "FETCH_FAILED"}`);
       // Record failure audit for background retry
       await recordMediaAudit(cleanProductId, field, trimmed, null, "failed", {
         httpStatus: fetchResult.httpStatus,
@@ -902,24 +911,33 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
         rayId: fetchResult.rayId,
       });
 
+      let errorMsg = fetchResult.error || "FETCH_FAILED";
+      if (errorMsg.includes("404")) errorMsg = "HTTP 404: الصورة غير موجودة على الرابط الخارجي (Not Found)";
+      else if (errorMsg.includes("403")) errorMsg = "HTTP 403: الخادم الخارجي حظر الوصول (Forbidden / Hotlink Protection)";
+      else if (errorMsg.includes("401")) errorMsg = "HTTP 401: غير مصرح بالوصول (Unauthorized)";
+      else if (errorMsg.includes("HTML")) errorMsg = "الخادم الخارجي أعاد صفحة HTML بدل صورة (Remote server returned HTML)";
+      else if (errorMsg.includes("TIMEOUT")) errorMsg = "انتهت مهلة الاتصال بالخادم الخارجي (Connection Timeout)";
+      else if (errorMsg.includes("CORRUPT") || errorMsg.includes("INVALID_IMAGE")) errorMsg = "بيانات الصورة غير صالحة أو تالفة (Invalid image bytes)";
+
       return {
         ok: false,
         status: "failed",
         sourceUrl: trimmed,
-        storedUrl: null, // Keep null so caller knows internal store failed, but product continues
+        storedUrl: null,
         field,
         productId: cleanProductId,
         httpStatus: fetchResult.httpStatus,
         attempts: fetchResult.attempts,
         sourceHost: fetchResult.sourceHost,
-        error: fetchResult.error || "FETCH_FAILED",
-        warning: `تعذر تنزيل الصورة من المصدر الخارجي (${fetchResult.error})، سيتم حفظ بيانات المنتج وإبقاء الرابط متاحاً للإصلاح.`,
+        error: errorMsg,
+        warning: `تعذر تنزيل الصورة من المصدر الخارجي (${errorMsg}).`,
       };
     }
 
     try {
       const rawBytes = fetchResult.bytes;
       const rawMime = fetchResult.mime || "image/jpeg";
+      console.log(`[IMAGE_FETCH_RESULT] status=${fetchResult.httpStatus} contentType=${rawMime} bytes=${rawBytes.length} resolvedUrl=${fetchResult.finalUrl || trimmed}`);
 
       const isHigh =
         highQuality ||
@@ -928,7 +946,7 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
         expectedType === "wrap" ||
         expectedType === "cover";
 
-      const shouldSmartCrop = field === "cartridgeImage";
+      const shouldSmartCrop = field === "cartridgeImage" || expectedType === "cover" || expectedType === "card";
 
       // Convert to WebP (quality 93-95 for high quality, 88-90 for standard)
       const converted = await processImageToWebP(rawBytes, rawMime, {
@@ -937,8 +955,10 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
         smartCrop: shouldSmartCrop,
       });
 
+      console.log(`[IMAGE_DECODE_RESULT] width=${converted?.width || 0} height=${converted?.height || 0}`);
       const outBytes = converted ? converted.bytes : rawBytes;
       const outMime = converted ? "image/webp" : rawMime;
+      console.log(`[WEBP_RESULT] originalBytes=${rawBytes.length} webpBytes=${outBytes.length}`);
       const hash = (await computeSha256(outBytes)).substring(0, 16);
 
       const ext = outMime === "image/webp" ? "webp" : MIME_EXT_MAP[outMime] || "bin";
@@ -965,6 +985,8 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
       }
 
       const storedUrl = `/api/files/${key.slice("files/".length)}`;
+      console.log(`[R2_UPLOAD_RESULT] key=${key} url=${storedUrl}`);
+      console.log(`[IMAGE_IMPORT_COMPLETE] productSlug=${cleanProductId} field=${field} storedUrl=${storedUrl}`);
 
       // Record successful audit
       await recordMediaAudit(cleanProductId, field, trimmed, storedUrl, "stored", {
@@ -994,7 +1016,7 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
         sourceHost: fetchResult.sourceHost,
       };
     } catch (err: any) {
-      console.error(`[ingestRemoteImage] Processing failed for ${trimmed}:`, err);
+      console.error(`[IMAGE_IMPORT_FAILED] stage=processing reason=${err?.message || err}`);
       return {
         ok: false,
         status: "failed",
@@ -1004,7 +1026,7 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
         productId: cleanProductId,
         attempts: fetchResult.attempts,
         sourceHost: fetchResult.sourceHost,
-        error: `IMAGE_CONVERSION_FAILED: ${err?.message || err}`,
+        error: `فشل معالجة الصورة وتحويلها إلى WebP: ${err?.message || err}`,
       };
     }
   }
@@ -1020,3 +1042,6 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
     attempts: 0,
   };
 }
+
+export const importRemoteProductImage = ingestRemoteImage;
+

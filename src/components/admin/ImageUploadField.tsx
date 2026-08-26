@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Upload,
   X,
@@ -8,10 +8,12 @@ import {
   Check,
   AlertTriangle,
   DownloadCloud,
+  ExternalLink,
+  RefreshCw,
+  CloudCheck,
+  Globe,
 } from "lucide-react";
-import { adminApi } from "@/lib/api";
 import { cdnImage } from "@/lib/img";
-import { validateImageUrlShape } from "@/lib/imageValidation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -43,19 +45,27 @@ export function ImageUploadField({
   aspect = "auto",
   required = false,
   className,
-  error,
-  errorDetail,
+  error: externalError,
+  errorDetail: externalErrorDetail,
 }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [importingRemote, setImportingRemote] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [previewFailed, setPreviewFailed] = useState(false);
+  const [browserImgError, setBrowserImgError] = useState(false);
+  const [localImportError, setLocalImportError] = useState<string | null>(null);
+  const [justImported, setJustImported] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const shape = validateImageUrlShape(value);
-  const hasValue = Boolean(value && String(value).trim());
-  const canPreview = hasValue && shape.ok && !previewFailed;
-  const isRemoteUrl = hasValue && (value.startsWith("http://") || value.startsWith("https://"));
+  const cleanVal = (value || "").trim();
+  const hasValue = Boolean(cleanVal);
+  const isStoredUrl = hasValue && (cleanVal.startsWith("/api/files/") || cleanVal.includes("/files/"));
+  const isRemoteUrl = hasValue && (cleanVal.startsWith("http://") || cleanVal.startsWith("https://"));
+
+  // Reset browser image error state when value changes
+  useEffect(() => {
+    setBrowserImgError(false);
+    setLocalImportError(null);
+  }, [value]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,6 +73,7 @@ export function ImageUploadField({
 
     try {
       setUploading(true);
+      setLocalImportError(null);
 
       const formData = new FormData();
       formData.append("file", file);
@@ -83,14 +94,18 @@ export function ImageUploadField({
       const res = await response.json();
       if (res?.url) {
         onChange(res.url);
-        setPreviewFailed(false);
+        setBrowserImgError(false);
+        setLocalImportError(null);
+        setJustImported(true);
         toast.success("تم رفع الصورة وتحويلها إلى WebP بنجاح");
       } else {
         toast.error("فشل رفع الصورة: لم يتم إرجاع رابط.");
       }
     } catch (err: any) {
       console.error("File upload error:", err);
-      toast.error("فشل رفع الصورة: " + (err?.message || "تعذر إكمال الرفع"));
+      const msg = err?.message || "تعذر إكمال الرفع";
+      setLocalImportError(msg);
+      toast.error("فشل رفع الصورة: " + msg);
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -103,31 +118,39 @@ export function ImageUploadField({
     if (!isRemoteUrl) return;
     try {
       setImportingRemote(true);
+      setLocalImportError(null);
+
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sourceUrl: value.trim(),
+          sourceUrl: cleanVal,
           folder,
           productId,
           imageType,
         }),
       });
 
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.error || "تعذر تنزيل الصورة وتحويلها");
+      const res = await response.json().catch(() => ({}));
+
+      if (!response.ok || !res?.url) {
+        const errMsg = res?.error || "تعذر تنزيل الصورة وتحويلها إلى WebP من المصدر الخارجي";
+        setLocalImportError(errMsg);
+        toast.error(`فشل استيراد الرابط: ${errMsg}`);
+        return;
       }
 
-      const res = await response.json();
-      if (res?.url) {
-        onChange(res.url);
-        setPreviewFailed(false);
-        toast.success("تم استيراد الصورة وتحويلها إلى WebP وحفظها في التخزين");
-      }
+      // Success: update value to the permanent R2 stored URL
+      onChange(res.url);
+      setBrowserImgError(false);
+      setLocalImportError(null);
+      setJustImported(true);
+      toast.success("تم استيراد الصورة وتحويلها إلى WebP وحفظها في التخزين السحابي (R2)");
     } catch (err: any) {
       console.error("Remote import error:", err);
-      toast.error("فشل استيراد الرابط الخارجي: " + (err?.message || ""));
+      const errMsg = err?.message || "حدث خطأ أثناء الاتصال بالخادم";
+      setLocalImportError(errMsg);
+      toast.error(`فشل استيراد الرابط: ${errMsg}`);
     } finally {
       setImportingRemote(false);
     }
@@ -148,6 +171,9 @@ export function ImageUploadField({
     }
   };
 
+  const displayError = localImportError || externalError;
+  const displayErrorDetail = externalErrorDetail;
+
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between">
@@ -160,7 +186,7 @@ export function ImageUploadField({
           className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
         >
           <LinkIcon className="w-3 h-3" />
-          {showUrlInput ? "إخفاء إدخال الرابط" : "إدخال رابط مباشر"}
+          {showUrlInput ? "إخفاء إدخال الرابط" : "إدخال / تعديل الرابط"}
         </button>
       </div>
 
@@ -174,45 +200,63 @@ export function ImageUploadField({
 
       <div className="flex flex-wrap items-start gap-3">
         {/* Image Preview & Upload Button */}
-        {canPreview ? (
+        {hasValue ? (
           <div className="relative group rounded-xl overflow-hidden border-2 border-border bg-muted/30 shrink-0">
             <div
               className={cn(
-                "overflow-hidden bg-black/5 flex items-center justify-center",
+                "overflow-hidden bg-black/5 flex items-center justify-center relative",
                 getAspectClass(),
               )}
             >
-              <img
-                src={cdnImage(value)}
-                alt={label}
-                className="w-full h-full object-contain"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  const direct = value;
-                  if (img.getAttribute("data-retried") !== "1" && img.src !== direct) {
-                    img.setAttribute("data-retried", "1");
-                    img.src = direct;
-                    return;
-                  }
-                  setPreviewFailed(true);
-                }}
-              />
+              {!browserImgError ? (
+                <img
+                  src={cdnImage(cleanVal)}
+                  alt={label}
+                  className="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    if (img.getAttribute("data-retried") !== "1" && img.src !== cleanVal) {
+                      img.setAttribute("data-retried", "1");
+                      img.src = cleanVal;
+                      return;
+                    }
+                    // External CDN may block direct hotlinking in browser iframe; do not break field value!
+                    setBrowserImgError(true);
+                  }}
+                />
+              ) : (
+                <div className="p-3 text-center flex flex-col items-center justify-center gap-1 text-muted-foreground h-full">
+                  <Globe className="w-6 h-6 text-muted-foreground/60" />
+                  <span className="text-[10px] font-medium leading-tight">
+                    رابط خارجي
+                  </span>
+                  <span className="text-[9px] text-muted-foreground/80 leading-tight">
+                    (اضغط استيراد للسحابة)
+                  </span>
+                </div>
+              )}
             </div>
 
+            {/* Hover Actions Overlay */}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                title="تغيير الصورة من التخزين"
+                title="تغيير الصورة من الجهاز"
                 className="p-1.5 bg-background/90 text-foreground rounded-lg hover:bg-background transition-colors text-xs font-bold"
               >
                 <Upload className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
-                onClick={() => onChange("")}
+                onClick={() => {
+                  onChange("");
+                  setLocalImportError(null);
+                  setBrowserImgError(false);
+                }}
                 title="حذف الصورة"
                 className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
@@ -246,7 +290,7 @@ export function ImageUploadField({
         )}
 
         {/* Upload Status / Quick Actions */}
-        <div className="flex-1 min-w-[200px] space-y-2">
+        <div className="flex-1 min-w-[220px] space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
@@ -263,7 +307,7 @@ export function ImageUploadField({
                 <>
                   <Upload className="w-3.5 h-3.5" />
                   <span>
-                    {value ? "استبدال الصورة من الجهاز" : "رفع صورة غير مقيدة (تحويل تلقائي لـ WebP)"}
+                    {hasValue ? "استبدال الصورة من الجهاز" : "رفع من الجهاز (WebP تلقائي)"}
                   </span>
                 </>
               )}
@@ -274,13 +318,13 @@ export function ImageUploadField({
                 type="button"
                 onClick={handleImportRemoteUrl}
                 disabled={importingRemote}
-                title="تنزيل الصورة وحفظها كـ WebP في التخزين الدائم لـ BananTo"
-                className="px-3 py-1.5 text-xs font-bold rounded-lg border border-blue-500/30 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-blue-700 dark:text-blue-300 flex items-center gap-1.5 transition-colors shadow-2xs"
+                title="تنزيل الصورة بالسيرفر وتحويلها لـ WebP وتخزينها في R2 بشكل دائم"
+                className="px-3 py-1.5 text-xs font-bold rounded-lg border border-blue-500/40 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center gap-1.5 transition-colors shadow-2xs"
               >
                 {importingRemote ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>جارٍ الاستيراد والتحويل...</span>
+                    <span>جارٍ الاستيراد إلى السحابة...</span>
                   </>
                 ) : (
                   <>
@@ -291,72 +335,95 @@ export function ImageUploadField({
               </button>
             )}
 
-            {canPreview && (
-              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold">
-                <Check className="w-3.5 h-3.5" /> تم تحديد صورة {value.endsWith(".webp") && "(WebP)"}
+            {isStoredUrl && (
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-md border border-emerald-500/20">
+                <Check className="w-3.5 h-3.5" />
+                سحابي R2 {cleanVal.endsWith(".webp") && "(WebP)"}
+              </span>
+            )}
+
+            {isRemoteUrl && !isStoredUrl && (
+              <span className="text-[11px] text-blue-600 dark:text-blue-400 flex items-center gap-1 font-medium bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-md border border-blue-500/20">
+                <Globe className="w-3 h-3" />
+                رابط خارجي
               </span>
             )}
           </div>
 
-          {error && (
-            <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-2 space-y-1">
-              <p className="text-[11px] font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
+          {/* Diagnostic Error Box (shown only when import/upload actually fails) */}
+          {displayError && (
+            <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 space-y-1.5">
+              <p className="text-[11px] font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                {error}
+                <span>{displayError}</span>
               </p>
-              {errorDetail && (
+              {displayErrorDetail && (
                 <p
                   className="text-[10px] font-mono text-muted-foreground break-all"
                   dir="ltr"
-                  title={errorDetail}
+                  title={displayErrorDetail}
                 >
-                  {errorDetail.slice(0, 160)}
+                  {displayErrorDetail}
                 </p>
+              )}
+              {isRemoteUrl && (
+                <div className="flex items-center gap-2 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={handleImportRemoteUrl}
+                    disabled={importingRemote}
+                    className="text-[11px] font-bold text-red-700 dark:text-red-300 hover:underline flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    إعادة محاولة الاستيراد
+                  </button>
+                  <span className="text-muted-foreground text-xs">•</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChange("");
+                      setLocalImportError(null);
+                    }}
+                    className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    مسح الرابط
+                  </button>
+                </div>
               )}
             </div>
           )}
 
-          {hasValue && !canPreview && (
-            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-2 space-y-1">
-              <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                {shape.ok
-                  ? "تعذر تحميل الصورة من هذا الرابط"
-                  : (shape.issue?.message ?? "قيمة صورة غير صالحة")}
-              </p>
-              <p
-                className="text-[10px] font-mono text-muted-foreground break-all"
-                dir="ltr"
-                title={String(value)}
-              >
-                {String(value).slice(0, 160)}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setPreviewFailed(false);
-                  onChange("");
-                }}
-                className="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline"
-              >
-                مسح هذه القيمة
-              </button>
-            </div>
-          )}
-
-          {(showUrlInput || !canPreview) && (
-            <div className="relative">
-              <input
-                type="text"
-                value={value}
-                onChange={(e) => {
-                  setPreviewFailed(false);
-                  onChange(e.target.value);
-                }}
-                placeholder={placeholder}
-                className="w-full border border-border focus:border-foreground rounded-lg px-3 py-1.5 text-xs outline-none bg-background text-foreground transition-all"
-                dir="ltr"
-              />
+          {/* URL Input Box */}
+          {(showUrlInput || !hasValue || isRemoteUrl) && (
+            <div className="relative space-y-1">
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={value}
+                  onChange={(e) => {
+                    setLocalImportError(null);
+                    setBrowserImgError(false);
+                    onChange(e.target.value);
+                  }}
+                  placeholder={placeholder}
+                  className="w-full border border-border focus:border-foreground rounded-lg px-3 py-1.5 text-xs outline-none bg-background text-foreground transition-all pr-8"
+                  dir="ltr"
+                />
+                {hasValue && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChange("");
+                      setLocalImportError(null);
+                      setBrowserImgError(false);
+                    }}
+                    className="absolute right-2 text-muted-foreground hover:text-foreground p-0.5"
+                    title="مسح"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -368,3 +435,4 @@ export function ImageUploadField({
     </div>
   );
 }
+
