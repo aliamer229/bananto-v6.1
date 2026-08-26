@@ -65,6 +65,7 @@ export function ImageUploadField({
   useEffect(() => {
     setBrowserImgError(false);
     setLocalImportError(null);
+    setJustImported(false);
   }, [value]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,22 +115,27 @@ export function ImageUploadField({
     }
   };
 
-  const handleImportRemoteUrl = async () => {
-    if (!isRemoteUrl) return;
+  const handleImportRemoteUrl = React.useCallback(async (urlToImport: string) => {
+    if (!urlToImport || urlToImport.startsWith("/api/files/") || urlToImport.includes("/files/")) return;
     try {
       setImportingRemote(true);
       setLocalImportError(null);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
 
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sourceUrl: cleanVal,
+          sourceUrl: urlToImport,
           folder,
           productId,
           imageType,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const res = await response.json().catch(() => ({}));
 
@@ -148,13 +154,19 @@ export function ImageUploadField({
       toast.success("تم استيراد الصورة وتحويلها إلى WebP وحفظها في التخزين السحابي (R2)");
     } catch (err: any) {
       console.error("Remote import error:", err);
-      const errMsg = err?.message || "حدث خطأ أثناء الاتصال بالخادم";
+      const errMsg = err?.name === "AbortError" ? "انتهت مهلة الاتصال بالخادم الخارجي (Timeout)" : (err?.message || "حدث خطأ أثناء الاتصال بالخادم");
       setLocalImportError(errMsg);
       toast.error(`فشل استيراد الرابط: ${errMsg}`);
     } finally {
       setImportingRemote(false);
     }
-  };
+  }, [folder, productId, imageType, onChange]);
+
+  useEffect(() => {
+    if (isRemoteUrl && !isStoredUrl && !importingRemote && !justImported && !localImportError) {
+      handleImportRemoteUrl(cleanVal);
+    }
+  }, [cleanVal, isRemoteUrl, isStoredUrl, importingRemote, justImported, localImportError, handleImportRemoteUrl]);
 
   const getAspectClass = () => {
     switch (aspect) {
@@ -212,7 +224,7 @@ export function ImageUploadField({
                 <img
                   src={cdnImage(cleanVal)}
                   alt={label}
-                  className="w-full h-full object-contain"
+                  className={cn("w-full h-full object-contain", importingRemote && "opacity-50")}
                   referrerPolicy="no-referrer"
                   crossOrigin="anonymous"
                   onError={(e) => {
@@ -226,6 +238,10 @@ export function ImageUploadField({
                     setBrowserImgError(true);
                   }}
                 />
+              ) : importingRemote ? (
+                <div className="p-3 text-center flex flex-col items-center justify-center gap-1 text-muted-foreground h-full">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                </div>
               ) : (
                 <div className="p-3 text-center flex flex-col items-center justify-center gap-1 text-muted-foreground h-full">
                   <Globe className="w-6 h-6 text-muted-foreground/60" />
@@ -233,9 +249,14 @@ export function ImageUploadField({
                     رابط خارجي
                   </span>
                   <span className="text-[9px] text-muted-foreground/80 leading-tight">
-                    (اضغط استيراد للسحابة)
+                    {localImportError ? "فشل الاستيراد" : "(جار الاستيراد...)"}
                   </span>
                 </div>
+              )}
+              {importingRemote && !browserImgError && (
+                 <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
+                   <Loader2 className="w-6 h-6 animate-spin text-blue-600 drop-shadow-md" />
+                 </div>
               )}
             </div>
 
@@ -316,7 +337,7 @@ export function ImageUploadField({
             {isRemoteUrl && (
               <button
                 type="button"
-                onClick={handleImportRemoteUrl}
+                onClick={() => handleImportRemoteUrl(cleanVal)}
                 disabled={importingRemote}
                 title="تنزيل الصورة بالسيرفر وتحويلها لـ WebP وتخزينها في R2 بشكل دائم"
                 className="px-3 py-1.5 text-xs font-bold rounded-lg border border-blue-500/40 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center gap-1.5 transition-colors shadow-2xs"
@@ -370,7 +391,7 @@ export function ImageUploadField({
                 <div className="flex items-center gap-2 pt-0.5">
                   <button
                     type="button"
-                    onClick={handleImportRemoteUrl}
+                    onClick={() => handleImportRemoteUrl(cleanVal)}
                     disabled={importingRemote}
                     className="text-[11px] font-bold text-red-700 dark:text-red-300 hover:underline flex items-center gap-1"
                   >
