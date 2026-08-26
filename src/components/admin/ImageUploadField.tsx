@@ -53,6 +53,7 @@ export function ImageUploadField({
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [browserImgError, setBrowserImgError] = useState(false);
   const [localImportError, setLocalImportError] = useState<string | null>(null);
+  const [lastImportedUrl, setLastImportedUrl] = useState<string | null>(null);
   const [justImported, setJustImported] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -163,10 +164,14 @@ export function ImageUploadField({
   }, [folder, productId, imageType, onChange]);
 
   useEffect(() => {
-    if (isRemoteUrl && !isStoredUrl && !importingRemote && !justImported && !localImportError) {
-      handleImportRemoteUrl(cleanVal);
+    if (isRemoteUrl && !isStoredUrl && cleanVal !== lastImportedUrl && !importingRemote && !justImported && !localImportError) {
+      const timer = setTimeout(() => {
+        setLastImportedUrl(cleanVal);
+        handleImportRemoteUrl(cleanVal);
+      }, 750);
+      return () => clearTimeout(timer);
     }
-  }, [cleanVal, isRemoteUrl, isStoredUrl, importingRemote, justImported, localImportError, handleImportRemoteUrl]);
+  }, [cleanVal, isRemoteUrl, isStoredUrl, importingRemote, justImported, localImportError, lastImportedUrl, handleImportRemoteUrl]);
 
   const getAspectClass = () => {
     switch (aspect) {
@@ -422,6 +427,7 @@ export function ImageUploadField({
                   type="text"
                   value={value}
                   onChange={(e) => {
+                    setLastImportedUrl(null);
                     setLocalImportError(null);
                     setBrowserImgError(false);
                     onChange(e.target.value);

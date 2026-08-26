@@ -167,16 +167,26 @@ function isPrivateOrReservedIpv4(host: string): boolean {
  * Supports query params, ports 80/443/8080/8443, and both http & https.
  * Explicitly supports major CDNs without hostname exclusion.
  */
+
 export function isSafeRemoteImageUrl(raw: string): URL | null {
   if (!raw || typeof raw !== "string" || raw.length > 4096) return null;
-  const trimmed = raw.trim();
-
+  // Remove zero-width spaces and control characters
+  let cleanStr = raw.replace(/[\u200B-\u200D\uFEFF\x00-\x1F\x7F]/g, "").trim();
+  // Quick unescape of common HTML entities if present
+  cleanStr = cleanStr.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+  
   let url: URL;
   try {
-    url = new URL(trimmed);
+    url = new URL(cleanStr);
   } catch {
-    return null;
+    // If it fails, maybe the path has unencoded spaces or weird chars, let's try a fallback encode URI
+    try {
+      url = new URL(encodeURI(cleanStr));
+    } catch {
+      return null;
+    }
   }
+
 
   if (url.protocol !== "https:" && url.protocol !== "http:") {
     return null;
@@ -216,260 +226,74 @@ export function isSafeRemoteImageUrl(raw: string): URL | null {
  * Extracts and maps source-specific referer and request headers based on hostname.
  * Supports: Walmart, Amazon, BestBuy, Costco, TradeInn, Nintendo eShop CDN, Nintendo Assets CDN, etc.
  */
+
 export function buildMediaRequestHeaders(urlStr: string, attempt: number = 1): Record<string, string> {
   const headers: Record<string, string> = {
-    "User-Agent":
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
-    Accept:
-      "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Cache-Control": "no-cache",
-    Pragma: "no-cache",
-    "Sec-Fetch-Dest": "image",
-    "Sec-Fetch-Mode": "no-cors",
-    "Sec-Fetch-Site": "cross-site",
+    "Pragma": "no-cache",
   };
 
   try {
     const urlObj = new URL(urlStr);
-    const host = urlObj.hostname.toLowerCase();
-
-    if (attempt === 2) {
-      // Attempt 2: minimal headers, no referer
-      delete headers["Sec-Fetch-Site"];
-      delete headers["Sec-Fetch-Mode"];
-      delete headers["Sec-Fetch-Dest"];
-    } else if (attempt === 3) {
-      // Attempt 3: self referer
+    
+    if (attempt === 1) {
       headers["Referer"] = urlObj.origin + "/";
-    } else if (attempt >= 4) {
-      // Attempt 4+: Generic Windows Chrome, self referer
-      headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-      headers["Referer"] = urlObj.origin + "/";
-    } else {
-      // Attempt 1: Default known referers
-      if (host.includes("walmartimages.com") || host.includes("walmart.com")) {
-        headers["Referer"] = "https://www.walmart.com/";
-      } else if (
-        host.includes("amazon.com") ||
-        host.includes("media-amazon.com") ||
-        host.includes("ssl-images-amazon.com")
-      ) {
-        headers["Referer"] = "https://www.amazon.com/";
-      } else if (
-        host.includes("bestbuy.com") ||
-        host.includes("bbystatic.com") ||
-        host.includes("bbycastatic.ca")
-      ) {
-        headers["Referer"] = "https://www.bestbuy.com/";
-      } else if (
-        host.includes("costco-static.com") ||
-        host.includes("costco.com") ||
-        host.includes("ca-richimage.com")
-      ) {
-        headers["Referer"] = "https://www.costco.com/";
-      } else if (host.includes("tradeinn.com")) {
-        headers["Referer"] = "https://www.tradeinn.com/";
-      } else if (
-      host.includes("nintendo.net") ||
-      host.includes("nintendo.com") ||
-      host.includes("nintendoswitch.com") ||
-      host.includes("cdn.nintendo")
-    ) {
-      headers["Referer"] = "https://www.nintendo.com/";
-    } else if (host.includes("thecoverproject.net")) {
-      headers["Referer"] = "https://www.thecoverproject.net/";
-    } else if (host.includes("igdb.com")) {
-      headers["Referer"] = "https://www.igdb.com/";
-    } else {
-      headers["Referer"] = `${urlObj.origin}/`;
+    } else if (attempt === 2) {
+      // minimal headers
+      delete headers["User-Agent"];
+      delete headers["Accept-Language"];
+      delete headers["Cache-Control"];
+      delete headers["Pragma"];
+      delete headers["Referer"];
+    } else if (attempt >= 3) {
+      headers["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15";
+      headers["Referer"] = "https://www.google.com/";
     }
-    }
-  } catch {
-    // ignore
-  }
+  } catch (e) {}
 
   return headers;
 }
 
-/**
- * Sleep helper for retry backoffs.
- */
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/**
- * Parses Retry-After header (either seconds or HTTP-Date), capped to a safe maximum.
- */
-function parseRetryAfter(headerValue: string | null, maxMs = 6000): number {
-  if (!headerValue) return 0;
-  if (process.env.NODE_ENV === "test") return 0;
-  const parsedSeconds = Number(headerValue);
-  if (!isNaN(parsedSeconds) && parsedSeconds > 0) {
-    return Math.min(parsedSeconds * 1000, maxMs);
-  }
-  const parsedDate = Date.parse(headerValue);
-  if (!isNaN(parsedDate)) {
-    const diff = parsedDate - Date.now();
-    return diff > 0 ? Math.min(diff, maxMs) : 0;
-  }
-  return 0;
-}
 
-/**
- * Bounded Concurrency & Per-Host Rate Limiter:
- * Prevents CDN 503/429 throttling during multi-image or ZIP batch imports.
- */
-interface HostLimiterState {
-  active: number;
-  lastRequestTime: number;
-  queue: Array<() => void>;
-}
-
-const hostLimiters = new Map<string, HostLimiterState>();
-let globalActiveDownloads = 0;
-const GLOBAL_MAX_CONCURRENCY = 6;
-const globalQueue: Array<() => void> = [];
-
-function getHostLimits(host: string): { maxConcurrent: number; minIntervalMs: number } {
-  if (process.env.NODE_ENV === "test" || process.env.VITEST) {
-    return { maxConcurrent: 10, minIntervalMs: 0 };
-  }
-  const h = host.toLowerCase();
-  if (h.includes("nintendo.net") || h.includes("nintendo.com")) {
-    return { maxConcurrent: 2, minIntervalMs: 60 };
-  }
-  if (h.includes("amazon.com") || h.includes("media-amazon.com")) {
-    return { maxConcurrent: 2, minIntervalMs: 50 };
-  }
-  if (h.includes("walmartimages.com") || h.includes("walmart.com")) {
-    return { maxConcurrent: 2, minIntervalMs: 50 };
-  }
-  if (h.includes("costco") || h.includes("bestbuy") || h.includes("tradeinn")) {
-    return { maxConcurrent: 2, minIntervalMs: 50 };
-  }
-  return { maxConcurrent: 3, minIntervalMs: 30 };
-}
-
-async function acquireDownloadSlot(host: string): Promise<() => void> {
-  const { maxConcurrent, minIntervalMs } = getHostLimits(host);
-
-  let state = hostLimiters.get(host);
-  if (!state) {
-    state = { active: 0, lastRequestTime: 0, queue: [] };
-    hostLimiters.set(host, state);
-  }
-
-  // 1. Wait for global concurrency slot
-  if (globalActiveDownloads >= GLOBAL_MAX_CONCURRENCY) {
-    await new Promise<void>((resolve) => globalQueue.push(resolve));
-  }
-  globalActiveDownloads++;
-
-  // 2. Wait for per-host slot
-  if (state.active >= maxConcurrent) {
-    await new Promise<void>((resolve) => state!.queue.push(resolve));
-  }
-  state.active++;
-
-  // 3. Enforce spacing between consecutive requests to the same host
-  const now = Date.now();
-  const elapsed = now - state.lastRequestTime;
-  if (elapsed < minIntervalMs) {
-    await delay(minIntervalMs - elapsed);
-  }
-  state.lastRequestTime = Date.now();
-
-  let released = false;
-  return () => {
-    if (released) return;
-    released = true;
-
-    // Release per-host slot
-    if (state) {
-      state.active = Math.max(0, state.active - 1);
-      const nextHost = state.queue.shift();
-      if (nextHost) nextHost();
-    }
-
-    // Release global slot
-    globalActiveDownloads = Math.max(0, globalActiveDownloads - 1);
-    const nextGlobal = globalQueue.shift();
-    if (nextGlobal) nextGlobal();
-  };
-}
-
-/**
- * SOURCE-AWARE CENTRALIZED REMOTE MEDIA FETCHER:
- * Safely fetches remote media from external CDNs (Walmart, Amazon, BestBuy, Costco,
- * TradeInn, Nintendo eShop, Nintendo Assets, etc.) with host-specific headers,
- * per-host rate limiting, manual redirect validation, exponential backoff with jitter,
- * Content-Type/magic-byte sniffing, and detailed diagnostics.
- */
 export async function fetchRemoteMedia(
   sourceUrl: string,
   options: FetchRemoteMediaOptions = {}
 ): Promise<FetchRemoteMediaResult> {
   const isTest = Boolean(process.env.NODE_ENV === "test" || process.env.VITEST);
-  const maxAttempts = options.maxAttempts ?? 4;
-  const timeoutMs = options.timeoutMs ?? (isTest ? 2000 : 25000);
-  // Exponential backoff schedule with jitter
-  const backoffSchedule = isTest ? [0, 0, 0, 0] : [0, 750, 2000, 5000];
+  const maxAttempts = options.maxAttempts ?? 3;
+  const timeoutMs = options.timeoutMs ?? (isTest ? 2000 : 30000);
 
   const initialSafeUrl = isSafeRemoteImageUrl(sourceUrl);
   if (!initialSafeUrl) {
-    return {
-      ok: false,
-      sourceUrl,
-      httpStatus: 400,
-      attempts: 0,
-      error: `SSRF_OR_INVALID_URL: ${sourceUrl}`,
-    };
+    return { ok: false, sourceUrl, httpStatus: 400, attempts: 0, error: `SSRF_OR_INVALID_URL: ${sourceUrl}` };
   }
 
   const initialHost = initialSafeUrl.hostname.toLowerCase();
-  const currentUrl = initialSafeUrl.toString();
+  let currentUrl = initialSafeUrl.toString();
   let lastHttpStatus = 0;
   let lastError = "";
   let lastRayId = "";
-  let lastRetryAfter = 0;
   let finalResolvedUrl = currentUrl;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    // Backoff if retry attempt
-    const baseWait = backoffSchedule[attempt - 1] ?? (isTest ? 0 : 5000);
-    if (baseWait > 0) {
-      const jitter = isTest ? 0 : Math.floor(Math.random() * 300);
-      await delay(baseWait + jitter);
+    if (attempt > 1) {
+      await delay(isTest ? 0 : 1500);
     }
-
-    const host = (() => {
-      try {
-        return new URL(currentUrl).hostname.toLowerCase();
-      } catch {
-        return initialHost;
-      }
-    })();
-
-    // Acquire host-aware queue slot
+    const host = (() => { try { return new URL(currentUrl).hostname.toLowerCase(); } catch { return initialHost; } })();
     const releaseSlot = await acquireDownloadSlot(host);
 
     try {
       let activeUrl = currentUrl;
       let response: Response | null = null;
 
-      // Follow up to 5 redirects with manual SSRF inspection on each hop
       for (let redirectCount = 0; redirectCount <= 5; redirectCount++) {
         const safeHop = isSafeRemoteImageUrl(activeUrl);
         if (!safeHop) {
-          return {
-            ok: false,
-            sourceUrl,
-            finalUrl: activeUrl,
-            sourceHost: host,
-            httpStatus: 400,
-            attempts: attempt,
-            error: `SSRF_REDIRECT_BLOCKED: ${activeUrl}`,
-          };
+          return { ok: false, sourceUrl, finalUrl: activeUrl, sourceHost: host, httpStatus: 400, attempts: attempt, error: `SSRF_REDIRECT_BLOCKED: ${activeUrl}` };
         }
 
         const controller = new AbortController();
@@ -480,7 +304,6 @@ export async function fetchRemoteMedia(
             ...buildMediaRequestHeaders(activeUrl, attempt),
             ...(options.customHeaders || {}),
           };
-
           response = await fetch(activeUrl, {
             method: "GET",
             headers,
@@ -491,22 +314,16 @@ export async function fetchRemoteMedia(
           clearTimeout(timeoutId);
         }
 
-        // Handle HTTP 3xx Redirects
-        if (
-          response &&
-          response.status >= 300 &&
-          response.status < 400 &&
-          response.headers.get("location")
-        ) {
+        if (response && response.status >= 300 && response.status < 400 && response.headers.get("location")) {
           const loc = response.headers.get("location")!;
           const resolved = new URL(loc, activeUrl).toString();
           activeUrl = resolved;
           finalResolvedUrl = resolved;
-          continue;
+          continue; // follow redirect
         }
-
+        
         finalResolvedUrl = activeUrl;
-        break;
+        break; // stop following redirects
       }
 
       if (!response) {
@@ -517,139 +334,52 @@ export async function fetchRemoteMedia(
       lastHttpStatus = response.status;
       lastRayId = response.headers.get("cf-ray") || response.headers.get("x-amz-cf-id") || "";
 
-      // Retryable HTTP status codes
-      const retryableStatuses = [401, 403, 404, 406, 408, 425, 429, 500, 502, 503, 504];
-      if (retryableStatuses.includes(response.status) || attempt < maxAttempts && !response.ok) {
-        const retryAfterHeader = response.headers.get("retry-after");
-        const retryAfterMs = parseRetryAfter(retryAfterHeader, 6000);
-        lastRetryAfter = Math.round(retryAfterMs / 1000);
-
-        if (attempt < maxAttempts) {
-          const waitMs = retryAfterMs > 0 ? retryAfterMs : backoffSchedule[attempt] || 2000;
-          await delay(waitMs);
-        }
+      if (response.status === 404 || response.status === 403 || response.status === 401 || response.status === 429 || response.status >= 500) {
         lastError = `HTTP_${response.status}`;
-        console.warn(
-          `[fetchRemoteMedia] Host ${host} returned HTTP ${response.status} (attempt ${attempt}/${maxAttempts}). RayId: ${lastRayId || "none"}`
-        );
-        continue;
+        console.warn(`[fetchRemoteMedia] Host ${host} returned HTTP ${response.status} (attempt ${attempt}/${maxAttempts})`);
+        continue; // Retry with next approach
       }
 
-      // Non-2xx response handling
       if (!response.ok) {
-        let errDesc = `HTTP_${response.status}`;
-        if (response.status === 404) errDesc = "HTTP_404_NOT_FOUND";
-        else if (response.status === 403) errDesc = "HTTP_403_FORBIDDEN";
-        else if (response.status === 401) errDesc = "HTTP_401_UNAUTHORIZED";
-        else if (response.status === 429) errDesc = "HTTP_429_TOO_MANY_REQUESTS";
-        else if (response.status >= 500) errDesc = `HTTP_${response.status}_SERVER_ERROR`;
-
-        return {
-          ok: false,
-          sourceUrl,
-          finalUrl: finalResolvedUrl,
-          sourceHost: host,
-          httpStatus: response.status,
-          attempts: attempt,
-          rayId: lastRayId,
-          error: errDesc,
-        };
+        return { ok: false, sourceUrl, finalUrl: finalResolvedUrl, sourceHost: host, httpStatus: response.status, attempts: attempt, rayId: lastRayId, error: `HTTP_${response.status}` };
       }
 
-      // Check Content-Length if declared
       const contentLength = Number(response.headers.get("content-length") || 0);
       if (contentLength > MAX_IMAGE_BYTES) {
-        return {
-          ok: false,
-          sourceUrl,
-          finalUrl: finalResolvedUrl,
-          sourceHost: host,
-          httpStatus: 413,
-          attempts: attempt,
-          error: `FILE_TOO_LARGE: ${contentLength} bytes`,
-        };
+        return { ok: false, sourceUrl, finalUrl: finalResolvedUrl, sourceHost: host, httpStatus: 413, attempts: attempt, error: `FILE_TOO_LARGE: ${contentLength} bytes` };
       }
 
-      // Check declared Content-Type: reject HTML, JSON, plain text error pages
-      const rawContentType = (response.headers.get("content-type") || "")
-        .split(";")[0]
-        ?.trim()
-        .toLowerCase();
-      if (
-        rawContentType === "text/html" ||
-        rawContentType === "application/json" ||
-        rawContentType === "text/plain"
-      ) {
-        return {
-          ok: false,
-          sourceUrl,
-          finalUrl: finalResolvedUrl,
-          sourceHost: host,
-          httpStatus: response.status,
-          attempts: attempt,
-          error: `REMOTE_SERVER_RETURNED_HTML: ${rawContentType}`,
-        };
+      const rawContentType = (response.headers.get("content-type") || "").split(";")[0]?.trim().toLowerCase();
+      if (rawContentType === "text/html" || rawContentType === "application/json" || rawContentType === "text/plain") {
+        lastError = `REMOTE_SERVER_RETURNED_HTML: ${rawContentType}`;
+        continue;
       }
 
       const buffer = await response.arrayBuffer();
       const bytes = new Uint8Array(buffer);
 
       if (bytes.length < MIN_IMAGE_BYTES) {
-        return {
-          ok: false,
-          sourceUrl,
-          finalUrl: finalResolvedUrl,
-          sourceHost: host,
-          httpStatus: response.status,
-          attempts: attempt,
-          error: `IMAGE_EMPTY_OR_CORRUPT: ${bytes.length} bytes`,
-        };
+        lastError = `IMAGE_EMPTY_OR_CORRUPT: ${bytes.length} bytes`;
+        continue;
       }
 
-      // Sniff magic bytes for accurate MIME identification
       const sniffedMime = sniffImageMimeType(bytes);
-
-      // Protect against spoofed HTML responses (e.g. captive portals, 200 OK error pages)
       if (!sniffedMime) {
         const startStr = new TextDecoder().decode(bytes.slice(0, 80)).toLowerCase().trim();
         if (startStr.startsWith("<html") || startStr.startsWith("<!doctype") || startStr.includes("<body")) {
-          return {
-            ok: false,
-            sourceUrl,
-            finalUrl: finalResolvedUrl,
-            sourceHost: host,
-            httpStatus: response.status,
-            attempts: attempt,
-            error: `REMOTE_SERVER_RETURNED_HTML`,
-          };
+          lastError = `REMOTE_SERVER_RETURNED_HTML`;
+          continue;
         }
       }
 
       const mime = sniffedMime || (rawContentType?.startsWith("image/") ? rawContentType : undefined);
-
       if (!mime || !mime.startsWith("image/")) {
-        return {
-          ok: false,
-          sourceUrl,
-          finalUrl: finalResolvedUrl,
-          sourceHost: host,
-          httpStatus: response.status,
-          attempts: attempt,
-          error: `INVALID_IMAGE_PAYLOAD: declared=${rawContentType || "none"}, sniffed=${sniffedMime || "none"}`,
-        };
+        lastError = `INVALID_IMAGE_PAYLOAD: declared=${rawContentType || "none"}, sniffed=${sniffedMime || "none"}`;
+        continue;
       }
 
-      return {
-        ok: true,
-        bytes,
-        mime,
-        sourceUrl,
-        finalUrl: finalResolvedUrl,
-        sourceHost: host,
-        httpStatus: response.status,
-        attempts: attempt,
-        rayId: lastRayId,
-      };
+      return { ok: true, bytes, mime, sourceUrl, finalUrl: finalResolvedUrl, sourceHost: host, httpStatus: response.status, attempts: attempt, rayId: lastRayId };
+
     } catch (err: any) {
       if (err?.name === "AbortError") {
         lastError = "TIMEOUT";
@@ -662,18 +392,9 @@ export async function fetchRemoteMedia(
     }
   }
 
-  return {
-    ok: false,
-    sourceUrl,
-    finalUrl: finalResolvedUrl,
-    sourceHost: initialHost,
-    httpStatus: lastHttpStatus || 503,
-    attempts: maxAttempts,
-    rayId: lastRayId,
-    retryAfterSeconds: lastRetryAfter,
-    error: lastError || "MAX_RETRIES_EXCEEDED",
-  };
+  return { ok: false, sourceUrl, finalUrl: finalResolvedUrl, sourceHost: initialHost, httpStatus: lastHttpStatus || 503, attempts: maxAttempts, rayId: lastRayId, error: lastError || "MAX_RETRIES_EXCEEDED" };
 }
+
 
 /**
  * Backward compatibility alias for fetchRemoteImageWithRetry.
@@ -770,6 +491,11 @@ async function recordMediaAudit(
  * This function NEVER throws an unhandled exception. It always returns an IngestResult.
  */
 export async function ingestRemoteImage(options: RemoteImageIngestOptions): Promise<IngestResult> {
+
+  console.log(`RAW_URL_RECEIVED=${sourceUrl}`);
+  console.log(`RAW_URL_LENGTH=${sourceUrl.length}`);
+  console.log(`RAW_URL_LAST_100_CHARS=${sourceUrl.slice(-100)}`);
+
   const {
     sourceUrl,
     productId,
@@ -912,7 +638,7 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
       });
 
       let errorMsg = fetchResult.error || "FETCH_FAILED";
-      if (errorMsg.includes("404")) errorMsg = "HTTP 404: الصورة غير موجودة على الرابط الخارجي (Not Found)";
+      if (errorMsg.includes("404")) errorMsg = "فشل الخادم في جلب الصورة من المصدر الخارجي (HTTP 404)";
       else if (errorMsg.includes("403")) errorMsg = "HTTP 403: الخادم الخارجي حظر الوصول (Forbidden / Hotlink Protection)";
       else if (errorMsg.includes("401")) errorMsg = "HTTP 401: غير مصرح بالوصول (Unauthorized)";
       else if (errorMsg.includes("HTML")) errorMsg = "الخادم الخارجي أعاد صفحة HTML بدل صورة (Remote server returned HTML)";
