@@ -1,6 +1,51 @@
-import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
+import React, { useRef, useEffect, useMemo, useState, forwardRef, useImperativeHandle } from "react";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
+
+import { nintendoCaseModelUrl } from "@/config/publicAssets";
+
+/**
+ * The Nintendo keep case, rendered from the canonical Cloudflare R2 geometry.
+ *
+ * ## Geometry and artwork are different things
+ *
+ * The GLB is a **reusable physical case** — one authored in Blender, three
+ * meshes (`box`, `foil`, `placeholder`), no textures baked in. Every Nintendo
+ * game in the store renders on that same geometry. What changes per product is
+ * the artwork painted onto the `placeholder` sleeve, which comes from the
+ * product's own media fields. A game never needs its own model.
+ *
+ * ## The texture contract, read off the model rather than guessed
+ *
+ * `placeholder` is a single wrap that folds around the case, and its authored
+ * UVs lay the three faces out left→right across one image:
+ *
+ * ```
+ *   U 0.000 ─────────── 0.473 ── 0.526 ─────────── 1.000
+ *          │    BACK          │ SPINE │    FRONT       │
+ * ```
+ *
+ * V runs top→bottom (0 at the top edge), which is image order, so the texture
+ * is uploaded with `flipY = false`. The canvas below is built to exactly that
+ * layout: 1236 × 951, with 588 px of back, 60 px of spine and 588 px of front.
+ *
+ * Those numbers are measured from the model's own `TEXCOORD_0` accessor, not
+ * invented, and the UVs themselves are never touched. If the artwork looks
+ * wrong the bug is in which image was chosen or how it was composited — the
+ * mapping is already correct.
+ *
+ * ## Two texture modes, declared by the caller
+ *
+ * The component does not sniff aspect ratios to decide what it was handed.
+ *
+ * - `wrap` — the caller resolved a real **3D Texture Source**: one image that
+ *   already contains back + spine + front. It is drawn across the whole canvas
+ *   untouched, which is the faithful path.
+ * - `composed` — no wrap exists, and the caller has explicitly opted to build
+ *   one from the **Front Box Cover**. The front region gets the artwork; spine
+ *   and back are generated. This is a deliberate, visible fallback chosen by
+ *   the caller, not a silent substitution inside a resolver.
+ */
 
 export interface SwitchBox3DHandle {
   resetView: () => void;
@@ -8,14 +53,35 @@ export interface SwitchBox3DHandle {
   zoomOut: () => void;
 }
 
+export type SwitchBoxTextureMode = "wrap" | "composed";
+
 export interface SwitchBox3DProps {
+  /** The artwork to paint on the sleeve. */
   coverImage?: string | null;
+  /**
+   * How to interpret `coverImage`. `wrap` = a full back+spine+front insert;
+   * `composed` = front-only art the component must build a sleeve around.
+   */
+  textureMode?: SwitchBoxTextureMode;
   platform?: string;
   gameName?: string;
-  isHiRes?: boolean;
   coverTrim?: unknown;
   onReady?: () => void;
+  /** Reported when the artwork or the model could not be used. */
+  onTextureError?: (reason: string) => void;
 }
+
+/** The printable sleeve layout, in pixels, matching the model's authored UVs. */
+const SLEEVE = {
+  width: 1236,
+  height: 951,
+  backWidth: 588,
+  spineWidth: 60,
+  frontWidth: 588,
+} as const;
+
+const SPINE_X = SLEEVE.backWidth;
+const FRONT_X = SLEEVE.backWidth + SLEEVE.spineWidth;
 
 // Global cached assets for 3D boxes
 let cachedBaseTextureImg: HTMLImageElement | null = null;
@@ -50,8 +116,17 @@ function loadCoverImage(coverImage: string): Promise<HTMLImageElement | null> {
   });
 }
 
+/**
+ * The blank case texture the model was authored against — plastic sheen and
+ * fold shading, no game artwork. It is a static model resource, not product
+ * media, so it lives with the other build assets rather than in a product row.
+ */
 function loadBaseTexture(): Promise<HTMLImageElement | null> {
-  if (cachedBaseTextureImg && cachedBaseTextureImg.complete && cachedBaseTextureImg.naturalWidth > 0) {
+  if (
+    cachedBaseTextureImg &&
+    cachedBaseTextureImg.complete &&
+    cachedBaseTextureImg.naturalWidth > 0
+  ) {
     return Promise.resolve(cachedBaseTextureImg);
   }
 
@@ -66,19 +141,52 @@ function loadBaseTexture(): Promise<HTMLImageElement | null> {
   });
 }
 
+/** Copies a node's authored transform onto the mesh that borrows its geometry. */
+function applyNodeTransform(target: THREE.Object3D | null, source: THREE.Object3D | undefined) {
+  if (!target || !source) return;
+  target.position.copy(source.position);
+  target.quaternion.copy(source.quaternion);
+  target.scale.copy(source.scale);
+}
+
 export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
-  ({ coverImage, platform = "ns", gameName = "Nintendo Switch", onReady }, ref) => {
-    const gltf = useGLTF("/source/SwitchCase.glb") as any;
-    const nodes = gltf?.nodes || {};
+  (
+    {
+      coverImage,
+      textureMode = "composed",
+      platform = "ns",
+      gameName = "Nintendo Switch",
+      onReady,
+      onTextureError,
+    },
+    ref,
+  ) => {
+    // Cloudflare R2 is the source of truth for the geometry. The URL is
+    // same-origin and extension-less on purpose — see src/config/publicAssets.ts.
+    const modelUrl = nintendoCaseModelUrl(platform);
+    const gltf = useGLTF(modelUrl) as any;
     const materials = gltf?.materials || {};
     const scene = gltf?.scene;
     const group = useRef<THREE.Group>(null);
     const controlsRef = useRef<any>(null);
 
-    // Resolve mesh nodes from nodes object or scene traverse
-    const boxMesh = (nodes.box || scene?.getObjectByName?.("box")) as THREE.Mesh | undefined;
-    const placeholderMesh = (nodes.placeholder || scene?.getObjectByName?.("placeholder")) as THREE.Mesh | undefined;
-    const foilMesh = (nodes.foil || scene?.getObjectByName?.("foil")) as THREE.Mesh | undefined;
+    // Resolve the three authored meshes once per loaded model. `gltf.nodes` is
+    // a fresh object each render, so reading it inline made every effect that
+    // depended on it re-run on every frame.
+    const { boxNode, placeholderNode, foilNode } = useMemo(() => {
+      const nodes = gltf?.nodes || {};
+      const byName = (name: string) =>
+        (nodes[name] || scene?.getObjectByName?.(name)) as THREE.Mesh | undefined;
+      return {
+        boxNode: byName("box"),
+        placeholderNode: byName("placeholder"),
+        foilNode: byName("foil"),
+      };
+    }, [gltf, scene]);
+
+    const boxRef = useRef<THREE.Mesh>(null);
+    const placeholderRef = useRef<THREE.Mesh>(null);
+    const foilRef = useRef<THREE.Mesh>(null);
 
     useImperativeHandle(ref, () => ({
       resetView: () => {
@@ -90,27 +198,28 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
 
     useEffect(() => {
       onReady?.();
-    }, [onReady, nodes, scene]);
+    }, [onReady, scene]);
+
+    // The GLB carries per-node scale and translation (the sleeve sits fractionally
+    // proud of the shell). Borrowing only `geometry` would drop those and float
+    // the artwork off the case, so the authored transforms are copied across.
+    useEffect(() => {
+      applyNodeTransform(boxRef.current, boxNode);
+      applyNodeTransform(placeholderRef.current, placeholderNode);
+      applyNodeTransform(foilRef.current, foilNode);
+    }, [boxNode, placeholderNode, foilNode]);
 
     const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
     useEffect(() => {
       let isMounted = true;
       const canvas = document.createElement("canvas");
-      // Standard Nintendo Switch Case sleeve template resolution (1236 x 951)
-      canvas.width = 1236;
-      canvas.height = 951;
+      canvas.width = SLEEVE.width;
+      canvas.height = SLEEVE.height;
       const ctx = canvas.getContext("2d", { alpha: false });
       if (!ctx) return;
 
-      // Spine and Cover Dimensions
-      const backWidth = 588;
-      const spineWidth = 60;
-      const frontWidth = 588;
-      const spineX = backWidth;
-      const frontX = backWidth + spineWidth;
-
-      const isSwitch2 = platform === "ns2";
+      const isSwitch2 = platform === "ns2" || platform === "switch2";
       const brandColor = isSwitch2 ? "#d60012" : "#e60012";
 
       const drawTexture = async () => {
@@ -130,48 +239,56 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
 
           let artworkDrawn = false;
 
-          // 2. Draw uploaded cover image
           if (coverImage) {
             const img = await loadCoverImage(coverImage);
+            if (!img && isMounted) {
+              onTextureError?.("artwork_load_failed");
+            }
 
             if (isMounted && img && img.complete && img.naturalWidth > 0) {
               artworkDrawn = true;
-              const aspect = img.naturalWidth / img.naturalHeight;
 
-              // The uploaded cover is a full retail box insert (FRONT + SPINE + BACK)
-              if (aspect > 1.15) {
+              if (textureMode === "wrap") {
+                // A real 3D Texture Source: back + spine + front already laid
+                // out. Drawn edge to edge, untouched — the model's UVs do the
+                // rest.
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
               } else {
-                // Front-only cover: draw on front, draw spine & back
+                // Front Box Cover only. Paint the front region, then build the
+                // spine and back the printed insert would have carried.
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(frontX, 0, frontWidth, canvas.height);
+                ctx.rect(FRONT_X, 0, SLEEVE.frontWidth, canvas.height);
                 ctx.clip();
-                ctx.drawImage(img, frontX, 0, frontWidth, canvas.height);
+                ctx.drawImage(img, FRONT_X, 0, SLEEVE.frontWidth, canvas.height);
                 ctx.restore();
 
                 // Spine
                 ctx.save();
                 ctx.fillStyle = brandColor;
-                ctx.fillRect(spineX, 0, spineWidth, canvas.height);
+                ctx.fillRect(SPINE_X, 0, SLEEVE.spineWidth, canvas.height);
 
                 ctx.fillStyle = "#ffffff";
                 ctx.textAlign = "center";
                 ctx.font = "900 13px system-ui, -apple-system, sans-serif";
-                ctx.fillText("NINTENDO", spineX + spineWidth / 2, 48);
+                ctx.fillText("NINTENDO", SPINE_X + SLEEVE.spineWidth / 2, 48);
                 ctx.font = "900 15px system-ui, -apple-system, sans-serif";
-                ctx.fillText(isSwitch2 ? "SWITCH 2" : "SWITCH", spineX + spineWidth / 2, 66);
+                ctx.fillText(
+                  isSwitch2 ? "SWITCH 2" : "SWITCH",
+                  SPINE_X + SLEEVE.spineWidth / 2,
+                  66,
+                );
 
                 ctx.strokeStyle = "rgba(255,255,255,0.4)";
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(spineX + 8, 80);
-                ctx.lineTo(spineX + spineWidth - 8, 80);
+                ctx.moveTo(SPINE_X + 8, 80);
+                ctx.lineTo(SPINE_X + SLEEVE.spineWidth - 8, 80);
                 ctx.stroke();
 
                 const titleText = (gameName || "NINTENDO SWITCH GAME").toUpperCase();
                 ctx.save();
-                ctx.translate(spineX + spineWidth / 2, 110);
+                ctx.translate(SPINE_X + SLEEVE.spineWidth / 2, 110);
                 ctx.rotate(Math.PI / 2);
                 ctx.fillStyle = "#ffffff";
                 ctx.textAlign = "left";
@@ -193,17 +310,17 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
                 ctx.fillStyle = "#ffffff";
                 ctx.textAlign = "center";
                 ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
-                ctx.fillText("Nintendo", spineX + spineWidth / 2, canvas.height - 40);
+                ctx.fillText("Nintendo", SPINE_X + SLEEVE.spineWidth / 2, canvas.height - 40);
                 ctx.restore();
 
                 // Back
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(0, 0, backWidth, canvas.height);
+                ctx.rect(0, 0, SLEEVE.backWidth, canvas.height);
                 ctx.clip();
 
                 ctx.filter = "blur(18px) brightness(0.55)";
-                ctx.drawImage(img, -40, -40, backWidth + 80, canvas.height + 80);
+                ctx.drawImage(img, -40, -40, SLEEVE.backWidth + 80, canvas.height + 80);
                 ctx.filter = "none";
 
                 const backGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -211,31 +328,35 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
                 backGrad.addColorStop(0.5, "rgba(10, 12, 16, 0.45)");
                 backGrad.addColorStop(1, "rgba(10, 12, 16, 0.95)");
                 ctx.fillStyle = backGrad;
-                ctx.fillRect(0, 0, backWidth, canvas.height);
+                ctx.fillRect(0, 0, SLEEVE.backWidth, canvas.height);
 
                 ctx.fillStyle = brandColor;
-                ctx.fillRect(24, 28, backWidth - 48, 4);
+                ctx.fillRect(24, 28, SLEEVE.backWidth - 48, 4);
 
                 ctx.strokeStyle = "rgba(255,255,255,0.2)";
                 ctx.lineWidth = 2;
-                ctx.strokeRect(36, 70, backWidth - 72, 340);
-                ctx.drawImage(img, 38, 72, backWidth - 76, 336);
+                ctx.strokeRect(36, 70, SLEEVE.backWidth - 72, 340);
+                ctx.drawImage(img, 38, 72, SLEEVE.backWidth - 76, 336);
 
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "bold 26px system-ui, -apple-system, sans-serif";
                 ctx.textAlign = "right";
-                ctx.fillText(gameName || "Nintendo Switch", backWidth - 36, 460);
+                ctx.fillText(gameName || "Nintendo Switch", SLEEVE.backWidth - 36, 460);
 
                 ctx.fillStyle = "rgba(255,255,255,0.7)";
                 ctx.font = "12px system-ui, -apple-system, sans-serif";
-                ctx.fillText("TV Mode • Tabletop Mode • Handheld Mode", backWidth - 36, 490);
-                ctx.fillText("1-4 Players • Pro Controller Compatible", backWidth - 36, 510);
+                ctx.fillText(
+                  "TV Mode • Tabletop Mode • Handheld Mode",
+                  SLEEVE.backWidth - 36,
+                  490,
+                );
+                ctx.fillText("1-4 Players • Pro Controller Compatible", SLEEVE.backWidth - 36, 510);
 
                 ctx.fillStyle = "rgba(255,255,255,0.4)";
                 ctx.font = "10px monospace";
                 ctx.fillText(
                   "Official Nintendo Licensed Product",
-                  backWidth - 36,
+                  SLEEVE.backWidth - 36,
                   canvas.height - 45,
                 );
                 ctx.restore();
@@ -244,13 +365,13 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
           }
 
           if (!artworkDrawn) {
-            // Fallback if no cover image
+            // No artwork at all: a blank retail case with a printed spine, which
+            // is what an unphotographed game physically looks like.
             ctx.fillStyle = brandColor;
-            ctx.fillRect(spineX, 0, spineWidth, canvas.height);
+            ctx.fillRect(SPINE_X, 0, SLEEVE.spineWidth, canvas.height);
 
-            // Draw Spine Text and Logo
             ctx.save();
-            ctx.translate(spineX + spineWidth / 2, 80);
+            ctx.translate(SPINE_X + SLEEVE.spineWidth / 2, 80);
             ctx.fillStyle = "#ffffff";
             ctx.textAlign = "center";
             ctx.font = "bold 16px sans-serif";
@@ -258,7 +379,7 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
             ctx.restore();
 
             ctx.save();
-            ctx.translate(spineX + spineWidth / 2, 200);
+            ctx.translate(SPINE_X + SLEEVE.spineWidth / 2, 200);
             ctx.rotate(Math.PI / 2);
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 28px sans-serif";
@@ -269,6 +390,7 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
 
           const tex = new THREE.CanvasTexture(canvas);
           tex.colorSpace = THREE.SRGBColorSpace;
+          // The model's V axis runs top→bottom, matching image order.
           tex.flipY = false;
           tex.needsUpdate = true;
 
@@ -279,7 +401,8 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
             });
           }
         } catch (err) {
-          console.error("Error drawing texture:", err);
+          console.error("[3D] texture composition failed:", err);
+          onTextureError?.("texture_composition_failed");
         }
       };
 
@@ -288,38 +411,55 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
       return () => {
         isMounted = false;
       };
-    }, [coverImage, platform, gameName]);
+    }, [coverImage, textureMode, platform, gameName, onTextureError]);
+
+    // Dispose the canvas texture when the case unmounts, so repeatedly opening
+    // product pages on a phone does not accumulate GPU memory.
+    useEffect(() => {
+      return () => {
+        setTexture((prev) => {
+          if (prev) prev.dispose();
+          return null;
+        });
+      };
+    }, []);
+
+    const isSwitch2 = platform === "ns2" || platform === "switch2";
 
     // Fallback plastic material when GLTF materials are generic
-    const plasticMaterial = materials?.plastic || new THREE.MeshPhysicalMaterial({
-      transparent: true,
-      opacity: platform === "ns2" ? 0.4 : 0.25, // opacity: platform === "ns2" ? 0.4 : 0.25
-      roughness: 0.1,
-      metalness: 0.05,
-      transmission: 0.85,
-      ior: 1.5,
-      thickness: 0.1,
-      depthWrite: false, // depthWrite: false
-      color: new THREE.Color(platform === "ns2" ? "#e60012" : "#ffffff"),
-    });
+    const plasticMaterial =
+      materials?.plastic ||
+      new THREE.MeshPhysicalMaterial({
+        transparent: true,
+        opacity: isSwitch2 ? 0.4 : 0.25,
+        roughness: 0.1,
+        metalness: 0.05,
+        transmission: 0.85,
+        ior: 1.5,
+        thickness: 0.1,
+        depthWrite: false,
+        color: new THREE.Color(isSwitch2 ? "#e60012" : "#ffffff"),
+      });
 
     // Make sure foil has alpha
     if (materials?.foil) {
       materials.foil.transparent = true;
       materials.foil.opacity = 0.5;
-      materials.foil.depthWrite = false; // depthWrite: false
+      materials.foil.depthWrite = false;
     }
 
+    // The shell tint is the only physical difference between a Switch and a
+    // Switch 2 case, which is why both share one geometry.
     if (materials?.plastic) {
       materials.plastic.transparent = true;
-      materials.plastic.opacity = platform === "ns2" ? 0.4 : 0.25; // opacity: platform === "ns2" ? 0.4 : 0.25
-      materials.plastic.depthWrite = false; // depthWrite: false
-      materials.plastic.color.set(platform === "ns2" ? "#e60012" : "#ffffff");
+      materials.plastic.opacity = isSwitch2 ? 0.4 : 0.25;
+      materials.plastic.depthWrite = false;
+      materials.plastic.color.set(isSwitch2 ? "#e60012" : "#ffffff");
     }
 
-    const boxGeometry = boxMesh?.geometry || nodes?.box?.geometry;
-    const placeholderGeometry = placeholderMesh?.geometry || nodes?.placeholder?.geometry;
-    const foilGeometry = foilMesh?.geometry || nodes?.foil?.geometry;
+    const boxGeometry = boxNode?.geometry;
+    const placeholderGeometry = placeholderNode?.geometry;
+    const foilGeometry = foilNode?.geometry;
 
     return (
       <group
@@ -339,11 +479,11 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
           maxDistance={30}
         />
         {boxGeometry && (
-          <mesh geometry={boxGeometry} material={materials?.plastic || plasticMaterial} />
+          <mesh ref={boxRef} geometry={boxGeometry} material={materials?.plastic || plasticMaterial} />
         )}
 
         {placeholderGeometry && (
-          <mesh geometry={placeholderGeometry}>
+          <mesh ref={placeholderRef} geometry={placeholderGeometry}>
             <meshStandardMaterial
               map={texture || undefined}
               roughness={0.6}
@@ -359,7 +499,7 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
         )}
 
         {foilGeometry && (
-          <mesh geometry={foilGeometry} material={materials?.foil || foilMesh?.material} />
+          <mesh ref={foilRef} geometry={foilGeometry} material={materials?.foil || foilNode?.material} />
         )}
       </group>
     );
@@ -368,5 +508,13 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
 
 SwitchBox3D.displayName = "SwitchBox3D";
 
-useGLTF.preload("/source/SwitchCase.glb");
+/*
+  There is deliberately no module-scope `useGLTF.preload(...)` here.
 
+  The old one fired the moment anything imported this module, which put a
+  200 KB model on the wire during the storefront's first paint even though the
+  viewer only ever appears on a product page. `CaseStage` already lazy-loads
+  `CaseStageWebGL`, and `useGLTF` suspends on first render, so the model is
+  fetched exactly when the viewer is about to show it and is cached by
+  `useGLTF` for every product opened afterwards.
+*/

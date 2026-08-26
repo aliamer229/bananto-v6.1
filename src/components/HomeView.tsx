@@ -15,7 +15,11 @@ import type { AccountBundle } from "@/lib/types";
 import { rankByPreference } from "@/lib/recommend";
 import { useAuth } from "@/hooks/useAuth";
 import { cdnImage } from "@/lib/img";
-import { NINTENDO_IMAGE_PLACEHOLDER, resolveNintendoImageUrl } from "@/lib/nintendoImages";
+import {
+  getNintendoMediaUrl,
+  NINTENDO_IMAGE_PLACEHOLDER,
+  resolveNintendoImageUrl,
+} from "@/lib/nintendoImages";
 import { preloadGameCovers, preloadImage, preload3DBoxAssets } from "@/lib/imagePreloader";
 import { LazySection } from "./LazySection";
 import NintendoNews from "./NintendoNews";
@@ -284,7 +288,11 @@ export default function HomeView({
                       slug: p.slug,
                       title: p.titleEn || p.english_name || p.title || "Game",
                       price: p.price ?? 0,
-                      image: resolveNintendoImageUrl(p, "listing-card"),
+                      // "ألعاب نينتندو سويتش" is the square-card surface: the
+                      // cartridge label window is wider than it is tall and is
+                      // cut for square art. A vertical box cover here is the
+                      // bug this section was reported for.
+                      image: getNintendoMediaUrl(p, "square-card"),
                       source: p,
                       subtitle: p.developer || p.publisher || "Nintendo Switch",
                       rating: p.metacriticRating ?? null,
@@ -408,7 +416,9 @@ export default function HomeView({
                         id: p.id,
                         title: p.titleEn || p.english_name || p.title || "Game",
                         price: p.price ?? 0,
-                        image: resolveNintendoImageUrl(p, "listing-card"),
+                        // Latest Nintendo releases shows the vertical retail
+                        // box, never the square card art.
+                        image: getNintendoMediaUrl(p, "front-box"),
                         source: p,
                         subtitle: year
                           ? `${year} · ${p.developer || p.publisher || ""}`
@@ -421,6 +431,7 @@ export default function HomeView({
                   formatPrice={formatGenericPrice}
                   onPress={() => playSound("bumper_end", 0.6)}
                   ratingIcon={<BananaIcon className="w-3 h-3 sm:w-4 sm:h-4" solid />}
+                  imageRole="front-box"
                   loading={isPending && adminProducts.length === 0}
                 />
               </div>

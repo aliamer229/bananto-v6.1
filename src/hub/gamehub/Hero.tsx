@@ -159,6 +159,7 @@ export function Hero() {
               // The 3D sleeve samples the print-resolution cover when the
               // catalogue has one; the CSS case stays on `coverUrl`.
               coverTextureUrl={game.coverTextureUrl}
+              detailCoverUrl={game.detailCoverUrl}
               coverTrim={game.coverTrim}
               // Explicit artwork wins; otherwise resolve from the game code.
               sleeve={game.caseSleeve ?? sleeveFor(game.nintendoGameCode)}

@@ -145,7 +145,7 @@ export function normalizeHubGame(product: Record<string, unknown>): HubGame {
   // `banners[0]` used to be the last resort here, which is how a wide key art
   // image ended up standing in for a box cover. The resolver never crosses that
   // line: a product with only banners gets the placeholder.
-  const front = resolveNintendoImage(p, "front-cover");
+  const front = resolveNintendoImage(p, "front-box");
   const cover = front.isPlaceholder ? "" : front.url;
   const texture = resolveNintendoImage(p, "3d-texture");
 

@@ -5,8 +5,27 @@ import NintendoCover from "@/components/NintendoCover";
 import { useCurrency } from "@/context/CurrencyContext";
 import { getProductSlug } from "@/lib/productRouting";
 import { preloadImage } from "@/lib/imagePreloader";
+import { getNintendoMedia, type NintendoMediaRole } from "@/lib/nintendoImages";
 
-export function GameCard({ product, priority = false }: { product: any; priority?: boolean }) {
+/**
+ * A game tile.
+ *
+ * The same component backs surfaces that want genuinely different pictures of
+ * the same product — the home Switch strip wants square card art, the catalogue
+ * and Latest releases want the vertical retail box — so the picture is not the
+ * card's decision to make. `imageRole` is required at every Nintendo call site
+ * and passed to the resolver verbatim; if that role has no artwork the card
+ * shows the placeholder rather than borrowing another role's image.
+ */
+export function GameCard({
+  product,
+  imageRole = "front-box",
+  priority = false,
+}: {
+  product: any;
+  imageRole?: NintendoMediaRole;
+  priority?: boolean;
+}) {
   const { formatIQDPrice } = useCurrency();
   const slug = getProductSlug(product) || String(product.id || "");
   const title = product.titleEn || product.english_name || product.title || "";
@@ -20,15 +39,13 @@ export function GameCard({ product, priority = false }: { product: any; priority
       .toLowerCase()
       .includes("switch 2");
 
+  // Warm the same picture the card is actually showing. Reaching across
+  // fields here used to preload a different image from the one rendered, so
+  // the hover cost was paid twice and bought nothing.
   const handleHover = () => {
-    const rawUrl =
-      product.coverUrl ||
-      product.image ||
-      product.coverImage ||
-      product.cartridgeImage ||
-      product.backdropUrl;
-    if (rawUrl) {
-      preloadImage(rawUrl, { width: 800 });
+    const resolved = getNintendoMedia(product, imageRole);
+    if (!resolved.isPlaceholder && resolved.url) {
+      preloadImage(resolved.url, { width: 800 });
     }
   };
 
@@ -43,7 +60,7 @@ export function GameCard({ product, priority = false }: { product: any; priority
       <div className="relative mb-3 aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted/30">
         <NintendoCover
           product={product}
-          usage="listing-card"
+          usage={imageRole}
           alt={title}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}

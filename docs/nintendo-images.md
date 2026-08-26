@@ -7,69 +7,110 @@ whole point of this design is that the decision lives in one place.
 
 Every surface used to pick its own field:
 
-| surface                        | order it used                                        |
-| ------------------------------ | ---------------------------------------------------- |
+| surface                              | order it used                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------ |
 | home strips (`getNintendoCardImage`) | `cartridgeImage → image → coverImage → … → gallery → banner → hardcoded table` |
-| hub / product page (`fromProduct`)   | `coverImage → image → cartridgeImage`          |
-| hub (`normalizeHubGame`)             | `coverImage → cartridgeImage → image → banners[0]` |
-| header search                        | `image → coverImage → cartridgeImage`          |
-| cart, local lines                    | `line.image → image → coverImage → cartridgeImage` |
-| cart, server lines                   | `image → cartridgeImage → coverImage`          |
-| bundle card                          | `image → cartridgeImage → coverImage → bundle.image` |
-| add-to-cart toast (product page)     | `variant.image → option.image → **gallery[0]**` |
+| hub / product page (`fromProduct`)   | `coverImage → image → cartridgeImage`                                          |
+| hub (`normalizeHubGame`)             | `coverImage → cartridgeImage → image → banners[0]`                             |
+| header search                        | `image → coverImage → cartridgeImage`                                          |
+| cart, local lines                    | `line.image → image → coverImage → cartridgeImage`                             |
+| cart, server lines                   | `image → cartridgeImage → coverImage`                                          |
+| bundle card                          | `image → cartridgeImage → coverImage → bundle.image`                           |
+| add-to-cart toast (product page)     | `variant.image → option.image → **gallery[0]**`                                |
 
 So one product could legitimately show four different pictures on four screens,
 a banner or a screenshot could stand in for a box cover, and a title containing
-"mario party" got a hardcoded *banner* of a different game. There was no bug in
+"mario party" got a hardcoded _banner_ of a different game. There was no bug in
 any single component — the bug was that the decision had no owner.
 
 ## The fields
 
-| field                | meaning                                                     |
-| -------------------- | ----------------------------------------------------------- |
-| `cartridgeImage`     | **canonical front box cover** — vertical retail packshot     |
-| `cartridgeImageTrim` | precomputed crop rectangle for it (fractions, `0..1`)        |
-| `nintendoCardImage`  | square / near-square art for compact platform cards          |
-| `coverHiResImage`    | optional print-resolution front cover, for the 3D texture    |
-| `coverImage`, `image` | legacy front-cover carriers, kept as fallbacks               |
-| `galleryImages`, `gallery` | screenshots — never a cover                            |
-| `bannerImage`, `banner`, `regionBanner` | wide key art — never a cover              |
+Storage format is not purpose. Every one of these is a WebP in Cloudflare R2 —
+that describes the bytes, not what the picture _is_. A square card asset and a
+vertical retail packshot are both "a WebP in R2" and are not interchangeable.
 
-`cartridgeImage` keeps its database name (thousands of rows and the whole import
-template use it) but its *meaning* is fixed: a clean rectangular front cover.
+| role           | field                                                | meaning                                                  |
+| -------------- | ---------------------------------------------------- | -------------------------------------------------------- |
+| `square-card`  | `nintendoCardImage`                                  | square / near-square art for compact platform cards      |
+| `front-box`    | `cartridgeImage`                                     | **canonical front box cover** — vertical retail packshot |
+| `detail-cover` | `coverImage`                                         | the product detail page's primary cover                  |
+| `3d-texture`   | `coverHiResImage`                                    | full case wrap (back + spine + front) for the 3D sleeve  |
+| `banner`       | `bannerImage`, `banner`, `keyArtUrl`, `regionBanner` | wide key art — never a cover                             |
+| `gallery`      | `galleryImages`, `gallery`                           | screenshots — never a cover                              |
+
+Trim rectangles: `cartridgeImageTrim`, `coverImageTrim`, `nintendoCardImageTrim`
+(fractions, `0..1`).
+
+`cartridgeImage` keeps its database name — thousands of rows and the whole
+import template use it — but its _meaning_ is fixed: the vertical front box
+cover. Renaming the column would rewrite product identity for no gain, so the
+name stays and the role layer above it carries the meaning.
 
 ## The resolver
 
-`src/lib/nintendoImages.ts` — `resolveNintendoImage(product, usage)`.
+`src/lib/nintendoImages.ts` — `getNintendoMedia(product, role)`.
+
+Each role reads **only its own fields**, in order, and returns that role's
+placeholder when none of them holds a usable URL:
 
 ```
-front-cover / listing-card / bundle-card / cart / toast
-  cartridgeImage → coverImage → coverUrl → box_front_url → boxFrontUrl
-  → image → mainImage → imageUrl → placeholder
+square-card   nintendoCardImage → nintendo_card_image → squareGameImage
+              → squareImage → square_card_image            → placeholder
 
-square-card
-  nintendoCardImage → squareGameImage → squareImage → (front-cover chain)
-  → placeholder
+front-box     cartridgeImage → cartridge_image → front_image → frontImage
+              → box_front_url → boxFrontUrl → front_box_cover  → placeholder
 
-3d-texture
-  coverHiResImage → coverHiRes → textureSourceImage → (front-cover chain)
-  → placeholder
+detail-cover  coverImage → cover_image → coverUrl              → placeholder
 
-banner
-  bannerImage → banner → keyArtUrl → regionBanner → gallery → placeholder
+3d-texture    coverHiResImage → coverHiRes → textureSourceImage
+              → 3d_texture_source → full_cover → box_cover
+              → sleeveUrl → wrapUrl                            → (nothing)
+
+banner        bannerImage → banner → keyArtUrl → regionBanner   → placeholder
+
+gallery       galleryImages → gallery → images                 → placeholder
 ```
 
-Two rules make the old bugs impossible rather than merely fixed:
+### There is no cross-role fallback
 
-- **A banner or gallery frame is never promoted into a cover slot.** A product
-  with only screenshots shows the placeholder, because a wrong picture reads as
-  a data error to a customer while a placeholder reads as "artwork pending".
-- **A cover never falls back to a banner**, and the square asset never stands in
-  for a cover.
+That is the whole design. A product with no square card asset shows the
+placeholder on the home strip — it does **not** borrow the front box cover,
+because a wrong picture reads as a data error to a customer while a placeholder
+reads as "artwork pending". The same holds in every direction: no banner into a
+cover slot, no screenshot into a banner slot, no front cover into the 3D wrap
+slot.
 
-`resolvePurchaseImage(product)` is the shared entry point for the cart, the
-bundle card and the add-to-cart toast, so all three cannot disagree about the
-same purchase.
+`3d-texture` returns an empty URL rather than a placeholder, because a texture
+has no meaningful stand-in. When the product has no wrap, `CaseStageWebGL`
+decides _out loud_ to compose one from the front box cover (`textureMode`), so
+the substitution is visible in the calling code instead of hidden in a resolver.
+
+### Callers name the role
+
+`ProductCard`, `GameCard` and `ProductStrip` take an `imageRole` prop. The card
+never guesses which picture a surface wants, because it cannot know:
+
+| surface                       | role           |
+| ----------------------------- | -------------- |
+| home — "ألعاب نينتندو سويتش"  | `square-card`  |
+| home — "أحدث إصدارات نينتندو" | `front-box`    |
+| `/nintendo_games`             | `front-box`    |
+| `/games`                      | `square-card`  |
+| product detail primary cover  | `detail-cover` |
+| 3D sleeve                     | `3d-texture`   |
+
+The bug this replaced was exactly this: the resolver was fine, but `HomeView`
+asked it for a listing cover and dropped the vertical packshot into the square
+cartridge window.
+
+### Non-game products
+
+Hardware, accessories, gift cards and account bundles have no box art, so
+`resolvePurchaseImage(product)` keeps a generic thumbnail chain
+(`front-box fields → detail-cover fields → image → mainImage → imageUrl`). It is
+the one place a generic `image` field is still read, and it still never reaches
+a banner or a gallery. The cart, the bundle card and the add-to-cart toast all
+share it so they cannot disagree about the same purchase.
 
 ## The crop
 
@@ -77,8 +118,8 @@ same purchase.
 
 Store feeds hand back the same packshot two ways: tight, or floating in a white
 field. The second makes a cover grid look like scattered stamps. The trim finds
-the artwork's real bounding box so the render layer frames the *artwork* rather
-than the *file*.
+the artwork's real bounding box so the render layer frames the _artwork_ rather
+than the _file_.
 
 Plain pixel arithmetic — no model, no network, no per-game rules. Same bytes,
 same box, every time.
@@ -116,24 +157,30 @@ Never on a render path. Three layers, cheapest first:
 
 `src/components/NintendoCover.tsx` frames it with two nested boxes and no
 JavaScript at paint time: an outer fixed-ratio slot, and an inner window at the
-*trimmed* artwork's aspect. The image inside is scaled by `1/width` and offset so
+_trimmed_ artwork's aspect. The image inside is scaled by `1/width` and offset so
 the crop lands on the window exactly. The file's pixels are never resampled,
 stretched or re-encoded.
 
 ## The 3D sleeve
 
-`src/SwitchBox3D.tsx`. The GLB's `placeholder` mesh is one printed insert whose
-UVs run back │ spine │ front, so handing it a front-only cover as the map
-stretched that cover across all three panels. The sleeve is composited on a
-canvas instead, sized so the **front panel is at least as wide as the source
-artwork** (capped by `gl.capabilities.maxTextureSize` and by 4096), with the
-crop applied so no texel is spent on white margin.
+See [nintendo-3d-model.md](./nintendo-3d-model.md) for the model itself — where
+it lives, why it is not fetched from `assets.banan.to`, and how to verify it.
 
-Also: `SRGBColorSpace`, mipmaps, `LinearMipmapLinearFilter`, and anisotropy from
-`gl.capabilities.getMaxAnisotropy()` — the box is always seen at an angle, which
-is exactly the case anisotropic filtering exists for, and it was at 1. The
-`<Canvas>` sets `dpr={[1, 2]}` and an explicit `outputColorSpace`. Switching
-product disposes the previous texture.
+In short: `src/SwitchBox3D.tsx` renders reusable geometry streamed from
+Cloudflare R2, and paints per-product artwork onto it. The `placeholder` mesh is
+one printed insert whose authored UVs run back │ spine │ front, so the sleeve is
+composited on a 1236 × 951 canvas (588 back + 60 spine + 588 front) matching
+those UVs exactly, and uploaded with `flipY = false` because the model's V axis
+runs top-to-bottom.
+
+Two modes, chosen by the caller rather than sniffed from the image:
+
+- **`wrap`** — a real 3D Texture Source, drawn edge to edge, untouched.
+- **`composed`** — front-only art; the spine and back are generated around it.
+
+Also: `SRGBColorSpace`, `dpr={[1, 2]}`, an explicit `outputColorSpace`, and the
+canvas texture is disposed when the case unmounts so repeatedly opening product
+pages on a phone does not accumulate GPU memory.
 
 ## Import
 
@@ -156,7 +203,10 @@ other thirty-nine games in a batch.
 ## Checks
 
 ```sh
-npm test -- imageTrim nintendoImages imageValidation   # algorithm + resolver
+npm test -- nintendoImages nintendoMediaSurfaces       # resolver + rendered surfaces
+npm test -- nintendoModel model-route                  # model config + R2 route
+npm run verify:model                                   # the live GLB itself
+npm test -- imageTrim imageValidation                  # crop + import checks
 npm run dev &                                          # then, against it:
 npm run check:overflow                                 # 320/360/375/390/430/768
 node scripts/make-cover-fixtures.mjs                   # /dev-fixtures/* to eyeball

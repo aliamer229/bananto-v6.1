@@ -1,13 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  BANNER_FIELDS,
+  DETAIL_COVER_FIELDS,
+  FRONT_BOX_FIELDS,
   FRONT_COVER_FIELDS,
+  getNintendoMedia,
+  getNintendoMediaUrl,
   isUsableImageUrl,
   NINTENDO_IMAGE_PLACEHOLDER,
   resolveNintendoImage,
   resolveNintendoImageUrl,
   resolvePurchaseImage,
   SQUARE_CARD_FIELDS,
+  TEXTURE_SOURCE_FIELDS,
   TRIM_FIELDS,
 } from "./nintendoImages";
 
@@ -119,17 +125,23 @@ describe("resolveNintendoImage — square card", () => {
     expect(hit.source).toBe("nintendoCardImage");
   });
 
-  it("falls back to the front cover, never to a banner", () => {
+  it("shows the placeholder rather than borrowing the front box cover", () => {
+    // The home strip's window is cut for square art. A vertical packshot
+    // dropped into it reads as a rendering fault, so a missing square asset
+    // stays visibly missing.
     expect(
-      resolveNintendoImageUrl({ cartridgeImage: COVER, bannerImage: BANNER }, "square-card"),
-    ).toBe(COVER);
-    expect(resolveNintendoImageUrl({ bannerImage: BANNER }, "square-card")).toBe(
+      getNintendoMediaUrl({ cartridgeImage: COVER, bannerImage: BANNER }, "square-card"),
+    ).toBe(NINTENDO_IMAGE_PLACEHOLDER);
+    expect(getNintendoMediaUrl({ bannerImage: BANNER }, "square-card")).toBe(
       NINTENDO_IMAGE_PLACEHOLDER,
     );
   });
 
   it("does not let the square asset stand in for a front cover", () => {
     expect(resolveNintendoImageUrl({ nintendoCardImage: SQUARE }, "front-cover")).toBe(
+      NINTENDO_IMAGE_PLACEHOLDER,
+    );
+    expect(getNintendoMediaUrl({ nintendoCardImage: SQUARE }, "front-box")).toBe(
       NINTENDO_IMAGE_PLACEHOLDER,
     );
   });
@@ -144,23 +156,33 @@ describe("resolveNintendoImage — 3D texture", () => {
     expect(hit.url).toBe(HIRES);
   });
 
-  it("uses the front cover when no hi-res source exists", () => {
-    expect(resolveNintendoImageUrl({ cartridgeImage: COVER }, "3d-texture")).toBe(COVER);
+  it("returns nothing when no wrap exists, rather than a front cover", () => {
+    // The sleeve's UVs span back + spine + front. Front-only art mapped onto
+    // them paints the cover across all three panels, so the viewer composes a
+    // wrap explicitly instead of the resolver substituting one here.
+    const hit = getNintendoMedia({ cartridgeImage: COVER }, "3d-texture");
+    expect(hit.url).toBe("");
+    expect(hit.isPlaceholder).toBe(true);
   });
 
-  it("never uses a gallery frame as a texture", () => {
-    expect(resolveNintendoImageUrl({ galleryImages: [{ url: SHOT }] }, "3d-texture")).toBe(
-      NINTENDO_IMAGE_PLACEHOLDER,
-    );
+  it("never uses a gallery frame or a square card as a texture", () => {
+    expect(getNintendoMediaUrl({ galleryImages: [{ url: SHOT }] }, "3d-texture")).toBe("");
+    expect(getNintendoMediaUrl({ nintendoCardImage: SQUARE }, "3d-texture")).toBe("");
   });
 });
 
 describe("resolveNintendoImage — banner", () => {
-  it("reads only banner fields, then the gallery", () => {
+  it("reads banner fields and nothing else", () => {
     expect(resolveNintendoImageUrl({ bannerImage: BANNER, cartridgeImage: COVER }, "banner")).toBe(
       BANNER,
     );
-    expect(resolveNintendoImageUrl({ galleryImages: [{ url: SHOT }] }, "banner")).toBe(SHOT);
+    // A screenshot is not key art. Promoting one into a promotional slot is the
+    // same class of substitution as promoting a banner into a cover slot.
+    expect(resolveNintendoImageUrl({ galleryImages: [{ url: SHOT }] }, "banner")).toBe(
+      NINTENDO_IMAGE_PLACEHOLDER,
+    );
+    // The gallery role still reads it, because that is what the gallery is.
+    expect(getNintendoMediaUrl({ galleryImages: [{ url: SHOT }] }, "gallery")).toBe(SHOT);
   });
 
   it("never falls back to a cover", () => {
@@ -238,5 +260,155 @@ describe("field taxonomy", () => {
     for (const field of Object.keys(TRIM_FIELDS)) {
       expect(known.has(field), `${field} has a trim column but is never resolved`).toBe(true);
     }
+  });
+});
+
+describe("semantic roles do not borrow from each other", () => {
+  /**
+   * The bug this file exists to prevent: one product legitimately showing a
+   * different *kind* of picture depending on which surface asked. Every role is
+   * given only the other roles' artwork and must answer "nothing here".
+   */
+  const ROLE_FIELD: Record<string, string> = {
+    "square-card": "nintendoCardImage",
+    "front-box": "cartridgeImage",
+    "detail-cover": "coverImage",
+    "3d-texture": "coverHiResImage",
+    banner: "bannerImage",
+  };
+  const URL_FOR: Record<string, string> = {
+    "square-card": SQUARE,
+    "front-box": COVER,
+    "detail-cover": "https://cdn.example/detail.jpg",
+    "3d-texture": HIRES,
+    banner: BANNER,
+  };
+  const ROLES = Object.keys(ROLE_FIELD) as (keyof typeof ROLE_FIELD)[];
+
+  it("each role reads only its own field", () => {
+    for (const role of ROLES) {
+      const product: Record<string, string> = {};
+      for (const other of ROLES) {
+        if (other !== role) product[ROLE_FIELD[other]!] = URL_FOR[other]!;
+      }
+      const hit = getNintendoMedia(product, role as never);
+      expect(hit.isPlaceholder, `${role} borrowed ${hit.source}`).toBe(true);
+    }
+  });
+
+  it("each role finds its own field when it is the only one present", () => {
+    for (const role of ROLES) {
+      const product = { [ROLE_FIELD[role]!]: URL_FOR[role]! };
+      const hit = getNintendoMedia(product, role as never);
+      expect(hit.url, `${role} missed its own field`).toBe(URL_FOR[role]);
+      expect(hit.isPlaceholder).toBe(false);
+    }
+  });
+
+  it("keeps every role's field set disjoint from every other's", () => {
+    const sets: Record<string, readonly string[]> = {
+      square: SQUARE_CARD_FIELDS,
+      front: FRONT_BOX_FIELDS,
+      detail: DETAIL_COVER_FIELDS,
+      texture: TEXTURE_SOURCE_FIELDS,
+      banner: BANNER_FIELDS,
+    };
+    const names = Object.keys(sets);
+    for (const a of names) {
+      for (const b of names) {
+        if (a === b) continue;
+        for (const field of sets[a]!) {
+          expect(sets[b], `${field} is in both ${a} and ${b}`).not.toContain(field);
+        }
+      }
+    }
+  });
+});
+
+describe("the storefront surfaces named in the media contract", () => {
+  // One product with every semantic field populated, so a surface that reads
+  // the wrong one is caught by the value it returns rather than by absence.
+  const game = {
+    slug: "super-mario-odyssey",
+    nintendoCardImage: SQUARE,
+    cartridgeImage: COVER,
+    coverImage: "https://cdn.example/detail.jpg",
+    coverHiResImage: HIRES,
+    bannerImage: BANNER,
+    galleryImages: [{ url: SHOT }],
+  };
+
+  it("home 'ألعاب نينتندو سويتش' shows the square card image", () => {
+    expect(getNintendoMediaUrl(game, "square-card")).toBe(SQUARE);
+  });
+
+  it("'أحدث إصدارات نينتندو' shows the front box cover", () => {
+    expect(getNintendoMediaUrl(game, "front-box")).toBe(COVER);
+  });
+
+  it("/nintendo_games shows the front box cover", () => {
+    expect(getNintendoMediaUrl(game, "front-box")).toBe(COVER);
+  });
+
+  it("the product detail cover shows the cover image", () => {
+    expect(getNintendoMediaUrl(game, "detail-cover")).toBe("https://cdn.example/detail.jpg");
+  });
+
+  it("the 3D viewer shows the 3D texture source", () => {
+    expect(getNintendoMediaUrl(game, "3d-texture")).toBe(HIRES);
+  });
+
+  it("gives the same product a different picture per surface", () => {
+    const urls = (["square-card", "front-box", "detail-cover", "3d-texture"] as const).map((role) =>
+      getNintendoMediaUrl(game, role),
+    );
+    expect(new Set(urls).size).toBe(4);
+  });
+
+  it("keeps the slug untouched — media selection is not identity", () => {
+    getNintendoMedia(game, "square-card");
+    getNintendoMedia(game, "front-box");
+    expect(game.slug).toBe("super-mario-odyssey");
+  });
+});
+
+describe("products with partial media", () => {
+  it("a game missing its square card still shows its box on the catalogue", () => {
+    const p = { cartridgeImage: COVER };
+    expect(getNintendoMediaUrl(p, "square-card")).toBe(NINTENDO_IMAGE_PLACEHOLDER);
+    expect(getNintendoMediaUrl(p, "front-box")).toBe(COVER);
+  });
+
+  it("a game missing its box still shows its square art on the home strip", () => {
+    const p = { nintendoCardImage: SQUARE };
+    expect(getNintendoMediaUrl(p, "front-box")).toBe(NINTENDO_IMAGE_PLACEHOLDER);
+    expect(getNintendoMediaUrl(p, "square-card")).toBe(SQUARE);
+  });
+
+  it("a game with only a wrap texture shows placeholders on every 2D surface", () => {
+    const p = { coverHiResImage: HIRES };
+    for (const role of ["square-card", "front-box", "detail-cover"] as const) {
+      expect(getNintendoMediaUrl(p, role)).toBe(NINTENDO_IMAGE_PLACEHOLDER);
+    }
+    expect(getNintendoMediaUrl(p, "3d-texture")).toBe(HIRES);
+  });
+
+  it("skips malformed values inside a role without leaving it", () => {
+    expect(getNintendoMediaUrl({ nintendoCardImage: "[object Object]", squareImage: SQUARE }, "square-card")).toBe(
+      SQUARE,
+    );
+    expect(getNintendoMediaUrl({ nintendoCardImage: "undefined" }, "square-card")).toBe(
+      NINTENDO_IMAGE_PLACEHOLDER,
+    );
+  });
+
+  it("offers further URLs from the same role, never another role's", () => {
+    const hit = getNintendoMedia(
+      { nintendoCardImage: SQUARE, squareImage: LEGACY, cartridgeImage: COVER },
+      "square-card",
+    );
+    expect(hit.url).toBe(SQUARE);
+    expect(hit.fallbackUrls).toEqual([LEGACY]);
+    expect(hit.fallbackUrls).not.toContain(COVER);
   });
 });

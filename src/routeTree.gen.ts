@@ -41,9 +41,11 @@ import { Route as ApiDiscTradeRouteImport } from './routes/api/disc-trade'
 import { Route as ApiExchangeRatesRouteImport } from './routes/api/exchange-rates'
 import { Route as ApiGameCatalogRouteImport } from './routes/api/game-catalog'
 import { Route as ApiGameRequestsRouteImport } from './routes/api/game-requests'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiImgRouteImport } from './routes/api/img'
 import { Route as ApiOrdersRouteImport } from './routes/api/orders'
 import { Route as ApiOtpRouteImport } from './routes/api/otp'
+import { Route as ApiProductRouteImport } from './routes/api/product'
 import { Route as ApiProfileRouteImport } from './routes/api/profile'
 import { Route as ApiRevealPasswordRouteImport } from './routes/api/reveal-password'
 import { Route as ApiReviewsRouteImport } from './routes/api/reviews'
@@ -72,16 +74,19 @@ import { Route as ApiAdminAssetsRouteImport } from './routes/api/admin/assets'
 import { Route as ApiAdminBananaRouteImport } from './routes/api/admin/banana'
 import { Route as ApiAdminBinanceTopupsRouteImport } from './routes/api/admin/binance-topups'
 import { Route as ApiAdminCouponsRouteImport } from './routes/api/admin/coupons'
+import { Route as ApiAdminDebugImageFetchRouteImport } from './routes/api/admin/debug-image-fetch'
 import { Route as ApiAdminDeliveryItemsRouteImport } from './routes/api/admin/delivery-items'
+import { Route as ApiAdminHealthRouteImport } from './routes/api/admin/health'
 import { Route as ApiAdminImportGameRouteImport } from './routes/api.admin.import-game'
 import { Route as ApiAdminKnowledgeBaseRouteImport } from './routes/api/admin/knowledge-base'
-import { Route as ApiAdminMigrateImagesRouteImport } from './routes/api/admin/migrate-images'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin.orders'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminPurgeRouteImport } from './routes/api/admin/purge'
+import { Route as ApiAdminStoreRouteImport } from './routes/api/admin/store'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files/$'
 import { Route as ApiHardwareSlugRouteImport } from './routes/api/hardware/$slug'
+import { Route as ApiModelSplatRouteImport } from './routes/api/model/$'
 import { Route as ApiOauthProviderRouteImport } from './routes/api/oauth.$provider'
 import { Route as ApiPublicDebugProductsRouteImport } from './routes/api/public/debug-products'
 import { Route as ApiPublicImgProxyRouteImport } from './routes/api/public/img-proxy'
@@ -89,6 +94,9 @@ import { Route as ApiPublicLatestNewsRouteImport } from './routes/api/public/lat
 import { Route as ApiPublicNewsImageRouteImport } from './routes/api/public/news-image'
 import { Route as ApiPublicOrderQueueRouteImport } from './routes/api/public/order-queue'
 import { Route as ApiPublicTestTelegramRouteImport } from './routes/api/public/test-telegram'
+import { Route as ApiAdminMediaImportUrlRouteImport } from './routes/api/admin/media/import-url'
+import { Route as ApiAdminMediaRepairRouteImport } from './routes/api/admin/media/repair'
+import { Route as ApiAdminMediaStatusRouteImport } from './routes/api/admin/media/status'
 import { Route as ApiAdminProductsProductIdRouteImport } from './routes/api/admin/products.$productId'
 import { Route as ApiAdminSystemHealthRouteImport } from './routes/api/admin/system/health'
 import { Route as ApiFilesLegacyMediaIdRouteImport } from './routes/api/files.legacy.$mediaId'
@@ -273,6 +281,11 @@ const ApiGameRequestsRoute = ApiGameRequestsRouteImport.update({
   path: '/api/game-requests',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiImgRoute = ApiImgRouteImport.update({
   id: '/api/img',
   path: '/api/img',
@@ -286,6 +299,11 @@ const ApiOrdersRoute = ApiOrdersRouteImport.update({
 const ApiOtpRoute = ApiOtpRouteImport.update({
   id: '/api/otp',
   path: '/api/otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProductRoute = ApiProductRouteImport.update({
+  id: '/api/product',
+  path: '/api/product',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProfileRoute = ApiProfileRouteImport.update({
@@ -428,9 +446,19 @@ const ApiAdminCouponsRoute = ApiAdminCouponsRouteImport.update({
   path: '/api/admin/coupons',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminDebugImageFetchRoute = ApiAdminDebugImageFetchRouteImport.update({
+  id: '/api/admin/debug-image-fetch',
+  path: '/api/admin/debug-image-fetch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminDeliveryItemsRoute = ApiAdminDeliveryItemsRouteImport.update({
   id: '/api/admin/delivery-items',
   path: '/api/admin/delivery-items',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminHealthRoute = ApiAdminHealthRouteImport.update({
+  id: '/api/admin/health',
+  path: '/api/admin/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminImportGameRoute = ApiAdminImportGameRouteImport.update({
@@ -441,11 +469,6 @@ const ApiAdminImportGameRoute = ApiAdminImportGameRouteImport.update({
 const ApiAdminKnowledgeBaseRoute = ApiAdminKnowledgeBaseRouteImport.update({
   id: '/api/admin/knowledge-base',
   path: '/api/admin/knowledge-base',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminMigrateImagesRoute = ApiAdminMigrateImagesRouteImport.update({
-  id: '/api/admin/migrate-images',
-  path: '/api/admin/migrate-images',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminOrdersRoute = ApiAdminOrdersRouteImport.update({
@@ -463,6 +486,11 @@ const ApiAdminPurgeRoute = ApiAdminPurgeRouteImport.update({
   path: '/api/admin/purge',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminStoreRoute = ApiAdminStoreRouteImport.update({
+  id: '/api/admin/store',
+  path: '/api/admin/store',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   id: '/api/admin/users',
   path: '/api/admin/users',
@@ -476,6 +504,11 @@ const ApiFilesSplatRoute = ApiFilesSplatRouteImport.update({
 const ApiHardwareSlugRoute = ApiHardwareSlugRouteImport.update({
   id: '/api/hardware/$slug',
   path: '/api/hardware/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiModelSplatRoute = ApiModelSplatRouteImport.update({
+  id: '/api/model/$',
+  path: '/api/model/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiOauthProviderRoute = ApiOauthProviderRouteImport.update({
@@ -511,6 +544,21 @@ const ApiPublicOrderQueueRoute = ApiPublicOrderQueueRouteImport.update({
 const ApiPublicTestTelegramRoute = ApiPublicTestTelegramRouteImport.update({
   id: '/api/public/test-telegram',
   path: '/api/public/test-telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMediaImportUrlRoute = ApiAdminMediaImportUrlRouteImport.update({
+  id: '/api/admin/media/import-url',
+  path: '/api/admin/media/import-url',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMediaRepairRoute = ApiAdminMediaRepairRouteImport.update({
+  id: '/api/admin/media/repair',
+  path: '/api/admin/media/repair',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMediaStatusRoute = ApiAdminMediaStatusRouteImport.update({
+  id: '/api/admin/media/status',
+  path: '/api/admin/media/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminProductsProductIdRoute =
@@ -676,9 +724,11 @@ export interface FileRoutesByFullPath {
   '/api/exchange-rates': typeof ApiExchangeRatesRoute
   '/api/game-catalog': typeof ApiGameCatalogRoute
   '/api/game-requests': typeof ApiGameRequestsRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/img': typeof ApiImgRoute
   '/api/orders': typeof ApiOrdersRoute
   '/api/otp': typeof ApiOtpRoute
+  '/api/product': typeof ApiProductRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/reveal-password': typeof ApiRevealPasswordRoute
   '/api/reviews': typeof ApiReviewsRoute
@@ -708,16 +758,19 @@ export interface FileRoutesByFullPath {
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
   '/api/admin/coupons': typeof ApiAdminCouponsRoute
+  '/api/admin/debug-image-fetch': typeof ApiAdminDebugImageFetchRoute
   '/api/admin/delivery-items': typeof ApiAdminDeliveryItemsRoute
+  '/api/admin/health': typeof ApiAdminHealthRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
-  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
+  '/api/admin/store': typeof ApiAdminStoreRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/hardware/$slug': typeof ApiHardwareSlugRouteWithChildren
+  '/api/model/$': typeof ApiModelSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
@@ -725,6 +778,9 @@ export interface FileRoutesByFullPath {
   '/api/public/news-image': typeof ApiPublicNewsImageRoute
   '/api/public/order-queue': typeof ApiPublicOrderQueueRoute
   '/api/public/test-telegram': typeof ApiPublicTestTelegramRoute
+  '/api/admin/media/import-url': typeof ApiAdminMediaImportUrlRoute
+  '/api/admin/media/repair': typeof ApiAdminMediaRepairRoute
+  '/api/admin/media/status': typeof ApiAdminMediaStatusRoute
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
@@ -781,9 +837,11 @@ export interface FileRoutesByTo {
   '/api/exchange-rates': typeof ApiExchangeRatesRoute
   '/api/game-catalog': typeof ApiGameCatalogRoute
   '/api/game-requests': typeof ApiGameRequestsRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/img': typeof ApiImgRoute
   '/api/orders': typeof ApiOrdersRoute
   '/api/otp': typeof ApiOtpRoute
+  '/api/product': typeof ApiProductRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/reveal-password': typeof ApiRevealPasswordRoute
   '/api/reviews': typeof ApiReviewsRoute
@@ -813,16 +871,19 @@ export interface FileRoutesByTo {
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
   '/api/admin/coupons': typeof ApiAdminCouponsRoute
+  '/api/admin/debug-image-fetch': typeof ApiAdminDebugImageFetchRoute
   '/api/admin/delivery-items': typeof ApiAdminDeliveryItemsRoute
+  '/api/admin/health': typeof ApiAdminHealthRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
-  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
+  '/api/admin/store': typeof ApiAdminStoreRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/hardware/$slug': typeof ApiHardwareSlugRouteWithChildren
+  '/api/model/$': typeof ApiModelSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
@@ -830,6 +891,9 @@ export interface FileRoutesByTo {
   '/api/public/news-image': typeof ApiPublicNewsImageRoute
   '/api/public/order-queue': typeof ApiPublicOrderQueueRoute
   '/api/public/test-telegram': typeof ApiPublicTestTelegramRoute
+  '/api/admin/media/import-url': typeof ApiAdminMediaImportUrlRoute
+  '/api/admin/media/repair': typeof ApiAdminMediaRepairRoute
+  '/api/admin/media/status': typeof ApiAdminMediaStatusRoute
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
@@ -887,9 +951,11 @@ export interface FileRoutesById {
   '/api/exchange-rates': typeof ApiExchangeRatesRoute
   '/api/game-catalog': typeof ApiGameCatalogRoute
   '/api/game-requests': typeof ApiGameRequestsRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/img': typeof ApiImgRoute
   '/api/orders': typeof ApiOrdersRoute
   '/api/otp': typeof ApiOtpRoute
+  '/api/product': typeof ApiProductRoute
   '/api/profile': typeof ApiProfileRoute
   '/api/reveal-password': typeof ApiRevealPasswordRoute
   '/api/reviews': typeof ApiReviewsRoute
@@ -919,16 +985,19 @@ export interface FileRoutesById {
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
   '/api/admin/coupons': typeof ApiAdminCouponsRoute
+  '/api/admin/debug-image-fetch': typeof ApiAdminDebugImageFetchRoute
   '/api/admin/delivery-items': typeof ApiAdminDeliveryItemsRoute
+  '/api/admin/health': typeof ApiAdminHealthRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
-  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
+  '/api/admin/store': typeof ApiAdminStoreRoute
   '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/files/$': typeof ApiFilesSplatRoute
   '/api/hardware/$slug': typeof ApiHardwareSlugRouteWithChildren
+  '/api/model/$': typeof ApiModelSplatRoute
   '/api/oauth/$provider': typeof ApiOauthProviderRouteWithChildren
   '/api/public/debug-products': typeof ApiPublicDebugProductsRoute
   '/api/public/img-proxy': typeof ApiPublicImgProxyRoute
@@ -936,6 +1005,9 @@ export interface FileRoutesById {
   '/api/public/news-image': typeof ApiPublicNewsImageRoute
   '/api/public/order-queue': typeof ApiPublicOrderQueueRoute
   '/api/public/test-telegram': typeof ApiPublicTestTelegramRoute
+  '/api/admin/media/import-url': typeof ApiAdminMediaImportUrlRoute
+  '/api/admin/media/repair': typeof ApiAdminMediaRepairRoute
+  '/api/admin/media/status': typeof ApiAdminMediaStatusRoute
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
@@ -994,9 +1066,11 @@ export interface FileRouteTypes {
     | '/api/exchange-rates'
     | '/api/game-catalog'
     | '/api/game-requests'
+    | '/api/health'
     | '/api/img'
     | '/api/orders'
     | '/api/otp'
+    | '/api/product'
     | '/api/profile'
     | '/api/reveal-password'
     | '/api/reviews'
@@ -1026,16 +1100,19 @@ export interface FileRouteTypes {
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
     | '/api/admin/coupons'
+    | '/api/admin/debug-image-fetch'
     | '/api/admin/delivery-items'
+    | '/api/admin/health'
     | '/api/admin/import-game'
     | '/api/admin/knowledge-base'
-    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
+    | '/api/admin/store'
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/hardware/$slug'
+    | '/api/model/$'
     | '/api/oauth/$provider'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
@@ -1043,6 +1120,9 @@ export interface FileRouteTypes {
     | '/api/public/news-image'
     | '/api/public/order-queue'
     | '/api/public/test-telegram'
+    | '/api/admin/media/import-url'
+    | '/api/admin/media/repair'
+    | '/api/admin/media/status'
     | '/api/admin/products/$productId'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
@@ -1099,9 +1179,11 @@ export interface FileRouteTypes {
     | '/api/exchange-rates'
     | '/api/game-catalog'
     | '/api/game-requests'
+    | '/api/health'
     | '/api/img'
     | '/api/orders'
     | '/api/otp'
+    | '/api/product'
     | '/api/profile'
     | '/api/reveal-password'
     | '/api/reviews'
@@ -1131,16 +1213,19 @@ export interface FileRouteTypes {
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
     | '/api/admin/coupons'
+    | '/api/admin/debug-image-fetch'
     | '/api/admin/delivery-items'
+    | '/api/admin/health'
     | '/api/admin/import-game'
     | '/api/admin/knowledge-base'
-    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
+    | '/api/admin/store'
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/hardware/$slug'
+    | '/api/model/$'
     | '/api/oauth/$provider'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
@@ -1148,6 +1233,9 @@ export interface FileRouteTypes {
     | '/api/public/news-image'
     | '/api/public/order-queue'
     | '/api/public/test-telegram'
+    | '/api/admin/media/import-url'
+    | '/api/admin/media/repair'
+    | '/api/admin/media/status'
     | '/api/admin/products/$productId'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
@@ -1204,9 +1292,11 @@ export interface FileRouteTypes {
     | '/api/exchange-rates'
     | '/api/game-catalog'
     | '/api/game-requests'
+    | '/api/health'
     | '/api/img'
     | '/api/orders'
     | '/api/otp'
+    | '/api/product'
     | '/api/profile'
     | '/api/reveal-password'
     | '/api/reviews'
@@ -1236,16 +1326,19 @@ export interface FileRouteTypes {
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
     | '/api/admin/coupons'
+    | '/api/admin/debug-image-fetch'
     | '/api/admin/delivery-items'
+    | '/api/admin/health'
     | '/api/admin/import-game'
     | '/api/admin/knowledge-base'
-    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
+    | '/api/admin/store'
     | '/api/admin/users'
     | '/api/files/$'
     | '/api/hardware/$slug'
+    | '/api/model/$'
     | '/api/oauth/$provider'
     | '/api/public/debug-products'
     | '/api/public/img-proxy'
@@ -1253,6 +1346,9 @@ export interface FileRouteTypes {
     | '/api/public/news-image'
     | '/api/public/order-queue'
     | '/api/public/test-telegram'
+    | '/api/admin/media/import-url'
+    | '/api/admin/media/repair'
+    | '/api/admin/media/status'
     | '/api/admin/products/$productId'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
@@ -1310,9 +1406,11 @@ export interface RootRouteChildren {
   ApiExchangeRatesRoute: typeof ApiExchangeRatesRoute
   ApiGameCatalogRoute: typeof ApiGameCatalogRoute
   ApiGameRequestsRoute: typeof ApiGameRequestsRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   ApiImgRoute: typeof ApiImgRoute
   ApiOrdersRoute: typeof ApiOrdersRoute
   ApiOtpRoute: typeof ApiOtpRoute
+  ApiProductRoute: typeof ApiProductRoute
   ApiProfileRoute: typeof ApiProfileRoute
   ApiRevealPasswordRoute: typeof ApiRevealPasswordRoute
   ApiReviewsRoute: typeof ApiReviewsRoute
@@ -1342,16 +1440,19 @@ export interface RootRouteChildren {
   ApiAdminBananaRoute: typeof ApiAdminBananaRoute
   ApiAdminBinanceTopupsRoute: typeof ApiAdminBinanceTopupsRoute
   ApiAdminCouponsRoute: typeof ApiAdminCouponsRoute
+  ApiAdminDebugImageFetchRoute: typeof ApiAdminDebugImageFetchRoute
   ApiAdminDeliveryItemsRoute: typeof ApiAdminDeliveryItemsRoute
+  ApiAdminHealthRoute: typeof ApiAdminHealthRoute
   ApiAdminImportGameRoute: typeof ApiAdminImportGameRoute
   ApiAdminKnowledgeBaseRoute: typeof ApiAdminKnowledgeBaseRoute
-  ApiAdminMigrateImagesRoute: typeof ApiAdminMigrateImagesRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRouteWithChildren
   ApiAdminPurgeRoute: typeof ApiAdminPurgeRoute
+  ApiAdminStoreRoute: typeof ApiAdminStoreRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiFilesSplatRoute: typeof ApiFilesSplatRoute
   ApiHardwareSlugRoute: typeof ApiHardwareSlugRouteWithChildren
+  ApiModelSplatRoute: typeof ApiModelSplatRoute
   ApiOauthProviderRoute: typeof ApiOauthProviderRouteWithChildren
   ApiPublicDebugProductsRoute: typeof ApiPublicDebugProductsRoute
   ApiPublicImgProxyRoute: typeof ApiPublicImgProxyRoute
@@ -1359,6 +1460,9 @@ export interface RootRouteChildren {
   ApiPublicNewsImageRoute: typeof ApiPublicNewsImageRoute
   ApiPublicOrderQueueRoute: typeof ApiPublicOrderQueueRoute
   ApiPublicTestTelegramRoute: typeof ApiPublicTestTelegramRoute
+  ApiAdminMediaImportUrlRoute: typeof ApiAdminMediaImportUrlRoute
+  ApiAdminMediaRepairRoute: typeof ApiAdminMediaRepairRoute
+  ApiAdminMediaStatusRoute: typeof ApiAdminMediaStatusRoute
   ApiAdminSystemHealthRoute: typeof ApiAdminSystemHealthRoute
   ApiFilesLegacyMediaIdRoute: typeof ApiFilesLegacyMediaIdRoute
   ApiGamesSlugPerformanceRoute: typeof ApiGamesSlugPerformanceRoute
@@ -1600,6 +1704,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGameRequestsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/img': {
       id: '/api/img'
       path: '/api/img'
@@ -1619,6 +1730,13 @@ declare module '@tanstack/react-router' {
       path: '/api/otp'
       fullPath: '/api/otp'
       preLoaderRoute: typeof ApiOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/product': {
+      id: '/api/product'
+      path: '/api/product'
+      fullPath: '/api/product'
+      preLoaderRoute: typeof ApiProductRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/profile': {
@@ -1817,11 +1935,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminCouponsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/debug-image-fetch': {
+      id: '/api/admin/debug-image-fetch'
+      path: '/api/admin/debug-image-fetch'
+      fullPath: '/api/admin/debug-image-fetch'
+      preLoaderRoute: typeof ApiAdminDebugImageFetchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/delivery-items': {
       id: '/api/admin/delivery-items'
       path: '/api/admin/delivery-items'
       fullPath: '/api/admin/delivery-items'
       preLoaderRoute: typeof ApiAdminDeliveryItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/health': {
+      id: '/api/admin/health'
+      path: '/api/admin/health'
+      fullPath: '/api/admin/health'
+      preLoaderRoute: typeof ApiAdminHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/import-game': {
@@ -1836,13 +1968,6 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/knowledge-base'
       fullPath: '/api/admin/knowledge-base'
       preLoaderRoute: typeof ApiAdminKnowledgeBaseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/migrate-images': {
-      id: '/api/admin/migrate-images'
-      path: '/api/admin/migrate-images'
-      fullPath: '/api/admin/migrate-images'
-      preLoaderRoute: typeof ApiAdminMigrateImagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/orders': {
@@ -1866,6 +1991,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminPurgeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/store': {
+      id: '/api/admin/store'
+      path: '/api/admin/store'
+      fullPath: '/api/admin/store'
+      preLoaderRoute: typeof ApiAdminStoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/users': {
       id: '/api/admin/users'
       path: '/api/admin/users'
@@ -1885,6 +2017,13 @@ declare module '@tanstack/react-router' {
       path: '/api/hardware/$slug'
       fullPath: '/api/hardware/$slug'
       preLoaderRoute: typeof ApiHardwareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/model/$': {
+      id: '/api/model/$'
+      path: '/api/model/$'
+      fullPath: '/api/model/$'
+      preLoaderRoute: typeof ApiModelSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/oauth/$provider': {
@@ -1934,6 +2073,27 @@ declare module '@tanstack/react-router' {
       path: '/api/public/test-telegram'
       fullPath: '/api/public/test-telegram'
       preLoaderRoute: typeof ApiPublicTestTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/media/import-url': {
+      id: '/api/admin/media/import-url'
+      path: '/api/admin/media/import-url'
+      fullPath: '/api/admin/media/import-url'
+      preLoaderRoute: typeof ApiAdminMediaImportUrlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/media/repair': {
+      id: '/api/admin/media/repair'
+      path: '/api/admin/media/repair'
+      fullPath: '/api/admin/media/repair'
+      preLoaderRoute: typeof ApiAdminMediaRepairRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/media/status': {
+      id: '/api/admin/media/status'
+      path: '/api/admin/media/status'
+      fullPath: '/api/admin/media/status'
+      preLoaderRoute: typeof ApiAdminMediaStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/products/$productId': {
@@ -2190,9 +2350,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiExchangeRatesRoute: ApiExchangeRatesRoute,
   ApiGameCatalogRoute: ApiGameCatalogRoute,
   ApiGameRequestsRoute: ApiGameRequestsRoute,
+  ApiHealthRoute: ApiHealthRoute,
   ApiImgRoute: ApiImgRoute,
   ApiOrdersRoute: ApiOrdersRoute,
   ApiOtpRoute: ApiOtpRoute,
+  ApiProductRoute: ApiProductRoute,
   ApiProfileRoute: ApiProfileRoute,
   ApiRevealPasswordRoute: ApiRevealPasswordRoute,
   ApiReviewsRoute: ApiReviewsRoute,
@@ -2222,16 +2384,19 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminBananaRoute: ApiAdminBananaRoute,
   ApiAdminBinanceTopupsRoute: ApiAdminBinanceTopupsRoute,
   ApiAdminCouponsRoute: ApiAdminCouponsRoute,
+  ApiAdminDebugImageFetchRoute: ApiAdminDebugImageFetchRoute,
   ApiAdminDeliveryItemsRoute: ApiAdminDeliveryItemsRoute,
+  ApiAdminHealthRoute: ApiAdminHealthRoute,
   ApiAdminImportGameRoute: ApiAdminImportGameRoute,
   ApiAdminKnowledgeBaseRoute: ApiAdminKnowledgeBaseRoute,
-  ApiAdminMigrateImagesRoute: ApiAdminMigrateImagesRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRouteWithChildren,
   ApiAdminPurgeRoute: ApiAdminPurgeRoute,
+  ApiAdminStoreRoute: ApiAdminStoreRoute,
   ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiFilesSplatRoute: ApiFilesSplatRoute,
   ApiHardwareSlugRoute: ApiHardwareSlugRouteWithChildren,
+  ApiModelSplatRoute: ApiModelSplatRoute,
   ApiOauthProviderRoute: ApiOauthProviderRouteWithChildren,
   ApiPublicDebugProductsRoute: ApiPublicDebugProductsRoute,
   ApiPublicImgProxyRoute: ApiPublicImgProxyRoute,
@@ -2239,6 +2404,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicNewsImageRoute: ApiPublicNewsImageRoute,
   ApiPublicOrderQueueRoute: ApiPublicOrderQueueRoute,
   ApiPublicTestTelegramRoute: ApiPublicTestTelegramRoute,
+  ApiAdminMediaImportUrlRoute: ApiAdminMediaImportUrlRoute,
+  ApiAdminMediaRepairRoute: ApiAdminMediaRepairRoute,
+  ApiAdminMediaStatusRoute: ApiAdminMediaStatusRoute,
   ApiAdminSystemHealthRoute: ApiAdminSystemHealthRoute,
   ApiFilesLegacyMediaIdRoute: ApiFilesLegacyMediaIdRoute,
   ApiGamesSlugPerformanceRoute: ApiGamesSlugPerformanceRoute,

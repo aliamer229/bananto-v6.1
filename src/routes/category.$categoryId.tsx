@@ -702,7 +702,9 @@ function CategoryPage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                     >
-                      <ProductCard product={p} />
+                      {/* /nintendo_games shows the vertical retail box, not
+                          the square card art the home strip uses. */}
+                      <ProductCard product={p} imageRole="front-box" />
                     </motion.div>
                   ))}
                 </div>

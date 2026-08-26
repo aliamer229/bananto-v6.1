@@ -594,6 +594,11 @@ export interface Game {
    */
   coverTextureUrl?: string;
   /**
+   * The product detail page's primary cover (`coverImage`). Distinct from
+   * `coverUrl`, which is the listing box shot the 3D sleeve composes from.
+   */
+  detailCoverUrl?: string;
+  /**
    * Crop rectangle for `coverUrl`, as fractions of the source image, when the
    * catalogue carries a precomputed one. See `@/lib/imageTrim`.
    */

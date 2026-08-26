@@ -101,8 +101,11 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
   // The hub used to read `coverImage → image → cartridgeImage`, while the home
   // strips read the same three fields in the opposite order — so one product
   // legitimately showed two different covers. Both now ask the resolver.
-  const front = resolveNintendoImage(p, "front-cover");
+  const front = resolveNintendoImage(p, "front-box");
   const coverUrl = front.isPlaceholder ? undefined : front.url;
+  // The detail page's primary cover is its own field. It is what the flat 2D
+  // case shows while the 3D one loads, and on a device that cannot run WebGL.
+  const detail = resolveNintendoImage(p, "detail-cover");
   const banner = resolveNintendoImage(p, "banner");
   const keyArtUrl = banner.isPlaceholder ? undefined : banner.url;
   const texture = resolveNintendoImage(p, "3d-texture");
@@ -157,6 +160,7 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
 
   return {
     coverUrl,
+    detailCoverUrl: detail.isPlaceholder ? undefined : detail.url,
     keyArtUrl,
     caseSleeve,
     /** Highest-resolution front cover available; what the 3D sleeve should sample. */
@@ -900,7 +904,7 @@ function buildSimilar(
       str(cand["titleEn"]) ||
       str(cand["title"]) ||
       "Game";
-    const front = resolveNintendoImage(cand, "front-cover");
+    const front = resolveNintendoImage(cand, "front-box");
     const coverUrl = !front.isPlaceholder
       ? front.url
       : str(cand["image"]) || str(cand["coverImage"]) || undefined;
@@ -1398,6 +1402,7 @@ export function gameFromProduct(
       str(p["nintendoGameCode"]) || str(p["gameCode"]) || str(p["game_code"]) || undefined,
     ),
     ...opt("coverUrl", media.coverUrl),
+    ...opt("detailCoverUrl", media.detailCoverUrl),
     ...opt("coverTextureUrl", media.coverTextureUrl),
     ...opt("coverTrim", media.coverTrim),
     ...opt("keyArtUrl", media.keyArtUrl),
