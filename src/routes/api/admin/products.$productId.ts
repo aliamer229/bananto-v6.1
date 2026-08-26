@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
+import { getCatalogVersion, getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
+import { deleteProductEverywhere } from "@/lib/product-delete.server";
 import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { autoTranslateProduct } from "@/lib/translate.server";
@@ -177,7 +178,7 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
               );
               await syncGameDevicePerformance(saved, hardware);
             }
-            return json({ success: true, product: saved });
+            return json({ success: true, product: saved, catalogVersion: await getCatalogVersion() });
           } catch (dbErr: any) {
             console.error("[UpdateProduct:DatabaseError]", dbErr);
             return json(
@@ -201,31 +202,41 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
             );
           }
 
-          await updateStore((store) => ({
-            ...store,
-            products: (store.products || []).filter((p) => String(p.id) !== productId),
-          }));
+          /*
+            Shared with the collection route — see src/lib/product-delete.server.ts.
 
-          // Same check as the collection route: confirm from D1 that it is gone.
-          invalidateStoreCache();
-          const after = await getStore();
-          if ((after.products || []).some((p) => String(p.id) === productId)) {
+            This used to verify *before* clearing the granular `store:product:<id>`
+            row, which the loader overlays on top of the aggregate. A product
+            that had one was therefore still present at verification time, so
+            delete returned 500 and the early return meant its identity row was
+            never released — leaving a ghost that refused the title forever.
+          */
+          const result = await deleteProductEverywhere(productId);
+
+          if (!result.ok) {
             const ref = errorRef();
-            console.error("[DeleteProduct:still_present]", { productId, ref });
+            console.error("[DeleteProduct:incomplete]", {
+              productId,
+              remaining: result.remaining,
+              ref,
+            });
             return json(
               {
-                error: "Product is still in the catalogue after delete",
-                code: "DELETE_FAILED",
+                error: `Product still present after delete: ${result.remaining.join(", ") || "unknown"}`,
+                code: "DELETE_INCOMPLETE",
+                remaining: result.remaining,
                 ref,
               },
               { status: 500 },
             );
           }
 
-          await deactivateGameDevicePerformance(productId);
-          await hardDeleteProductRelations(productId);
-
-          return json({ success: true, id: productId });
+          return json({
+            success: true,
+            id: productId,
+            ...(result.slug ? { slug: result.slug } : {}),
+            catalogVersion: await getCatalogVersion(),
+          });
         }),
     },
   },

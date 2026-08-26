@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
+import { getCatalogVersion, getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
+import { deleteProductEverywhere } from "@/lib/product-delete.server";
 import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { d1Run } from "@/lib/d1.server";
@@ -411,7 +412,7 @@ export const Route = createFileRoute("/api/admin/products")({
                 hardwareProducts(existingCatalog, currentStore.categories || []),
               ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
-            return json({ success: true, product: saved });
+            return json({ success: true, product: saved, catalogVersion: await getCatalogVersion() });
           } catch (dbErr: any) {
             const ref = errorRef();
             console.error("[SaveProduct:DatabaseError]", {
@@ -483,7 +484,7 @@ export const Route = createFileRoute("/api/admin/products")({
                ).catch(e => console.error("[BackgroundSyncError]", e));
             }
 
-            return json({ success: true, product: productToSave });
+            return json({ success: true, product: productToSave, catalogVersion: await getCatalogVersion() });
           } catch (dbErr: any) {
             console.error("[PatchProduct:DatabaseError]", dbErr);
             return json(
@@ -694,7 +695,7 @@ export const Route = createFileRoute("/api/admin/products")({
                 hardwareProducts(existingCatalog, currentStore.categories || []),
               ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
-            return json({ success: true, product: saved });
+            return json({ success: true, product: saved, catalogVersion: await getCatalogVersion() });
           } catch (dbErr: any) {
             const ref = errorRef();
             console.error("[UpdateProduct:DatabaseError]", {
@@ -732,22 +733,45 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           const targetId = String(id);
-          
-          await Promise.allSettled([
-            d1Run(
-              `INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)
-               ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-              `store:product:${targetId}`,
-              JSON.stringify({ id: targetId, _deleted: true }),
-              new Date().toISOString(),
-            ),
-            hardDeleteProductRelations(targetId),
-            deactivateGameDevicePerformance(targetId),
-          ]);
-          
-          invalidateStoreCache();
 
-          return json({ success: true, id: targetId });
+          /*
+            One owner for the whole operation — see src/lib/product-delete.server.ts.
+            This used to write a `_deleted` tombstone and call
+            `hardDeleteProductRelations` in the same `Promise.allSettled`, and
+            that helper deletes the very `store:product:<id>` row the tombstone
+            had just been written to. The aggregate catalogue was never touched,
+            so the product reappeared on the next read — and this returned
+            `success: true` regardless.
+          */
+          const result = await deleteProductEverywhere(targetId);
+
+          if (!result.ok) {
+            const ref = errorRef();
+            console.error("[DeleteProduct:incomplete]", {
+              productId: targetId,
+              remaining: result.remaining,
+              ref,
+            });
+            return json(
+              {
+                error:
+                  result.error === "missing_product_id"
+                    ? "Missing product id to delete"
+                    : `Product still present after delete: ${result.remaining.join(", ") || "unknown"}`,
+                code: "DELETE_INCOMPLETE",
+                remaining: result.remaining,
+                ref,
+              },
+              { status: 500 },
+            );
+          }
+
+          return json({
+            success: true,
+            id: targetId,
+            ...(result.slug ? { slug: result.slug } : {}),
+            catalogVersion: await getCatalogVersion(),
+          });
         }),
     },
   },

@@ -99,6 +99,7 @@ import { RechargeReviewPanel } from "./admin/RechargeReviewPanel";
 import { ImageMigrationPanel } from "./admin/ImageMigrationPanel";
 import { AdminErrorBoundary } from "./admin/AdminErrorBoundary";
 import { adminApi, fileToDataUrl } from "@/lib/api";
+import { notifyCatalogChanged } from "@/lib/catalog-cache";
 import mascot from "@/assets/bananto_logo.webp.asset.json";
 import { useAuth } from "@/hooks/useAuth";
 import { getDefaultRadioTracks } from "@/config/publicAssets";
@@ -1698,6 +1699,13 @@ function ListingsView({
       if (!res.ok || !data?.success) {
         throw new Error(data?.error || t("admin.deleteFailed") || "Delete failed");
       }
+      /*
+        The server has verified the product is gone from every representation
+        before returning. Drop the catalogue snapshot and the service worker's
+        data cache so the storefront cannot paint it again from a stale copy —
+        targeted, so cached images are untouched.
+      */
+      notifyCatalogChanged(data?.catalogVersion);
       setProducts((prev: any[]) => prev.filter((p: any) => String(p.id) !== String(id)));
       toast.success(t("admin.deleted") || "تم الحذف بنجاح");
     } catch (err: any) {
@@ -1740,6 +1748,7 @@ function ListingsView({
         }
         
         const savedProduct = result.product || { ...editingProduct, ...dirtyFields };
+        notifyCatalogChanged(result?.catalogVersion);
         setProducts((prev: any[]) => {
           const index = prev.findIndex((p: any) => String(p.id) === String(savedProduct.id));
           if (index >= 0) {
@@ -1834,7 +1843,8 @@ function ListingsView({
         }
         
         toast.success(t("admin.saved") || "تم الحفظ بنجاح", { id: "save-product" });
-        
+        notifyCatalogChanged(result?.catalogVersion);
+
         // Update local state
         setProducts((prev: any[]) => {
           const idx = prev.findIndex((p: any) => String(p.id) === String(productData.id));
@@ -1903,6 +1913,7 @@ function ListingsView({
       }
 
       const savedProduct = result.product || productData;
+      notifyCatalogChanged(result?.catalogVersion);
 
       // Update local state with the exact server-returned product without duplication
       setProducts((prev: any[]) => {

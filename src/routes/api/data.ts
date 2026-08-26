@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import {
+  getCatalogVersion,
   getStore,
   getStoreCacheVersion,
   updateStore,
@@ -260,18 +261,35 @@ export const Route = createFileRoute("/api/data")({
           } else {
             payload = publicPayload(store, availability, slim, paginationOpts);
           }
-          const etag = etagFor(payload);
-          const headers = {
+          /*
+            The catalogue version rides on the response so a client can tell a
+            changed catalogue from an unchanged one, and so stale data can be
+            traced to a layer. It is `store_rev` — written by `persistStore` in
+            the same transaction as the catalogue, so every isolate and every
+            edge agrees on it. Folding it into the ETag means a mutation always
+            produces a new validator, even in the rare case where the serialised
+            payload is byte-identical.
+          */
+          const catalogVersion = await getCatalogVersion();
+          const etag = etagFor(`${catalogVersion}:${payload}`);
+          const headers: Record<string, string> = {
             "content-type": "application/json; charset=utf-8",
             etag,
             "cache-control": viewer?.isAdmin
               ? "private, no-store"
               : "public, max-age=0, s-maxage=5, must-revalidate",
             "server-timing": `db;dur=${duration}`,
+            // Diagnostics: which catalogue this is, and where it came from.
+            // No secrets — a version number and the name of a code path.
+            "x-catalog-version": String(catalogVersion),
+            "x-data-source": viewer?.isAdmin ? "d1:admin" : "d1:public",
+            vary: "cookie",
           };
           if (request.headers.get("if-none-match") === etag) {
+            headers["x-cache-status"] = "revalidated";
             return new Response(null, { status: 304, headers });
           }
+          headers["x-cache-status"] = "fresh";
           return new Response(payload, { headers });
         }),
 

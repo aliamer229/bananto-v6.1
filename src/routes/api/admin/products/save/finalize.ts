@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { guard, body, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { d1All, d1Run } from "@/lib/d1.server";
-import { getStore, invalidateStoreCache } from "@/lib/db.server";
+import { getCatalogVersion, getStore, invalidateStoreCache } from "@/lib/db.server";
 import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
 import { syncGameDevicePerformance } from "@/lib/devicePerformance.server";
 import { resolveCategoryType } from "@/lib/productSection";
@@ -128,7 +128,11 @@ export const Route = createFileRoute("/api/admin/products/save/finalize")({
             return json({ error: "Failed to verify product save (Read-after-write failed)" }, { status: 500 });
           }
 
-          return json({ success: true, product: JSON.parse(verifyRows[0]?.value || "{}") });
+          return json({
+            success: true,
+            product: JSON.parse(verifyRows[0]?.value || "{}"),
+            catalogVersion: await getCatalogVersion(),
+          });
         }),
     },
   },
