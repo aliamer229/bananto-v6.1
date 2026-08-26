@@ -114,8 +114,10 @@ export const Route = createFileRoute("/api/upload")({
       POST: async ({ request }) =>
         guard(async () => {
           const user = await requireUser(request);
-          const throttle = await consumeRateLimit(request, "upload", 120, 60 * 60, user.id);
-          if (!throttle.allowed) return rateLimitResponse(throttle.retryAfter);
+          if (!user.isAdmin) {
+            const throttle = await consumeRateLimit(request, "upload", 120, 60 * 60, user.id);
+            if (!throttle.allowed) return rateLimitResponse(throttle.retryAfter);
+          }
 
           const contentType = request.headers.get("content-type") || "";
 
