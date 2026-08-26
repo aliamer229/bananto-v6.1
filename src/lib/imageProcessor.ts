@@ -4,6 +4,7 @@ export interface ImageProcessingOptions {
   highQuality?: boolean;
   preserveDimensions?: boolean;
   generateVariants?: boolean;
+  smartCrop?: boolean;
 }
 
 export interface ConvertedImage {
@@ -112,8 +113,45 @@ export async function processImageToAvif(
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default || sharpModule;
     if (typeof sharp === "function") {
-      const image = sharp(bytes, { failOnError: false } as any);
+      let image = sharp(bytes, { failOnError: false } as any);
+      
       const metadata = await image.metadata().catch(() => undefined);
+      
+      if (options.smartCrop && metadata && metadata.width && metadata.height) {
+        try {
+          const w = metadata.width;
+          const h = metadata.height;
+          // Extract 4 corners (1x1 pixels)
+          const tl = await sharp(bytes, { failOnError: false } as any).extract({ left: 0, top: 0, width: 1, height: 1 }).raw().toBuffer();
+          const tr = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: 0, width: 1, height: 1 }).raw().toBuffer();
+          const bl = await sharp(bytes, { fail: false } as any).extract({ left: 0, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
+          const br = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
+
+          const isSimilar = (c1: Buffer, c2: Buffer) => {
+            if (c1.length < 3 || c2.length < 3) return false;
+            const a1 = c1.length > 3 ? c1[3] : 255;
+            const a2 = c2.length > 3 ? c2[3] : 255;
+            if (Math.abs(a1 - a2) > 15) return false;
+            if (a1 < 15 && a2 < 15) return true;
+            return Math.abs(c1[0] - c2[0]) < 15 && Math.abs(c1[1] - c2[1]) < 15 && Math.abs(c1[2] - c2[2]) < 15;
+          };
+
+          if (isSimilar(tl, tr) && isSimilar(tl, bl) && isSimilar(tl, br)) {
+            const a = tl.length > 3 ? tl[3] : 255;
+            const r = tl[0], g = tl[1], b = tl[2];
+            
+            const isWhite = r > 240 && g > 240 && b > 240;
+            const isBlack = r < 15 && g < 15 && b < 15;
+            const isTransparent = a < 15;
+            
+            if (isWhite || isBlack || isTransparent) {
+              image = image.trim({ threshold: 12 });
+            }
+          }
+        } catch (e) {
+          // Ignore corner extraction errors
+        }
+      }
 
       const pipeline = image
         .rotate() // Auto-correct EXIF orientation
@@ -179,7 +217,47 @@ export async function processImageToWebP(
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default || sharpModule;
     if (typeof sharp === "function") {
-      const image = sharp(bytes, { failOnError: false } as any);
+      let image = sharp(bytes, { failOnError: false } as any);
+      
+      const metadata = await image.metadata().catch(() => undefined);
+      
+      if (options.smartCrop && metadata && metadata.width && metadata.height) {
+        try {
+          const w = metadata.width;
+          const h = metadata.height;
+          // Extract 4 corners (1x1 pixels)
+          const tl = await sharp(bytes, { failOnError: false } as any).extract({ left: 0, top: 0, width: 1, height: 1 }).raw().toBuffer();
+          const tr = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: 0, width: 1, height: 1 }).raw().toBuffer();
+          const bl = await sharp(bytes, { failOnError: false } as any).extract({ left: 0, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
+          const br = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
+
+          const isSimilar = (c1: Buffer, c2: Buffer) => {
+            if (c1.length < 3 || c2.length < 3) return false;
+            const a1 = c1.length > 3 ? c1[3] : 255;
+            const a2 = c2.length > 3 ? c2[3] : 255;
+            if (Math.abs(a1 - a2) > 15) return false;
+            if (a1 < 15 && a2 < 15) return true; // both transparent
+            return Math.abs(c1[0] - c2[0]) < 15 && Math.abs(c1[1] - c2[1]) < 15 && Math.abs(c1[2] - c2[2]) < 15;
+          };
+
+          // If all 4 corners match, it's highly likely a solid padding (pillarbox, letterbox, or full border)
+          if (isSimilar(tl, tr) && isSimilar(tl, bl) && isSimilar(tl, br)) {
+            const a = tl.length > 3 ? tl[3] : 255;
+            const r = tl[0], g = tl[1], b = tl[2];
+            
+            const isWhite = r > 240 && g > 240 && b > 240;
+            const isBlack = r < 15 && g < 15 && b < 15;
+            const isTransparent = a < 15;
+            
+            // Only trim if the padded background is a typical padding color (white, black, transparent)
+            if (isWhite || isBlack || isTransparent) {
+              image = image.trim({ threshold: 12 });
+            }
+          }
+        } catch (e) {
+          // Ignore corner extraction errors
+        }
+      }
       
       const pipeline = image
         .rotate()
@@ -192,7 +270,6 @@ export async function processImageToWebP(
           alphaQuality: 100,
         });
 
-      const metadata = await image.metadata().catch(() => undefined);
       const buffer = await pipeline.toBuffer();
       const resultBytes = new Uint8Array(buffer);
 

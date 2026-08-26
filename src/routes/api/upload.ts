@@ -186,11 +186,14 @@ export const Route = createFileRoute("/api/upload")({
             imageType.includes("3d") ||
             imageType === "texture";
 
+          const shouldSmartCrop = imageType === "front";
+
           // Automatic transformation of all images to WebP
           if (mime.startsWith("image/")) {
             const converted = await processImageToWebP(bytes, mime, {
               highQuality: isHighQuality,
               preserveDimensions: true,
+              smartCrop: shouldSmartCrop,
             });
 
             if (converted) {

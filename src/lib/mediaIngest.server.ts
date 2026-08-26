@@ -785,9 +785,12 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
           expectedType === "wrap" ||
           expectedType === "cover";
 
+        const shouldSmartCrop = field === "cartridgeImage";
+
         const converted = await processImageToWebP(bytes, mime, {
           highQuality: isHigh,
           preserveDimensions: true,
+          smartCrop: shouldSmartCrop,
         });
         const outBytes = converted ? converted.bytes : bytes;
         const hash = (await computeSha256(outBytes)).substring(0, 16);
@@ -892,10 +895,13 @@ export async function ingestRemoteImage(options: RemoteImageIngestOptions): Prom
         expectedType === "wrap" ||
         expectedType === "cover";
 
+      const shouldSmartCrop = field === "cartridgeImage";
+
       // Convert to WebP (quality 93-95 for high quality, 88-90 for standard)
       const converted = await processImageToWebP(rawBytes, rawMime, {
         highQuality: isHigh,
         preserveDimensions: true,
+        smartCrop: shouldSmartCrop,
       });
 
       const outBytes = converted ? converted.bytes : rawBytes;
