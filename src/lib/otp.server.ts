@@ -21,6 +21,7 @@ import {
   d1RunChanges,
   ensureOtpSchema,
   ensureSchema,
+  ensureTelegramSchema,
   getD1,
 } from "./d1.server";
 import { mutateJson, readJson } from "./storage.server";
@@ -65,6 +66,30 @@ interface OtpRecord {
   attempts: number;
   verifiedAt?: string | null | undefined;
   createdAt: string;
+}
+
+/**
+ * Formats a clean, high-clarity Arabic Telegram OTP message with HTML tags
+ * allowing 1-tap code copying in Telegram clients.
+ */
+export function telegramOtpMessage(code: string, purpose: OtpPurpose): string {
+  let purposeTitle = "تأكيد الحساب";
+  if (purpose === "signup") purposeTitle = "إنشاء حساب جديد";
+  else if (purpose === "reset" || purpose === "password_reset") purposeTitle = "استعادة كلمة المرور";
+  else if (purpose === "login") purposeTitle = "تسجيل الدخول";
+  else if (purpose === "verify" || purpose === "phone_verification" || purpose === "phone_change")
+    purposeTitle = "توثيق رقم الهاتف";
+
+  return `🍌 <b>رمز التحقق الخاص بك في بنانتو</b>
+
+الغرض: <b>${purposeTitle}</b>
+
+رمز التحقق:
+<code>${code}</code>
+<i>(اضغط على الرمز لنسخه)</i>
+
+⏱️ ينتهي الرمز خلال 5 دقائق.
+⚠️ لا تشارك هذا الرمز مع أي شخص لحماية حسابك.`;
 }
 
 /**
@@ -320,9 +345,111 @@ export function generateSecureOtpCode(): string {
 export interface OtpSendResult {
   success: boolean;
   error?: string;
+  errorCode?: string;
   retryAfter?: number;
   expiresAt?: string;
   channel?: OtpChannel;
+  delivered?: boolean;
+  chatId?: number | string;
+}
+
+export interface SendTelegramOtpParams {
+  phone: string;
+  purpose: OtpPurpose;
+  userId?: string | null;
+  telegramChatId?: string | number | null;
+  otpKey?: string;
+}
+
+/**
+ * Resolves the verified Telegram Chat ID for a user/phone from D1.
+ * Searches in both `telegram_links` and recently verified `telegram_verification_sessions`.
+ */
+export async function resolveTelegramChatId(params: {
+  phone: string;
+  userId?: string | null;
+  chatId?: string | number | null;
+}): Promise<number | undefined> {
+  const { phone, userId, chatId } = params;
+
+  if (chatId) {
+    const num = Number(chatId);
+    if (Number.isSafeInteger(num) && num > 0) return num;
+  }
+
+  const canonicalPhone = normalizePhone(phone) || phone;
+  const guestKey = `guest:${canonicalPhone}`;
+
+  if (!(await d1Ready())) {
+    return undefined;
+  }
+
+  await ensureTelegramSchema();
+
+  // 1. Check telegram_links table
+  const link = await d1First<{ telegram_chat_id: number }>(
+    `SELECT telegram_chat_id FROM telegram_links
+     WHERE (user_id = ? OR user_id = ? OR telegram_phone = ? OR (telegram_user_id IS NOT NULL AND telegram_user_id = ?))
+       AND telegram_chat_id IS NOT NULL
+       AND verified = 1
+     ORDER BY linked_at DESC
+     LIMIT 1`,
+    userId || guestKey,
+    guestKey,
+    canonicalPhone,
+    userId || "",
+  );
+
+  if (link?.telegram_chat_id) {
+    return link.telegram_chat_id;
+  }
+
+  // 2. Check verified sessions in telegram_verification_sessions
+  const session = await d1First<{
+    telegram_chat_id: number;
+    telegram_user_id: string | null;
+    owner_key: string;
+  }>(
+    `SELECT telegram_chat_id, telegram_user_id, owner_key
+     FROM telegram_verification_sessions
+     WHERE (phone = ? OR owner_key = ? OR owner_key = ?)
+       AND status = 'verified'
+       AND telegram_chat_id IS NOT NULL
+     ORDER BY verified_at DESC
+     LIMIT 1`,
+    canonicalPhone,
+    userId || guestKey,
+    guestKey,
+  );
+
+  if (session?.telegram_chat_id) {
+    // Auto-promote/persist to telegram_links so future lookups are immediate
+    try {
+      const now = new Date().toISOString();
+      const targetUser = userId || session.owner_key || guestKey;
+      await d1Run(
+        `INSERT INTO telegram_links (user_id, telegram_chat_id, telegram_user_id, telegram_phone, verified, linked_at, updated_at)
+         VALUES (?, ?, ?, ?, 1, ?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET
+           telegram_chat_id = excluded.telegram_chat_id,
+           telegram_user_id = excluded.telegram_user_id,
+           telegram_phone = excluded.telegram_phone,
+           verified = 1,
+           updated_at = excluded.updated_at`,
+        targetUser,
+        session.telegram_chat_id,
+        session.telegram_user_id || null,
+        canonicalPhone,
+        now,
+        now,
+      );
+    } catch (err) {
+      console.warn("[otp:telegram] failed to auto-upsert link from verified session:", err);
+    }
+    return session.telegram_chat_id;
+  }
+
+  return undefined;
 }
 
 export async function getOtpStatus(key: string, purpose: OtpPurpose) {
@@ -343,15 +470,14 @@ export async function getOtpStatus(key: string, purpose: OtpPurpose) {
   };
 }
 
-export async function sendVerificationCode(
-  phone: string,
-  purpose: OtpPurpose,
-  channel: OtpChannel = "whatsapp",
-  userId?: string,
-  opts?: { otpKey?: string; chatId?: string | number },
-): Promise<OtpSendResult> {
+/**
+ * Dedicated, decoupled Telegram OTP dispatch service.
+ * Follows strict verified identity -> generate -> persist -> resolve chat_id -> send -> confirm lifecycle.
+ */
+export async function sendTelegramOtp(params: SendTelegramOtpParams): Promise<OtpSendResult> {
+  const { phone, purpose, userId, telegramChatId, otpKey } = params;
   const canonicalPhone = normalizePhone(phone) || phone;
-  const key = opts?.otpKey || canonicalPhone;
+  const key = otpKey || canonicalPhone;
   const previous = await latest(key, purpose);
   const now = Date.now();
 
@@ -362,9 +488,11 @@ export async function sendVerificationCode(
     const wait = Math.ceil((OTP_RESEND_MS - (now - Date.parse(previous!.createdAt))) / 1000);
     return {
       success: false,
+      errorCode: "RATE_LIMITED",
       retryAfter: wait,
       expiresAt: previous!.expiresAt,
       error: `انتظر ${wait} ثانية قبل طلب رمز جديد.`,
+      channel: "telegram",
     };
   }
 
@@ -373,7 +501,9 @@ export async function sendVerificationCode(
   if (sentLastHour >= OTP_MAX_PER_HOUR) {
     return {
       success: false,
+      errorCode: "HOURLY_LIMIT_EXCEEDED",
       error: "تم تجاوز عدد محاولات الإرسال في الساعة. يرجى الانتظار قليلاً.",
+      channel: "telegram",
     };
   }
 
@@ -382,41 +512,151 @@ export async function sendVerificationCode(
   if (sentLastDay >= OTP_MAX_PER_DAY) {
     return {
       success: false,
+      errorCode: "DAILY_LIMIT_EXCEEDED",
       error: "تم تجاوز عدد رسائل التحقق المسموح لهذا الرقم اليوم.",
+      channel: "telegram",
+    };
+  }
+
+  // 4. Resolve Telegram Chat ID
+  const resolvedChatId = await resolveTelegramChatId({
+    phone: canonicalPhone,
+    userId: userId || undefined,
+    chatId: telegramChatId,
+  });
+
+  if (!resolvedChatId) {
+    console.error(
+      `[otp:telegram] no verified Telegram chat_id found for phone=${maskPhoneForLog(canonicalPhone)} user=${userId || "guest"}`,
+    );
+    return {
+      success: false,
+      errorCode: "TELEGRAM_CHAT_NOT_LINKED",
+      error: "يجب إثبات ملكية حساب تلغرام أولاً عبر التطبيق المصغر.",
+      channel: "telegram",
+      delivered: false,
+    };
+  }
+
+  // 5. Generate cryptographically secure uniform 6-digit code and HMAC digest
+  const code = generateSecureOtpCode();
+  const codeHash = await computeOtpHash(code, key, purpose);
+  const id = randomId("otp");
+  const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
+
+  // 6. Persist OTP record in D1 / storage
+  await purge(key, purpose);
+  await insert({
+    id,
+    user_id: userId || null,
+    phone: key,
+    purpose,
+    channel: "telegram",
+    destination: String(resolvedChatId),
+    codeHash,
+    expiresAt,
+    attempts: 0,
+    createdAt: new Date().toISOString(),
+  });
+
+  // 7. Deliver OTP message via Telegram Bot API
+  const message = telegramOtpMessage(code, purpose);
+  const tgRes = await sendTelegramMessage(resolvedChatId, message, { parse_mode: "HTML" });
+
+  if (!tgRes.ok) {
+    // Atomic rollback: Remove stored code so the user is never locked out with an undelivered code
+    await remove(id);
+    const tgErrMsg = tgRes.description || tgRes.error || "TELEGRAM_SEND_FAILED";
+    console.error(
+      `[otp:telegram] delivery failed for purpose=${purpose} phone=${maskPhoneForLog(canonicalPhone)} chatId=${resolvedChatId} error=${tgErrMsg}`,
+    );
+    return {
+      success: false,
+      errorCode: tgRes.error || "TELEGRAM_SEND_FAILED",
+      error: tgRes.description || "تعذر إرسال رمز التحقق عبر تلغرام حالياً. يرجى المحاولة مرة أخرى.",
+      channel: "telegram",
+      delivered: false,
+    };
+  }
+
+  console.log(
+    `[otp:telegram] OTP successfully delivered to chatId=${resolvedChatId} for purpose=${purpose} phone=${maskPhoneForLog(canonicalPhone)}`,
+  );
+
+  return {
+    success: true,
+    delivered: true,
+    channel: "telegram",
+    chatId: resolvedChatId,
+    expiresAt,
+    retryAfter: Math.ceil(OTP_RESEND_MS / 1000),
+  };
+}
+
+export async function sendVerificationCode(
+  phone: string,
+  purpose: OtpPurpose,
+  channel: OtpChannel = "whatsapp",
+  userId?: string,
+  opts?: { otpKey?: string; chatId?: string | number },
+): Promise<OtpSendResult> {
+  const canonicalPhone = normalizePhone(phone) || phone;
+  const key = opts?.otpKey || canonicalPhone;
+
+  if (channel === "telegram") {
+    return sendTelegramOtp({
+      phone: canonicalPhone,
+      purpose,
+      userId,
+      telegramChatId: opts?.chatId,
+      otpKey: key,
+    });
+  }
+
+  // WhatsApp via WaSenderAPI
+  const previous = await latest(key, purpose);
+  const now = Date.now();
+
+  // 1. Cooldown check
+  const isWithinResendLimit =
+    previous && !previous.verifiedAt && now - Date.parse(previous.createdAt) < OTP_RESEND_MS;
+  if (isWithinResendLimit) {
+    const wait = Math.ceil((OTP_RESEND_MS - (now - Date.parse(previous!.createdAt))) / 1000);
+    return {
+      success: false,
+      errorCode: "RATE_LIMITED",
+      retryAfter: wait,
+      expiresAt: previous!.expiresAt,
+      error: `انتظر ${wait} ثانية قبل طلب رمز جديد.`,
+      channel: "whatsapp",
+    };
+  }
+
+  // 2. Hourly rate limit check
+  const sentLastHour = await sentInLastPeriod(key, 60 * 60 * 1000);
+  if (sentLastHour >= OTP_MAX_PER_HOUR) {
+    return {
+      success: false,
+      errorCode: "HOURLY_LIMIT_EXCEEDED",
+      error: "تم تجاوز عدد محاولات الإرسال في الساعة. يرجى الانتظار قليلاً.",
+      channel: "whatsapp",
+    };
+  }
+
+  // 3. Daily rate limit check
+  const sentLastDay = await sentInLastPeriod(key, 24 * 60 * 60 * 1000);
+  if (sentLastDay >= OTP_MAX_PER_DAY) {
+    return {
+      success: false,
+      errorCode: "DAILY_LIMIT_EXCEEDED",
+      error: "تم تجاوز عدد رسائل التحقق المسموح لهذا الرقم اليوم.",
+      channel: "whatsapp",
     };
   }
 
   // 4. Generate cryptographically secure code and HMAC digest
   const code = generateSecureOtpCode();
   const codeHash = await computeOtpHash(code, key, purpose);
-
-  let destination = "";
-  if (channel === "telegram") {
-    let chatId = opts?.chatId;
-
-    if (!chatId) {
-      const link = await d1First<{ telegram_chat_id: number }>(
-        `SELECT telegram_chat_id FROM telegram_links
-          WHERE (user_id = ? OR user_id = ? OR telegram_phone = ? OR telegram_user_id = ?) AND telegram_chat_id IS NOT NULL AND verified = 1
-          ORDER BY linked_at DESC
-          LIMIT 1`,
-        userId || `guest:${canonicalPhone}`,
-        `guest:${canonicalPhone}`,
-        canonicalPhone,
-        userId || "",
-      );
-
-      if (!link?.telegram_chat_id) {
-        console.error(
-          `[otp:telegram] no verified link for phone=${maskPhoneForLog(canonicalPhone)}`,
-        );
-        return { success: false, error: "يجب إثبات ملكية حساب تلغرام أولاً عبر التطبيق المصغر." };
-      }
-      chatId = link.telegram_chat_id;
-    }
-
-    destination = String(chatId);
-  }
 
   // 5. Invalidate previous codes and store new record
   const id = randomId("otp");
@@ -427,46 +667,36 @@ export async function sendVerificationCode(
     user_id: userId,
     phone: key,
     purpose,
-    channel,
-    destination,
+    channel: "whatsapp",
+    destination: canonicalPhone,
     codeHash,
     expiresAt,
     attempts: 0,
     createdAt: new Date().toISOString(),
   });
 
-  // 6. Deliver message via chosen provider
-  let sendResult: { success: boolean; error?: string };
+  // 6. Deliver WhatsApp message
+  const wsRes = await sendWhatsappOtp(canonicalPhone, code);
 
-  if (channel === "telegram") {
-    const { otpMessage: telegramOtpMessage } = await import("./whatsapp.server");
-    const tgRes = await sendTelegramMessage(destination, telegramOtpMessage(code));
-    sendResult = { success: tgRes.ok, error: tgRes.error };
-  } else {
-    // WhatsApp via WaSenderAPI
-    const wsRes = await sendWhatsappOtp(canonicalPhone, code);
-    sendResult = { success: wsRes.success, error: wsRes.error };
-  }
-
-  if (!sendResult.success) {
+  if (!wsRes.success) {
     // Roll back stored code so user isn't stuck with an unreceived active code
     await remove(id);
     console.error(
-      `[otp:${channel}] delivery failed for purpose=${purpose} phone=${maskPhoneForLog(canonicalPhone)}`,
+      `[otp:whatsapp] delivery failed for purpose=${purpose} phone=${maskPhoneForLog(canonicalPhone)} error=${wsRes.error}`,
     );
     return {
       success: false,
-      error:
-        sendResult.error ||
-        (channel === "telegram"
-          ? "تعذر إرسال رمز التحقق عبر تلغرام حالياً."
-          : "تعذر إرسال رمز التحقق عبر واتساب حالياً. يرجى المحاولة مرة أخرى."),
+      errorCode: "WHATSAPP_SEND_FAILED",
+      error: wsRes.error || "تعذر إرسال رمز التحقق عبر واتساب حالياً. يرجى المحاولة مرة أخرى.",
+      channel: "whatsapp",
+      delivered: false,
     };
   }
 
   return {
     success: true,
-    channel,
+    delivered: true,
+    channel: "whatsapp",
     expiresAt,
     retryAfter: Math.ceil(OTP_RESEND_MS / 1000),
   };

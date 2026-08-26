@@ -34,6 +34,8 @@ import {
   assertOtp,
   getOtpStatus,
   OtpError,
+  resolveTelegramChatId,
+  sendTelegramOtp,
   sendVerificationCode,
   type OtpPurpose,
   type OtpChannel,
@@ -283,7 +285,7 @@ export const Route = createFileRoute("/api/otp")({
               if (purpose === "signup" && existing?.phoneVerifiedAt) {
                 return json({ error: "هذا الرقم مسجل مسبقاً، سجّل الدخول" }, { status: 409 });
               }
-              if (purpose === "reset" && !existing) {
+              if ((purpose === "reset" || purpose === "login") && !existing) {
                 return json(
                   {
                     error: "الحساب غير مسجل",
@@ -326,58 +328,13 @@ export const Route = createFileRoute("/api/otp")({
               }
 
               if (targetChannel === "telegram") {
-                await ensureTelegramSchema();
-                let link = await d1First<{ telegram_chat_id: number; user_id?: string }>(
-                  `SELECT telegram_chat_id, user_id FROM telegram_links
-                  WHERE (user_id = ? OR user_id = ? OR telegram_phone = ?) AND telegram_chat_id IS NOT NULL AND verified = 1
-                  ORDER BY linked_at DESC
-                  LIMIT 1`,
-                  ownerKey,
-                  `guest:${phone}`,
+                telegramChatId = await resolveTelegramChatId({
                   phone,
-                );
+                  userId: accountToUse?.id,
+                });
 
-                if (!link) {
-                  const verifiedSession = await d1First<{
-                    telegram_chat_id: number;
-                    telegram_user_id?: string;
-                  }>(
-                    `SELECT telegram_chat_id, telegram_user_id FROM telegram_verification_sessions
-                    WHERE (owner_key = ? OR phone = ?) AND status = 'verified' AND telegram_chat_id IS NOT NULL
-                    ORDER BY verified_at DESC LIMIT 1`,
-                    ownerKey,
-                    phone,
-                  );
-                  if (verifiedSession?.telegram_chat_id) {
-                    link = { telegram_chat_id: verifiedSession.telegram_chat_id };
-                    await d1Run(
-                      `DELETE FROM telegram_links WHERE user_id = ? OR telegram_chat_id = ?`,
-                      ownerKey,
-                      verifiedSession.telegram_chat_id,
-                    );
-                    await d1Run(
-                      `INSERT INTO telegram_links (user_id, telegram_chat_id, telegram_user_id, telegram_phone, verified, linked_at, updated_at)
-                     VALUES (?, ?, ?, ?, 1, ?, ?)
-                     ON CONFLICT(user_id) DO UPDATE SET
-                       telegram_chat_id = excluded.telegram_chat_id,
-                       telegram_user_id = excluded.telegram_user_id,
-                       telegram_phone = excluded.telegram_phone,
-                       verified = 1,
-                       updated_at = excluded.updated_at`,
-                      ownerKey,
-                      verifiedSession.telegram_chat_id,
-                      verifiedSession.telegram_user_id || null,
-                      phone,
-                      new Date().toISOString(),
-                      new Date().toISOString(),
-                    );
-                  }
-                }
-
-                if (link) {
-                  telegramChatId = link.telegram_chat_id;
-                } else {
-                  // No link found, need to establish one (Signup / Verify / Reset flow)
+                if (!telegramChatId) {
+                  // No link found, need to establish one (Signup / Verify / Reset / Login flow)
                   const { createVerificationSession } = await import("@/lib/telegram-link.server");
                   let verifSession: Awaited<ReturnType<typeof createVerificationSession>>;
                   try {
@@ -413,7 +370,7 @@ export const Route = createFileRoute("/api/otp")({
 
               if (!result.success)
                 return json(
-                  { error: result.error, retryAfter: result.retryAfter },
+                  { error: result.error, errorCode: result.errorCode, retryAfter: result.retryAfter },
                   { status: result.retryAfter ? 429 : 400 },
                 );
 
@@ -435,7 +392,7 @@ export const Route = createFileRoute("/api/otp")({
             await Promise.all([ensureOtpSchema(), ensureUsersSchema()]);
             await assertOtp(phone, purpose, code);
 
-            if (!sessionSecretConfigured() && (purpose === "signup" || purpose === "reset")) {
+            if (!sessionSecretConfigured() && (purpose === "signup" || purpose === "reset" || purpose === "login")) {
               console.error("[otp:auth] SESSION_SECRET is missing or too short");
               return json(
                 {
@@ -461,6 +418,19 @@ export const Route = createFileRoute("/api/otp")({
               }
               await setUserPassword(account.id, data.password);
               const verified = (await setPhoneVerified(account.id, phone)) ?? account;
+              return json(
+                { user: toPublicUser(verified) },
+                { headers: { "set-cookie": await setSessionCookie(verified.id, request) } },
+              );
+            }
+
+            if (purpose === "login") {
+              const account = await findUserByPhone(phone);
+              if (!account)
+                return json({ error: "لا يوجد حساب مرتبط بهذا الرقم" }, { status: 404 });
+              const verified = (await setPhoneVerified(account.id, phone)) ?? account;
+              await ensureTelegramSchema();
+              await adoptGuestTelegramLink(phone, verified.id);
               return json(
                 { user: toPublicUser(verified) },
                 { headers: { "set-cookie": await setSessionCookie(verified.id, request) } },
