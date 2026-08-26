@@ -216,7 +216,7 @@ export function isSafeRemoteImageUrl(raw: string): URL | null {
  * Extracts and maps source-specific referer and request headers based on hostname.
  * Supports: Walmart, Amazon, BestBuy, Costco, TradeInn, Nintendo eShop CDN, Nintendo Assets CDN, etc.
  */
-export function buildMediaRequestHeaders(urlStr: string): Record<string, string> {
+export function buildMediaRequestHeaders(urlStr: string, attempt: number = 1): Record<string, string> {
   const headers: Record<string, string> = {
     "User-Agent":
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
@@ -234,29 +234,43 @@ export function buildMediaRequestHeaders(urlStr: string): Record<string, string>
     const urlObj = new URL(urlStr);
     const host = urlObj.hostname.toLowerCase();
 
-    if (host.includes("walmartimages.com") || host.includes("walmart.com")) {
-      headers["Referer"] = "https://www.walmart.com/";
-    } else if (
-      host.includes("amazon.com") ||
-      host.includes("media-amazon.com") ||
-      host.includes("ssl-images-amazon.com")
-    ) {
-      headers["Referer"] = "https://www.amazon.com/";
-    } else if (
-      host.includes("bestbuy.com") ||
-      host.includes("bbystatic.com") ||
-      host.includes("bbycastatic.ca")
-    ) {
-      headers["Referer"] = "https://www.bestbuy.com/";
-    } else if (
-      host.includes("costco-static.com") ||
-      host.includes("costco.com") ||
-      host.includes("ca-richimage.com")
-    ) {
-      headers["Referer"] = "https://www.costco.com/";
-    } else if (host.includes("tradeinn.com")) {
-      headers["Referer"] = "https://www.tradeinn.com/";
-    } else if (
+    if (attempt === 2) {
+      // Attempt 2: minimal headers, no referer
+      delete headers["Sec-Fetch-Site"];
+      delete headers["Sec-Fetch-Mode"];
+      delete headers["Sec-Fetch-Dest"];
+    } else if (attempt === 3) {
+      // Attempt 3: self referer
+      headers["Referer"] = urlObj.origin + "/";
+    } else if (attempt >= 4) {
+      // Attempt 4+: Generic Windows Chrome, self referer
+      headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+      headers["Referer"] = urlObj.origin + "/";
+    } else {
+      // Attempt 1: Default known referers
+      if (host.includes("walmartimages.com") || host.includes("walmart.com")) {
+        headers["Referer"] = "https://www.walmart.com/";
+      } else if (
+        host.includes("amazon.com") ||
+        host.includes("media-amazon.com") ||
+        host.includes("ssl-images-amazon.com")
+      ) {
+        headers["Referer"] = "https://www.amazon.com/";
+      } else if (
+        host.includes("bestbuy.com") ||
+        host.includes("bbystatic.com") ||
+        host.includes("bbycastatic.ca")
+      ) {
+        headers["Referer"] = "https://www.bestbuy.com/";
+      } else if (
+        host.includes("costco-static.com") ||
+        host.includes("costco.com") ||
+        host.includes("ca-richimage.com")
+      ) {
+        headers["Referer"] = "https://www.costco.com/";
+      } else if (host.includes("tradeinn.com")) {
+        headers["Referer"] = "https://www.tradeinn.com/";
+      } else if (
       host.includes("nintendo.net") ||
       host.includes("nintendo.com") ||
       host.includes("nintendoswitch.com") ||
@@ -269,6 +283,7 @@ export function buildMediaRequestHeaders(urlStr: string): Record<string, string>
       headers["Referer"] = "https://www.igdb.com/";
     } else {
       headers["Referer"] = `${urlObj.origin}/`;
+    }
     }
   } catch {
     // ignore
@@ -462,7 +477,7 @@ export async function fetchRemoteMedia(
 
         try {
           const headers = {
-            ...buildMediaRequestHeaders(activeUrl),
+            ...buildMediaRequestHeaders(activeUrl, attempt),
             ...(options.customHeaders || {}),
           };
 
@@ -503,14 +518,15 @@ export async function fetchRemoteMedia(
       lastRayId = response.headers.get("cf-ray") || response.headers.get("x-amz-cf-id") || "";
 
       // Retryable HTTP status codes
-      const retryableStatuses = [408, 425, 429, 500, 502, 503, 504];
-      if (retryableStatuses.includes(response.status)) {
+      const retryableStatuses = [401, 403, 404, 406, 408, 425, 429, 500, 502, 503, 504];
+      if (retryableStatuses.includes(response.status) || attempt < maxAttempts && !response.ok) {
         const retryAfterHeader = response.headers.get("retry-after");
         const retryAfterMs = parseRetryAfter(retryAfterHeader, 6000);
         lastRetryAfter = Math.round(retryAfterMs / 1000);
 
-        if (retryAfterMs > 0 && attempt < maxAttempts) {
-          await delay(retryAfterMs);
+        if (attempt < maxAttempts) {
+          const waitMs = retryAfterMs > 0 ? retryAfterMs : backoffSchedule[attempt] || 2000;
+          await delay(waitMs);
         }
         lastError = `HTTP_${response.status}`;
         console.warn(
@@ -585,6 +601,23 @@ export async function fetchRemoteMedia(
 
       // Sniff magic bytes for accurate MIME identification
       const sniffedMime = sniffImageMimeType(bytes);
+
+      // Protect against spoofed HTML responses (e.g. captive portals or bad links)
+      if (!sniffedMime) {
+        const startStr = new TextDecoder().decode(bytes.slice(0, 50)).toLowerCase().trim();
+        if (startStr.startsWith("<html") || startStr.startsWith("<!doctype")) {
+          return {
+            ok: false,
+            sourceUrl,
+            finalUrl: finalResolvedUrl,
+            sourceHost: host,
+            httpStatus: response.status,
+            attempts: attempt,
+            error: `SPOOFED_HTML_RESPONSE`,
+          };
+        }
+      }
+
       const mime = sniffedMime || (rawContentType?.startsWith("image/") ? rawContentType : undefined);
 
       if (!mime || !mime.startsWith("image/")) {
