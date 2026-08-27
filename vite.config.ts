@@ -49,7 +49,7 @@ export default defineConfig(({ mode, command }) => {
       ...(command === "build"
         ? [
             nitro({
-              preset: "node-server",
+              preset: process.env.NITRO_PRESET || "cloudflare-module",
               output: { dir: "dist", serverDir: "dist/server", publicDir: "dist/client" },
               // Long-lived edge/browser caching for the static media served by
               // Cloudflare; the service worker itself must always be revalidated.
