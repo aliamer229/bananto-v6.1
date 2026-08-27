@@ -1,6 +1,5 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import SafeBoundary from "@/components/SafeBoundary";
-import { useImageTrim } from "@/hooks/useImageTrim";
 import { cn } from "@/hub/utils/cn";
 import { cdnImage } from "@/lib/img";
 import { lazyWithRetry } from "@/lib/lazyRetry";
@@ -59,12 +58,19 @@ function isUsableUrl(value: unknown): value is string {
 }
 
 export function CaseStage({ className, ...rest }: GameCase3DProps & { className?: string }) {
-  const { trim } = useImageTrim(
-    cdnImage(rest.coverUrl ?? ""),
-    rest.coverTrim,
-    !rest.sleeve?.url && Boolean(rest.coverUrl),
-  );
-  const caseProps: GameCase3DProps = { ...rest, coverTrim: trim ?? rest.coverTrim };
+  /*
+    There is no client-side trim measurement here any more.
+
+    It downloaded the cover at full size on every product page and canvas-read
+    it to produce a crop rectangle that reached `SwitchBox3D` — which does not
+    read `coverTrim` at all. So it was a whole extra full-resolution image on
+    the wire, per product view, feeding nothing.
+
+    The margin around a box cover is now removed in the image pipeline instead
+    (`cdnImage(..., { trim: true })`), which is both correct in the first
+    painted frame and cheaper: the trimmed pixels are never downloaded.
+  */
+  const caseProps: GameCase3DProps = { ...rest };
 
   /*
     The only thing that earns a 3D case. `coverTextureUrl` is the product's
@@ -105,6 +111,12 @@ export function CaseStage({ className, ...rest }: GameCase3DProps & { className?
    * box cropped to fill a fixed frame loses its edges, and a black backing turns
    * a missing model into something that looks broken instead of something that
    * looks like a product photo.
+   *
+   * `trim` matters here more than anywhere: `contain` faithfully reproduces
+   * whatever field surrounds the box in the file, which is how a Front Box
+   * Cover ended up as a small packshot adrift in white in the middle of the
+   * hero. The pipeline removes that margin from the bytes, so `contain` frames
+   * the box itself.
    */
   const StaticCover = () => {
     const source = isUsableUrl(caseProps.coverUrl) ? caseProps.coverUrl : undefined;
@@ -120,7 +132,7 @@ export function CaseStage({ className, ...rest }: GameCase3DProps & { className?
     }
     return (
       <img
-        src={cdnImage(source, { width: 800 })}
+        src={cdnImage(source, { width: 800, trim: true })}
         alt={caseProps.title || "Game Cover"}
         loading="eager"
         decoding="async"

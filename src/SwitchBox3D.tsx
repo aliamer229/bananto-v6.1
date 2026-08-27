@@ -3,6 +3,7 @@ import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 import { nintendoCaseModelUrl } from "@/config/publicAssets";
+import { applySleeveTexture } from "@/lib/sleeveTexture";
 
 /**
  * The Nintendo keep case, rendered from the canonical Cloudflare R2 geometry.
@@ -91,6 +92,7 @@ const SLEEVE = {
 
 const SPINE_X = SLEEVE.backWidth;
 const FRONT_X = SLEEVE.backWidth + SLEEVE.spineWidth;
+
 
 // Global cached assets for 3D boxes
 let cachedBaseTextureImg: HTMLImageElement | null = null;
@@ -221,6 +223,15 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
     }, [boxNode, placeholderNode, foilNode]);
 
     const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
+    const sleeveMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
+
+    /*
+      Applying the artwork is a two-step operation, and skipping the second step
+      is what produced the grey case. See `applySleeveTexture`.
+    */
+    useEffect(() => {
+      applySleeveTexture(sleeveMaterialRef.current, texture);
+    }, [texture]);
     /*
       The signal the stage actually reveals on. `scene` resolving only means the
       glTF arrived; the mesh is still wearing its authored placeholder material
@@ -384,28 +395,23 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
             }
           }
 
+          /*
+            No artwork means no case.
+
+            This used to compose a "blank retail case" — brand-coloured spine,
+            game title, nothing on the front — and then upload it like any other
+            texture. That is precisely the grey box customers were seeing: the
+            artwork 404s or fails CORS, and the viewer confidently renders an
+            empty case as though that were the product.
+
+            Refusing to build a texture at all is what makes the guarantee
+            structural instead of a race between `onTextureError` and
+            `onTextured`. `texture` is only ever set with real artwork on it, so
+            the stage can only ever reveal a painted case.
+          */
           if (!artworkDrawn) {
-            // No artwork at all: a blank retail case with a printed spine, which
-            // is what an unphotographed game physically looks like.
-            ctx.fillStyle = brandColor;
-            ctx.fillRect(SPINE_X, 0, SLEEVE.spineWidth, canvas.height);
-
-            ctx.save();
-            ctx.translate(SPINE_X + SLEEVE.spineWidth / 2, 80);
-            ctx.fillStyle = "#ffffff";
-            ctx.textAlign = "center";
-            ctx.font = "bold 16px sans-serif";
-            ctx.fillText("SWITCH" + (isSwitch2 ? " 2" : ""), 0, 0);
-            ctx.restore();
-
-            ctx.save();
-            ctx.translate(SPINE_X + SLEEVE.spineWidth / 2, 200);
-            ctx.rotate(Math.PI / 2);
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 28px sans-serif";
-            ctx.textAlign = "left";
-            ctx.fillText(gameName || "Game Title", 0, 10);
-            ctx.restore();
+            if (isMounted) onTextureError?.(coverImage ? "artwork_unusable" : "no_artwork");
+            return;
           }
 
           const tex = new THREE.CanvasTexture(canvas);
@@ -488,6 +494,13 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
         scale={0.65}
         position={[0, -0.5, 0]}
         rotation={[0, -Math.PI / 6, 0]}
+        /*
+          Nothing is drawn until the sleeve is wearing its artwork. The stage
+          only reveals this layer once `onTextured` fires, so this is belt and
+          braces — but it is the difference between "the grey case is unlikely"
+          and "there is no frame in which a grey case can be drawn".
+        */
+        visible={Boolean(texture)}
       >
         <OrbitControls
           ref={controlsRef}
@@ -504,8 +517,14 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
 
         {placeholderGeometry && (
           <mesh ref={placeholderRef} geometry={placeholderGeometry}>
+            {/*
+              `map` is deliberately not a prop here. R3F would assign it on the
+              next render without bumping the material version, which leaves the
+              already-compiled shader sampling nothing — see
+              `applySleeveTexture`. The effect above is the single writer.
+            */}
             <meshStandardMaterial
-              map={texture || undefined}
+              ref={sleeveMaterialRef}
               roughness={0.6}
               metalness={0.1}
               side={THREE.DoubleSide}
@@ -513,7 +532,7 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
               opacity={1}
               depthWrite={true}
               depthTest={true}
-              color={texture ? "#ffffff" : "#1a1d24"}
+              color="#ffffff"
             />
           </mesh>
         )}

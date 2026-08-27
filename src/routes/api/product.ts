@@ -5,38 +5,8 @@ import { guard, json } from "@/lib/http.server";
 import { getSessionUser } from "@/lib/session.server";
 import { isVisibleToPublic } from "@/lib/purchasable";
 import { findProductByIdOrSlug } from "@/lib/productRouting";
+import { toPublicProduct } from "@/lib/public-product.server";
 
-const PRIVATE_PRODUCT_FIELDS = new Set([
-  "cost",
-  "costPrice",
-  "baseCost",
-  "wholesalePrice",
-  "supplier",
-  "supplierId",
-  "internalNotes",
-  "credentials",
-  "accountCredentials",
-  "deliveryPasswordEnc",
-  "dataConfidence",
-  "modelInfo",
-  "rawData",
-]);
-
-const PRIVATE_KEY_PATTERN =
-  /(?:password|passwd|secret|token|credential|service.?role|api.?key|private.?key|webhook|supplier|wholesale|internal|raw.?data|model.?info|data.?confidence|cost)/i;
-
-function redactPrivateKeys(value: unknown, depth = 0): unknown {
-  if (depth > 12) return undefined;
-  if (Array.isArray(value)) {
-    return value.map((item) => redactPrivateKeys(item, depth + 1));
-  }
-  if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(
-    Object.entries(value as Record<string, unknown>)
-      .filter(([key]) => !PRIVATE_KEY_PATTERN.test(key))
-      .map(([key, child]) => [key, redactPrivateKeys(child, depth + 1)]),
-  );
-}
 
 function etagFor(payload: string) {
   let h1 = 0x811c9dc5;
@@ -77,13 +47,15 @@ export const Route = createFileRoute("/api/product")({
             return json({ error: "product_not_found" }, { status: 404 });
           }
 
+          /*
+            One serializer, shared with /api/data. The inline filter this
+            replaces only removed private *key names* — which is why a supplier
+            cost rule sitting in a variant's `description` sailed straight
+            through to the product page.
+          */
           const sanitized = viewer?.isAdmin
             ? match
-            : (redactPrivateKeys(
-                Object.fromEntries(
-                  Object.entries(match).filter(([k]) => !PRIVATE_PRODUCT_FIELDS.has(k))
-                )
-              ) as Record<string, unknown>);
+            : toPublicProduct(match as unknown as Record<string, unknown>);
 
           const payload = JSON.stringify({ ok: true, product: sanitized });
           const etag = etagFor(payload);

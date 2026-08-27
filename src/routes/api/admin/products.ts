@@ -5,6 +5,7 @@ import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { d1Run } from "@/lib/d1.server";
 import { autoTranslateProduct } from "@/lib/translate.server";
+import { parseProductSort, sortProducts } from "@/lib/productSort";
 import {
   findConflictingProduct,
   findDuplicateProducts,
@@ -90,6 +91,17 @@ export const Route = createFileRoute("/api/admin/products")({
           const page = parseInt(url.searchParams.get("page") || "0", 10);
           const limit = parseInt(url.searchParams.get("limit") || "0", 10);
           const search = url.searchParams.get("search")?.toLowerCase().trim();
+          /*
+            The order the admin asked for. It has to be applied here rather than
+            in the browser, because this endpoint paginates: sorting a page that
+            was already sliced sorts fifteen arbitrary products, not the
+            catalogue. Anything unrecognised falls back to the table's existing
+            default rather than erroring.
+          */
+          const sort = parseProductSort(
+            url.searchParams.get("sort"),
+            url.searchParams.get("dir"),
+          );
 
           let store: StoreDoc;
           try {
@@ -147,6 +159,10 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           const total = products.length;
+          // Sort the whole filtered set, then slice. `productComparator` ends
+          // every comparison in an id tie-break, so equal rows keep a fixed
+          // order and a product cannot appear on two pages or on none.
+          products = sortProducts(products as unknown as Record<string, unknown>[], sort) as typeof products;
           let paginated = products;
           if (limit > 0) {
             const offset = Math.max(0, (page > 0 ? page - 1 : 0) * limit);
@@ -161,6 +177,10 @@ export const Route = createFileRoute("/api/admin/products")({
             products: paginated,
             d1Count: total,
             total,
+            // Echoed so the client can confirm the order it is displaying is
+            // the order it asked for.
+            sort: sort.field,
+            dir: sort.direction,
             d1Healthy: true,
             durationMs: totalDuration,
           });

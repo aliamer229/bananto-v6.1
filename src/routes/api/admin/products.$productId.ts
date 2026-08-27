@@ -110,9 +110,23 @@ export const Route = createFileRoute("/api/admin/products/$productId")({
             );
           }
 
+          /*
+            "Last modified" is only meaningful if every write path stamps it.
+            This one — the single-product PUT the editor uses — did not, so a
+            product edited here kept whatever timestamp it was imported with and
+            sorting the admin table by Last Modified silently ignored the most
+            recent edits in the store.
+
+            Both spellings, because rows in production carry both and the sort
+            reads whichever is present.
+          */
+          const savedAtIso = new Date().toISOString();
+
           let productToSave: Product = {
             ...payload,
             id: productId,
+            updatedAt: savedAtIso,
+            updated_at: savedAtIso,
             title: payload.title || titleEn,
             titleEn,
             slug,

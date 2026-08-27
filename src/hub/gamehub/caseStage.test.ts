@@ -120,3 +120,107 @@ describe("the hero background is the Cover Image role", () => {
     expect(HERO).toContain("thumbIndex !== null ? images[thumbIndex]?.url : undefined");
   });
 });
+
+describe("a case is never built without artwork on it", () => {
+  it("refuses to compose a texture when the artwork could not be drawn", () => {
+    // The grey box customers saw: artwork 404s or fails CORS, and the viewer
+    // composed a blank "retail case" and uploaded it like any other texture.
+    const branch = BOX.slice(BOX.indexOf("if (!artworkDrawn)"));
+    expect(branch.slice(0, 500)).toContain("onTextureError");
+    expect(branch.slice(0, 500)).toContain("return;");
+  });
+
+  it("no longer draws a stand-in spine or title onto an empty sleeve", () => {
+    expect(BOX).not.toContain('ctx.fillText("SWITCH"');
+    expect(BOX).not.toContain('gameName || "Game Title"');
+  });
+
+  it("creates the CanvasTexture only after artwork is on the canvas", () => {
+    // Structural, not a race: if the only `new THREE.CanvasTexture` sits past
+    // the early return, a texture cannot exist without artwork.
+    expect(BOX.indexOf("if (!artworkDrawn)")).toBeLessThan(
+      BOX.indexOf("new THREE.CanvasTexture(canvas)"),
+    );
+    expect(BOX.match(/new THREE\.CanvasTexture\(/g) || []).toHaveLength(1);
+  });
+
+  it("fetches the wrap same-origin so CORS cannot silently empty the case", () => {
+    expect(WEBGL).toContain("cdnImage(wrapUrl");
+    expect(WEBGL).toContain("coverImage={textureUrl}");
+  });
+});
+
+/**
+ * The grey case had a *second*, independent cause, and it survived the first
+ * round of fixes because every signal said the artwork was applied.
+ *
+ * A `MeshStandardMaterial` is compiled into a shader the first time it is
+ * drawn. `WebGLPrograms` decides then and there whether the fragment shader
+ * contains a texture fetch at all, from whether `material.map` is set. The
+ * sleeve material is created while the wrap is still being composited onto a
+ * canvas, so it compiles with no map. When the texture arrives a moment later
+ * and R3F assigns `material.map`, three.js uploads the image to the GPU and
+ * goes on running the shader it already has — the one with no texture fetch in
+ * it. The mesh keeps drawing flat `color`, which under this scene's lights
+ * lands at rgb(100, 100, 100).
+ *
+ * Measured in a browser before the fix: `material.map` was the right texture,
+ * the geometry had UVs, no error was thrown, `onTextured` fired — and the
+ * program's cache key contained no `MAP`, `material.defines` was `["STANDARD"]`
+ * alone, and every pixel of the case front was exactly 100,100,100. The blue
+ * test wrap was nowhere on screen.
+ *
+ * Bumping `material.version` (what `needsUpdate = true` does) is what forces
+ * the recompile.
+ */
+describe("the sleeve material actually samples its texture", () => {
+  it("bumps the material version, without which the shader never reads the map", async () => {
+    const THREE = await import("three");
+    const { applySleeveTexture } = await import("@/lib/sleeveTexture");
+
+    const material = new THREE.MeshStandardMaterial({ color: "#ffffff" });
+    // Stand in for the renderer having already compiled this material with no
+    // map — the state the sleeve is genuinely in when the wrap resolves.
+    const compiledAt = material.version;
+
+    const texture = new THREE.Texture();
+    expect(applySleeveTexture(material, texture)).toBe(true);
+
+    expect(material.map).toBe(texture);
+    expect(material.version).toBeGreaterThan(compiledAt);
+  });
+
+  it("recompiles on the way back to no texture too", async () => {
+    const THREE = await import("three");
+    const { applySleeveTexture } = await import("@/lib/sleeveTexture");
+
+    const material = new THREE.MeshStandardMaterial({ map: new THREE.Texture() });
+    const before = material.version;
+    applySleeveTexture(material, null);
+
+    // A material compiled *with* a map has no way back to plain colour either.
+    expect(material.map).toBeNull();
+    expect(material.version).toBeGreaterThan(before);
+  });
+
+  it("tolerates being called before the material exists", async () => {
+    const { applySleeveTexture } = await import("@/lib/sleeveTexture");
+    expect(applySleeveTexture(null, null)).toBe(false);
+  });
+
+  it("keeps `map` out of the JSX so there is exactly one writer", () => {
+    // R3F assigns a `map` prop straight onto the material without touching
+    // `version`, which is precisely the silent path this bug took. The effect
+    // owns it instead.
+    const sleeve = BOX.slice(BOX.indexOf("<meshStandardMaterial"));
+    expect(sleeve.slice(0, 400)).not.toContain("map=");
+    expect(sleeve.slice(0, 400)).toContain("ref={sleeveMaterialRef}");
+    expect(BOX).toContain("applySleeveTexture(sleeveMaterialRef.current, texture)");
+  });
+
+  it("draws nothing at all until the artwork is on the sleeve", () => {
+    // Belt and braces over the stage's own gate: no frame exists in which an
+    // untextured case can be drawn.
+    expect(BOX).toContain("visible={Boolean(texture)}");
+  });
+});

@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
 
+import { financeTotals } from "@/lib/finance";
+import { lastModifiedAt, sortProducts, type ProductSort } from "@/lib/productSort";
+import {
+  productSortQuery,
+  readProductSort,
+  toggleProductSort,
+  writeProductSort,
+} from "@/lib/productSort.browser";
 import { useTranslation } from "../i18n";
 import {
   Search,
@@ -334,7 +342,14 @@ export default function AdminDashboard() {
           credentials: "include",
           signal: fetchController.signal,
         }),
-        fetch("/api/admin/products", {
+        /*
+          The order travels with the request. This endpoint paginates, and a
+          page of an unordered list is not a page of anything — sorting after
+          the slice would order fifteen arbitrary products. The stored
+          preference is read here rather than passed down because the table
+          that owns the column headers is several levels below this loader.
+        */
+        fetch(`/api/admin/products?${productSortQuery(readProductSort())}`, {
           credentials: "include",
           signal: fetchController.signal,
         }),
@@ -1170,14 +1185,22 @@ function DashboardHome({
     return Date.now() - spans[period];
   })();
 
-  const totalRevenue = orders
-    .filter((o) => {
-      const paid = o?.paymentStatus === "paid" || o?.status === "completed";
-      if (!paid) return false;
+  /*
+    Revenue is what customers paid for goods, so it goes through the same
+    reckoning as the finance screen: `order.total` includes the delivery fee we
+    collect for the courier, and a cancelled order stays "paid" right up until
+    it is refunded. Both used to be counted here. Only the period filter is
+    local — `financeTotals` decides what a sale is.
+
+    Markup below is deliberately untouched; this is a change to the number, not
+    to the screen.
+  */
+  const totalRevenue = financeTotals(
+    orders.filter((o) => {
       const createdAt = Date.parse(String(o?.createdAt ?? o?.created_at ?? ""));
       return Number.isNaN(createdAt) ? true : createdAt >= periodStartMs;
-    })
-    .reduce((sum, o) => sum + (Number(o?.total) || 0), 0);
+    }),
+  ).net;
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -1560,6 +1583,43 @@ function DashboardHome({
   );
 }
 
+/**
+ * A column header that sorts the products table.
+ *
+ * The arrow points the way the column is currently ordered and is only drawn on
+ * the active column, so it reads as state rather than as an affordance on every
+ * header. `aria-sort` carries the same information to a screen reader, which the
+ * arrow glyph alone does not.
+ */
+function SortHeader({
+  label,
+  field,
+  sort,
+  onSort,
+}: {
+  label: string;
+  field: ProductSort["field"];
+  sort: ProductSort;
+  onSort: (field: ProductSort["field"]) => void;
+}) {
+  const active = sort.field === field;
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(field)}
+      aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
+      className={`inline-flex items-center gap-1 rounded transition-colors hover:text-primary ${
+        active ? "text-primary" : "text-foreground"
+      }`}
+    >
+      <span>{label}</span>
+      <span aria-hidden className="text-[10px] leading-none opacity-80">
+        {active ? (sort.direction === "asc" ? "\u25B2" : "\u25BC") : "\u21C5"}
+      </span>
+    </button>
+  );
+}
+
 function ListingsView({
   products,
   setProducts,
@@ -1590,6 +1650,18 @@ function ListingsView({
   const [onlyUnpriced, setOnlyUnpriced] = useState(false);
   const [onlyMissingPerformance, setOnlyMissingPerformance] = useState(false);
   const [onlyHidden, setOnlyHidden] = useState(false);
+  /*
+    Read from storage, not reset to a default. Changing the search box or a
+    filter changes *which* products are listed, never the order they are listed
+    in, and an admin working through a price audit must not lose their place
+    because they opened a product and came back.
+  */
+  const [sort, setSortState] = useState<ProductSort>(() => readProductSort());
+  const applySort = (field: ProductSort["field"]) => {
+    const next = toggleProductSort(sort, field);
+    setSortState(next);
+    writeProductSort(next);
+  };
   const [showZipImport, setShowZipImport] = useState(false);
   const [showMediaRepair, setShowMediaRepair] = useState(false);
 
@@ -1637,14 +1709,16 @@ function ListingsView({
     );
   });
 
-  // Sort by order or date so the newest imports appear on top/correctly
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    return (
-      (b.displayOrder || 0) - (a.displayOrder || 0) ||
-      new Date(b.releaseDate || b.createdAt || 0).getTime() -
-        new Date(a.releaseDate || a.createdAt || 0).getTime()
-    );
-  });
+  /*
+    The same comparator the server used, applied again here.
+
+    Not redundant: this view keeps the catalogue in memory and edits it in place
+    — saving a price updates the row without a refetch — so a locally changed
+    product has to move to its new position immediately. Sharing one comparator
+    is what stops the two orders drifting, which shows up as a row that is in
+    the right place right up until you touch it.
+  */
+  const sortedProducts = sortProducts(filteredProducts, sort);
 
   // Log product diagnostics to verify D1 single source of truth and active filters
   useEffect(() => {
@@ -2035,11 +2109,28 @@ function ListingsView({
           <table className="w-full text-sm text-right">
             <thead className="bg-muted text-foreground font-semibold border-b border-border">
               <tr>
-                <th className="px-4 py-3">{t("admin.products")}</th>
-                <th className="px-4 py-3">{t("admin.price")}</th>
+                <th className="px-4 py-3">
+                  <SortHeader
+                    label={t("admin.products")}
+                    field="name"
+                    sort={sort}
+                    onSort={applySort}
+                  />
+                </th>
+                <th className="px-4 py-3">
+                  <SortHeader
+                    label={t("admin.price")}
+                    field="price"
+                    sort={sort}
+                    onSort={applySort}
+                  />
+                </th>
                 <th className="px-4 py-3">{t("admin.categories")}</th>
                 <th className="px-4 py-3">{t("admin.stock")}</th>
                 <th className="px-4 py-3">المبيعات</th>
+                <th className="px-4 py-3">
+                  <SortHeader label="آخر تعديل" field="updated" sort={sort} onSort={applySort} />
+                </th>
                 <th className="px-4 py-3">{t("common.status")}</th>
                 <th className="px-4 py-3">إجراء</th>
               </tr>
@@ -2047,7 +2138,7 @@ function ListingsView({
             <tbody className="divide-y divide-border text-[14px]">
               {loadStatus === "loading" && products.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center justify-center gap-3">
                       <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                       <p className="text-sm font-medium text-foreground">
@@ -2063,7 +2154,7 @@ function ListingsView({
 
               {loadStatus === "failed" && products.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center">
+                  <td colSpan={8} className="px-4 py-10 text-center">
                     <div className="max-w-md mx-auto rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
                       <p className="text-sm font-bold text-destructive mb-1">
                         فشل تحميل قائمة المنتجات من قاعدة البيانات
@@ -2088,7 +2179,7 @@ function ListingsView({
 
               {loadStatus === "loaded_empty" && products.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center justify-center gap-3">
                       <Package className="w-8 h-8 text-muted-foreground/50" />
                       <p className="text-sm font-medium text-foreground">
@@ -2108,7 +2199,7 @@ function ListingsView({
 
               {products.length > 0 && sortedProducts.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center">
+                  <td colSpan={8} className="px-4 py-10 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <p className="text-sm font-medium text-foreground">
                         لا توجد منتجات تطابق الفلاتر المحددة
@@ -2134,6 +2225,9 @@ function ListingsView({
                 const safeStock = p.isInfiniteStock ? t("admin.infiniteStock") : String(p.stock ?? "0");
                 const safeSales = String(p.sales ?? "0");
                 const safeStatus = String(p.status ?? "نشط");
+                const editedAt = lastModifiedAt(p);
+                const lastEdited =
+                  editedAt === null ? null : new Date(editedAt).toISOString().slice(0, 10);
                 return (
                 <tr key={String(p.id || Math.random())} className="hover:bg-muted transition-colors">
                   <td className="px-4 py-3 font-medium text-[var(--admin-ink)]">
@@ -2169,6 +2263,10 @@ function ListingsView({
                     {safeStock}
                   </td>
                   <td className="px-4 py-3 text-foreground">{safeSales}</td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap" dir="ltr">
+                    {/* A sortable column an admin cannot read is half a feature. */}
+                    {lastEdited ?? "—"}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-0.5 rounded-md text-[12px] font-medium ${safeStatus === "نشط" ? "bg-[var(--ok-bg)] text-[var(--ok-ink)]" : "bg-[var(--bad-bg)] text-[var(--brand-red-dark)]"}`}
@@ -4469,22 +4567,63 @@ function UsersManagementView() {
   );
 }
 
+/**
+ * What the store actually earned.
+ *
+ * The five figures are shown as a chain — Gross, less discounts, less refunds,
+ * gives Net; less cost, gives Profit — because a single "صافي الأرباح" number
+ * cannot show *where* the margin went, which is the question this screen exists
+ * to answer. See `src/lib/finance.ts` for the four errors the previous figure
+ * made, all of which pushed profit up.
+ */
 function FinancialStatsView({ products, orders }: { products: any[]; orders: any[] }) {
-  const totalRevenue = orders
-    .filter((o) => o.paymentStatus === "paid" || o.status === "completed")
-    .reduce((sum, o) => sum + o.total, 0);
-  const totalCost = orders
-    .filter((o) => o.paymentStatus === "paid" || o.status === "completed")
-    .reduce((sum, o) => {
-      return (
-        sum +
-        o.items.reduce((itemSum: number, item: any) => {
-          const p = products.find((prod) => String(prod.id) === String(item.productId));
-          return itemSum + (p?.cost || 0) * item.quantity;
-        }, 0)
-      );
-    }, 0);
-  const totalProfit = totalRevenue - totalCost;
+  /*
+    Only consulted for lines with no cost snapshot — orders placed before
+    checkout started recording one. Every such consultation is surfaced below
+    rather than presented as fact, because the catalogue's cost today is not
+    what the order cost then.
+  */
+  const currentCostOf = (productId: unknown) => {
+    const product = products.find((p: any) => String(p.id) === String(productId));
+    const cost = Number(product?.cost);
+    return Number.isFinite(cost) ? cost : undefined;
+  };
+
+  const totals = financeTotals(orders || [], currentCostOf);
+  const iqd = (value: number) => `${Math.round(value).toLocaleString()} د.ع`;
+
+  const chain: { label: string; value: number; tone: string; hint?: string }[] = [
+    {
+      label: "إجمالي المبيعات (قبل الخصم)",
+      value: totals.gross,
+      tone: "text-emerald-600",
+      hint: "مجموع أسعار المنتجات كما هي في الطلبات",
+    },
+    {
+      label: "الخصومات والكوبونات",
+      value: -totals.discount,
+      tone: "text-amber-600",
+      hint: "ما تم التنازل عنه من الهامش",
+    },
+    {
+      label: "المبالغ المُعادة",
+      value: -totals.refunded,
+      tone: "text-amber-600",
+      hint: "الطلبات الملغاة غير محتسبة أصلاً",
+    },
+    {
+      label: "صافي المبيعات",
+      value: totals.net,
+      tone: "text-emerald-700",
+      hint: "ما دفعه الزبون فعلياً مقابل المنتجات",
+    },
+    {
+      label: "تكلفة البضاعة المباعة",
+      value: -totals.cost,
+      tone: "text-rose-600",
+      hint: "من التكلفة المسجّلة وقت الطلب",
+    },
+  ];
 
   return (
     <div className="p-6 space-y-8 animate-in fade-in duration-300">
@@ -4493,21 +4632,43 @@ function FinancialStatsView({ products, orders }: { products: any[]; orders: any
         التكلفة والأرباح
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
-          <p className="text-muted-foreground text-sm font-bold mb-1">إجمالي المبيعات</p>
-          <p className="text-3xl font-black text-emerald-600">
-            {totalRevenue.toLocaleString()} د.ع
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        {chain.map((row) => (
+          <div key={row.label} className="bg-white p-5 rounded-3xl border border-border shadow-sm">
+            <p className="text-muted-foreground text-xs font-bold mb-1">{row.label}</p>
+            <p className={`text-2xl font-black ${row.tone}`} dir="ltr">
+              {iqd(row.value)}
+            </p>
+            {row.hint && <p className="mt-1 text-[11px] text-muted-foreground">{row.hint}</p>}
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
+        <p className="text-muted-foreground text-sm font-bold mb-1">صافي الأرباح</p>
+        <p
+          className={`text-4xl font-black ${totals.profit >= 0 ? "text-blue-600" : "text-rose-600"}`}
+          dir="ltr"
+        >
+          {iqd(totals.profit)}
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          صافي المبيعات ناقص التكلفة، من {totals.orders.toLocaleString()} طلب محتسب
+          {totals.margin !== null && <> · هامش {(totals.margin * 100).toFixed(1)}%</>}
+        </p>
+        {totals.shipping > 0 && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {/* Collected for the courier, so it is neither revenue nor margin. */}
+            رسوم التوصيل المحصّلة ({iqd(totals.shipping)}) غير محتسبة ضمن المبيعات أو الأرباح
           </p>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
-          <p className="text-muted-foreground text-sm font-bold mb-1">إجمالي التكاليف</p>
-          <p className="text-3xl font-black text-rose-600">{totalCost.toLocaleString()} د.ع</p>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
-          <p className="text-muted-foreground text-sm font-bold mb-1">صافي الأرباح</p>
-          <p className="text-3xl font-black text-blue-600">{totalProfit.toLocaleString()} د.ع</p>
-        </div>
+        )}
+        {totals.costIsEstimated && (
+          <p className="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-700">
+            {/* Saying so beats quietly presenting a guess as a fact. */}
+            {totals.ordersWithEstimatedCost.toLocaleString()} طلب لا يحمل تكلفة مسجّلة وقت الشراء،
+            فاستُخدمت تكلفة المنتج الحالية لها — الرقم تقديري لهذه الطلبات
+          </p>
+        )}
       </div>
 
       <div className="bg-white p-8 rounded-3xl border border-border shadow-sm h-[400px] flex items-center justify-center">

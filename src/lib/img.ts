@@ -2,6 +2,20 @@ export interface CdnImageOptions {
   width?: number;
   format?: "avif" | "webp" | "auto";
   quality?: number;
+  /**
+   * Strip the empty field around a packshot before encoding.
+   *
+   * For surfaces that frame a **box** — the Front Box Cover and the card roles
+   * built on it. Supplier feeds ship those as a small box adrift in a large
+   * white rectangle, and that margin is in the file, so `object-fit: contain`
+   * faithfully reproduces the problem.
+   *
+   * Deliberately opt-in. A case wrap, a banner and a screenshot reach their own
+   * edges by design, and trimming one would cut into the picture. The server
+   * refuses any crop it is not confident about, so the worst case is the image
+   * exactly as it is today.
+   */
+  trim?: boolean;
 }
 
 /**
@@ -22,6 +36,9 @@ export function cdnImage(src?: string | null, options?: CdnImageOptions): string
   }
   if (options?.quality && options.quality > 0) {
     params.set("q", String(options.quality));
+  }
+  if (options?.trim) {
+    params.set("trim", "1");
   }
 
   const queryString = params.toString() ? `&${params.toString()}` : "";
@@ -54,10 +71,13 @@ export function cdnImage(src?: string | null, options?: CdnImageOptions): string
 export function buildSrcSet(
   src: string | undefined | null,
   format: "avif" | "webp",
-  widths: number[] = [240, 480, 800]
+  widths: number[] = [240, 480, 800],
+  options?: Pick<CdnImageOptions, "trim">
 ): string {
   if (!src) return "";
   return widths
-    .map((w) => `${cdnImage(src, { width: w, format })} ${w}w`)
+    // `trim` has to ride along: a srcSet whose candidates are untrimmed would
+    // undo the crop the moment the browser picked a different width.
+    .map((w) => `${cdnImage(src, { width: w, format, ...(options?.trim ? { trim: true } : {}) })} ${w}w`)
     .join(", ");
 }

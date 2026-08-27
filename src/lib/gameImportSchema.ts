@@ -1042,7 +1042,20 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     itemFields: {
       id: { key: "id", type: "string", target: "id" },
       name: { key: "name", type: "string", target: "name" },
-      description: { key: "description", type: "string", target: "description" },
+      /** Customer-facing. Pricing rules and supplier notes do not belong here. */
+      description: {
+        key: "description",
+        type: "string",
+        target: "description",
+        description: "وصف يراه الزبون فقط. لا تكتب هنا قواعد تسعير أو مصادر أو تحويل عملة",
+      },
+      /** Admin-only. Never serialised to the storefront. */
+      internal_note: {
+        key: "internal_note",
+        type: "string",
+        target: "internalNote",
+        description: "ملاحظة داخلية للإدارة فقط — لا تظهر للزبون إطلاقاً",
+      },
       stock: { key: "stock", type: "number", target: "stock" },
       is_infinite_stock: {
         key: "is_infinite_stock",
@@ -1068,7 +1081,27 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
       option_id: { key: "option_id", type: "string", target: "optionId" },
       price: { key: "price", type: "number", target: "price" },
       cost: { key: "cost", type: "number", target: "cost" },
-      description: { key: "description", type: "string", target: "description" },
+      /*
+        Customer-facing. This field sat directly under `cost` with no guidance
+        and extraction runs filled it with the supplier conversion rule — which
+        the editions comparison then printed next to the price, in front of
+        buyers. Say who it is for.
+      */
+      description: {
+        key: "description",
+        type: "string",
+        target: "description",
+        description:
+          "وصف يراه الزبون فقط (مثال: «يدعم اللعب أونلاين»). لا تكتب هنا أي قاعدة تسعير أو مصدر أو تحويل عملة",
+      },
+      /** Admin-only. Never serialised to the storefront. */
+      internal_note: {
+        key: "internal_note",
+        type: "string",
+        target: "internalNote",
+        description:
+          "ملاحظة داخلية للإدارة فقط — قواعد المورّد وتحويل العملة والتقريب. لا تظهر للزبون إطلاقاً",
+      },
       stock: { key: "stock", type: "number", target: "stock" },
       is_infinite_stock: {
         key: "is_infinite_stock",

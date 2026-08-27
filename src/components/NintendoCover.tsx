@@ -6,10 +6,12 @@
  * 1. **Ask {@link resolveNintendoImage} which picture to show** — so the same
  *    product cannot show a box cover in a listing, a screenshot in the cart and
  *    a banner in the toast.
- * 2. **Frame the artwork, not the file** — if the source has empty margin
- *    around the box, the crop rectangle from `imageTrim` is
- *    applied so the box fills the frame. If it does not, or if
- *    detection was not confident, the file is shown untouched.
+ * 2. **Frame the artwork, not the file** — supplier feeds ship box art as a
+ *    small box floating in a large white rectangle. For the box roles that
+ *    margin is now removed in the image pipeline (`/api/img?trim=1`), so what
+ *    arrives is already the artwork; for the remaining roles the crop rectangle
+ *    from `imageTrim` is applied in CSS as before. Either way, an image the
+ *    detector was not confident about is shown untouched.
  *
  * The frame is a fixed ratio per usage, so a row of covers is a row of equal
  * rectangles regardless of what the sources were. Inside it, the artwork is
@@ -28,6 +30,7 @@ import {
   NINTENDO_IMAGE_PLACEHOLDER,
   resolveNintendoImage,
   SQUARE_CARD_ASPECT_RATIO,
+  usageWantsTrim,
   type NintendoImageUsage,
 } from "@/lib/nintendoImages";
 
@@ -76,9 +79,23 @@ export function useNintendoCover(
           usage === "toast"
         ? 480
         : 800;
-  const proxied = cdnImage(rawUrl, { width: targetWidth });
-  const { trim, naturalAspect } = useImageTrim(proxied, resolved.trim, !resolved.isPlaceholder);
-  return { resolved, src: proxied, rawUrl, trim, naturalAspect };
+  /*
+    Box roles are trimmed by the image pipeline, so what arrives here is already
+    the artwork with no surrounding field — see `usageWantsTrim`. That is why
+    the CSS crop below is skipped for them: applying it on top of a trimmed
+    image would crop a second time, into the artwork.
+
+    The measurement is still run for the roles that are *not* trimmed server
+    side, so nothing that relied on it loses its crop.
+  */
+  const serverTrimmed = usageWantsTrim(usage);
+  const proxied = cdnImage(rawUrl, { width: targetWidth, ...(serverTrimmed ? { trim: true } : {}) });
+  const { trim, naturalAspect } = useImageTrim(
+    proxied,
+    serverTrimmed ? undefined : resolved.trim,
+    !resolved.isPlaceholder && !serverTrimmed,
+  );
+  return { resolved, src: proxied, rawUrl, trim, naturalAspect, serverTrimmed };
 }
 
 export function NintendoCover({
@@ -101,7 +118,7 @@ export function NintendoCover({
   const [candidateIndex, setCandidateIndex] = useState(0);
   const activeRawUrl = candidateUrls[candidateIndex] || resolved.url;
 
-  const { src, rawUrl, trim, naturalAspect } = useNintendoCover(
+  const { src, rawUrl, trim, naturalAspect, serverTrimmed } = useNintendoCover(
     product,
     usage,
     activeRawUrl
@@ -158,8 +175,11 @@ export function NintendoCover({
       : { height: "100%", aspectRatio: String(artworkAspect) };
   })();
 
-  const avifSrcSet = !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "avif", [240, 480, 800]) : "";
-  const webpSrcSet = !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "webp", [240, 480, 800]) : "";
+  const srcSetOptions = serverTrimmed ? { trim: true } : undefined;
+  const avifSrcSet =
+    !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "avif", [240, 480, 800], srcSetOptions) : "";
+  const webpSrcSet =
+    !showPlaceholder && rawUrl ? buildSrcSet(rawUrl, "webp", [240, 480, 800], srcSetOptions) : "";
   const sizesAttr = usage === "square-card"
     ? "(max-width: 640px) 180px, 320px"
     : "(max-width: 640px) 240px, (max-width: 1024px) 480px, 800px";

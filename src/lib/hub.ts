@@ -89,13 +89,37 @@ export function rows(v: unknown): ListRow[] {
   );
 }
 
-export function youtubeEmbed(raw: unknown) {
+/** The video id inside a YouTube URL, or a bare id passed straight through. */
+export function youtubeId(raw: unknown): string | undefined {
   const value = str(raw);
   if (!value) return undefined;
-  const id =
+  return (
     /(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{6,})/.exec(value)?.[1] ??
-    (value.length < 20 ? value : undefined);
+    (value.length < 20 ? value : undefined)
+  );
+}
+
+export function youtubeEmbed(raw: unknown) {
+  const id = youtubeId(raw);
   return id ? `https://www.youtube.com/embed/${id}` : undefined;
+}
+
+/**
+ * The poster frame for a video, which YouTube already hosts for every upload.
+ *
+ * Without it `SmartImage` falls through to its "no source" state and paints a
+ * plain gradient rectangle at whatever size the card reserved — 766x430 of
+ * empty grey in the middle of "شاهد اللعبة" on a desktop product page. Nothing
+ * ever set `thumbnailUrl`, so that was every video card on every product.
+ *
+ * `hqdefault` rather than `maxresdefault`: it is the only size YouTube
+ * guarantees exists for every video, and a 404 here puts the empty box straight
+ * back. The card renders it at 766px wide at most, where hqdefault's 480px
+ * upscales acceptably behind a gradient scrim and a play button.
+ */
+export function youtubeThumbnail(raw: unknown): string | undefined {
+  const id = youtubeId(raw);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : undefined;
 }
 
 export interface HubGame {

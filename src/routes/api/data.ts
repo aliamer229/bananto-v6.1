@@ -16,6 +16,7 @@ import { autoTranslateProduct, autoTranslateBundle } from "@/lib/translate.serve
 
 import { forceFullImport } from "@/lib/force-import.server";
 import { isProductHidden, isVisibleToPublic } from "@/lib/purchasable";
+import { redactPrivateKeys, toPublicProduct } from "@/lib/public-product.server";
 import type { StoreDoc, AdminAvailabilityStatus, AdminAvailabilityConfig } from "@/lib/types";
 
 /** Cheap, stable hash used for the ETag of the catalogue payload. */
@@ -84,43 +85,13 @@ const LIST_FIELDS = [
   "tags",
 ] as const;
 
-const PRIVATE_PRODUCT_FIELDS = new Set([
-  "cost",
-  "costPrice",
-  "baseCost",
-  "wholesalePrice",
-  "supplier",
-  "supplierId",
-  "internalNotes",
-  "credentials",
-  "accountCredentials",
-  "deliveryPasswordEnc",
-  "dataConfidence",
-  "modelInfo",
-  "rawData",
-]);
-
-const PRIVATE_KEY_PATTERN =
-  /(?:password|passwd|secret|token|credential|service.?role|api.?key|private.?key|webhook|supplier|wholesale|internal|raw.?data|model.?info|data.?confidence|cost)/i;
-
-function redactPrivateKeys(value: unknown, depth = 0): unknown {
-  if (depth > 12) return undefined;
-  if (Array.isArray(value)) {
-    return value.map((item) => redactPrivateKeys(item, depth + 1));
-  }
-  if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(
-    Object.entries(value as Record<string, unknown>)
-      .filter(([key]) => !PRIVATE_KEY_PATTERN.test(key))
-      .map(([key, child]) => [key, redactPrivateKeys(child, depth + 1)]),
-  );
-}
-
-function publicProduct(product: Record<string, unknown>) {
-  return redactPrivateKeys(
-    Object.fromEntries(Object.entries(product).filter(([key]) => !PRIVATE_PRODUCT_FIELDS.has(key))),
-  ) as Record<string, unknown>;
-}
+/*
+  What a customer may see now lives in one place — see
+  src/lib/public-product.server.ts. It used to be two inline copies, one here
+  and one in /api/product, and neither knew that a supplier cost rule was
+  riding along inside a variant's `description`.
+*/
+const publicProduct = toPublicProduct;
 
 function publicStore(
   store: StoreDoc,
