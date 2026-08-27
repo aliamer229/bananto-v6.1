@@ -78,8 +78,25 @@ export function Hero() {
     [game.videos],
   );
 
-  const [thumbIndex, setThumbIndex] = useState(0);
-  const backdropUrl = images[thumbIndex]?.url ?? bannerUrl ?? game.keyArtUrl ?? game.coverUrl;
+  /*
+    `null` until the visitor actually points at a thumbnail. It used to start at
+    0, so the hero opened on the first *gallery screenshot* rather than on the
+    game's own hero artwork.
+  */
+  const [thumbIndex, setThumbIndex] = useState<number | null>(null);
+
+  /*
+    The hero background is the Cover Image role: wide, composition-friendly key
+    art meant to be blurred and darkened behind the title. The Front Box Cover
+    is deliberately absent from this chain — it is a tall, tightly-cropped
+    photograph of a box, and stretching it across a landscape header is what
+    made this look like a mistake rather than a design.
+  */
+  const backdropUrl =
+    (thumbIndex !== null ? images[thumbIndex]?.url : undefined) ??
+    game.detailCoverUrl ??
+    bannerUrl ??
+    game.keyArtUrl;
 
   /*
     Which physical SKUs actually exist. A backward-compatible Switch game runs on
