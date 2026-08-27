@@ -723,6 +723,16 @@ export interface OrderItem {
   kind: ProductKind;
   quantity: number;
   unitPrice: number;
+  /**
+   * What this unit cost us, recorded at checkout.
+   *
+   * Without it, profit on an old order has to be recomputed from whatever the
+   * catalogue says today — so re-pricing a product retroactively rewrites the
+   * margin on every order ever placed for it. Absent on orders placed before
+   * this field existed; `orderFinance` falls back to the catalogue there and
+   * marks the result estimated.
+   */
+  unitCost?: number;
   edition?: string;
   meta?: {
     editionId?: string | null | undefined;

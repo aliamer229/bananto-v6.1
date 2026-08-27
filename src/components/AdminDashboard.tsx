@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 
+import { financeTotals } from "@/lib/finance";
 import { lastModifiedAt, sortProducts, type ProductSort } from "@/lib/productSort";
 import {
   productSortQuery,
@@ -1184,14 +1185,22 @@ function DashboardHome({
     return Date.now() - spans[period];
   })();
 
-  const totalRevenue = orders
-    .filter((o) => {
-      const paid = o?.paymentStatus === "paid" || o?.status === "completed";
-      if (!paid) return false;
+  /*
+    Revenue is what customers paid for goods, so it goes through the same
+    reckoning as the finance screen: `order.total` includes the delivery fee we
+    collect for the courier, and a cancelled order stays "paid" right up until
+    it is refunded. Both used to be counted here. Only the period filter is
+    local — `financeTotals` decides what a sale is.
+
+    Markup below is deliberately untouched; this is a change to the number, not
+    to the screen.
+  */
+  const totalRevenue = financeTotals(
+    orders.filter((o) => {
       const createdAt = Date.parse(String(o?.createdAt ?? o?.created_at ?? ""));
       return Number.isNaN(createdAt) ? true : createdAt >= periodStartMs;
-    })
-    .reduce((sum, o) => sum + (Number(o?.total) || 0), 0);
+    }),
+  ).net;
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -4558,22 +4567,63 @@ function UsersManagementView() {
   );
 }
 
+/**
+ * What the store actually earned.
+ *
+ * The five figures are shown as a chain — Gross, less discounts, less refunds,
+ * gives Net; less cost, gives Profit — because a single "صافي الأرباح" number
+ * cannot show *where* the margin went, which is the question this screen exists
+ * to answer. See `src/lib/finance.ts` for the four errors the previous figure
+ * made, all of which pushed profit up.
+ */
 function FinancialStatsView({ products, orders }: { products: any[]; orders: any[] }) {
-  const totalRevenue = orders
-    .filter((o) => o.paymentStatus === "paid" || o.status === "completed")
-    .reduce((sum, o) => sum + o.total, 0);
-  const totalCost = orders
-    .filter((o) => o.paymentStatus === "paid" || o.status === "completed")
-    .reduce((sum, o) => {
-      return (
-        sum +
-        o.items.reduce((itemSum: number, item: any) => {
-          const p = products.find((prod) => String(prod.id) === String(item.productId));
-          return itemSum + (p?.cost || 0) * item.quantity;
-        }, 0)
-      );
-    }, 0);
-  const totalProfit = totalRevenue - totalCost;
+  /*
+    Only consulted for lines with no cost snapshot — orders placed before
+    checkout started recording one. Every such consultation is surfaced below
+    rather than presented as fact, because the catalogue's cost today is not
+    what the order cost then.
+  */
+  const currentCostOf = (productId: unknown) => {
+    const product = products.find((p: any) => String(p.id) === String(productId));
+    const cost = Number(product?.cost);
+    return Number.isFinite(cost) ? cost : undefined;
+  };
+
+  const totals = financeTotals(orders || [], currentCostOf);
+  const iqd = (value: number) => `${Math.round(value).toLocaleString()} د.ع`;
+
+  const chain: { label: string; value: number; tone: string; hint?: string }[] = [
+    {
+      label: "إجمالي المبيعات (قبل الخصم)",
+      value: totals.gross,
+      tone: "text-emerald-600",
+      hint: "مجموع أسعار المنتجات كما هي في الطلبات",
+    },
+    {
+      label: "الخصومات والكوبونات",
+      value: -totals.discount,
+      tone: "text-amber-600",
+      hint: "ما تم التنازل عنه من الهامش",
+    },
+    {
+      label: "المبالغ المُعادة",
+      value: -totals.refunded,
+      tone: "text-amber-600",
+      hint: "الطلبات الملغاة غير محتسبة أصلاً",
+    },
+    {
+      label: "صافي المبيعات",
+      value: totals.net,
+      tone: "text-emerald-700",
+      hint: "ما دفعه الزبون فعلياً مقابل المنتجات",
+    },
+    {
+      label: "تكلفة البضاعة المباعة",
+      value: -totals.cost,
+      tone: "text-rose-600",
+      hint: "من التكلفة المسجّلة وقت الطلب",
+    },
+  ];
 
   return (
     <div className="p-6 space-y-8 animate-in fade-in duration-300">
@@ -4582,21 +4632,43 @@ function FinancialStatsView({ products, orders }: { products: any[]; orders: any
         التكلفة والأرباح
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
-          <p className="text-muted-foreground text-sm font-bold mb-1">إجمالي المبيعات</p>
-          <p className="text-3xl font-black text-emerald-600">
-            {totalRevenue.toLocaleString()} د.ع
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        {chain.map((row) => (
+          <div key={row.label} className="bg-white p-5 rounded-3xl border border-border shadow-sm">
+            <p className="text-muted-foreground text-xs font-bold mb-1">{row.label}</p>
+            <p className={`text-2xl font-black ${row.tone}`} dir="ltr">
+              {iqd(row.value)}
+            </p>
+            {row.hint && <p className="mt-1 text-[11px] text-muted-foreground">{row.hint}</p>}
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
+        <p className="text-muted-foreground text-sm font-bold mb-1">صافي الأرباح</p>
+        <p
+          className={`text-4xl font-black ${totals.profit >= 0 ? "text-blue-600" : "text-rose-600"}`}
+          dir="ltr"
+        >
+          {iqd(totals.profit)}
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          صافي المبيعات ناقص التكلفة، من {totals.orders.toLocaleString()} طلب محتسب
+          {totals.margin !== null && <> · هامش {(totals.margin * 100).toFixed(1)}%</>}
+        </p>
+        {totals.shipping > 0 && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {/* Collected for the courier, so it is neither revenue nor margin. */}
+            رسوم التوصيل المحصّلة ({iqd(totals.shipping)}) غير محتسبة ضمن المبيعات أو الأرباح
           </p>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
-          <p className="text-muted-foreground text-sm font-bold mb-1">إجمالي التكاليف</p>
-          <p className="text-3xl font-black text-rose-600">{totalCost.toLocaleString()} د.ع</p>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border border-border shadow-sm">
-          <p className="text-muted-foreground text-sm font-bold mb-1">صافي الأرباح</p>
-          <p className="text-3xl font-black text-blue-600">{totalProfit.toLocaleString()} د.ع</p>
-        </div>
+        )}
+        {totals.costIsEstimated && (
+          <p className="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-700">
+            {/* Saying so beats quietly presenting a guess as a fact. */}
+            {totals.ordersWithEstimatedCost.toLocaleString()} طلب لا يحمل تكلفة مسجّلة وقت الشراء،
+            فاستُخدمت تكلفة المنتج الحالية لها — الرقم تقديري لهذه الطلبات
+          </p>
+        )}
       </div>
 
       <div className="bg-white p-8 rounded-3xl border border-border shadow-sm h-[400px] flex items-center justify-center">

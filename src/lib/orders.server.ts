@@ -99,6 +99,8 @@ async function validateLine(
       kind: "bundle",
       quantity: Math.max(1, Math.min(99, Math.floor(Number(line.quantity) || 1))),
       unitPrice,
+      // Snapshot the cost with the price. See `OrderItem.unitCost`.
+      unitCost: toNumber((bundle as any).cost),
       meta: {
         bundleGameIds: bundle.gameIds,
       } as any,
@@ -160,6 +162,18 @@ async function validateLine(
     ? types.find((type: any) => String(type?.id) === String(line.typeId))
     : undefined;
 
+  /*
+    The cost is snapshotted alongside the price, and resolved the same way: a
+    variant that carries its own cost is what this line actually cost us, not
+    the product's headline figure. Recording it here is what stops a later
+    supplier re-price rewriting the margin on orders already placed — see
+    `OrderItem.unitCost`.
+  */
+  const unitCost =
+    toNumber((selectedType as any)?.cost) ||
+    toNumber((selectedOption as any)?.cost) ||
+    toNumber((product as any).cost);
+
   return {
     id: randomId("itm"),
     productId: product.id,
@@ -168,6 +182,7 @@ async function validateLine(
     kind,
     quantity: Math.max(1, Math.min(99, Math.floor(Number(line.quantity) || 1))),
     unitPrice,
+    unitCost,
     meta: {
       editionId: line.editionId ?? null,
       dlcIds: line.dlcIds ?? null,
