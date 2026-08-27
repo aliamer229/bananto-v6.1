@@ -80,15 +80,29 @@ const confirmed = <T>(value: T, source = "لوحة الإدارة"): Fact<T> => 
 function buildCore(p: Record<string, unknown>, locale: "ar" | "en") {
   const title = str(p["titleEn"]) || str(p["english_name"]) || str(p["title"]);
 
+  /*
+    The Arabic description had a spelling nobody read.
+
+    The import template writes `description_ar=`, and the schema keeps that
+    field under the snake_case target `description_ar`. Both `description` and
+    `description_en` target `description`. So this chain — which only knew
+    `descriptionAr` — never found the Arabic text, fell through to
+    `description`, and rendered the *English* copy inside an Arabic page.
+
+    Every spelling the catalogue actually contains is listed, Arabic first.
+  */
   const desc =
     locale === "en"
-      ? str(p["descriptionEn"]) || str(p["description"])
-      : str(p["descriptionAr"]) || str(p["description"]) || str(p["descriptionEn"]);
+      ? str(p["descriptionEn"]) || str(p["description_en"]) || str(p["description"])
+      : str(p["descriptionAr"]) ||
+        str(p["description_ar"]) ||
+        str(p["description"]) ||
+        str(p["descriptionEn"]);
 
   const tag =
     locale === "en"
-      ? str(p["taglineEn"]) || str(p["tagline"])
-      : str(p["tagline"]) || str(p["taglineEn"]);
+      ? str(p["taglineEn"]) || str(p["tagline_en"]) || str(p["tagline"])
+      : str(p["taglineAr"]) || str(p["tagline_ar"]) || str(p["tagline"]) || str(p["taglineEn"]);
 
   return {
     title: title || "Product",
