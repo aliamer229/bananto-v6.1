@@ -36,12 +36,21 @@ export default function Cartridge({
   onSelect,
   index = 0,
   animate = true,
+  priority = false,
 }: {
   game: CartridgeGame;
   clicked?: boolean;
   onSelect: (game: CartridgeGame) => void;
   index?: number;
   animate?: boolean;
+  /**
+   * This card is above the fold on first paint.
+   *
+   * The artwork here used to be `loading="lazy"` with `fetchPriority="low"` on
+   * every card including the first row — so the homepage's largest visible
+   * image, its LCP candidate, was explicitly queued behind everything else.
+   */
+  priority?: boolean;
 }) {
   const isSwitch2 = game.platform === "switch2";
   const rating =
@@ -195,7 +204,8 @@ export default function Cartridge({
             alt={game.title ?? ""}
             className="h-full w-full"
             imgClassName="transition-transform duration-500 group-hover:scale-105"
-            fetchPriority="low"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "low"}
           />
         </div>
         <div className="px-2 py-1.5 shrink-0 h-[64px] flex flex-col justify-between bg-[var(--cart-shell)]">

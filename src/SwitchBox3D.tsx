@@ -66,7 +66,16 @@ export interface SwitchBox3DProps {
   platform?: string;
   gameName?: string;
   coverTrim?: unknown;
+  /**
+   * Geometry has arrived. **Not** a signal that anything is visible yet — the
+   * case is untextured at this point, which is exactly the state that used to
+   * be revealed to customers as a grey box.
+   */
   onReady?: () => void;
+  /**
+   * Artwork is on the mesh. This is the one that means "safe to show".
+   */
+  onTextured?: () => void;
   /** Reported when the artwork or the model could not be used. */
   onTextureError?: (reason: string) => void;
 }
@@ -157,6 +166,7 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
       platform = "ns",
       gameName = "Nintendo Switch",
       onReady,
+      onTextured,
       onTextureError,
     },
     ref,
@@ -200,6 +210,7 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
       onReady?.();
     }, [onReady, scene]);
 
+
     // The GLB carries per-node scale and translation (the sleeve sits fractionally
     // proud of the shell). Borrowing only `geometry` would drop those and float
     // the artwork off the case, so the authored transforms are copied across.
@@ -210,6 +221,15 @@ export const SwitchBox3D = forwardRef<SwitchBox3DHandle, SwitchBox3DProps>(
     }, [boxNode, placeholderNode, foilNode]);
 
     const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
+    /*
+      The signal the stage actually reveals on. `scene` resolving only means the
+      glTF arrived; the mesh is still wearing its authored placeholder material
+      until the composited artwork is uploaded. Reporting readiness at the
+      former is how an untextured case reached production.
+    */
+    useEffect(() => {
+      if (scene && texture) onTextured?.();
+    }, [onTextured, scene, texture]);
 
     useEffect(() => {
       let isMounted = true;

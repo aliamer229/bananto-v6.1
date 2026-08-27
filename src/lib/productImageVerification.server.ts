@@ -1,4 +1,5 @@
 import { ingestRemoteImage, type IngestResult } from "./mediaIngest.server";
+import { auditMediaRoles } from "./mediaRoleAudit";
 import type { Product } from "./types";
 
 export const SINGLE_IMAGE_FIELDS = [
@@ -181,6 +182,20 @@ export async function sanitizeAndVerifyProductImages(
     } else if (cloned.mainImage) {
       cloned.nintendoCardImage = cloned.mainImage;
     }
+  }
+
+  /*
+    Role warnings, after the URLs are settled.
+
+    The storefront refuses to borrow another role's image, so a product whose
+    square card and box cover are the same file renders without complaint —
+    and the homepage strip quietly fills with tall boxes in square windows.
+    Save time, in front of someone who can fix it, is the only place that is
+    visible. Warnings only: the 3D texture is optional and a genuine exception
+    must not be blocked.
+  */
+  for (const issue of auditMediaRoles(cloned)) {
+    warnings.push(issue.message);
   }
 
   return {

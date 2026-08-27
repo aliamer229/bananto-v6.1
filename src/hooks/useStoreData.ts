@@ -1,6 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
+import {
+  readCatalogSnapshot,
+  rememberCatalogVersion,
+  writeCatalogSnapshot,
+} from "@/lib/catalog-cache";
+
 export type StoreData = {
   products?: any[];
   categories?: any[];
@@ -10,42 +16,33 @@ export type StoreData = {
   [key: string]: any;
 };
 
-const LOCAL_STORAGE_CACHE_KEY = "banan_store_cache_v2";
-
-/** Read synchronous cached snapshot from localStorage for instantaneous first paint */
+/**
+ * First-paint snapshot.
+ *
+ * Now version-stamped (see src/lib/catalog-cache.ts): a snapshot older than the
+ * newest catalogue version this browser has seen is refused, so a product the
+ * admin just deleted cannot flash back for a frame before the network answers.
+ */
 function getCachedStoreData(): StoreData | undefined {
-  if (typeof window === "undefined") return undefined;
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_CACHE_KEY);
-    if (!raw) return undefined;
-    const parsed = JSON.parse(raw);
-    if (parsed && Array.isArray(parsed.products) && parsed.products.length > 0) {
-      return parsed as StoreData;
-    }
-  } catch {
-    // Ignore storage parse issues
+  const snapshot = readCatalogSnapshot<StoreData>();
+  if (snapshot && Array.isArray(snapshot.products) && snapshot.products.length > 0) {
+    return snapshot;
   }
   return undefined;
 }
 
-/** Save fresh snapshot to localStorage in background */
-function saveCachedStoreData(data: StoreData) {
-  if (typeof window === "undefined") return;
-  try {
-    if (data && Array.isArray(data.products) && data.products.length > 0) {
-      // Don't store oversized fields in localStorage
-      const compact: StoreData = {
-        products: data.products,
-        categories: Array.isArray(data.categories) ? data.categories : [],
-        banners: Array.isArray(data.banners) ? data.banners : [],
-        bundles: Array.isArray(data.bundles) ? data.bundles : [],
-        settings: data.settings && typeof data.settings === "object" ? data.settings : {},
-      };
-      localStorage.setItem(LOCAL_STORAGE_CACHE_KEY, JSON.stringify(compact));
-      console.log(`[HOME_CACHE_SAVED] productsCount=${compact.products?.length ?? 0}`);
-    }
-  } catch {
-    // Ignore quota issues
+/** Save fresh snapshot in the background, stamped with the version it came from. */
+function saveCachedStoreData(data: StoreData, version: number) {
+  if (data && Array.isArray(data.products) && data.products.length > 0) {
+    // Don't store oversized fields in localStorage
+    const compact: StoreData = {
+      products: data.products,
+      categories: Array.isArray(data.categories) ? data.categories : [],
+      banners: Array.isArray(data.banners) ? data.banners : [],
+      bundles: Array.isArray(data.bundles) ? data.bundles : [],
+      settings: data.settings && typeof data.settings === "object" ? data.settings : {},
+    };
+    writeCatalogSnapshot(compact, version);
   }
 }
 
@@ -78,10 +75,15 @@ async function fetchStoreData(): Promise<StoreData> {
         throw new Error(`failed_to_load_store_${res.status}`);
       }
 
+      // The catalogue version the server served this payload at. Recorded before
+      // anything is cached, so a later snapshot can be judged against it.
+      const catalogVersion = Number(res.headers.get("x-catalog-version") || 0) || 0;
+      rememberCatalogVersion(catalogVersion);
+
       const json = (await res.json()) as StoreData;
       if (json && Array.isArray(json.products) && json.products.length > 0) {
-        console.log(`[HOME_REFRESH_SUCCESS] reqId=${reqId} duration=${elapsed}ms count=${json.products.length}`);
-        saveCachedStoreData(json);
+        console.log(`[HOME_REFRESH_SUCCESS] reqId=${reqId} duration=${elapsed}ms count=${json.products.length} catalog=${catalogVersion}`);
+        saveCachedStoreData(json, catalogVersion);
         return json;
       } else {
         // If the server returned an empty products payload unexpectedly, fallback to cached snapshot

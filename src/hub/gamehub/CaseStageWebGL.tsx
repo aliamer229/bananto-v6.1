@@ -1,62 +1,40 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { SwitchBox3D, type SwitchBoxTextureMode, type SwitchBox3DHandle } from "@/SwitchBox3D";
+import { SwitchBox3D, type SwitchBox3DHandle } from "@/SwitchBox3D";
 import type { GameCase3DProps } from "./GameCase3D";
 
 /**
- * The WebGL half of the case stage with full touch/mouse rotation and zoom.
+ * The WebGL half of the case stage, with touch/mouse rotation and zoom.
  *
- * ## Choosing the artwork
+ * It is only ever mounted when a real **3D Texture Source** exists — the
+ * complete printed wrap of back + spine + front. `CaseStage` makes that
+ * decision and passes the artwork in as `wrapUrl`, so there is no fallback
+ * chain here and no way for a front-only cover to reach the model. A product
+ * without a wrap never loads this component at all, which also means it never
+ * downloads three.js.
  *
- * This is the only place allowed to decide that a Front Box Cover may stand in
- * for a missing 3D Texture Source, and it does so **explicitly**, by declaring
- * a texture mode rather than by letting a resolver quietly hand back a
- * different kind of picture:
- *
- * - a real wrap (3D Texture Source, or a stored case sleeve) → `wrap`, drawn
- *   across the sleeve untouched;
- * - front-only art → `composed`, and `SwitchBox3D` builds the spine and back
- *   around it;
- * - nothing → a blank retail case with a printed spine.
- *
- * A square card, a banner or a gallery frame never reaches this component: the
- * media resolver will not return one for a texture role.
+ * `onTextured` fires when the artwork is actually on the mesh. That is what
+ * reveals the canvas; before it, the stage is still showing the box photograph.
+ * The distinction matters because `useGLTF` resolving only means the *geometry*
+ * arrived — treating that as "ready" is what used to put an untextured grey
+ * case on screen.
  */
 export default function CaseStageWebGL({
-  onReady,
+  wrapUrl,
+  onTextured,
+  onFailed,
   ...caseProps
-}: GameCase3DProps & { onReady: () => void }) {
+}: GameCase3DProps & {
+  /** The full case wrap. Required — this component has no other artwork source. */
+  wrapUrl: string;
+  onTextured: () => void;
+  onFailed: () => void;
+}) {
   const controllerRef = useRef<SwitchBox3DHandle | null>(null);
 
-  // 3D Texture Source first — it is the only field that means "full wrap".
-  let source = "";
-  let sourceType = "";
-  let textureMode: SwitchBoxTextureMode = "composed";
-  if (caseProps.coverTextureUrl) {
-    source = caseProps.coverTextureUrl;
-    sourceType = "3D_TEXTURE_SOURCE";
-    textureMode = "wrap";
-  } else if (caseProps.sleeve?.url) {
-    source = caseProps.sleeve.url;
-    sourceType = "CASE_SLEEVE";
-    textureMode = "wrap";
-  } else if (caseProps.coverUrl) {
-    // Declared fallback: front-only art, composed into a sleeve here.
-    source = caseProps.coverUrl;
-    sourceType = "FRONT_BOX_COVER_COMPOSED";
-    textureMode = "composed";
-  }
-
-  useEffect(() => {
-    if (import.meta.env?.DEV) {
-      console.info("[3D] texture source", { sourceType, textureMode, hasSource: Boolean(source) });
-    }
-  }, [source, sourceType, textureMode]);
-
   return (
-    <div id="switch-3d-stage-wrapper" className="relative w-full h-full select-none">
-      {/* Interactive 3D Canvas */}
+    <div id="switch-3d-stage-wrapper" className="relative h-full w-full select-none">
       <Canvas
         camera={{ position: [0, 0, 14.5], fov: 35 }}
         dpr={[1, 2]}
@@ -64,10 +42,9 @@ export default function CaseStageWebGL({
         onCreated={({ gl }) => {
           gl.outputColorSpace = THREE.SRGBColorSpace;
         }}
-        style={{
-          touchAction: "none",
-          cursor: "grab",
-        }}
+        // A lost context on a phone must not leave a dead canvas on screen.
+        onError={() => onFailed()}
+        style={{ touchAction: "none", cursor: "grab" }}
       >
         <ambientLight intensity={1.5} />
         <directionalLight position={[5, 5, 5]} intensity={1.5} />
@@ -75,16 +52,20 @@ export default function CaseStageWebGL({
 
         <SwitchBox3D
           ref={controllerRef}
-          coverImage={source}
-          textureMode={textureMode}
+          coverImage={wrapUrl}
+          textureMode="wrap"
           platform={caseProps.platform || (caseProps.isSwitch2 ? "ns2" : "ns")}
           gameName={caseProps.title}
           coverTrim={caseProps.coverTrim}
-          onReady={onReady}
+          onTextured={onTextured}
           onTextureError={(reason) => {
-            // The page keeps working with the case unpainted; this is only a
-            // diagnostic, never a reason to unmount the product detail view.
-            console.warn("[3D] texture unavailable:", reason, { sourceType });
+            /*
+              The wrap could not be fetched or decoded. Rather than leaving an
+              untextured case rotating on the page, hand the slot back to the
+              static box cover — the stage owns that decision.
+            */
+            console.warn("[3D] wrap texture unavailable:", reason, { wrapUrl });
+            onFailed();
           }}
         />
       </Canvas>

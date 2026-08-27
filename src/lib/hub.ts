@@ -159,7 +159,9 @@ export function normalizeHubGame(product: Record<string, unknown>): HubGame {
     title: str(p["title"]) || "منتج",
     titleEn: str(p["titleEn"]) || str(p["english_title"]),
     tagline: str(p["tagline"]),
-    description: str(p["descriptionAr"]) || str(p["description"]),
+    // `description_ar` is the spelling the import template writes; without it
+    // an Arabic page fell through to the English copy in `description`.
+    description: str(p["descriptionAr"]) || str(p["description_ar"]) || str(p["description"]),
     platform,
     isSwitch2: platform === "switch2" || bool(p["switch2Enhanced"]),
     ...(cover ? { coverUrl: cover } : {}),

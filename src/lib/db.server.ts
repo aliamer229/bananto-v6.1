@@ -903,9 +903,70 @@ async function persistStore(next: StoreDoc, expectedRev: number): Promise<number
   return nextRev;
 }
 
+/**
+ * Last time this isolate confirmed its snapshot against the durable revision.
+ *
+ * A Worker runs many isolates and each keeps its own `storeCache` for up to
+ * `STORE_TTL_MS`. `invalidateStoreCache()` only ever clears the isolate that
+ * handled the mutation, so the *next* request — very likely a different isolate
+ * — kept answering from a snapshot taken up to a minute earlier. That is why a
+ * product deleted or edited in Admin could still be served to the storefront,
+ * and no amount of client-side cache busting could fix it: the server itself
+ * was returning the old catalogue.
+ *
+ * `store_rev` is written by `persistStore` inside the same transaction as the
+ * catalogue, so it is the one number every isolate agrees on. Confirming a
+ * cached snapshot against it costs a single indexed read of a one-row table,
+ * which is far cheaper than the full catalogue load it protects.
+ */
+let storeRevCheckedAt = 0;
+
+/*
+  A single request calls `getStore()` several times. This window collapses
+  those into one revision check without letting a snapshot outlive a mutation
+  in any way a person could notice.
+*/
+const REV_CHECK_GRACE_MS = 250;
+
+/**
+ * The durable catalogue version: the revision every isolate agrees on.
+ *
+ * Exposed so API responses can carry it (`catalogVersion`, `ETag`) and a client
+ * can tell a changed catalogue from an unchanged one without diffing payloads.
+ */
+export async function getCatalogVersion(): Promise<number> {
+  if (!(await d1Ready())) return storeRev;
+  const rev = await readStoreRev();
+  return rev || storeRev;
+}
+
 export async function getStore(): Promise<StoreDoc> {
   const now = Date.now();
-  if (storeCache && now - storeCache.at < STORE_TTL_MS) return storeCache.doc;
+  // Captured because the awaits below mean the module-level cache could be
+  // replaced underneath this call.
+  const cached = storeCache;
+  if (cached && now - cached.at < STORE_TTL_MS) {
+    // Within the TTL the snapshot is still only trustworthy if nothing has been
+    // written since it was taken — by this isolate or any other.
+    if (now - storeRevCheckedAt < REV_CHECK_GRACE_MS) return cached.doc;
+    if (await d1Ready()) {
+      try {
+        const durableRev = await readStoreRev();
+        storeRevCheckedAt = Date.now();
+        if (durableRev === storeRev) return cached.doc;
+        console.info("[store:stale_snapshot_refreshed]", { had: storeRev, now: durableRev });
+        storeCache = undefined;
+        storeCacheVersion++;
+      } catch {
+        // A failed revision check must not take the catalogue down; the TTL
+        // remains the fallback bound on staleness.
+        storeRevCheckedAt = Date.now();
+        return cached.doc;
+      }
+    } else {
+      return cached.doc;
+    }
+  }
 
   if (storeInFlight) return storeInFlight;
 
@@ -918,6 +979,7 @@ export async function getStore(): Promise<StoreDoc> {
     ]);
   };
 
+  storeRevCheckedAt = Date.now();
   storeInFlight = loadWithTimeout()
     .then((doc) => {
       // Only cache if doc has meaningful data

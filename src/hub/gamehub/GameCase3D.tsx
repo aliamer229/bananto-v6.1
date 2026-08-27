@@ -57,8 +57,13 @@ export interface GameCase3DProps {
   /** Front-only key art. Used when no `sleeve` is available. */
   coverUrl?: string | undefined;
   /**
-   * Highest-resolution front cover available. The WebGL sleeve samples this;
-   * the CSS case is happy with `coverUrl`.
+   * The **3D Texture Source**: one image containing the complete printed wrap
+   * (back + spine + front), laid out to the model's UVs.
+   *
+   * This field alone decides whether a 3D case is shown at all. Without it the
+   * hero shows a static Front Box Cover — the storefront no longer composes a
+   * sleeve out of front-only art, because a fabricated spine and back are a
+   * worse answer than a photograph of the real box. See `CaseStage`.
    */
   coverTextureUrl?: string | undefined;
   /**
