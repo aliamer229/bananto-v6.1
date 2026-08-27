@@ -58,34 +58,52 @@ describe("both delete routes share one owner", () => {
 });
 
 describe("the owner deletes in an order that never uncovers the product", () => {
-  it("tombstones before rewriting the aggregate, and clears mirrors last", () => {
+  it("tombstones first, then clears the mirrors, then verifies", () => {
     const tombstone = OWNER.indexOf("await writeTombstone(id)");
-    const aggregate = OWNER.indexOf("await updateStore(");
     const relations = OWNER.indexOf("await hardDeleteProductRelations(id)");
+    const index = OWNER.indexOf("DELETE FROM product_index WHERE id = ?");
     const verify = OWNER.lastIndexOf("findRemainingProductRepresentations(id, slug)");
 
+    // The tombstone is what hides the product; nothing may run before it.
     expect(tombstone).toBeGreaterThan(-1);
-    expect(aggregate).toBeGreaterThan(tombstone);
-    expect(relations).toBeGreaterThan(aggregate);
+    expect(relations).toBeGreaterThan(tombstone);
+    expect(index).toBeGreaterThan(tombstone);
     expect(verify).toBeGreaterThan(relations);
+    expect(verify).toBeGreaterThan(index);
   });
 
-  it("keeps the product hidden when the aggregate rewrite fails", () => {
-    // The tombstone is deliberately not rolled back: a half-finished delete
-    // should leave the product hidden, not flickering back.
-    const failureBranch = OWNER.slice(
-      OWNER.indexOf("catch (err) {", OWNER.indexOf("await updateStore(")),
+  it("aborts when the tombstone cannot be written", () => {
+    // Without it nothing hides the product, so continuing would clear its
+    // relations while leaving it visible — worse than not deleting at all.
+    const branch = OWNER.slice(
+      OWNER.indexOf("catch (err) {", OWNER.indexOf("await writeTombstone(id)")),
     );
-    expect(failureBranch).toContain("ok: false");
-    expect(failureBranch.slice(0, 900)).not.toContain("DELETE FROM store_kv");
+    expect(branch.slice(0, 600)).toContain("return { ok: false");
+  });
+
+  it("does not rewrite the catalogue to delete one product", () => {
+    /*
+      The regression this guards: `updateStore` here meant a full uncached read
+      of the catalogue document and a full rewrite of every products chunk, per
+      delete, with two more full reads around it. Ten sequential deletes was
+      thirty catalogue loads — which is what made the storefront hang.
+    */
+    expect(OWNER).not.toContain("updateStore(");
+    expect(OWNER).not.toMatch(/await getStore\(\)/);
+    expect(OWNER).toContain("bumpCatalogVersion()");
+  });
+
+  it("moves the catalogue revision so every cache key changes at once", () => {
+    // One version bump, not a sweep of individual cache entries.
+    expect(OWNER).toContain("catalogVersion");
+    expect(OWNER.match(/bumpCatalogVersion\(\)/g) ?? []).toHaveLength(1);
   });
 });
 
 describe("verification covers every representation a product lives in", () => {
-  it("checks the aggregate by id and by slug, the granular row and the identity row", () => {
+  it("names every representation it checks", () => {
     for (const needle of [
       '"aggregate:id"',
-      '"aggregate:slug"',
       '"store_kv:granular"',
       '"d1:product_identity"',
       '"public:listing"',
@@ -94,9 +112,20 @@ describe("verification covers every representation a product lives in", () => {
     }
   });
 
-  it("reads the row-level checks straight from D1, not through the store cache", () => {
+  it("verifies with indexed row reads, not a catalogue load", () => {
     expect(OWNER).toContain("FROM store_kv WHERE key = ?");
     expect(OWNER).toContain("FROM product_identity WHERE product_id = ?");
+    expect(OWNER).toContain("FROM product_index WHERE id = ?");
+    // Confirming a delete by reading the whole catalogue — right after
+    // invalidating its cache — was most of the cost of deleting a product.
+    const verifier = OWNER.slice(
+      OWNER.indexOf("export async function findRemainingProductRepresentations"),
+      OWNER.indexOf("/** Writes the `_deleted` marker"),
+    )
+      // Comments explain what it *used* to do; the code is what is asserted.
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(verifier).not.toContain("getStore(");
   });
 
   it("does not count a tombstone as a surviving product", () => {

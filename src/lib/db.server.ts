@@ -959,6 +959,21 @@ async function persistStore(next: StoreDoc, expectedRev: number): Promise<number
     ),
   );
 
+  /*
+    Tombstones are redundant once the aggregate is rewritten without them.
+
+    A delete writes `store:product:<id>` with `_deleted: true` and leaves the
+    aggregate alone, because rewriting ten megabytes to remove one product is
+    what made sequential deletes degrade. The rows are tiny, but they are also
+    unbounded — so the next full aggregate write, which by construction already
+    excludes every tombstoned product, clears them. Only `_deleted` rows: a live
+    granular overlay is somebody else's unsaved write.
+  */
+  statements.push({
+    sql: `DELETE FROM store_kv WHERE key LIKE 'store:product:%' AND value LIKE '%"_deleted":true%'`,
+    params: [],
+  });
+
   // Keep the revision table at a single row.
   statements.push({ sql: `DELETE FROM store_rev WHERE rev < ?`, params: [nextRev] });
 
@@ -1034,6 +1049,36 @@ let storeMetaInFlight: Promise<StoreDoc> | undefined;
 export function invalidateStoreMetaCache() {
   storeMetaCache = undefined;
   storeMetaInFlight = undefined;
+}
+
+/**
+ * Moves the catalogue revision without rewriting the catalogue.
+ *
+ * A delete does not change the products blob any more — it writes a tombstone,
+ * which every read already honours — but it *is* a catalogue change, and every
+ * isolate's snapshot, the edge ETag and the browser's stored snapshot are all
+ * keyed on this number. So the revision moves on its own: two small writes
+ * instead of a full rewrite of a document that can run to ten megabytes.
+ *
+ * Returns the new revision so the caller can hand it to the client, which uses
+ * it to refuse a snapshot older than the change it just made.
+ */
+export async function bumpCatalogVersion(): Promise<number> {
+  if (!(await d1Ready())) {
+    storeRev += 1;
+    invalidateStoreCache();
+    return storeRev;
+  }
+  const current = await readStoreRev();
+  const next = current + 1;
+  const now = new Date().toISOString();
+  await d1Batch([
+    { sql: `INSERT INTO store_rev (rev, updated_at) VALUES (?, ?)`, params: [next, now] },
+    { sql: `DELETE FROM store_rev WHERE rev < ?`, params: [next] },
+  ]);
+  storeRev = next;
+  invalidateStoreCache();
+  return next;
 }
 
 export async function getStoreMeta(): Promise<StoreDoc> {

@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Link } from "@tanstack/react-router";
 import React, { useState, useEffect, useMemo, Suspense, lazy } from "react";
 import { useStoreData } from "../hooks/useStoreData";
-import { useI18n } from "../i18n";
+import { tr, useTranslation } from "../i18n";
 import { useCurrency } from "../context/CurrencyContext";
 import { BananaIcon } from "./Icons";
 import { Headset, CreditCard, Wallet, Star, Trophy, Sparkles } from "lucide-react";
@@ -71,7 +71,16 @@ export default function HomeView({
     setIsClient(true);
   }, []);
 
-  const { t } = useI18n();
+  /*
+    `useTranslation()`, not `useI18n().t`.
+
+    The store's `t` is the legacy translator whose keys *are* Arabic source
+    strings — `if (lang === "ar") return key`. Handed a dotted path it returns
+    the path, which is why "common.viewAll" and an untranslated
+    "Latest Nintendo releases" were rendering to shoppers. The workaround
+    further down (`t(k) === k ? "…" : t(k)`) was the symptom.
+  */
+  const { t } = useTranslation();
   const { formatGenericPrice } = useCurrency();
 
   const { data: store, isPending, isError, refetch, isFetching } = useStoreData();
@@ -149,6 +158,34 @@ export default function HomeView({
       animate={{ opacity: 1 }}
       className="relative z-10 flex flex-col"
     >
+      {/*
+        A catalogue that could not be read says so.
+
+        `isError` was destructured and never rendered: when /api/data failed and
+        no usable snapshot was left, `isPending` went false, `hasProducts` stayed
+        false, and every product section drew its heading over nothing. That is
+        the blank page — headings present, rows missing, no way to tell whether
+        the store was empty or the request had failed. The shell, the banners and
+        the services above still render; only the catalogue reports itself.
+      */}
+      {isClient && isError && !hasProducts ? (
+        <div className="mx-auto my-6 w-full max-w-2xl px-4">
+          <div className="rounded-2xl border border-[var(--brand-red,#e11d48)]/30 bg-[var(--bad-bg,#fee)] p-4 text-center">
+            <p className="text-sm font-bold text-[var(--brand-red-dark,#c00)]">
+              {tr("تعذر تحميل قائمة المنتجات")}
+            </p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              disabled={isFetching}
+              className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[var(--brand-red,#e11d48)] px-4 py-2 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+            >
+              {isFetching ? tr("جارٍ إعادة المحاولة...") : tr("إعادة المحاولة")}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {/* Hero Banner Section */}
       <SectionErrorBoundary sectionName="HeroBanner" fallback={defaultHeroFallback}>
         <div className="w-full aspect-[16/9] sm:aspect-[21/9] min-h-[220px] max-h-[360px] sm:max-h-[440px] md:max-h-[500px] relative z-0 overflow-hidden flex bg-gradient-to-br from-[#1b1c20] to-[#2d1215]">
@@ -265,9 +302,7 @@ export default function HomeView({
           <section className="relative mt-2 pb-2 w-full max-w-full">
             <div className="mb-3 px-4 sm:px-8 flex items-center justify-between">
               <h3 className="truncate text-xl font-bold text-foreground">
-                {t("home.nintendoSwitchGames") === "home.nintendoSwitchGames"
-                  ? "ألعاب نينتندو سويتش"
-                  : t("home.nintendoSwitchGames")}
+                {t("home.nintendoSwitchGames")}
               </h3>
               <Link
                 to="/category/$categoryId"
@@ -335,9 +370,7 @@ export default function HomeView({
               <div className="flex items-center justify-between gap-2 mb-4 px-4 sm:px-8">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xl font-bold text-foreground">
-                    {t("home.latestNintendoGames") === "home.latestNintendoGames"
-                      ? "Latest Nintendo releases"
-                      : t("home.latestNintendoGames")}
+                    {t("home.latestNintendoGames")}
                   </h3>
                   <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
                     New
@@ -696,7 +729,7 @@ export default function HomeView({
           <LazySection>
             <section className="mt-8 mb-12 w-full max-w-full">
               <div className="flex items-center gap-2 mb-4 px-4 sm:px-8">
-                <h3 className="text-xl font-bold text-foreground">{t("أحدث أخبار نينتندو")}</h3>
+                <h3 className="text-xl font-bold text-foreground">{tr("أحدث أخبار نينتندو")}</h3>
               </div>
               <Suspense
                 fallback={

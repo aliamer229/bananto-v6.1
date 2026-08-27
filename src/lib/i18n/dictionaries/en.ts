@@ -93,6 +93,7 @@ export const en: Translations<Dictionary> = {
 
   home: {
     latestNintendoGames: "Latest Nintendo releases",
+    nintendoSwitchGames: "Nintendo Switch games",
     featuredProducts: "Featured products",
     newProducts: "New arrivals",
     offers: "Deals",
