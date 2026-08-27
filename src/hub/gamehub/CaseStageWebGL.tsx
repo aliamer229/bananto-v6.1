@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { SwitchBox3D, type SwitchBox3DHandle } from "@/SwitchBox3D";
+import { cdnImage } from "@/lib/img";
 import type { GameCase3DProps } from "./GameCase3D";
 
 /**
@@ -33,6 +34,22 @@ export default function CaseStageWebGL({
 }) {
   const controllerRef = useRef<SwitchBox3DHandle | null>(null);
 
+  /*
+    The wrap goes through the same-origin image proxy rather than straight to
+    its host.
+
+    A canvas texture has to read the image's pixels, so a cross-origin fetch
+    needs `crossOrigin="anonymous"` *and* an `Access-Control-Allow-Origin` on
+    the response — and if the host does not send one the image simply fails to
+    load. That is invisible from the outside: the model appears, the artwork
+    does not. Proxying makes the request same-origin, so CORS cannot be the
+    reason a case ends up bare, and the proxy resizes to something a texture
+    actually needs on the way through.
+
+    1236 is the sleeve canvas width; asking for more would be discarded.
+  */
+  const textureUrl = cdnImage(wrapUrl, { width: 1236 }) || wrapUrl;
+
   return (
     <div id="switch-3d-stage-wrapper" className="relative h-full w-full select-none">
       <Canvas
@@ -52,7 +69,7 @@ export default function CaseStageWebGL({
 
         <SwitchBox3D
           ref={controllerRef}
-          coverImage={wrapUrl}
+          coverImage={textureUrl}
           textureMode="wrap"
           platform={caseProps.platform || (caseProps.isSwitch2 ? "ns2" : "ns")}
           gameName={caseProps.title}
@@ -64,7 +81,7 @@ export default function CaseStageWebGL({
               untextured case rotating on the page, hand the slot back to the
               static box cover — the stage owns that decision.
             */
-            console.warn("[3D] wrap texture unavailable:", reason, { wrapUrl });
+            console.warn("[3D] wrap texture unavailable:", reason, { wrapUrl, textureUrl });
             onFailed();
           }}
         />

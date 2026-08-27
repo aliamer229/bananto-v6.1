@@ -1,0 +1,141 @@
+/**
+ * Recognises internal supplier/import notes that must never reach a customer.
+ *
+ * ## Why a detector and not just a schema change
+ *
+ * `type.N.description` sat directly under `type.N.cost` in the import template
+ * with no guidance about who it was for, so extraction runs wrote the cost
+ * derivation there:
+ *
+ *     "Supplier Regular / 普通版 converted to IQD using 1 CNY = 220 IQD
+ *      and rounded down to nearest 250 IQD"
+ *
+ * `buildEditions` turns a variant description with no `contents` into a
+ * customer-visible row in the editions comparison — so that sentence was
+ * printed on the product page, next to the price, in front of buyers.
+ *
+ * A dedicated `internal_note` field (added to the schema alongside this) stops
+ * *future* imports doing it. It does nothing for the rows already in
+ * production D1, and this session cannot run a migration against them. So the
+ * public serializer strips these at read time as well: existing products are
+ * clean on the very next request, with no migration and no data rewritten.
+ *
+ * ## The bias
+ *
+ * Deliberately biased toward treating text as internal. A customer losing one
+ * edition sub-line is a cosmetic gap; a customer reading our supplier cost
+ * formula is a commercial leak. Every pattern below is vocabulary that belongs
+ * to procurement, not to a game description.
+ */
+
+/**
+ * Phrases that only appear in supplier/import bookkeeping.
+ *
+ * Each is sufficient on its own — none of them has an innocent reading in a
+ * sentence describing a game edition to a shopper.
+ */
+const INTERNAL_PATTERNS: RegExp[] = [
+  // Supplier vocabulary.
+  /\bsupplier\b/i,
+  /\bwholesale\b/i,
+  // No `\b` on the Arabic patterns: JavaScript word boundaries are defined
+  // against `\w`, which is ASCII-only, so `\bمورد\b` never matches anything.
+  /مورد|المورّد|المورد/,
+
+  // Chinese edition names from the supplier's own catalogue. An Arabic
+  // storefront describing a game to a buyer does not reach for these.
+  /普通版|标准版|豪华版|典藏版|限定版|数字版/,
+
+  // Currency conversion and rounding rules — cost derivation, by definition.
+  /\bCNY\b/i,
+  /\bRMB\b/i,
+  /\bconverted\s+to\s+(?:IQD|USD|EUR)\b/i,
+  /\b1\s*(?:CNY|RMB|USD)\s*=/i,
+  /rounded\s+(?:down|up)\s+to\b/i,
+  /nearest\s+\d+\s*(?:IQD|USD|EUR)?\b/i,
+  /\bexchange\s+rate\b/i,
+  /سعر\s+الصرف/,
+  /التحويل\s+إلى\s+الدينار/,
+
+  // Import/extraction bookkeeping.
+  /\bextraction\b/i,
+  /\bimport\s+(?:note|rule|mapping)\b/i,
+  /\bparsed\s+from\b/i,
+  /\bschema_version\b/i,
+  /ملاحظة\s+داخلية/,
+  /للاستخدام\s+الداخلي/,
+];
+
+/**
+ * Does this customer-facing string actually contain internal bookkeeping?
+ *
+ * Whitespace-only and non-string values are not internal — they are simply
+ * empty, and the caller drops them for their own reasons.
+ */
+export function looksLikeInternalNote(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  const text = value.trim();
+  if (!text) return false;
+  return INTERNAL_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+/**
+ * The string, or `undefined` when it is internal bookkeeping.
+ *
+ * Returning `undefined` rather than an empty string matters: an empty string
+ * would still render as a blank row in the editions comparison, which is the
+ * kind of "fixed it" that leaves a visible hole.
+ */
+export function customerSafeText(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const text = value.trim();
+  if (!text || looksLikeInternalNote(text)) return undefined;
+  return text;
+}
+
+/**
+ * Product fields that are internal by name, wherever they appear in the tree.
+ *
+ * `internalNote` is the field the import template now writes supplier notes
+ * into; the rest are the spellings already present in older rows.
+ */
+export const INTERNAL_FIELD_NAMES = new Set([
+  "internalNote",
+  "internal_note",
+  "internalNotes",
+  "internal_notes",
+  "adminNote",
+  "admin_note",
+  "adminNotes",
+  "importNote",
+  "import_note",
+  "supplierNote",
+  "supplier_note",
+  "extractionNote",
+  "extraction_note",
+  "sourceNote",
+  "conversionRule",
+  "conversion_rule",
+  "priceRule",
+  "price_rule",
+]);
+
+/**
+ * Text fields on a variant that a customer is allowed to read.
+ *
+ * Anything here still goes through {@link customerSafeText}, because the field
+ * being *meant* for customers does not mean an importer respected that.
+ */
+export const CUSTOMER_TEXT_FIELDS = [
+  "description",
+  "descriptionEn",
+  "descriptionAr",
+  "description_ar",
+  "description_en",
+  "customerDescription",
+  "customer_description",
+  "label",
+  "labelEn",
+  "note",
+  "subtitle",
+] as const;
