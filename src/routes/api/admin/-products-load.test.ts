@@ -221,13 +221,30 @@ describe("GET /api/admin/products — the listing", () => {
     expect(body.total).toBe(2);
   });
 
-  it("does not mistake an empty search result for an unbuilt index", async () => {
+  it("does not mistake an empty filter result for an unbuilt index", async () => {
     await rebuildProductIndex([product(1)], 1);
-    storeReads = 0;
-    const body = await (await get("?search=nothingmatchesthis")).json();
-    expect(body.total).toBe(0);
-    // A search with no hits is an answer, not a reason to reload the catalogue.
-    expect(storeReads).toBe(0);
+    // A catalogue is present in store_kv, so a spurious bootstrap would show up
+    // as extra statements against it.
+    db.raw
+      .prepare(`INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)`)
+      .run("store:products", JSON.stringify([product(1)]), "now");
+
+    for (const query of [
+      "?search=nothingmatchesthis",
+      "?hidden=1",
+      "?unpriced=1",
+      "?performance=1",
+      "?category=cat_does_not_exist",
+      "?page=9&limit=50",
+    ]) {
+      db.reset();
+      const body = await (await get(query)).json();
+      expect(body.bootstrapped).toBe(false);
+      // A filter with no hits is an answer, not a reason to reload the
+      // catalogue — three statements, none of them against store_kv.
+      expect(db.log).toHaveLength(3);
+      expect(db.log.some((sql) => /store_kv/.test(sql))).toBe(false);
+    }
   });
 
   it("carries stage timings a slow request can be diagnosed from", async () => {
@@ -262,5 +279,73 @@ describe("a failing store request does not decide the product table", () => {
     expect(interpretProductsPayload(body).state).toBe("loaded");
     // The two endpoints no longer share a read: the listing never called it.
     expect(storeReads).toBe(0);
+  });
+});
+
+describe("acceptance: the requests the admin page actually makes", () => {
+  /*
+    Run against a database that rejects >100 bound variables exactly as D1 does,
+    at a catalogue size well past where the old statement broke. Each case is
+    one of the requests the products page issues.
+  */
+  const CATALOGUE = 1000;
+
+  beforeEach(async () => {
+    await rebuildProductIndex(
+      Array.from({ length: CATALOGUE }, (_, i) => product(i)),
+      1,
+    );
+  });
+
+  const cases: [string, string][] = [
+    ["initial load", "?sort=updated&dir=desc&page=1&limit=50"],
+    ["page two", "?sort=updated&dir=desc&page=2&limit=50"],
+    ["back to page one", "?sort=updated&dir=desc&page=1&limit=50"],
+    ["last page", "?sort=updated&dir=desc&page=20&limit=50"],
+    ["sort by name", "?sort=name&dir=asc&page=1&limit=50"],
+    ["sort by price", "?sort=price&dir=desc&page=1&limit=50"],
+    ["default order", "?sort=order&dir=desc&page=1&limit=50"],
+    ["search", "?search=Product%20007&page=1&limit=50"],
+    ["hidden filter", "?hidden=1&page=1&limit=50"],
+    ["unpriced filter", "?unpriced=1&page=1&limit=50"],
+    ["every filter at once", "?search=product&hidden=0&unpriced=0&performance=1&sort=price&dir=asc&page=1&limit=50"],
+  ];
+
+  it.each(cases)("%s answers 200 with a valid page", async (_label, query) => {
+    db.reset();
+    const res = await get(query);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+
+    expect(Array.isArray(body.items)).toBe(true);
+    expect(body.items.length).toBeLessThanOrEqual(50);
+    expect(Number.isFinite(body.total)).toBe(true);
+    expect(Number.isFinite(body.page)).toBe(true);
+    expect(body.limit).toBe(50);
+    expect(typeof body.hasMore).toBe("boolean");
+    expect(interpretProductsPayload(body).state).not.toBe("unusable");
+
+    // Three statements, and none of them near the ceiling.
+    expect(db.log).toHaveLength(3);
+    for (const sql of db.log) {
+      expect((sql.match(/\?/g) ?? []).length).toBeLessThan(12);
+    }
+  });
+
+  it("pages the whole catalogue without a duplicate or a gap", async () => {
+    const seen: string[] = [];
+    for (let page = 1; page <= CATALOGUE / 50; page++) {
+      const body = await (await get(`?sort=name&dir=asc&page=${page}&limit=50`)).json();
+      seen.push(...body.items.map((row: { id: string }) => row.id));
+    }
+    expect(seen).toHaveLength(CATALOGUE);
+    expect(new Set(seen).size).toBe(CATALOGUE);
+  });
+
+  it("reports the catalogue total on every page, not the page length", async () => {
+    for (const page of [1, 7, 20]) {
+      const body = await (await get(`?page=${page}&limit=50`)).json();
+      expect(body.total).toBe(CATALOGUE);
+    }
   });
 });

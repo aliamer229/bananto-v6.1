@@ -29,10 +29,12 @@ const {
   DEFAULT_PAGE_SIZE,
   productIndexCount,
   productIndexStatements,
+  readProductIndexFingerprints,
   readProductIndexPage,
   rebuildProductIndex,
   toIndexRow,
 } = await import("./product-index.server");
+const { D1_MAX_BOUND_PARAMETERS, SAFE_SQL_VARIABLES } = await import("./sql-params");
 const { sortableNameKey } = await import("./productSort");
 
 function product(overrides: Record<string, unknown> = {}) {
@@ -275,5 +277,122 @@ describe("cost of a page", () => {
       expect(detail).not.toMatch(/USE TEMP B-TREE FOR ORDER BY/);
       expect(detail).toMatch(/USING (COVERING )?INDEX/);
     }
+  });
+});
+
+describe("bound parameters stay within D1's limit", () => {
+  /** Every `?` a statement carries. */
+  const paramsOf = (statement: { params: unknown[] }) => statement.params.length;
+
+  it("never exceeds the ceiling, at any catalogue size", async () => {
+    for (const size of [1, 50, 137, 500, 1000, 5000]) {
+      const catalogue = Array.from({ length: size }, (_, i) => product({ id: `p${i}` }));
+      const statements = productIndexStatements(catalogue, 1);
+      const worst = Math.max(...statements.map(paramsOf));
+      // D1 rejects at 100. The old grouping bound 540 and failed at the 100th
+      // variable — reported as "too many SQL variables at offset 488".
+      expect(worst).toBeLessThan(D1_MAX_BOUND_PARAMETERS);
+      expect(worst).toBeLessThanOrEqual(SAFE_SQL_VARIABLES);
+    }
+  });
+
+  it("depends on the row width, not on how many products exist", () => {
+    const small = productIndexStatements(
+      Array.from({ length: 10 }, (_, i) => product({ id: `s${i}` })),
+      1,
+    );
+    const large = productIndexStatements(
+      Array.from({ length: 4000 }, (_, i) => product({ id: `l${i}` })),
+      1,
+    );
+    expect(Math.max(...large.map(paramsOf))).toBe(Math.max(...small.map(paramsOf)));
+  });
+
+  it("actually executes against a database that enforces the limit", async () => {
+    // The harness rejects >100 bound variables exactly as D1 does, so this
+    // would have failed before the fix.
+    await rebuildProductIndex(
+      Array.from({ length: 1000 }, (_, i) => product({ id: `p${String(i).padStart(4, "0")}` })),
+      1,
+    );
+    expect(await productIndexCount()).toBe(1000);
+    const page = await readProductIndexPage({ page: 1, limit: 50 });
+    expect(page.items).toHaveLength(50);
+    expect(page.total).toBe(1000);
+  });
+
+  it("keeps a page read itself well inside the limit", async () => {
+    await rebuildProductIndex(Array.from({ length: 200 }, () => product()), 1);
+    db.reset();
+    await readProductIndexPage({
+      page: 4,
+      limit: 100,
+      search: "mario",
+      categoryId: "cat_nintendo",
+      hidden: false,
+      onlyUnpriced: true,
+      performanceRequired: true,
+    });
+    // Every filter at once still binds a handful: the page query's parameter
+    // count is a function of the filters, never of the catalogue.
+    for (const sql of db.log) {
+      expect((sql.match(/\?/g) ?? []).length).toBeLessThan(12);
+    }
+  });
+});
+
+describe("a save writes only what changed", () => {
+  it("touches one row when one product changed", async () => {
+    const catalogue = Array.from({ length: 300 }, (_, i) => product({ id: `p${i}` }));
+    await rebuildProductIndex(catalogue, 1);
+
+    const current = await readProductIndexFingerprints();
+    expect(current.size).toBe(300);
+
+    const edited = catalogue.map((p) => (p.id === "p7" ? { ...p, price: 99999 } : p));
+    const statements = productIndexStatements(edited, 2, current);
+
+    // One INSERT OR REPLACE, and no DELETE of the whole table.
+    expect(statements).toHaveLength(1);
+    expect(statements[0]!.sql).toContain("INSERT OR REPLACE");
+    expect(statements[0]!.params).toHaveLength(27);
+    expect(statements.some((s) => s.sql === "DELETE FROM product_index")).toBe(false);
+  });
+
+  it("writes nothing when nothing changed", async () => {
+    const catalogue = Array.from({ length: 120 }, (_, i) => product({ id: `p${i}` }));
+    await rebuildProductIndex(catalogue, 1);
+    const current = await readProductIndexFingerprints();
+    // A save that only touched a banner still rewrites the catalogue blob; it
+    // must not rewrite the projection.
+    expect(productIndexStatements(catalogue, 2, current)).toEqual([]);
+  });
+
+  it("removes rows for deleted products, in bounded batches", async () => {
+    const catalogue = Array.from({ length: 500 }, (_, i) => product({ id: `p${i}` }));
+    await rebuildProductIndex(catalogue, 1);
+    const current = await readProductIndexFingerprints();
+
+    const statements = productIndexStatements(catalogue.slice(0, 100), 2, current);
+    const deletes = statements.filter((s) => s.sql.startsWith("DELETE FROM product_index WHERE id"));
+    expect(deletes.length).toBeGreaterThan(1);
+    expect(deletes.reduce((n, s) => n + s.params.length, 0)).toBe(400);
+    for (const statement of deletes) {
+      expect(statement.params.length).toBeLessThan(D1_MAX_BOUND_PARAMETERS);
+    }
+  });
+
+  it("still applies the change it computed", async () => {
+    const catalogue = Array.from({ length: 40 }, (_, i) => product({ id: `p${i}`, price: 1000 }));
+    await rebuildProductIndex(catalogue, 1);
+    const current = await readProductIndexFingerprints();
+    const edited = catalogue.map((p) => (p.id === "p3" ? { ...p, price: 77000 } : p));
+
+    for (const statement of productIndexStatements(edited, 2, current)) {
+      db.raw.prepare(statement.sql).run(...(statement.params as never[]));
+    }
+    const page = await readProductIndexPage({ search: "p3" });
+    expect(page.items[0]!.price).toBe(77000);
+    expect(await productIndexCount()).toBe(40);
   });
 });

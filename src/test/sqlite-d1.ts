@@ -31,6 +31,33 @@ export interface FakeD1 {
 
 const isRead = (sql: string) => /^\s*select/i.test(sql);
 
+/**
+ * Cloudflare D1 rejects a statement carrying more than 100 bound parameters.
+ *
+ * `node:sqlite` is built with SQLITE_MAX_VARIABLE_NUMBER at its default — tens
+ * of thousands — so without this the harness happily runs statements D1 will
+ * refuse, and a test suite full of green ticks says nothing about production.
+ * That is exactly what happened: a 540-parameter INSERT passed here and came
+ * back from D1 as `too many SQL variables at offset 488`, which is character
+ * offset of the 100th `?`.
+ */
+export const D1_MAX_BOUND_PARAMETERS = 100;
+
+function enforceD1Limit(sql: string, binds: unknown[]) {
+  if (binds.length > D1_MAX_BOUND_PARAMETERS) {
+    let seen = 0;
+    let offset = 0;
+    for (let i = 0; i < sql.length; i++) {
+      if (sql[i] === "?" && ++seen === D1_MAX_BOUND_PARAMETERS) {
+        offset = i;
+        break;
+      }
+    }
+    // The message D1 actually returns, so a test failure reads like the bug.
+    throw new Error(`D1_ERROR: too many SQL variables at offset ${offset}: SQLITE_ERROR`);
+  }
+}
+
 export function createSqliteD1(schema: string[] = []): FakeD1 {
   const db = new DatabaseSync(":memory:");
   const log: string[] = [];
@@ -53,15 +80,18 @@ export function createSqliteD1(schema: string[] = []): FakeD1 {
       bind: (...values: unknown[]) => makeStatement(sql, values),
       all: async <T>() => {
         record();
+        enforceD1Limit(sql, normalised);
         return { results: db.prepare(sql).all(...normalised) as T[] };
       },
       first: async <T>() => {
         record();
+        enforceD1Limit(sql, normalised);
         const rows = db.prepare(sql).all(...normalised) as T[];
         return rows[0] ?? null;
       },
       run: async () => {
         record();
+        enforceD1Limit(sql, normalised);
         const result = db.prepare(sql).run(...normalised);
         return { success: true, meta: { changes: Number(result.changes ?? 0) } };
       },
@@ -79,6 +109,7 @@ export function createSqliteD1(schema: string[] = []): FakeD1 {
       for (const statement of statements) {
         const s = statement as { _sql: string; _params: unknown[] };
         log.push(s._sql.replace(/\s+/g, " ").trim());
+        enforceD1Limit(s._sql, s._params);
         const prepared = db.prepare(s._sql);
         if (isRead(s._sql)) out.push({ results: prepared.all(...(s._params as never[])) });
         else out.push({ success: true, meta: { changes: prepared.run(...(s._params as never[])).changes } });

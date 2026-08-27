@@ -197,7 +197,22 @@ export const Route = createFileRoute("/api/admin/products")({
             from the rebuilt table. This is the only path that still loads the
             whole catalogue, and taking it means the next request will not.
           */
-          if (page.total === 0 && !search) {
+          /*
+            Only an *unfiltered* empty first page can mean the projection was
+            never built. A filter that legitimately matches nothing — no hidden
+            products, no unpriced ones, a search with no hits — is an answer,
+            and treating it as an unbuilt index sent the endpoint back to the
+            catalogue document on exactly the requests that should be cheapest.
+          */
+          const isUnfiltered =
+            !search &&
+            query.hidden === undefined &&
+            !query.onlyUnpriced &&
+            !query.performanceRequired &&
+            !query.categoryId &&
+            page.page === 1;
+
+          if (page.total === 0 && isUnfiltered) {
             const bootStart = Date.now();
             const rev = await getCatalogVersion();
             const result = await bootstrapProductIndex(rev);
