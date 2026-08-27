@@ -5,7 +5,12 @@ import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
 import { d1Run } from "@/lib/d1.server";
 import { autoTranslateProduct } from "@/lib/translate.server";
-import { parseProductSort, sortProducts } from "@/lib/productSort";
+import { parseProductSort } from "@/lib/productSort";
+import {
+  bootstrapProductIndex,
+  DEFAULT_PAGE_SIZE,
+  readProductIndexPage,
+} from "@/lib/product-index.server";
 import {
   findConflictingProduct,
   findDuplicateProducts,
@@ -80,60 +85,57 @@ export const Route = createFileRoute("/api/admin/products")({
     handlers: {
       GET: async ({ request }) =>
         guard(async () => {
-          const startTime = Date.now();
+          /*
+            Stage timings, because "the products endpoint is slow" was never
+            actionable. Each line names the stage, the row count, the query
+            count and the response size, so a slow request in production says
+            which stage it spent the time in.
+          */
+          const t0 = Date.now();
           const reqId = Math.random().toString(36).slice(2, 9);
-          console.log(`[ADMIN_PRODUCTS_LOAD_START] reqId=${reqId} time=${new Date().toISOString()}`);
+          const mark = { auth: 0, query: 0, bootstrap: 0, full: 0 };
 
           await requireAdmin(request);
+          mark.auth = Date.now() - t0;
+
           const url = new URL(request.url);
           const id = url.searchParams.get("id");
           const slug = url.searchParams.get("slug");
-          const page = parseInt(url.searchParams.get("page") || "0", 10);
-          const limit = parseInt(url.searchParams.get("limit") || "0", 10);
-          const search = url.searchParams.get("search")?.toLowerCase().trim();
+          const wantsDuplicates = Boolean(url.searchParams.get("duplicates"));
+
           /*
-            The order the admin asked for. It has to be applied here rather than
-            in the browser, because this endpoint paginates: sorting a page that
-            was already sliced sorts fifteen arbitrary products, not the
-            catalogue. Anything unrecognised falls back to the table's existing
-            default rather than erroring.
+            The listing and the full product are different endpoints wearing one
+            path. The listing reads a narrow projection table; `?id=` / `?slug=`
+            and the duplicate scan need whole documents, so only they pay for
+            the catalogue. Keeping them apart is the point: the table used to
+            load every product's full document — media, variants, Nintendo hub
+            data, performance modes — to render a name and a price.
           */
-          const sort = parseProductSort(
-            url.searchParams.get("sort"),
-            url.searchParams.get("dir"),
-          );
+          if (id || slug || wantsDuplicates) {
+            const store: StoreDoc = await getStore();
+            mark.full = Date.now() - t0;
+            const products = store.products || [];
 
-          let store: StoreDoc;
-          try {
-            store = await getStore();
-            console.log(`[D1_HEALTH_OK] reqId=${reqId} loadDurationMs=${Date.now() - startTime}`);
-          } catch (dbErr) {
-            console.error(`[D1_HEALTH_FAILED] reqId=${reqId}`, dbErr);
-            throw dbErr;
-          }
-
-          let products = store.products || [];
-          console.log(`[D1_PRODUCTS_COUNT] reqId=${reqId} rawCount=${products.length}`);
-
-          if (id) {
-            const product = products.find((p) => String(p.id) === String(id));
-            if (!product) {
-              return json({ error: "Product not found", code: "NOT_FOUND" }, { status: 404 });
+            if (id) {
+              const product = products.find((p) => String(p.id) === String(id));
+              if (!product) {
+                return json({ error: "Product not found", code: "NOT_FOUND" }, { status: 404 });
+              }
+              console.log(`[admin_products.full] reqId=${reqId} by=id ms=${mark.full}`);
+              return json({ success: true, product });
             }
-            return json({ success: true, product });
-          }
 
-          if (slug) {
-            const product = products.find(
-              (p) => p.slug && p.slug.toLowerCase() === slug.toLowerCase(),
-            );
-            if (!product) {
-              return json({ error: "Product not found", code: "NOT_FOUND" }, { status: 404 });
+            if (slug) {
+              const product = products.find(
+                (p) => p.slug && p.slug.toLowerCase() === slug.toLowerCase(),
+              );
+              if (!product) {
+                return json({ error: "Product not found", code: "NOT_FOUND" }, { status: 404 });
+              }
+              console.log(`[admin_products.full] reqId=${reqId} by=slug ms=${mark.full}`);
+              return json({ success: true, product });
             }
-            return json({ success: true, product });
-          }
 
-          if (url.searchParams.get("duplicates")) {
             const duplicates = findDuplicateProducts(products);
             const orphanIdentities = await pruneOrphanProductIdentities(products);
             const { indexed, unindexed } = await reindexProductIdentities(products);
@@ -148,41 +150,104 @@ export const Route = createFileRoute("/api/admin/products")({
             });
           }
 
-          if (search) {
-            products = products.filter(
-              (p) =>
-                (p.title && p.title.toLowerCase().includes(search)) ||
-                (p.titleEn && p.titleEn.toLowerCase().includes(search)) ||
-                (p.slug && p.slug.toLowerCase().includes(search)) ||
-                (p.id && String(p.id).toLowerCase().includes(search)),
-            );
+          /*
+            The order the admin asked for. It has to be applied in SQL rather
+            than in the browser, because this endpoint paginates: sorting a page
+            that was already sliced sorts fifty arbitrary products, not the
+            catalogue. Anything unrecognised falls back to the table's existing
+            default rather than erroring.
+          */
+          const sort = parseProductSort(url.searchParams.get("sort"), url.searchParams.get("dir"));
+          const requestedLimit = Number.parseInt(url.searchParams.get("limit") || "", 10);
+          const requestedPage = Number.parseInt(url.searchParams.get("page") || "", 10);
+          const search = (url.searchParams.get("search") || url.searchParams.get("q") || "").trim();
+          const hiddenParam = url.searchParams.get("hidden");
+
+          const query = {
+            page: Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1,
+            limit:
+              Number.isFinite(requestedLimit) && requestedLimit > 0
+                ? requestedLimit
+                : DEFAULT_PAGE_SIZE,
+            sort,
+            ...(search ? { search } : {}),
+            ...(url.searchParams.get("category")
+              ? { categoryId: url.searchParams.get("category")! }
+              : {}),
+            ...(hiddenParam === "1" || hiddenParam === "true"
+              ? { hidden: true }
+              : hiddenParam === "0" || hiddenParam === "false"
+                ? { hidden: false }
+                : {}),
+            ...(url.searchParams.get("unpriced") ? { onlyUnpriced: true } : {}),
+            ...(url.searchParams.get("performance") ? { performanceRequired: true } : {}),
+          };
+
+          const queryStart = Date.now();
+          let page = await readProductIndexPage(query);
+          mark.query = Date.now() - queryStart;
+          let d1Queries = 2;
+          let bootstrapped = false;
+
+          /*
+            An empty projection is not the same as an empty catalogue. Before a
+            first save on a database that predates this table, and after the
+            table is dropped, it is simply unbuilt — so the document is read
+            once, the projection is written from it, and the page is answered
+            from the rebuilt table. This is the only path that still loads the
+            whole catalogue, and taking it means the next request will not.
+          */
+          if (page.total === 0 && !search) {
+            const bootStart = Date.now();
+            const rev = await getCatalogVersion();
+            const result = await bootstrapProductIndex(rev);
+            if (result.built > 0) {
+              page = await readProductIndexPage(query);
+              bootstrapped = true;
+              d1Queries += 3 + Math.ceil(result.built / 20);
+            }
+            mark.bootstrap = Date.now() - bootStart;
           }
 
-          const total = products.length;
-          // Sort the whole filtered set, then slice. `productComparator` ends
-          // every comparison in an id tie-break, so equal rows keep a fixed
-          // order and a product cannot appear on two pages or on none.
-          products = sortProducts(products as unknown as Record<string, unknown>[], sort) as typeof products;
-          let paginated = products;
-          if (limit > 0) {
-            const offset = Math.max(0, (page > 0 ? page - 1 : 0) * limit);
-            paginated = products.slice(offset, offset + limit);
-          }
-
-          const totalDuration = Date.now() - startTime;
-          console.log(`[PRODUCTS_FETCHED] reqId=${reqId} count=${paginated.length} total=${total} durationMs=${totalDuration}`);
-
-          return json({
+          const body = {
             success: true,
-            products: paginated,
-            d1Count: total,
-            total,
-            // Echoed so the client can confirm the order it is displaying is
-            // the order it asked for.
+            // `items` is the shape this endpoint means; `products` and
+            // `d1Count` stay so an admin page deployed before this change keeps
+            // reading the same response.
+            items: page.items,
+            products: page.items,
+            page: page.page,
+            limit: page.limit,
+            total: page.total,
+            d1Count: page.total,
+            hasMore: page.hasMore,
+            // Counts over the whole catalogue, for the filter chips.
+            facets: page.facets,
             sort: sort.field,
             dir: sort.direction,
             d1Healthy: true,
-            durationMs: totalDuration,
+            source: "product_index" as const,
+            bootstrapped,
+            durationMs: Date.now() - t0,
+          };
+          const payload = JSON.stringify(body);
+
+          console.log(
+            `[admin_products.timing] reqId=${reqId}` +
+              ` total_ms=${Date.now() - t0} auth_ms=${mark.auth} query_ms=${mark.query}` +
+              ` bootstrap_ms=${mark.bootstrap} rows=${page.items.length} total=${page.total}` +
+              ` d1_queries=${d1Queries} bytes=${payload.length}` +
+              ` page=${page.page} limit=${page.limit} sort=${sort.field}:${sort.direction}` +
+              ` store_kv_touched=${bootstrapped} r2_touched=false`,
+          );
+
+          return new Response(payload, {
+            status: 200,
+            headers: {
+              "content-type": "application/json; charset=utf-8",
+              "cache-control": "no-store",
+              "server-timing": `auth;dur=${mark.auth}, query;dur=${mark.query}, bootstrap;dur=${mark.bootstrap}, total;dur=${Date.now() - t0}`,
+            },
           });
         }),
 

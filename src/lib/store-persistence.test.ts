@@ -64,6 +64,8 @@ vi.mock("./storage.server", () => ({
 vi.mock("./whatsapp.server", () => ({ sendWhatsappMessage: async () => undefined }));
 vi.mock("./telegram.server", () => ({ sendTelegramMessage: async () => undefined }));
 
+import { PRODUCT_INDEX_SCHEMA } from "@/test/sqlite-d1";
+
 const store = await import("./db.server");
 
 function reset() {
@@ -77,6 +79,10 @@ function reset() {
      reads the user table on its way through. Empty is enough. */
   db.exec(`DROP TABLE IF EXISTS users`);
   db.exec(`CREATE TABLE users (id TEXT PRIMARY KEY, created_at TEXT)`);
+  /* The listing projection is written in the same batch as the catalogue, so
+     the writer's transaction needs the table to exist. */
+  db.exec(`DROP TABLE IF EXISTS product_index`);
+  for (const statement of PRODUCT_INDEX_SCHEMA) db.exec(statement);
   store.invalidateStoreCache();
 }
 

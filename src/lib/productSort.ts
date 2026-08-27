@@ -118,6 +118,44 @@ export function sortableName(product: Row): string {
  */
 const collator = new Intl.Collator("ar", { numeric: true, sensitivity: "base" });
 
+/**
+ * The name column, reduced to a key that sorts the same in SQLite as it does
+ * in this module.
+ *
+ * The admin table is now ordered by SQL — the catalogue is paginated in D1, so
+ * a page has to be a page of an ordered set — while the browser still reorders
+ * in place after an edit. `Intl.Collator` cannot run inside D1, so if the two
+ * sides used different rules a saved title would jump to a row that does not
+ * match the page it came from. Both sides therefore compare *this* key:
+ *
+ *  - alef variants fold together (أ إ آ ٱ → ا), as `ar` collation does;
+ *  - Arabic diacritics and the tatweel are dropped, since they do not affect
+ *    alphabetical order;
+ *  - taa marbuta folds to haa and the two yaa forms fold together, matching
+ *    base sensitivity;
+ *  - case is folded;
+ *  - digit runs are zero-padded to ten places, which is how `numeric: true`
+ *    puts "Mario 2" before "Mario 10" — plain text order would not.
+ *
+ * The result is plain ASCII-comparable text, so `ORDER BY title_sort` in
+ * SQLite produces the same sequence as `collator.compare` did.
+ */
+export function sortableNameKey(value: string): string {
+  const folded = value
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    // Arabic diacritics (harakat) and the tatweel carry no alphabetical weight.
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    // Combining marks left by NFKD on Latin text (é → e).
+    .replace(/[\u0300-\u036F]/g, "")
+    .replace(/[\u0622\u0623\u0625\u0671]/g, "\u0627")
+    .replace(/\u0629/g, "\u0647")
+    .replace(/\u0649/g, "\u064A")
+    .replace(/\s+/g, " ");
+  return folded.replace(/\d+/g, (digits) => digits.padStart(10, "0"));
+}
+
 /** Existing default ordering: explicit display order, then release/creation date. */
 function orderRank(product: Row): number {
   return num(product["displayOrder"]) ?? 0;
@@ -155,6 +193,15 @@ function compareOn(a: Row, b: Row, field: ProductSortField): number {
       if (!left && !right) return 0;
       if (!left) return Number.POSITIVE_INFINITY;
       if (!right) return Number.NEGATIVE_INFINITY;
+      /*
+        Compared on the folded key, not the raw title, so this agrees with the
+        `ORDER BY title_sort` the paginated endpoint runs. `collator` still
+        breaks ties the key cannot see (two titles that fold to the same text),
+        which keeps the order total.
+      */
+      const leftKey = sortableNameKey(left);
+      const rightKey = sortableNameKey(right);
+      if (leftKey !== rightKey) return leftKey < rightKey ? -1 : 1;
       return collator.compare(left, right);
     }
     case "order":
