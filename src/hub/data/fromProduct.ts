@@ -8,6 +8,7 @@ import {
   lines,
   rows,
   youtubeEmbed,
+  youtubeThumbnail,
   readOffers,
   type ListRow,
   str,
@@ -153,18 +154,23 @@ function buildMedia(p: Record<string, unknown>, locale: "ar" | "en") {
             kind: "trailer" as const,
             title: locale === "en" ? "Official Trailer" : "الإعلان الرسمي",
             embedUrl: youtubeEmbed(trailerUrl) ?? trailerUrl,
+            // Without a poster the card paints an empty gradient rectangle at
+            // the size it reserved. See `youtubeThumbnail`.
+            ...(youtubeThumbnail(trailerUrl) ? { thumbnailUrl: youtubeThumbnail(trailerUrl)! } : {}),
           },
         ]
       : []),
     ...videoRows.reduce<GameVideo[]>((acc, row, i) => {
       const embedUrl = youtubeEmbed(row["url"]);
       if (!embedUrl) return acc;
+      const poster = str(row["thumbnailUrl"]) || youtubeThumbnail(row["url"]);
       acc.push({
         id: `video-${i}`,
         kind: "gameplay" as const,
         title:
           localizedValue(row, "title", "titleEn", locale) || (locale === "en" ? "Video" : "فيديو"),
         embedUrl,
+        ...(poster ? { thumbnailUrl: poster } : {}),
       });
       return acc;
     }, []),
