@@ -97,6 +97,7 @@ export const ar = {
 
   home: {
     latestNintendoGames: "أحدث إصدارات نينتندو",
+    nintendoSwitchGames: "ألعاب نينتندو سويتش",
     featuredProducts: "منتجات مميّزة",
     newProducts: "وصل حديثاً",
     offers: "العروض",

@@ -38,7 +38,19 @@ export function LazySection({
       {isVisible
         ? children
         : placeholder || (
-            <div className="h-40 animate-pulse animate-skeleton-shimmer bg-muted/20 rounded-3xl mx-4" />
+            /*
+              Reserved space, not a skeleton.
+
+              A section below the fold has not been requested yet — nothing is
+              loading. An animated shimmer says otherwise, and eight of them
+              stacked down a page that is waiting on the catalogue is
+              indistinguishable from a page that has hung. It stays quiet until
+              the section actually mounts.
+            */
+            <div
+              aria-hidden
+              className="mx-4 h-40 rounded-3xl bg-muted/10"
+            />
           )}
     </div>
   );
