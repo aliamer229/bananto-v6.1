@@ -1,22 +1,32 @@
 /**
- * Details page for the hardware / amiibo / accessory sections.
+ * Details page for every non-game section: amiibo, accessories, gift cards,
+ * used items and account bundles. (Hardware keeps its own richer page, and
+ * Nintendo Switch Games keep the Game Hub; neither is touched from here.)
  *
- * Everything rendered here comes from `buildProductView`, which has already
- * resolved labels into the active language and dropped anything empty — so a
- * section that isn't present in the data isn't present on the page either.
- * Nintendo Switch Games keeps its own Game Hub page; this one never touches it.
+ * ## One framework, category-specific shapes
+ *
+ * The page does not decide what it contains. `buildProductView` turns the
+ * stored record into a view model with the empty parts already dropped, and
+ * `resolveSections` turns that view model into the ordered list of sections
+ * this particular product has. The body maps over that list, and the sticky
+ * navigation is built from the same list — so a tab can never point at a
+ * section that was dropped, and a section can never render as a heading with
+ * nothing under it.
+ *
+ * That is what makes a used console lead with its condition grade, a gift card
+ * lead with its region, and an amiibo lead with what it unlocks, without any of
+ * them being a separate page.
+ *
+ * ## Mobile first
+ *
+ * The hero is a single column that only becomes two at `lg`, in the order a
+ * phone should read it: picture, name, price, key facts, then the buy button.
+ * Every horizontal thing — the nav chips, the compatibility table, the
+ * thumbnail strip — scrolls inside its own container, so nothing widens the
+ * page itself.
  */
 
-import {
-  BadgeCheck,
-  ExternalLink,
-  FileText,
-  Link2,
-  Minus,
-  Play,
-  Plus,
-  ShoppingCart,
-} from "lucide-react";
+import { BadgeCheck, ExternalLink, FileText, Minus, Play, Plus, ShoppingCart } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
@@ -25,14 +35,26 @@ import { useCurrency } from "@/context/CurrencyContext";
 import { useTranslation } from "@/i18n";
 import { formatDate } from "@/lib/i18n";
 import { buildProductView, type ProductView } from "@/lib/productImport/productView";
+import { navSections, resolveSections, type SectionDef } from "@/lib/productImport/sectionRegistry";
 import type { ProductSchema } from "@/lib/productImport/types";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProductKind } from "@/lib/types";
 import { showAddToCartToast } from "@/utils/cart-toast";
 import { resolvePurchaseImage } from "@/lib/nintendoImages";
 
+import {
+  AmiiboFunctionalityBlock,
+  BundleContentsBlock,
+  CardDetailsBlock,
+  CollectorBlock,
+  ConditionBlock,
+  DeliveryBlock,
+  GameCompatibilityBlock,
+  InspectionBlock,
+} from "./CategoryBlocks";
 import { ProductGallery } from "./ProductGallery";
 import { HardwareProductDetails } from "./HardwareProductDetails";
+import { SectionNav } from "./SectionNav";
 import { BulletList, Section, SpecTable } from "./Section";
 
 export function ProductDetails({
@@ -93,6 +115,9 @@ function DetailsBody({
     : (selectedVariant?.stock ?? selectedOption?.stock ?? view.stock);
   const soldOut = effectiveStock <= 0;
 
+  const sections = useMemo(() => resolveSections(view), [view]);
+  const navItems = useMemo(() => navSections(sections), [sections]);
+
   const handleAddToCart = () => {
     if (soldOut) {
       toast.error(t("errors.productOutOfStock"));
@@ -132,14 +157,16 @@ function DetailsBody({
 
   return (
     <div
-      className="mx-auto max-w-6xl px-4 pt-20 pb-16 sm:pt-24 sm:px-6 lg:px-8 [overflow-wrap:anywhere]"
+      className="mx-auto w-full min-w-0 max-w-6xl px-4 pt-20 pb-16 sm:px-6 sm:pt-24 lg:px-8 [overflow-wrap:anywhere]"
       dir={dir}
     >
       {/* ------------------------------ hero ------------------------------ */}
-      <div className="grid grid-cols-1 gap-6 py-6 lg:grid-cols-2 lg:gap-10">
-        <ProductGallery images={view.images} alt={view.title} />
+      <div className="grid min-w-0 grid-cols-1 gap-6 py-6 lg:grid-cols-2 lg:gap-10">
+        <div className="min-w-0">
+          <ProductGallery images={view.images} alt={view.title} />
+        </div>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <div className="space-y-2">
             {view.brand ? (
               <p className="text-[13px] font-bold uppercase tracking-wide text-muted-foreground">
@@ -190,6 +217,13 @@ function DetailsBody({
             <p className="leading-relaxed text-muted-foreground">{view.descriptionShort}</p>
           ) : null}
 
+          {/*
+            The facts a buyer checks before the price: on a phone they belong
+            above the button, not below it, because that is the order the
+            decision is made in.
+          */}
+          <HeroFacts view={view} t={t} locale={locale} formatPrice={formatIQDPrice} />
+
           {/* Options */}
           {view.options.length > 0 && (
             <div className="space-y-2">
@@ -205,17 +239,17 @@ function DetailsBody({
                         setOptionId(option.id);
                         setVariantName("");
                       }}
-                      className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2 text-[13px] font-semibold transition text-start ${
+                      className={`flex min-w-0 flex-col items-start gap-0.5 rounded-xl border px-3 py-2 text-start text-[13px] font-semibold transition ${
                         isSelected
                           ? "border-primary bg-primary/10 text-primary shadow-2xs"
-                          : "border-border hover:border-primary/50 text-foreground"
+                          : "border-border text-foreground hover:border-primary/50"
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
                         <span>{option.name}</span>
                         {option.price != null && option.price > 0 && (
                           <span
-                            className={`text-[11px] font-bold font-mono ${
+                            className={`font-mono text-[11px] font-bold ${
                               isSelected ? "text-primary" : "text-emerald-600 dark:text-emerald-400"
                             }`}
                             dir="ltr"
@@ -250,17 +284,17 @@ function DetailsBody({
                       onClick={() =>
                         setVariantName(variant.name === variantName ? "" : variant.name)
                       }
-                      className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2 text-[13px] font-semibold transition text-start ${
+                      className={`flex min-w-0 flex-col items-start gap-0.5 rounded-xl border px-3 py-2 text-start text-[13px] font-semibold transition ${
                         isSelected
                           ? "border-primary bg-primary/10 text-primary shadow-2xs"
-                          : "border-border hover:border-primary/50 text-foreground"
+                          : "border-border text-foreground hover:border-primary/50"
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
                         <span>{variant.name}</span>
                         {variant.price != null && variant.price > 0 && (
                           <span
-                            className={`text-[11px] font-bold font-mono ${
+                            className={`font-mono text-[11px] font-bold ${
                               isSelected ? "text-primary" : "text-emerald-600 dark:text-emerald-400"
                             }`}
                             dir="ltr"
@@ -309,80 +343,228 @@ function DetailsBody({
               type="button"
               onClick={handleAddToCart}
               disabled={soldOut}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--brand-red,#e11d48)] px-6 py-3 font-bold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--brand-red,#e11d48)] px-6 py-3 font-bold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ShoppingCart className="h-4 w-4" />
               {t("product.addToCart")}
             </button>
           </div>
-
-          {view.identity.length > 0 && (
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2 text-[13px]">
-              {view.identity.map((row) => (
-                <div key={row.label} className="flex flex-col">
-                  <dt className="text-muted-foreground">{row.label}</dt>
-                  <dd className="font-semibold">
-                    {row.label === t("product.releaseDate")
-                      ? formatDate(locale, row.value) || row.value
-                      : row.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
         </div>
       </div>
 
-      {/* ---------------------------- sections ---------------------------- */}
+      <SectionNav sections={navItems} />
 
-      <Section
-        id="overview"
-        title={t("product.sections.overview")}
-        when={Boolean(view.overview || view.descriptionFull)}
-      >
+      {/* ---------------------------- sections ---------------------------- */}
+      {sections.map((section) => (
+        <Section key={section.id} id={section.id} title={t(section.titleKey as never)}>
+          <SectionBody
+            section={section}
+            view={view}
+            t={t}
+            locale={locale}
+            formatPrice={formatIQDPrice}
+          />
+        </Section>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The identity strip under the price.
+ *
+ * Each category contributes the two or three facts it is actually sold on
+ * rather than the same generic brand/model pair, and an empty strip is not
+ * rendered at all.
+ */
+function HeroFacts({
+  view,
+  t,
+  locale,
+  formatPrice,
+}: {
+  view: ProductView;
+  t: ReturnType<typeof useTranslation>["t"];
+  locale: ReturnType<typeof useTranslation>["locale"];
+  formatPrice: (value: number) => string;
+}) {
+  const enumLabel = (namespace: string, value: string) => {
+    if (!value) return "";
+    const label = t(`enums.${namespace}.${value}` as never);
+    return label && !label.startsWith("enums.") ? label : value;
+  };
+
+  const rows: { label: string; value: string }[] = [];
+
+  if (view.condition) {
+    rows.push(
+      { label: t("used.grade"), value: enumLabel("conditionGrade", view.condition.grade) },
+      { label: t("used.packaging"), value: enumLabel("packaging", view.condition.packaging) },
+      {
+        label: t("used.guarantee"),
+        value: enumLabel("guaranteeStatus", view.condition.guarantee),
+      },
+    );
+  }
+  if (view.giftCard) {
+    rows.push(
+      {
+        label: t("giftCard.value"),
+        value: [view.giftCard.value, view.giftCard.currency].filter(Boolean).join(" "),
+      },
+      { label: t("giftCard.region"), value: view.giftCard.region },
+      {
+        label: t("giftCard.deliveryMethod"),
+        value: enumLabel("deliveryMethod", view.giftCard.deliveryMethod),
+      },
+    );
+  }
+  if (view.bundle) {
+    rows.push(
+      {
+        label: t("bundle.gamesCount"),
+        value: view.bundle.gamesCount > 0 ? String(view.bundle.gamesCount) : "",
+      },
+      {
+        label: t("bundle.totalValue"),
+        value: view.bundle.totalValue > 0 ? formatPrice(view.bundle.totalValue) : "",
+      },
+      {
+        label: t("bundle.savings"),
+        value:
+          view.bundle.savingsAmount > 0
+            ? `${formatPrice(view.bundle.savingsAmount)} (${view.bundle.savingsPercent}%)`
+            : view.bundle.savingsPercent > 0
+              ? `${view.bundle.savingsPercent}%`
+              : "",
+      },
+      {
+        label: t("bundle.accountType"),
+        value: enumLabel("accountType", view.bundle.accountType),
+      },
+    );
+  }
+  if (view.amiibo) {
+    rows.push(
+      { label: t("amiibo.character"), value: view.amiibo.character },
+      { label: t("amiibo.franchise"), value: view.amiibo.franchise },
+      { label: t("amiibo.amiiboSeries"), value: view.amiibo.series },
+      { label: t("amiibo.rarity"), value: enumLabel("rarity", view.amiibo.rarity) },
+    );
+  }
+
+  /*
+    Deliberately not `view.identity`: brand, model and SKU are the "Key facts"
+    section's content, and printing them in both places is the duplication the
+    page is supposed to have stopped. This strip is the category's own headline
+    facts, capped so the buy button stays above the fold on a phone.
+  */
+  const visible = rows.filter((row) => row.value).slice(0, 4);
+  if (visible.length === 0) return null;
+
+  return (
+    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pt-1 text-[13px]">
+      {visible.map((row, index) => (
+        <div key={`${row.label}-${index}`} className="flex min-w-0 flex-col">
+          <dt className="text-muted-foreground">{row.label}</dt>
+          <dd className="break-words font-semibold">
+            {row.label === t("product.releaseDate")
+              ? formatDate(locale, row.value) || row.value
+              : row.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/**
+ * One section's contents, chosen by id.
+ *
+ * The registry has already decided this section exists and where it sits; all
+ * that is left is what to draw. Anything not listed here is a registry entry
+ * without a renderer, which returns null rather than an empty card.
+ */
+function SectionBody({
+  section,
+  view,
+  t,
+  locale,
+  formatPrice,
+}: {
+  section: SectionDef;
+  view: ProductView;
+  t: ReturnType<typeof useTranslation>["t"];
+  locale: ReturnType<typeof useTranslation>["locale"];
+  formatPrice: (value: number) => string;
+}) {
+  switch (section.id) {
+    case "keyFacts":
+      return view.identity.length > 0 ? <SpecTable rows={view.identity} /> : null;
+
+    case "condition":
+      return view.condition ? <ConditionBlock condition={view.condition} /> : null;
+
+    case "inspection":
+      return view.condition ? <InspectionBlock condition={view.condition} /> : null;
+
+    case "bundleContents":
+      return view.bundle ? (
+        <BundleContentsBlock bundle={view.bundle} formatPrice={formatPrice} />
+      ) : null;
+
+    case "cardDetails":
+      return view.giftCard ? <CardDetailsBlock card={view.giftCard} /> : null;
+
+    case "delivery":
+      return <DeliveryBlock view={view} />;
+
+    case "aboutCharacter":
+      return view.amiibo ? (
+        <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
+          {view.amiibo.characterDescription}
+        </p>
+      ) : null;
+
+    case "amiiboFunctionality":
+      return view.amiibo ? <AmiiboFunctionalityBlock amiibo={view.amiibo} /> : null;
+
+    case "collector":
+      return view.amiibo ? <CollectorBlock amiibo={view.amiibo} /> : null;
+
+    case "overview":
+      /*
+        One description, not five. The templates carry description_full,
+        description_ar, description_en, description_tr and overview because they
+        are data sources; the view model has already picked the one that matches
+        the reader's language.
+      */
+      return (
         <div className="space-y-3 whitespace-pre-line leading-relaxed text-muted-foreground">
           {view.overview ? <p>{view.overview}</p> : null}
-          {view.descriptionFull ? <p>{view.descriptionFull}</p> : null}
+          {view.descriptionFull && view.descriptionFull !== view.overview ? (
+            <p>{view.descriptionFull}</p>
+          ) : null}
         </div>
-      </Section>
+      );
 
-      <Section id="features" title={t("product.sections.keyFeatures")} when={view.features.length}>
-        <BulletList items={view.features} />
-      </Section>
+    case "features":
+      return <BulletList items={view.features} />;
 
-      <Section
-        id="highlights"
-        title={t("product.sections.highlights")}
-        when={view.highlights.length}
-      >
-        <BulletList items={view.highlights} />
-      </Section>
+    case "highlights":
+      return <BulletList items={view.highlights} />;
 
-      <Section
-        id="specs"
-        title={t("product.sections.specifications")}
-        when={view.specGroups.length}
-      >
-        <div className="space-y-6">
-          {view.specGroups.map((group, index) => (
-            <div key={`${group.label}-${index}`} className="space-y-2">
-              {group.label ? (
-                <h3 className="text-[15px] font-bold text-foreground">{group.label}</h3>
-              ) : null}
-              <SpecTable rows={group.specs} />
-            </div>
-          ))}
-        </div>
-      </Section>
+    case "gameCompatibility":
+      return <GameCompatibilityBlock view={view} />;
 
-      <Section
-        id="compatibility"
-        title={t("product.sections.compatibility")}
-        when={view.compatibility.length}
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
+    case "compatibility":
+      return (
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           {view.compatibility.map((item, index) => (
-            <div key={`${item.name}-${index}`} className="rounded-xl border border-border p-4">
+            <div
+              key={`${item.name}-${index}`}
+              className="min-w-0 rounded-xl border border-border p-4"
+            >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold">{item.name}</span>
                 {item.status ? (
@@ -407,73 +589,39 @@ function DetailsBody({
                   href={`/product/${item.productId}`}
                   className="mt-2 inline-flex items-center gap-1 text-[12px] font-bold text-primary hover:underline"
                 >
-                  <Link2 className="h-3 w-3" />
+                  <ExternalLink className="h-3 w-3" />
                   {t("product.productDetails")}
                 </a>
               ) : null}
             </div>
           ))}
         </div>
-      </Section>
+      );
 
-      <Section
-        id="game-compatibility"
-        title={t("product.sections.gameCompatibility")}
-        when={view.gameCompatibility.length}
-      >
-        <div className="space-y-3">
-          {view.gameCompatibility.map((entry, index) => (
-            <div key={`${entry.game}-${index}`} className="rounded-xl border border-border p-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                {/* Game titles are proper nouns — never translated. */}
-                <h3 className="font-bold">{entry.game}</h3>
-                {entry.platform ? (
-                  <span className="text-[12px] text-muted-foreground">{entry.platform}</span>
-                ) : null}
-              </div>
-              <dl className="mt-2 space-y-1 text-[13px]">
-                {entry.function ? (
-                  <div className="flex gap-2">
-                    <dt className="text-muted-foreground">{t("amiibo.inGameFunction")}:</dt>
-                    <dd className="font-semibold">{entry.function}</dd>
-                  </div>
-                ) : null}
-                {entry.reward ? (
-                  <div className="flex gap-2">
-                    <dt className="text-muted-foreground">{t("amiibo.inGameReward")}:</dt>
-                    <dd className="font-semibold">{entry.reward}</dd>
-                  </div>
-                ) : null}
-              </dl>
-              {entry.description ? (
-                <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-                  {entry.description}
-                </p>
+    case "figureDetails":
+    case "specs":
+      return (
+        <div className="space-y-6">
+          {view.specGroups.map((group, index) => (
+            <div key={`${group.label}-${index}`} className="space-y-2">
+              {group.label ? (
+                <h3 className="text-[15px] font-bold text-foreground">{group.label}</h3>
               ) : null}
-              {entry.sourceUrl ? (
-                <a
-                  href={entry.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="mt-2 inline-flex items-center gap-1 text-[12px] font-bold text-primary hover:underline"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  {t("common.source")}
-                </a>
-              ) : null}
+              <SpecTable rows={group.specs} />
             </div>
           ))}
         </div>
-      </Section>
+      );
 
-      <Section id="box" title={t("product.sections.boxContents")} when={view.boxContents.length}>
+    case "boxContents":
+      return (
         <ul className="grid gap-2 sm:grid-cols-2">
           {view.boxContents.map((item, index) => (
             <li
               key={`${item.name}-${index}`}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-[14px]"
+              className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-[14px]"
             >
-              <span>
+              <span className="min-w-0">
                 {item.name}
                 {item.notes ? (
                   <span className="block text-[12px] text-muted-foreground">{item.notes}</span>
@@ -490,59 +638,69 @@ function DetailsBody({
             </li>
           ))}
         </ul>
-      </Section>
+      );
 
-      <Section
-        id="how-to-redeem"
-        title={t("product.sections.howToRedeem")}
-        when={view.usageSteps.length}
-      >
-        <ol className="space-y-2">
-          {view.usageSteps.map((step, index) => (
-            <li
-              key={`${step}-${index}`}
-              className="flex items-start gap-3 rounded-xl border border-border px-4 py-3 text-[14px] leading-relaxed"
+    case "howToRedeem":
+      return (
+        <>
+          {view.usageSteps.length > 0 ? (
+            <ol className="space-y-2">
+              {view.usageSteps.map((step, index) => (
+                <li
+                  key={`${step}-${index}`}
+                  className="flex min-w-0 items-start gap-3 rounded-xl border border-border px-4 py-3 text-[14px] leading-relaxed"
+                >
+                  <span
+                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[12px] font-bold text-primary"
+                    dir="ltr"
+                  >
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0">{step}</span>
+                </li>
+              ))}
+            </ol>
+          ) : null}
+          {view.usageUrl ? (
+            <a
+              href={view.usageUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-primary hover:underline"
             >
-              <span
-                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[12px] font-bold text-primary"
-                dir="ltr"
-              >
-                {index + 1}
-              </span>
-              <span>{step}</span>
-            </li>
-          ))}
-        </ol>
-        {view.usageUrl ? (
-          <a
-            href={view.usageUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-primary hover:underline"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            {t("product.officialSite")}
-          </a>
-        ) : null}
-        {view.usageTerms ? (
-          <p className="mt-3 whitespace-pre-line text-[13px] text-muted-foreground">
-            {view.usageTerms}
-          </p>
-        ) : null}
-      </Section>
+              <ExternalLink className="h-3.5 w-3.5" />
+              {t("product.officialSite")}
+            </a>
+          ) : null}
+          {view.usageTerms ? (
+            <p className="mt-3 whitespace-pre-line text-[13px] text-muted-foreground">
+              {view.usageTerms}
+            </p>
+          ) : null}
+        </>
+      );
 
-      <Section id="gallery" title={t("product.sections.gallery")} when={view.gallery.length}>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    case "requirements":
+      return <BulletList items={view.requirements} />;
+
+    case "gallery":
+      return (
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {view.gallery.map((item, index) => (
             <figure
               key={`${item.url}-${index}`}
-              className="overflow-hidden rounded-xl border border-border"
+              className="min-w-0 overflow-hidden rounded-xl border border-border"
             >
+              {/*
+                `contain` on a product photograph, never `cover`: these are
+                packshots of one object at whatever aspect the supplier shot
+                them, and cropping them to a uniform rectangle cuts the product.
+              */}
               <img
                 src={item.url}
                 alt={item.title ?? view.title}
                 loading="lazy"
-                className="aspect-video w-full object-cover"
+                className="aspect-video w-full bg-muted/30 object-contain"
               />
               {item.title || item.description ? (
                 <figcaption className="p-3 text-[13px]">
@@ -555,17 +713,18 @@ function DetailsBody({
             </figure>
           ))}
         </div>
-      </Section>
+      );
 
-      <Section id="videos" title={t("product.sections.videos")} when={view.videos.length}>
-        <div className="grid gap-3 sm:grid-cols-2">
+    case "videos":
+      return (
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           {view.videos.map((video, index) => (
             <a
               key={`${video.url}-${index}`}
               href={video.url}
               target="_blank"
               rel="noreferrer noopener"
-              className="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-primary/50"
+              className="group flex min-w-0 items-center gap-3 rounded-xl border border-border p-3 transition hover:border-primary/50"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Play className="h-4 w-4" />
@@ -581,22 +740,23 @@ function DetailsBody({
             </a>
           ))}
         </div>
-      </Section>
+      );
 
-      <Section id="docs" title={t("product.sections.documentation")} when={view.documents.length}>
+    case "documentation":
+      return (
         <ul className="space-y-2">
           {view.documents.map((doc, index) => (
-            <li key={`${doc.url}-${index}`}>
+            <li key={`${doc.url}-${index}`} className="min-w-0">
               <a
                 href={doc.url}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="flex items-center gap-2 rounded-xl border border-border px-4 py-3 text-[14px] transition hover:border-primary/50"
+                className="flex min-w-0 items-center gap-2 rounded-xl border border-border px-4 py-3 text-[14px] transition hover:border-primary/50"
               >
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="font-semibold">{doc.title || doc.url}</span>
+                <span className="min-w-0 truncate font-semibold">{doc.title || doc.url}</span>
                 {doc.type ? (
-                  <span className="ms-auto text-[12px] text-muted-foreground">
+                  <span className="ms-auto shrink-0 text-[12px] text-muted-foreground">
                     {t(`enums.documentType.${doc.type}` as never)}
                   </span>
                 ) : null}
@@ -604,16 +764,31 @@ function DetailsBody({
             </li>
           ))}
         </ul>
-      </Section>
+      );
 
-      <Section id="warranty" title={t("product.sections.warranty")} when={view.warranty.length}>
-        <SpecTable rows={view.warranty} />
-      </Section>
+    case "warranty":
+      return (
+        <div className="space-y-3">
+          {view.warranty.length > 0 ? <SpecTable rows={view.warranty} /> : null}
+          {view.refundPolicy ? (
+            <div>
+              <h3 className="mb-1 text-[14px] font-bold">{t("giftCard.refundPolicy")}</h3>
+              <p className="whitespace-pre-line text-[14px] leading-relaxed text-muted-foreground">
+                {view.refundPolicy}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      );
 
-      <Section id="updates" title={t("product.sections.updates")} when={view.updates.length}>
+    case "updates":
+      return (
         <ol className="space-y-3">
           {view.updates.map((update, index) => (
-            <li key={`${update.version}-${index}`} className="rounded-xl border border-border p-4">
+            <li
+              key={`${update.version}-${index}`}
+              className="min-w-0 rounded-xl border border-border p-4"
+            >
               <div className="flex flex-wrap items-baseline gap-2">
                 {update.version ? (
                   <span className="font-bold" dir="ltr">
@@ -635,18 +810,15 @@ function DetailsBody({
             </li>
           ))}
         </ol>
-      </Section>
+      );
 
-      <Section
-        id="reviews"
-        title={t("product.sections.reviews")}
-        when={view.externalReviews.length}
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
+    case "reviews":
+      return (
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           {view.externalReviews.map((review, index) => (
             <blockquote
               key={`${review.source}-${index}`}
-              className="rounded-xl border border-border p-4"
+              className="min-w-0 rounded-xl border border-border p-4"
             >
               <div className="flex items-baseline justify-between gap-2">
                 <cite className="font-bold not-italic">{review.source}</cite>
@@ -664,35 +836,33 @@ function DetailsBody({
             </blockquote>
           ))}
         </div>
-      </Section>
+      );
 
-      <Section
-        id="pros-cons"
-        title={t("product.sections.prosCons")}
-        when={view.pros.length + view.cons.length}
-      >
-        <div className="grid gap-6 sm:grid-cols-2">
+    case "prosCons":
+      return (
+        <div className="grid min-w-0 gap-6 sm:grid-cols-2">
           {view.pros.length > 0 && (
-            <div>
+            <div className="min-w-0">
               <h3 className="mb-2 text-[15px] font-bold">{t("product.sections.pros")}</h3>
               <BulletList items={view.pros} tone="good" />
             </div>
           )}
           {view.cons.length > 0 && (
-            <div>
+            <div className="min-w-0">
               <h3 className="mb-2 text-[15px] font-bold">{t("product.sections.cons")}</h3>
               <BulletList items={view.cons} tone="bad" />
             </div>
           )}
         </div>
-      </Section>
+      );
 
-      <Section id="faq" title={t("product.sections.faq")} when={view.faq.length}>
+    case "faq":
+      return (
         <div className="space-y-2">
           {view.faq.map((item, index) => (
             <details
               key={`${item.question}-${index}`}
-              className="rounded-xl border border-border p-4"
+              className="min-w-0 rounded-xl border border-border p-4"
             >
               <summary className="cursor-pointer font-semibold">{item.question}</summary>
               <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-muted-foreground">
@@ -701,22 +871,23 @@ function DetailsBody({
             </details>
           ))}
         </div>
-      </Section>
+      );
 
-      <Section id="sources" title={t("product.sections.sources")} when={view.sources.length}>
+    case "sources":
+      return (
         <ul className="space-y-2">
           {view.sources.map((source, index) => (
-            <li key={`${source.url}-${index}`}>
+            <li key={`${source.url}-${index}`} className="min-w-0">
               <a
                 href={source.url}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="flex items-center gap-2 text-[13px] text-primary hover:underline"
+                className="flex min-w-0 items-center gap-2 text-[13px] text-primary hover:underline"
               >
                 <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                <span className="font-semibold">{source.name}</span>
+                <span className="min-w-0 truncate font-semibold">{source.name}</span>
                 {source.type ? (
-                  <span className="text-muted-foreground">
+                  <span className="shrink-0 text-muted-foreground">
                     · {t(`enums.sourceType.${source.type}` as never)}
                   </span>
                 ) : null}
@@ -724,7 +895,9 @@ function DetailsBody({
             </li>
           ))}
         </ul>
-      </Section>
-    </div>
-  );
+      );
+
+    default:
+      return null;
+  }
 }

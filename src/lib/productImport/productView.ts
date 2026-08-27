@@ -17,6 +17,8 @@
  */
 
 import { translate, type Locale } from "../i18n";
+import { isUsableImageUrl } from "../nintendoImages";
+import { productGalleryImages } from "../productImages";
 import { toAmount } from "../purchasable";
 import { getTextValue } from "../utils";
 import { detectSchema } from "./registry";
@@ -130,6 +132,101 @@ export interface VariantItem {
   description?: string;
 }
 
+/* ------------------------- category-specific blocks ------------------------ */
+
+/**
+ * Why these are typed blocks rather than more rows in the spec table.
+ *
+ * "Condition: Good", "3 defects", "inspected on 2026-03-04" are the reasons
+ * somebody buys — or does not buy — a second-hand console, and burying them in
+ * an alphabetical specification list is how a page ends up technically
+ * complete and practically useless. Each block below is the small set of facts
+ * its category is actually sold on, so the page can give them a shape of their
+ * own instead of a generic key/value row.
+ *
+ * Every block is `null` when its category's fields are absent, which is what
+ * lets the section registry decide the page's shape from data alone.
+ */
+export interface ConditionView {
+  usedType: string;
+  grade: string;
+  packaging: string;
+  guarantee: string;
+  tested: boolean | null;
+  testedAt: string;
+  cleaned: boolean | null;
+  notes: string;
+  defects: string[];
+  inspectionPoints: string[];
+  previousOwners: number | null;
+  usagePeriodMonths: number | null;
+  originalTitle: string;
+  platform: string;
+}
+
+export interface BundleItemView {
+  title: string;
+  platform: string;
+  edition: string;
+  /** Standalone value in IQD, used for the savings maths. */
+  value: number;
+  /** Store product this item resolves to, when the import linked one. */
+  productId: string;
+  coverUrl: string;
+}
+
+export interface BundleView {
+  items: BundleItemView[];
+  gamesCount: number;
+  /** Sum of the items' standalone values; 0 when none were priced. */
+  totalValue: number;
+  savingsAmount: number;
+  savingsPercent: number;
+  accountType: string;
+  devicesLimit: number | null;
+  onlinePlay: boolean | null;
+  deliveryTime: string;
+  includedServices: string[];
+  summary: string;
+  accountTerms: string;
+  supportPolicy: string;
+}
+
+export interface GiftCardView {
+  cardType: string;
+  value: string;
+  currency: string;
+  region: string;
+  regionLocked: boolean | null;
+  platform: string;
+  validity: string;
+  expiryDate: string;
+  deliveryMethod: string;
+  deliveryTime: string;
+  codeLength: string;
+  artwork: string;
+  regionBanner: string;
+  requirements: string[];
+  refundPolicy: string;
+}
+
+export interface AmiiboView {
+  officialName: string;
+  character: string;
+  franchise: string;
+  series: string;
+  figureType: string;
+  edition: string;
+  rarity: string;
+  productionStatus: string;
+  functionality: string;
+  nfcSupport: boolean | null;
+  compatibleConsoles: string[];
+  characterDescription: string;
+  collectorNotes: string;
+  collection: { label: string; value: string }[];
+}
+
 export interface ProductView {
   schema: ProductSchema;
   title: string;
@@ -170,6 +267,16 @@ export interface ProductView {
   usageTerms: string;
   warranty: { label: string; value: string }[];
   seo: { title: string; description: string; image: string };
+  /** Requirements to satisfy before buying (gift cards, bundles, accessories). */
+  requirements: string[];
+  refundPolicy: string;
+  /** Populated only for the category that owns the block; null otherwise. */
+  condition: ConditionView | null;
+  bundle: BundleView | null;
+  giftCard: GiftCardView | null;
+  amiibo: AmiiboView | null;
+  /** Drives which conditional spec groups an accessory page shows. */
+  accessoryType: string;
 }
 
 /** Fields that belong in the identity strip under the title, not a spec table. */
@@ -185,20 +292,222 @@ const IDENTITY_FIELDS: { target: string; key: string }[] = [
   { target: "countryOfOrigin", key: "product.countryOfOrigin" },
 ];
 
-const IMAGE_FIELDS = [
-  "mainImage",
-  "coverImage",
-  "frontImage",
-  "backImage",
-  "leftImage",
-  "rightImage",
-  "closeUpImage",
-  "packagingFrontImage",
-  "packagingBackImage",
-  "listingImage",
-  "bannerImage",
-  "thumbnailImage",
-];
+
+/* ------------------------------- builders --------------------------------- */
+
+const bool = (v: unknown): boolean | null => (typeof v === "boolean" ? v : null);
+const numOrNull = (v: unknown): number | null => {
+  const n = Number(v);
+  return Number.isFinite(n) && String(v ?? "").trim() !== "" ? n : null;
+};
+
+/** True when at least one field of a block carries something. */
+const populated = (block: Record<string, unknown>): boolean =>
+  Object.values(block).some((value) => {
+    if (value === null || value === undefined || value === "") return false;
+    if (Array.isArray(value)) return value.length > 0;
+    return true;
+  });
+
+/**
+ * The one description a customer reads.
+ *
+ * The templates carry five description fields — `description_full`,
+ * `description_ar`, `description_en`, `description_tr`, `overview` — because
+ * they are *data sources*, filled by whoever researched the product. Rendering
+ * all five stacked the same paragraph up to five times on one page. So the page
+ * picks exactly one per language, and the store's default language is Arabic:
+ * `description_ar` wins whenever it exists, and the rest are fallbacks in a
+ * fixed order rather than extra paragraphs.
+ */
+function chooseDescription(p: Record_, locale: Locale): string {
+  const ar = str(p["description_ar"]);
+  const generic = str(p["description"]);
+  const en = str(p["descriptionEn"]);
+  const tr = str(p["descriptionTr"]);
+  if (locale === "en") return en || generic || ar || tr;
+  if (locale === "tr") return tr || en || generic || ar;
+  return ar || generic || en || tr;
+}
+
+function buildCondition(p: Record_): ConditionView | null {
+  const view: ConditionView = {
+    usedType: str(p["usedType"]),
+    grade: str(p["conditionGrade"]),
+    packaging: str(p["packaging"]),
+    guarantee: str(p["guaranteeStatus"]),
+    tested: bool(p["tested"]),
+    testedAt: str(p["testedAt"]),
+    cleaned: bool(p["cleaned"]),
+    notes: str(p["conditionNotes"]),
+    defects: list<unknown>(p["defects"]).map(getTextValue).filter(Boolean),
+    inspectionPoints: list<unknown>(p["inspectionPoints"]).map(getTextValue).filter(Boolean),
+    previousOwners: numOrNull(p["previousOwners"]),
+    usagePeriodMonths: numOrNull(p["usagePeriodMonths"]),
+    originalTitle: str(p["originalTitle"]),
+    platform: str(p["platform"]),
+  };
+  return populated(view as unknown as Record<string, unknown>) ? view : null;
+}
+
+function buildBundle(p: Record_): BundleView | null {
+  const items: BundleItemView[] = list<Record_>(p["bundleItems"])
+    .map((raw) => ({
+      title: str(raw["title"]),
+      platform: str(raw["platform"]),
+      edition: str(raw["edition"]),
+      value: toAmount(raw["valueIqd"] ?? raw["value"]),
+      productId: str(raw["productId"]),
+      coverUrl: str(raw["coverUrl"]),
+    }))
+    .filter((item) => item.title || item.productId);
+
+  const totalValue = items.reduce((sum, item) => sum + (item.value || 0), 0);
+  const price = toAmount(p["price"]);
+  /*
+    The saving is derived rather than trusted: `savings_percent` in the template
+    is a marketing figure an editor typed, and it stops being true the moment
+    the price changes. When the items carry real standalone values the maths
+    wins; the declared percentage is the fallback for a bundle whose items were
+    never priced.
+  */
+  const savingsAmount = totalValue > price && price > 0 ? totalValue - price : 0;
+  const declaredPercent = numOrNull(p["savingsPercent"]) ?? 0;
+  const savingsPercent =
+    savingsAmount > 0 && totalValue > 0
+      ? Math.round((savingsAmount / totalValue) * 100)
+      : declaredPercent;
+
+  const view: BundleView = {
+    items,
+    gamesCount: numOrNull(p["gamesCount"]) ?? items.length,
+    totalValue,
+    savingsAmount,
+    savingsPercent,
+    accountType: str(p["accountType"]),
+    devicesLimit: numOrNull(p["devicesLimit"]),
+    onlinePlay: bool(p["onlinePlay"]),
+    deliveryTime: str(p["deliveryTime"]),
+    includedServices: list<unknown>(p["includedServices"]).map(getTextValue).filter(Boolean),
+    summary: str(p["bundleGamesSummary"]),
+    accountTerms: str(p["accountTerms"]),
+    supportPolicy: str(p["supportPolicy"]),
+  };
+  return items.length > 0 || view.accountType || view.gamesCount > 0 ? view : null;
+}
+
+function buildGiftCard(p: Record_): GiftCardView | null {
+  const view: GiftCardView = {
+    cardType: str(p["cardType"]),
+    value: str(p["cardValue"]),
+    currency: str(p["cardCurrency"]),
+    region: str(p["cardRegion"]),
+    regionLocked: bool(p["regionLocked"]),
+    platform: str(p["platform"]),
+    validity: str(p["validity"]),
+    expiryDate: str(p["expiryDate"]),
+    deliveryMethod: str(p["deliveryMethod"]),
+    deliveryTime: str(p["deliveryTime"]),
+    codeLength: str(p["codeLength"]),
+    artwork: str(p["cardArtwork"]),
+    regionBanner: str(p["regionBanner"]),
+    requirements: list<unknown>(p["requirements"]).map(getTextValue).filter(Boolean),
+    refundPolicy: str(p["refundPolicy"]),
+  };
+  return populated(view as unknown as Record<string, unknown>) ? view : null;
+}
+
+function buildAmiibo(p: Record_, t: (key: string) => string): AmiiboView | null {
+  const collection = [
+    { label: t("amiibo.collectionSeries"), value: str(p["collectionSeries"]) },
+    { label: t("amiibo.collectionNumber"), value: str(p["collectionNumber"]) },
+    { label: t("amiibo.releaseWave"), value: str(p["releaseWave"]) },
+    { label: t("amiibo.exclusiveRetailer"), value: str(p["exclusiveRetailer"]) },
+    { label: t("amiibo.packagingType"), value: str(p["packagingType"]) },
+    { label: t("amiibo.reReleaseDate"), value: str(p["reReleaseDate"]) },
+  ].filter((row) => row.value);
+
+  const view: AmiiboView = {
+    officialName: str(p["officialName"]),
+    character: str(p["character"]),
+    franchise: str(p["franchise"]),
+    series: str(p["amiiboSeries"]) || str(p["figureSeries"]) || str(p["series"]),
+    figureType: str(p["figureType"]),
+    edition: str(p["edition"]),
+    rarity: str(p["rarity"]),
+    productionStatus: str(p["productionStatus"]),
+    functionality: str(p["amiiboFunctionality"]),
+    nfcSupport: bool(p["nfcSupport"]),
+    compatibleConsoles: list<unknown>(p["compatibleConsoles"]).map(getTextValue).filter(Boolean),
+    characterDescription: str(p["characterDescription"]) || str(p["characterBiography"]),
+    collectorNotes: str(p["collectorNotes"]),
+    collection,
+  };
+  return populated(view as unknown as Record<string, unknown>) ? view : null;
+}
+
+/**
+ * Fields a category's own block already renders, and which must therefore not
+ * also appear as generic specification rows.
+ *
+ * `spec_group` is an extension mechanism — the way a template adds a
+ * specification nobody wrote code for — not a second home for fields the page
+ * already understands. Without this, a gift card printed its region, validity
+ * and delivery method inside "Card details" and then printed them again in a
+ * "Specifications" table underneath, which reads as a rendering bug even
+ * though both were correct.
+ */
+const BLOCK_OWNED_TARGETS: Record<string, readonly string[]> = {
+  gift_card: [
+    "cardType",
+    "cardValue",
+    "cardCurrency",
+    "cardRegion",
+    "regionLocked",
+    "platform",
+    "codeLength",
+    "validity",
+    "expiryDate",
+    "deliveryMethod",
+    "deliveryTime",
+  ],
+  used: [
+    "usedType",
+    "conditionGrade",
+    "packaging",
+    "guaranteeStatus",
+    "tested",
+    "testedAt",
+    "cleaned",
+    "previousOwners",
+    "usagePeriodMonths",
+    "platform",
+  ],
+  bundle: [
+    "gamesCount",
+    "savingsPercent",
+    "accountType",
+    "devicesLimit",
+    "onlinePlay",
+    "deliveryTime",
+    "platform",
+  ],
+  amiibo: [
+    "figureType",
+    "edition",
+    "rarity",
+    "productionStatus",
+    "nfcSupport",
+    "character",
+    "franchise",
+    "amiiboSeries",
+  ],
+};
+
+/** Normalized key for spec de-duplication: case and separators do not count. */
+function specIdentity(label: string, value: string): string {
+  return `${label}`.trim().toLowerCase().replace(/[\s_-]+/g, "") + "\u0000" + value.trim().toLowerCase();
+}
 
 export function buildProductView(
   productInput: Record_,
@@ -238,9 +547,13 @@ export function buildProductView(
     bucket.specs.push(entry);
   };
 
+  const blockOwned = new Set(BLOCK_OWNED_TARGETS[schema.id] ?? []);
   for (const def of schema.fields) {
     if (!def.specKey || def.type === "group" || def.repeatable) continue;
     if (IDENTITY_FIELDS.some((f) => f.target === def.target)) continue;
+    // Internal fields are data sources for the team, never product-page rows.
+    if (def.audience === "internal") continue;
+    if (blockOwned.has(def.target)) continue;
     pushSpec(def, p[def.target]);
   }
 
@@ -254,20 +567,37 @@ export function buildProductView(
   // "Connectivity", say). Rendering that twice looks like a bug, so same-named
   // groups are folded into one table, schema rows first.
   const mergedGroups: ResolvedSpecGroup[] = [];
+  /*
+    A dynamic `spec_group` row that repeats a schema field verbatim adds
+    nothing, so identical label/value pairs are kept once — schema rows first,
+    since those carry the localized label and the unit.
+  */
+  const seenSpecs = new Set<string>();
   for (const group of [...scalarGroups, ...dynamicGroups]) {
+    const fresh = group.specs.filter((spec) => {
+      const key = specIdentity(spec.label, spec.value);
+      if (seenSpecs.has(key)) return false;
+      seenSpecs.add(key);
+      return true;
+    });
+    if (fresh.length === 0) continue;
     const existing = mergedGroups.find((g) => g.label === group.label);
-    if (existing) existing.specs.push(...group.specs);
-    else mergedGroups.push({ label: group.label, specs: [...group.specs] });
+    if (existing) existing.specs.push(...fresh);
+    else mergedGroups.push({ label: group.label, specs: fresh });
   }
 
   /* -------------------------------- assembly -------------------------------- */
 
+  /*
+    One ordered list, from the image-role contract rather than from whatever
+    order the fields happen to sit in on the record. The hero photograph leads,
+    the other named angles follow anatomically, then the free-form gallery — so
+    two products with the same fields always present them the same way, and a
+    banner never opens a product gallery.
+  */
   const images = [
-    ...IMAGE_FIELDS.map((k) => str(p[k])),
-    ...list<string>(p["lifestyleImages"]).map(str),
-    ...list<{ url?: string }>(p["gallery"]).map((g) => str(g?.url)),
-    str(p["image"]),
-    ...list<string>(p["bannerImages"]).map(str),
+    ...productGalleryImages(p),
+    ...(isUsableImageUrl(p["image"]) ? [String(p["image"]).trim()] : []),
   ].filter((url, index, all) => url && all.indexOf(url) === index);
 
   const identity = IDENTITY_FIELDS.map((field) => ({
@@ -306,7 +636,7 @@ export function buildProductView(
     availability: str(p["availabilityStatus"]),
     images,
     descriptionShort: str(p["description_short"]),
-    descriptionFull: str(p["description"]) || str(p["description_ar"]),
+    descriptionFull: chooseDescription(p, locale),
     overview: str(p["overview"]),
     identity,
     features: list<unknown>(p["features"]).map(getTextValue).filter(Boolean),
@@ -462,6 +792,13 @@ export function buildProductView(
       description: str(p["seoDescription"]) || str(p["description_short"]),
       image: str(p["ogImage"]) || str(p["mainImage"]) || str(p["coverImage"]),
     },
+    requirements: list<unknown>(p["requirements"]).map(getTextValue).filter(Boolean),
+    refundPolicy: str(p["refundPolicy"]),
+    condition: schema.id === "used" ? buildCondition(p) : null,
+    bundle: schema.id === "bundle" ? buildBundle(p) : null,
+    giftCard: schema.id === "gift_card" ? buildGiftCard(p) : null,
+    amiibo: schema.id === "amiibo" ? buildAmiibo(p, t) : null,
+    accessoryType: str(p["accessoryType"]),
   };
 }
 

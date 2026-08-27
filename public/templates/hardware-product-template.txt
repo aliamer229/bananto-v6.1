@@ -2,102 +2,148 @@
 # =========================================
 # الصيغة: field=value
 # النصوص الطويلة: field<<EOF ... EOF
-# العناصر المتكررة: feature.1= / feature.2= (بدون حد أقصى)
+# العناصر المتكررة: feature.1= / feature.2= (بدون حد أقصى — .97 صالح مثل .1)
 # العناصر المركبة: gallery.1.image= / gallery.1.title=
 # المجموعات المتداخلة: spec_group.1.spec.2.value=
 # القيم المنطقية: true أو false
 # التواريخ: YYYY-MM-DD
-# اترك أي حقل فارغاً إذا لم تكن لديك المعلومة — لن يفشل الاستيراد.
+# =========================================
+# الأرقام المكتوبة في هذا القالب (.1 .2 .3) أمثلة فقط وليست حداً أقصى.
+# أضف ما تحتاجه: feature.12= أو game_compatibility.40.game= تُقرأ جميعها.
+# =========================================
+# وسوم الحقول (تُقرأ آلياً ولا تُغيّرها):
+#   @required     لا يكتمل المنتج بدونه
+#   @recommended  يُستورد بدونه مع تنبيه في تقرير الجودة
+#   @optional     لا تنبيه عند تركه فارغاً
+#   @repeatable   يقبل عدداً غير محدود من العناصر
+#   @conditional  يظهر فقط لنوع معيّن من المنتجات
+#   @customer     قد يظهر للعميل في صفحة المنتج
+#   @internal     داخلي — لا يُعرض للعميل إطلاقاً
+# =========================================
+# سياسة الحقول الفارغة:
+# ابحث أولاً. لا تترك حقلاً قابلاً للبحث فارغاً بلا محاولة.
+# إن لم تكن المعلومة منشورة: اكتب في الحقول النصية جملة دقيقة
+# (مثال: "لم تنشر الشركة المصنّعة معلومات ضمان") — ولا تخترع قيمة أبداً.
+# وللحقول الرقمية/المقيّدة اتركها فارغة وسجّل السبب في data_gap.N.
+# الاستيراد لا يفشل بسبب حقل فارغ، لكن تقرير الجودة سيُظهر النقص.
 # =========================================
 
-# إصدار المخطط الحالي: 2
-schema_version=2
+# إصدار المخطط الحالي: 3
+schema_version=3
 
 # =========================================
 # الأساسيات
 # =========================================
 
-# اسم الجهاز [مطلوب]
+# @required @customer @type(string)
+# اسم الجهاز [مطلوب لإتمام الاستيراد]
 name=
 
+# @optional @customer @type(string)
 # اسم مختصر للعرض في البطاقات
 short_name=
 
+# @optional @customer @type(string)
 # الرابط الفريد (يُولَّد تلقائياً إذا تُرك فارغاً)
 slug=
 
+# @recommended @customer @type(string)
 # العلامة التجارية (Nintendo، ASUS…) — لا تُترجم
 brand=
 
+# @optional @customer @type(string)
 # الشركة المصنّعة
 manufacturer=
 
+# @optional @customer @type(string)
 # السلسلة
 series=
 
+# @required @customer @type(string)
 # الموديل
 model=
 
+# @optional @customer @type(string)
 # رقم الموديل
 model_number=
 
+# @optional @customer @type(string)
 # سنة الموديل
 model_year=
 
+# @optional @customer @type(string)
 # رقم القطعة
 part_number=
 
+# @optional @customer @type(string)
 # رمز المنتج SKU
 sku=
 
+# @optional @customer @type(string)
 # الباركود
 barcode=
 
+# @optional @customer @type(string)
 # UPC
 upc=
 
+# @optional @customer @type(string)
 # EAN
 ean=
 
+# @optional @customer @type(string)
 # GTIN
 gtin=
 
+# @optional @customer @type(string)
 # معرّف القسم في المتجر (يُملأ تلقائياً)
 category=
 
+# @optional @customer @type(string)
 # القسم الفرعي
 subcategory=
 
+# @optional @customer @type(string)
 # نوع المنتج
 product_type=
 
+# @optional @customer @type(string)
 # الجيل
 generation=
 
+# @optional @customer @type(string)
 # المراجعة/النسخة
 revision=
 
+# @optional @customer @enum(active|inactive|draft|archived)
 # حالة المنتج: active / inactive / draft / archived
 product_status=
 
+# @optional @customer @enum(in_stock|out_of_stock|preorder|backorder|discontinued|coming_soon)
 # حالة التوفر: in_stock / out_of_stock / preorder / backorder / discontinued / coming_soon
 availability_status=
 
+# @optional @customer @type(date)
 # تاريخ الإعلان YYYY-MM-DD
 announcement_date=
 
+# @recommended @customer @type(date)
 # تاريخ الإصدار YYYY-MM-DD
 release_date=
 
+# @optional @customer @type(string)
 # المنطقة (Global، USA، EUR، JPN)
 region=
 
+# @optional @customer @type(string)
 # بلد المنشأ
 country_of_origin=
 
+# @optional @customer @type(url)
 # الموقع الرسمي للمنتج
 official_url=
 
+# @optional @customer @type(url)
 # موقع الشركة المصنّعة
 manufacturer_url=
 
@@ -105,27 +151,35 @@ manufacturer_url=
 # مواصفات الجهاز ومحتويات العلبة
 # =========================================
 
+# @optional @customer @type(string)
 # موديل الجهاز (Console / Model)
 hardware_model=
 
+# @optional @customer @type(string)
 # اللون أو طبعة الإصدار (Color / Special Edition)
 color_edition=
 
+# @optional @customer @type(string)
 # مواصفات الشاشة (Screen Specs)
 screen_specs=
 
+# @optional @customer @type(string)
 # عمر وسعة البطارية (Battery Life & Capacity)
 battery_life=
 
+# @optional @customer @type(string)
 # الضمان والحالة (Warranty & Guarantee)
 warranty_condition=
 
+# @optional @customer @type(string)
 # محتويات العلبة كنص واحد مفصول بفواصل
 box_contents_text=
 
+# @optional @customer @type(url)
 # صورة كرتون التغليف أو الملحقات (Box Package Art)
 box_package_art=
 
+# @optional @customer @type(string)
 # المنافذ والاتصال (Ports & Connectivity)
 ports_connectivity=
 
@@ -133,26 +187,33 @@ ports_connectivity=
 # الضمان والدعم
 # =========================================
 
+# @recommended @customer @type(string)
 # مدة الضمان (مثلاً: سنة واحدة)
 warranty=
 
+# @optional @customer @type(string)
 # نوع الضمان (وكيل، دولي، متجر)
 warranty_type=
 
+# @optional @customer @type(multiline)
 # تفاصيل وملاحظات الضمان
 warranty_notes<<EOF
 
 EOF
 
+# @optional @customer @type(url)
 # رابط الدعم الرسمي
 support_url=
 
+# @optional @customer @type(string)
 # قابلية الإصلاح
 repairability=
 
+# @optional @customer @type(boolean)
 # توفر قطع الغيار (true/false)
 spare_parts_available=
 
+# @optional @customer @type(multiline)
 # ملاحظات الصيانة
 service_notes<<EOF
 
@@ -162,48 +223,58 @@ EOF
 # الوصف
 # =========================================
 
+# @optional @customer @type(string)
 # سطر تعريفي قصير
 tagline=
 
+# @recommended @customer @type(multiline)
 # وصف مختصر (سطر أو سطران)
 description_short<<EOF
 
 EOF
 
+# @optional @customer @type(multiline)
 # الوصف الكامل
 description_full<<EOF
 
 EOF
 
+# @recommended @customer @type(multiline)
 # الوصف بالعربية
 description_ar<<EOF
 
 EOF
 
+# @optional @customer @type(multiline)
 # الوصف بالإنجليزية
 description_en<<EOF
 
 EOF
 
+# @optional @customer @type(multiline)
 # الوصف بالتركية
 description_tr<<EOF
 
 EOF
 
+# @optional @customer @type(multiline)
 # نظرة عامة
 overview<<EOF
 
 EOF
 
+# @optional @customer @repeatable @type(string)
 # يناسب من؟
 suitable_for.1=
 suitable_for.2=
 suitable_for.3=
 
+# @optional @customer @repeatable @type(string)
 # لا يناسب من؟
 not_suitable_for.1=
 not_suitable_for.2=
 
+# @recommended @customer @repeatable @type(string)
 # المميزات الرئيسية (عدد غير محدود)
 feature.1=
 feature.2=
@@ -211,16 +282,19 @@ feature.3=
 feature.4=
 feature.5=
 
+# @optional @customer @repeatable @type(string)
 # أبرز النقاط
 highlight.1=
 highlight.2=
 highlight.3=
 
+# @optional @customer @repeatable @type(string)
 # نقاط البيع
 selling_point.1=
 selling_point.2=
 selling_point.3=
 
+# @optional @customer @repeatable @type(string)
 # وسوم للبحث والفلاتر
 tag.1=
 tag.2=
@@ -231,80 +305,105 @@ tag.4=
 # الأداء
 # =========================================
 
+# @optional @customer @type(string)
 # نتيجة قياس الأداء
 benchmark=
 
+# @optional @customer @type(string)
 # السرعة
 speed=
 
-# زمن الاستجابة [الوحدة: ms]
+# @optional @customer @type(string) @unit(ms)
+# زمن الاستجابة
 latency=
 
+# @optional @customer @type(string)
 # الدقة
 resolution=
 
-# معدل التحديث [الوحدة: Hz]
+# @optional @customer @type(string) @unit(Hz)
+# معدل التحديث
 refresh_rate=
 
-# الإطارات في الثانية [الوحدة: fps]
+# @optional @customer @type(string) @unit(fps)
+# الإطارات في الثانية
 fps=
 
+# @optional @customer @type(string)
 # معدل النقل
 throughput=
 
+# @optional @customer @type(string)
 # سرعة القراءة
 read_speed=
 
+# @optional @customer @type(string)
 # سرعة الكتابة
 write_speed=
 
-# زمن الاستجابة للشاشة [الوحدة: ms]
+# @optional @customer @type(string) @unit(ms)
+# زمن الاستجابة للشاشة
 response_time=
 
+# @optional @customer @type(string)
 # الدقة/الضبط
 accuracy=
 
-# مستوى الضجيج [الوحدة: dB]
+# @optional @customer @type(string) @unit(dB)
+# مستوى الضجيج
 noise_level=
 
+# @optional @customer @type(string)
 # درجة حرارة التشغيل
 operating_temperature=
 
+# @optional @customer @repeatable @type(string)
 # أنماط الأداء
 performance_mode.1=
 performance_mode.2=
 performance_mode.3=
 
-# مقاس الشاشة [الوحدة: inch]
+# @optional @customer @type(string) @unit(inch)
+# مقاس الشاشة
 display_size=
 
+# @optional @customer @type(string)
 # نوع الشاشة (LCD، OLED…)
 display_type=
 
+# @optional @customer @type(string)
 # المعالج
 processor=
 
+# @optional @customer @type(string)
 # وحدة المعالجة المركزية
 cpu=
 
+# @optional @customer @type(string)
 # معالج الرسوميات
 gpu=
 
+# @optional @customer @type(string)
 # الذاكرة RAM
 memory=
 
+# @optional @customer @type(string)
 # سعة التخزين
 storage_capacity=
 
+# @optional @customer @type(string)
 # التخزين القابل للتوسعة
 expandable_storage=
 
+# @optional @customer @type(string)
 # نظام التبريد
 cooling=
 
+# @optional @customer @type(string)
 # مخرجات الصوت
 audio_output=
 
+# @optional @customer @repeatable @type(string)
 # الحساسات
 sensor.1=
 sensor.2=
@@ -314,58 +413,75 @@ sensor.3=
 # الشاشة والرسوميات
 # =========================================
 
+# @optional @customer @type(string)
 # الدقة الأصلية للشاشة
 native_resolution=
 
+# @optional @customer @type(string)
 # نوع لوحة الشاشة
 panel_type=
 
+# @optional @customer @type(boolean)
 # دعم اللمس (true/false)
 touch_support=
 
+# @optional @customer @type(boolean)
 # دعم HDR للشاشة
 hdr=
 
+# @optional @customer @type(string)
 # صيغة HDR (HDR10، Dolby Vision…)
 hdr_format=
 
+# @optional @customer @type(boolean)
 # دعم VRR للشاشة
 vrr=
 
+# @optional @customer @type(string)
 # نطاق VRR
 vrr_range=
 
+# @optional @customer @type(string)
 # أقصى FPS في الوضع المحمول
 maximum_handheld_fps=
 
+# @optional @customer @type(string)
 # أقصى دقة خرج للتلفاز
 tv_max_resolution=
 
+# @optional @customer @type(string)
 # أقصى معدل تحديث للتلفاز
 tv_max_refresh_rate=
 
+# @optional @customer @type(string)
 # أقصى FPS لخرج التلفاز
 tv_max_fps=
 
+# @optional @customer @type(boolean)
 # دعم HDR في خرج التلفاز
 tv_hdr=
 
+# @optional @customer @type(boolean)
 # دعم VRR في خرج التلفاز
 tv_vrr=
 
+# @optional @customer @type(string)
 # إصدار HDMI لخرج التلفاز
 hdmi_version=
 
+# @optional @customer @type(multiline)
 # ملاحظات خرج التلفاز
 tv_output_notes<<EOF
 
 EOF
 
+# @optional @customer @repeatable @type(string)
 # الدقات المدعومة للخرج (عدد غير محدود)
 supported_output_resolution.1=
 supported_output_resolution.2=
 supported_output_resolution.3=
 
+# @optional @customer @repeatable @type(string)
 # معدلات الإطارات المدعومة (عدد غير محدود)
 supported_frame_rate.1=
 supported_frame_rate.2=
@@ -375,27 +491,35 @@ supported_frame_rate.3=
 # الأداء
 # =========================================
 
+# @optional @customer @type(string)
 # SoC / المعالج الرئيسي
 soc=
 
+# @optional @customer @type(string)
 # معمارية CPU
 cpu_architecture=
 
+# @optional @customer @type(string)
 # أنوية CPU
 cpu_cores=
 
+# @optional @customer @type(string)
 # معمارية GPU
 gpu_architecture=
 
+# @optional @customer @type(string)
 # أنوية GPU
 gpu_cores=
 
+# @optional @customer @type(string)
 # سعة RAM
 ram=
 
+# @optional @customer @type(string)
 # نوع RAM
 ram_type=
 
+# @optional @customer @type(string)
 # عرض نطاق الذاكرة
 memory_bandwidth=
 
@@ -403,21 +527,27 @@ memory_bandwidth=
 # التخزين
 # =========================================
 
+# @optional @customer @type(string)
 # تقنية/نوع التخزين
 storage_type=
 
+# @optional @customer @type(string)
 # التخزين الداخلي
 internal_storage=
 
+# @optional @customer @type(string)
 # المساحة القابلة للاستخدام
 usable_storage=
 
+# @optional @customer @type(string)
 # نوع بطاقة التخزين المدعومة
 storage_card_type=
 
+# @optional @customer @type(string)
 # أقصى سعة توسعة
 storage_max_capacity=
 
+# @optional @customer @type(multiline)
 # ملاحظات تثبيت وتخزين الألعاب
 game_storage_notes<<EOF
 
@@ -427,44 +557,64 @@ EOF
 # قدرات الألعاب
 # =========================================
 
+# @optional @customer @type(string)
 # أقصى دقة في الوضع المحمول
 handheld_max_resolution=
 
+# @optional @customer @type(string)
 # أقصى تحديث محمول
 handheld_max_refresh_rate=
 
+# @optional @customer @type(string)
 # أقصى FPS محمول
 handheld_max_fps=
 
+# @optional @customer @type(boolean)
 # HDR في الوضع المحمول
 handheld_hdr=
 
+# @optional @customer @type(boolean)
 # VRR في الوضع المحمول
 handheld_vrr=
 
+# @optional @customer @type(group)
 # القدرات القصوى للجهاز — لا تمثل أداء لعبة بعينها
+# @optional @customer @type(group)
+# @optional @customer @type(string)
 # أقصى دقة
 gaming_capability.handheld.max_resolution=
+# @optional @customer @type(string)
 # أقصى معدل تحديث
 gaming_capability.handheld.max_refresh_rate=
+# @optional @customer @type(string)
 # أقصى FPS
 gaming_capability.handheld.max_fps=
+# @optional @customer @type(boolean)
 # HDR
 gaming_capability.handheld.hdr=
+# @optional @customer @type(boolean)
 # VRR
 gaming_capability.handheld.vrr=
+# @optional @customer @type(group)
+# @optional @customer @type(string)
 # أقصى دقة
 gaming_capability.tv.max_resolution=
+# @optional @customer @type(string)
 # أقصى معدل تحديث
 gaming_capability.tv.max_refresh_rate=
+# @optional @customer @type(string)
 # أقصى FPS
 gaming_capability.tv.max_fps=
+# @optional @customer @type(boolean)
 # HDR
 gaming_capability.tv.hdr=
+# @optional @customer @type(boolean)
 # VRR
 gaming_capability.tv.vrr=
+# @optional @customer @type(boolean)
 # دعم Ray Tracing
 gaming_capability.ray_tracing=
+# @optional @customer @repeatable @type(string)
 # تقنيات رفع الدقة
 gaming_capability.upscaling.1=
 gaming_capability.upscaling.2=
@@ -473,84 +623,115 @@ gaming_capability.upscaling.2=
 # الاتصال والمنافذ
 # =========================================
 
+# @optional @customer @type(boolean)
 # يدعم Wi-Fi (true/false)
 wifi=
 
+# @optional @customer @type(string)
 # معيار Wi-Fi (Wi-Fi 6، 802.11ax…)
 wifi_standard=
 
+# @optional @customer @type(string)
 # نطاقات Wi-Fi (2.4GHz / 5GHz / 6GHz)
 wifi_bands=
 
+# @optional @customer @type(boolean)
 # يدعم Bluetooth (true/false)
 bluetooth=
 
+# @optional @customer @type(string)
 # إصدار Bluetooth
 bluetooth_version=
 
+# @optional @customer @type(string)
 # منفذ الإيثرنت وسرعته
 ethernet=
 
+# @optional @customer @type(string)
 # منافذ USB
 usb=
 
+# @optional @customer @type(string)
 # منافذ USB-C
 usb_c=
 
+# @optional @customer @type(string)
 # منفذ HDMI وإصداره
 hdmi=
 
+# @optional @customer @type(string)
 # منفذ DisplayPort
 displayport=
 
+# @optional @customer @type(string)
 # منفذ Thunderbolt
 thunderbolt=
 
+# @optional @customer @type(string)
 # مخرج الصوت
 audio_jack=
 
+# @optional @customer @type(boolean)
 # يدعم NFC (true/false)
 nfc=
 
+# @optional @customer @repeatable @type(string)
 # بروتوكولات لاسلكية إضافية (2.4GHz، Zigbee…)
 wireless_protocol.1=
 wireless_protocol.2=
 wireless_protocol.3=
 
+# @optional @customer @repeatable @type(group)
 # المنافذ بالتفصيل (عدد غير محدود)
+# @optional @customer @type(string)
 # نوع المنفذ (USB-C، HDMI…)
 port.1.type=
+# @optional @customer @type(string)
 # الإصدار
 port.1.version=
+# @optional @customer @type(integer)
 # العدد
 port.1.count=
+# @optional @customer @type(string)
 # ملاحظات
 port.1.notes=
 
+# @optional @customer @type(string)
 # نوع المنفذ (USB-C، HDMI…)
 port.2.type=
+# @optional @customer @type(string)
 # الإصدار
 port.2.version=
+# @optional @customer @type(integer)
 # العدد
 port.2.count=
+# @optional @customer @type(string)
 # ملاحظات
 port.2.notes=
 
+# @optional @customer @type(string)
 # نوع المنفذ (USB-C، HDMI…)
 port.3.type=
+# @optional @customer @type(string)
 # الإصدار
 port.3.version=
+# @optional @customer @type(integer)
 # العدد
 port.3.count=
+# @optional @customer @type(string)
 # ملاحظات
 port.3.notes=
 
+# @optional @customer @type(string)
 # نوع المنفذ (USB-C، HDMI…)
 port.4.type=
+# @optional @customer @type(string)
 # الإصدار
 port.4.version=
+# @optional @customer @type(integer)
 # العدد
 port.4.count=
+# @optional @customer @type(string)
 # ملاحظات
 port.4.notes=
 
@@ -558,42 +739,55 @@ port.4.notes=
 # الطاقة والبطارية
 # =========================================
 
-# جهد الدخل [الوحدة: V]
+# @optional @customer @type(string) @unit(V)
+# جهد الدخل
 input_voltage=
 
-# تردد الدخل [الوحدة: Hz]
+# @optional @customer @type(string) @unit(Hz)
+# تردد الدخل
 input_frequency=
 
-# الجهد الاسمي [الوحدة: V]
+# @optional @customer @type(string) @unit(V)
+# الجهد الاسمي
 rated_voltage=
 
-# استهلاك الطاقة [الوحدة: W]
+# @optional @customer @type(number) @unit(W)
+# استهلاك الطاقة
 power_consumption=
 
-# أقصى استهلاك [الوحدة: W]
+# @optional @customer @type(number) @unit(W)
+# أقصى استهلاك
 maximum_power=
 
-# استهلاك وضع الاستعداد [الوحدة: W]
+# @optional @customer @type(number) @unit(W)
+# استهلاك وضع الاستعداد
 standby_power=
 
+# @optional @customer @type(string)
 # محول الطاقة المرفق
 power_adapter=
 
+# @optional @customer @type(string)
 # متطلبات مزود الطاقة
 psu_requirement=
 
-# سعة البطارية [الوحدة: mAh]
+# @optional @customer @type(number) @unit(mAh)
+# سعة البطارية
 battery_capacity=
 
+# @optional @customer @type(string)
 # نوع البطارية
 battery_type=
 
+# @optional @customer @type(string)
 # زمن الشحن
 charging_time=
 
+# @optional @customer @type(string)
 # مدة التشغيل على البطارية
 runtime=
 
+# @optional @customer @type(string)
 # نوع الموصّل
 connector_type=
 
@@ -601,37 +795,47 @@ connector_type=
 # المتطلبات
 # =========================================
 
+# @optional @customer @type(multiline)
 # الحد الأدنى للمتطلبات
 minimum_requirements<<EOF
 
 EOF
 
+# @optional @customer @type(multiline)
 # المتطلبات الموصى بها
 recommended_requirements<<EOF
 
 EOF
 
+# @optional @customer @type(string)
 # أنظمة التشغيل المدعومة
 operating_system=
 
+# @optional @customer @type(string)
 # البرنامج المرافق
 software=
 
+# @optional @customer @type(string)
 # التعريفات المطلوبة
 drivers=
 
+# @optional @customer @type(string)
 # التطبيق المرافق
 companion_app=
 
+# @optional @customer @type(string)
 # إصدار البرنامج الثابت
 firmware_version=
 
+# @optional @customer @type(boolean)
 # يتطلب اتصال إنترنت (true/false)
 internet_required=
 
+# @optional @customer @type(boolean)
 # يتطلب حساباً (true/false)
 account_required=
 
+# @optional @customer @type(string)
 # الشهادات (CE، FCC…)
 certifications=
 
@@ -639,72 +843,97 @@ certifications=
 # الأبعاد والوزن
 # =========================================
 
-# طول المنتج [الوحدة: mm]
+# @optional @customer @type(number) @unit(mm)
+# طول المنتج
 product_length=
 
-# عرض المنتج [الوحدة: mm]
+# @optional @customer @type(number) @unit(mm)
+# عرض المنتج
 product_width=
 
-# ارتفاع المنتج [الوحدة: mm]
+# @optional @customer @type(number) @unit(mm)
+# ارتفاع المنتج
 product_height=
 
+# @recommended @customer @type(string)
 # الأبعاد كنص (مثلاً 240 × 102 × 13.9 mm)
 product_dimensions=
 
-# وزن المنتج [الوحدة: g]
+# @recommended @customer @type(number) @unit(g)
+# وزن المنتج
 product_weight=
 
-# الوزن الصافي [الوحدة: g]
+# @optional @customer @type(number) @unit(g)
+# الوزن الصافي
 net_weight=
 
-# طول العبوة [الوحدة: mm]
+# @optional @customer @type(number) @unit(mm)
+# طول العبوة
 package_length=
 
-# عرض العبوة [الوحدة: mm]
+# @optional @customer @type(number) @unit(mm)
+# عرض العبوة
 package_width=
 
-# ارتفاع العبوة [الوحدة: mm]
+# @optional @customer @type(number) @unit(mm)
+# ارتفاع العبوة
 package_height=
 
+# @optional @customer @type(string)
 # أبعاد العبوة كنص
 package_dimensions=
 
-# وزن العبوة [الوحدة: g]
+# @optional @customer @type(number) @unit(g)
+# وزن العبوة
 package_weight=
 
-# الحجم الشحني CBM [الوحدة: CBM]
+# @optional @customer @type(number) @unit(CBM)
+# الحجم الشحني CBM
 cbm=
 
+# @optional @customer @type(string)
 # الخامة الرئيسية
 material=
 
+# @optional @customer @type(string)
 # التشطيب (مطفي، لامع…)
 finish=
 
+# @optional @customer @type(string)
 # اللون الأساسي
 color=
 
+# @optional @customer @repeatable @type(string)
 # الألوان المتاحة
 available_color.1=
 available_color.2=
 available_color.3=
 
+# @optional @customer @repeatable @type(group)
 # أبعاد أجزاء الجهاز المستقلة مثل وحدات التحكم (عدد غير محدود)
+# @optional @customer @type(string)
 # اسم الجزء
 component_dimension.1.name=
+# @optional @customer @type(string)
 # الأبعاد
 component_dimension.1.dimensions=
+# @optional @customer @type(string)
 # الوزن
 component_dimension.1.weight=
+# @optional @customer @type(string)
 # ملاحظات
 component_dimension.1.notes=
 
+# @optional @customer @type(string)
 # اسم الجزء
 component_dimension.2.name=
+# @optional @customer @type(string)
 # الأبعاد
 component_dimension.2.dimensions=
+# @optional @customer @type(string)
 # الوزن
 component_dimension.2.weight=
+# @optional @customer @type(string)
 # ملاحظات
 component_dimension.2.notes=
 
@@ -712,247 +941,365 @@ component_dimension.2.notes=
 # المواصفات الديناميكية
 # =========================================
 
+# @optional @customer @repeatable @type(group)
 # مجموعات المواصفات الديناميكية (عدد غير محدود)
+# @optional @customer @type(string)
 # اسم المجموعة المعروض
 spec_group.1.name=
+# @optional @customer @type(string)
 # مفتاح المجموعة للترجمة (general, processor, display…)
 spec_group.1.key=
+# @optional @customer @type(string)
 # اسم المجموعة بالعربية (اختياري)
 spec_group.1.label_ar=
+# @optional @customer @type(string)
 # اسم المجموعة بالإنجليزية (اختياري)
 spec_group.1.label_en=
+# @optional @customer @type(string)
 # اسم المجموعة بالتركية (اختياري)
 spec_group.1.label_tr=
+# @optional @customer @type(integer)
 # ترتيب المجموعة
 spec_group.1.order=
+# @optional @customer @repeatable @type(group)
 # مواصفة داخل المجموعة
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.1.spec.1.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.1.spec.1.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.1.spec.1.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.1.spec.1.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.1.spec.1.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.1.spec.1.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.1.spec.1.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.1.spec.1.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.1.spec.2.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.1.spec.2.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.1.spec.2.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.1.spec.2.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.1.spec.2.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.1.spec.2.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.1.spec.2.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.1.spec.2.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.1.spec.3.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.1.spec.3.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.1.spec.3.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.1.spec.3.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.1.spec.3.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.1.spec.3.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.1.spec.3.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.1.spec.3.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.1.spec.4.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.1.spec.4.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.1.spec.4.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.1.spec.4.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.1.spec.4.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.1.spec.4.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.1.spec.4.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.1.spec.4.note=
 
+# @optional @customer @type(string)
 # اسم المجموعة المعروض
 spec_group.2.name=
+# @optional @customer @type(string)
 # مفتاح المجموعة للترجمة (general, processor, display…)
 spec_group.2.key=
+# @optional @customer @type(string)
 # اسم المجموعة بالعربية (اختياري)
 spec_group.2.label_ar=
+# @optional @customer @type(string)
 # اسم المجموعة بالإنجليزية (اختياري)
 spec_group.2.label_en=
+# @optional @customer @type(string)
 # اسم المجموعة بالتركية (اختياري)
 spec_group.2.label_tr=
+# @optional @customer @type(integer)
 # ترتيب المجموعة
 spec_group.2.order=
+# @optional @customer @repeatable @type(group)
 # مواصفة داخل المجموعة
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.2.spec.1.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.2.spec.1.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.2.spec.1.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.2.spec.1.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.2.spec.1.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.2.spec.1.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.2.spec.1.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.2.spec.1.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.2.spec.2.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.2.spec.2.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.2.spec.2.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.2.spec.2.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.2.spec.2.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.2.spec.2.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.2.spec.2.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.2.spec.2.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.2.spec.3.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.2.spec.3.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.2.spec.3.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.2.spec.3.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.2.spec.3.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.2.spec.3.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.2.spec.3.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.2.spec.3.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.2.spec.4.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.2.spec.4.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.2.spec.4.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.2.spec.4.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.2.spec.4.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.2.spec.4.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.2.spec.4.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.2.spec.4.note=
 
+# @optional @customer @type(string)
 # اسم المجموعة المعروض
 spec_group.3.name=
+# @optional @customer @type(string)
 # مفتاح المجموعة للترجمة (general, processor, display…)
 spec_group.3.key=
+# @optional @customer @type(string)
 # اسم المجموعة بالعربية (اختياري)
 spec_group.3.label_ar=
+# @optional @customer @type(string)
 # اسم المجموعة بالإنجليزية (اختياري)
 spec_group.3.label_en=
+# @optional @customer @type(string)
 # اسم المجموعة بالتركية (اختياري)
 spec_group.3.label_tr=
+# @optional @customer @type(integer)
 # ترتيب المجموعة
 spec_group.3.order=
+# @optional @customer @repeatable @type(group)
 # مواصفة داخل المجموعة
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.3.spec.1.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.3.spec.1.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.3.spec.1.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.3.spec.1.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.3.spec.1.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.3.spec.1.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.3.spec.1.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.3.spec.1.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.3.spec.2.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.3.spec.2.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.3.spec.2.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.3.spec.2.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.3.spec.2.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.3.spec.2.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.3.spec.2.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.3.spec.2.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.3.spec.3.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.3.spec.3.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.3.spec.3.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.3.spec.3.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.3.spec.3.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.3.spec.3.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.3.spec.3.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.3.spec.3.note=
 
+# @optional @customer @type(string)
 # اسم المواصفة
 spec_group.3.spec.4.name=
+# @optional @customer @type(string)
 # مفتاح المواصفة للترجمة (bluetooth_version…)
 spec_group.3.spec.4.key=
+# @optional @customer @type(string)
 # اسم المواصفة بالعربية (اختياري)
 spec_group.3.spec.4.label_ar=
+# @optional @customer @type(string)
 # اسم المواصفة بالإنجليزية (اختياري)
 spec_group.3.spec.4.label_en=
+# @optional @customer @type(string)
 # اسم المواصفة بالتركية (اختياري)
 spec_group.3.spec.4.label_tr=
+# @optional @customer @type(string)
 # القيمة
 spec_group.3.spec.4.value=
+# @optional @customer @type(string)
 # الوحدة (mm, g, W, GHz…) — لا تُترجم
 spec_group.3.spec.4.unit=
+# @optional @customer @type(string)
 # ملاحظة
 spec_group.3.spec.4.note=
 
@@ -960,80 +1307,117 @@ spec_group.3.spec.4.note=
 # التوافق
 # =========================================
 
+# @recommended @customer @repeatable @type(group)
 # التوافق مع الأجهزة والمنصات (Nintendo Switch، PC، PlayStation…)
+# @optional @customer @type(string)
 # اسم الجهاز/المنصة
 compatibility.1.name=
+# @optional @customer @type(string)
 # اسم المنتج المتوافق
 compatibility.1.product=
+# @optional @customer @type(string)
 # الموديل
 compatibility.1.model=
+# @optional @customer @type(string)
 # الجيل
 compatibility.1.generation=
+# @optional @customer @type(string)
 # النوع (console, pc, mobile…)
 compatibility.1.type=
+# @optional @customer @enum(compatible|partial|incompatible|requires_adapter|unverified)
 # الحالة: compatible / partial / incompatible / requires_adapter / unverified
 compatibility.1.status=
+# @optional @customer @type(string)
 # ملاحظات التوافق
 compatibility.1.notes=
+# @optional @customer @type(url)
 # رابط مرجعي
 compatibility.1.url=
+# @optional @customer @type(string)
 # معرّف منتج في المتجر للربط الداخلي
 compatibility.1.product_id=
 
+# @optional @customer @type(string)
 # اسم الجهاز/المنصة
 compatibility.2.name=
+# @optional @customer @type(string)
 # اسم المنتج المتوافق
 compatibility.2.product=
+# @optional @customer @type(string)
 # الموديل
 compatibility.2.model=
+# @optional @customer @type(string)
 # الجيل
 compatibility.2.generation=
+# @optional @customer @type(string)
 # النوع (console, pc, mobile…)
 compatibility.2.type=
+# @optional @customer @enum(compatible|partial|incompatible|requires_adapter|unverified)
 # الحالة: compatible / partial / incompatible / requires_adapter / unverified
 compatibility.2.status=
+# @optional @customer @type(string)
 # ملاحظات التوافق
 compatibility.2.notes=
+# @optional @customer @type(url)
 # رابط مرجعي
 compatibility.2.url=
+# @optional @customer @type(string)
 # معرّف منتج في المتجر للربط الداخلي
 compatibility.2.product_id=
 
+# @optional @customer @type(string)
 # اسم الجهاز/المنصة
 compatibility.3.name=
+# @optional @customer @type(string)
 # اسم المنتج المتوافق
 compatibility.3.product=
+# @optional @customer @type(string)
 # الموديل
 compatibility.3.model=
+# @optional @customer @type(string)
 # الجيل
 compatibility.3.generation=
+# @optional @customer @type(string)
 # النوع (console, pc, mobile…)
 compatibility.3.type=
+# @optional @customer @enum(compatible|partial|incompatible|requires_adapter|unverified)
 # الحالة: compatible / partial / incompatible / requires_adapter / unverified
 compatibility.3.status=
+# @optional @customer @type(string)
 # ملاحظات التوافق
 compatibility.3.notes=
+# @optional @customer @type(url)
 # رابط مرجعي
 compatibility.3.url=
+# @optional @customer @type(string)
 # معرّف منتج في المتجر للربط الداخلي
 compatibility.3.product_id=
 
+# @optional @customer @type(string)
 # اسم الجهاز/المنصة
 compatibility.4.name=
+# @optional @customer @type(string)
 # اسم المنتج المتوافق
 compatibility.4.product=
+# @optional @customer @type(string)
 # الموديل
 compatibility.4.model=
+# @optional @customer @type(string)
 # الجيل
 compatibility.4.generation=
+# @optional @customer @type(string)
 # النوع (console, pc, mobile…)
 compatibility.4.type=
+# @optional @customer @enum(compatible|partial|incompatible|requires_adapter|unverified)
 # الحالة: compatible / partial / incompatible / requires_adapter / unverified
 compatibility.4.status=
+# @optional @customer @type(string)
 # ملاحظات التوافق
 compatibility.4.notes=
+# @optional @customer @type(url)
 # رابط مرجعي
 compatibility.4.url=
+# @optional @customer @type(string)
 # معرّف منتج في المتجر للربط الداخلي
 compatibility.4.product_id=
 
@@ -1041,40 +1425,57 @@ compatibility.4.product_id=
 # محتويات العلبة
 # =========================================
 
+# @recommended @customer @repeatable @type(group)
 # محتويات العلبة
+# @optional @customer @type(string)
 # اسم العنصر
 box_content.1.name=
+# @optional @customer @type(integer)
 # الكمية
 box_content.1.quantity=
+# @optional @customer @type(url)
 # صورة العنصر
 box_content.1.image=
+# @optional @customer @type(string)
 # ملاحظات
 box_content.1.notes=
 
+# @optional @customer @type(string)
 # اسم العنصر
 box_content.2.name=
+# @optional @customer @type(integer)
 # الكمية
 box_content.2.quantity=
+# @optional @customer @type(url)
 # صورة العنصر
 box_content.2.image=
+# @optional @customer @type(string)
 # ملاحظات
 box_content.2.notes=
 
+# @optional @customer @type(string)
 # اسم العنصر
 box_content.3.name=
+# @optional @customer @type(integer)
 # الكمية
 box_content.3.quantity=
+# @optional @customer @type(url)
 # صورة العنصر
 box_content.3.image=
+# @optional @customer @type(string)
 # ملاحظات
 box_content.3.notes=
 
+# @optional @customer @type(string)
 # اسم العنصر
 box_content.4.name=
+# @optional @customer @type(integer)
 # الكمية
 box_content.4.quantity=
+# @optional @customer @type(url)
 # صورة العنصر
 box_content.4.image=
+# @optional @customer @type(string)
 # ملاحظات
 box_content.4.notes=
 
@@ -1082,6 +1483,7 @@ box_content.4.notes=
 # خطوات الاستخدام والتفعيل
 # =========================================
 
+# @optional @customer @repeatable @type(string)
 # خطوة واحدة في كل سطر (عدد غير محدود)
 setup_step.1=
 setup_step.2=
@@ -1089,6 +1491,7 @@ setup_step.3=
 setup_step.4=
 setup_step.5=
 
+# @optional @customer @type(multiline)
 # شروط الاستخدام والقيود
 usage_terms<<EOF
 
@@ -1098,137 +1501,193 @@ EOF
 # الصور والوسائط
 # =========================================
 
+# @recommended @customer @type(url)
 # الصورة الرئيسية
 main_image=
 
+# @recommended @customer @type(url)
 # صورة البطاقة في القوائم
 listing_image=
 
+# @optional @customer @type(url)
 # صورة الغلاف في صفحة التفاصيل
 cover_image=
 
+# @optional @customer @type(url)
 # صورة مصغّرة
 thumbnail_image=
 
+# @optional @customer @type(url)
 # صورة البنر
 banner_image=
 
+# @recommended @customer @type(url)
 # صورة أمامية
 front_image=
 
+# @optional @customer @type(url)
 # صورة خلفية
 back_image=
 
+# @optional @customer @type(url)
 # صورة جانبية يسار
 left_image=
 
+# @optional @customer @type(url)
 # صورة جانبية يمين
 right_image=
 
+# @recommended @customer @type(url)
 # صورة العلبة من الأمام
 packaging_front_image=
 
+# @optional @customer @type(url)
 # صورة العلبة من الخلف
 packaging_back_image=
 
+# @optional @customer @type(url)
 # صورة تفاصيل مقرّبة
 close_up_image=
 
+# @optional @customer @repeatable @type(url)
 # صور الاستخدام الواقعي
 lifestyle_image.1=
 lifestyle_image.2=
 lifestyle_image.3=
 
+# @optional @customer @repeatable @type(group)
 # معرض الصور (عدد غير محدود)
+# @optional @customer @type(url)
 # رابط الصورة
 gallery.1.image=
+# @optional @customer @type(string)
 # عنوان الصورة
 gallery.1.title=
+# @optional @customer @type(string)
 # وصف الصورة
 gallery.1.description=
+# @optional @customer @type(string)
 # التصنيف (front, back, packaging, lifestyle…)
 gallery.1.type=
 
+# @optional @customer @type(url)
 # رابط الصورة
 gallery.2.image=
+# @optional @customer @type(string)
 # عنوان الصورة
 gallery.2.title=
+# @optional @customer @type(string)
 # وصف الصورة
 gallery.2.description=
+# @optional @customer @type(string)
 # التصنيف (front, back, packaging, lifestyle…)
 gallery.2.type=
 
+# @optional @customer @type(url)
 # رابط الصورة
 gallery.3.image=
+# @optional @customer @type(string)
 # عنوان الصورة
 gallery.3.title=
+# @optional @customer @type(string)
 # وصف الصورة
 gallery.3.description=
+# @optional @customer @type(string)
 # التصنيف (front, back, packaging, lifestyle…)
 gallery.3.type=
 
+# @optional @customer @type(url)
 # رابط الصورة
 gallery.4.image=
+# @optional @customer @type(string)
 # عنوان الصورة
 gallery.4.title=
+# @optional @customer @type(string)
 # وصف الصورة
 gallery.4.description=
+# @optional @customer @type(string)
 # التصنيف (front, back, packaging, lifestyle…)
 gallery.4.type=
 
+# @optional @customer @repeatable @type(group)
 # الفيديوهات
+# @optional @customer @type(string)
 # عنوان الفيديو
 video.1.title=
+# @optional @customer @type(url)
 # رابط الفيديو
 video.1.url=
+# @optional @customer @type(url)
 # صورة مصغّرة
 video.1.thumbnail=
+# @optional @customer @enum(official|setup|tutorial|review|demonstration|unboxing)
 # النوع: official / setup / tutorial / review / demonstration / unboxing
 video.1.type=
 
+# @optional @customer @type(string)
 # عنوان الفيديو
 video.2.title=
+# @optional @customer @type(url)
 # رابط الفيديو
 video.2.url=
+# @optional @customer @type(url)
 # صورة مصغّرة
 video.2.thumbnail=
+# @optional @customer @enum(official|setup|tutorial|review|demonstration|unboxing)
 # النوع: official / setup / tutorial / review / demonstration / unboxing
 video.2.type=
 
+# @optional @customer @type(string)
 # عنوان الفيديو
 video.3.title=
+# @optional @customer @type(url)
 # رابط الفيديو
 video.3.url=
+# @optional @customer @type(url)
 # صورة مصغّرة
 video.3.thumbnail=
+# @optional @customer @enum(official|setup|tutorial|review|demonstration|unboxing)
 # النوع: official / setup / tutorial / review / demonstration / unboxing
 video.3.type=
 
+# @optional @customer @repeatable @type(group)
 # المستندات والأدلة
+# @optional @customer @type(string)
 # عنوان المستند
 document.1.title=
+# @optional @customer @enum(manual|quick_start|datasheet|compatibility_guide|driver|firmware|support_page|safety)
 # النوع: manual / quick_start / datasheet / compatibility_guide / driver / firmware / support_page / safety
 document.1.type=
+# @optional @customer @type(url)
 # رابط المستند
 document.1.url=
+# @optional @customer @type(string)
 # لغة المستند
 document.1.language=
 
+# @optional @customer @type(string)
 # عنوان المستند
 document.2.title=
+# @optional @customer @enum(manual|quick_start|datasheet|compatibility_guide|driver|firmware|support_page|safety)
 # النوع: manual / quick_start / datasheet / compatibility_guide / driver / firmware / support_page / safety
 document.2.type=
+# @optional @customer @type(url)
 # رابط المستند
 document.2.url=
+# @optional @customer @type(string)
 # لغة المستند
 document.2.language=
 
+# @optional @customer @type(string)
 # عنوان المستند
 document.3.title=
+# @optional @customer @enum(manual|quick_start|datasheet|compatibility_guide|driver|firmware|support_page|safety)
 # النوع: manual / quick_start / datasheet / compatibility_guide / driver / firmware / support_page / safety
 document.3.type=
+# @optional @customer @type(url)
 # رابط المستند
 document.3.url=
+# @optional @customer @type(string)
 # لغة المستند
 document.3.language=
 
@@ -1236,105 +1695,153 @@ document.3.language=
 # الخيارات والنسخ
 # =========================================
 
+# @optional @customer @repeatable @type(group)
 # خيارات المنتج الرئيسية (حساب أوفلاين، حساب أونلاين، اللون، السعة…)
+# @optional @customer @type(string)
 # معرّف الخيار (يُستخدم في variant.N.option_id)
 option.1.id=
+# @optional @customer @type(string)
 # اسم الخيار (مثال: حساب أوفلاين)
 option.1.name=
+# @optional @customer @type(string)
 # وصف الخيار
 option.1.description=
+# @optional @customer @type(url)
 # صورة الخيار
 option.1.image=
 
+# @optional @customer @type(string)
 # معرّف الخيار (يُستخدم في variant.N.option_id)
 option.2.id=
+# @optional @customer @type(string)
 # اسم الخيار (مثال: حساب أوفلاين)
 option.2.name=
+# @optional @customer @type(string)
 # وصف الخيار
 option.2.description=
+# @optional @customer @type(url)
 # صورة الخيار
 option.2.image=
 
+# @optional @customer @type(string)
 # معرّف الخيار (يُستخدم في variant.N.option_id)
 option.3.id=
+# @optional @customer @type(string)
 # اسم الخيار (مثال: حساب أوفلاين)
 option.3.name=
+# @optional @customer @type(string)
 # وصف الخيار
 option.3.description=
+# @optional @customer @type(url)
 # صورة الخيار
 option.3.image=
 
+# @optional @customer @repeatable @type(group)
 # الأنواع والإصدارات والأسعار (يمكن ربطها بخيار محدد أو تركها للكل)
+# @optional @customer @type(string)
 # اسم النوع/الإصدار (مثال: النسخة القياسية Standard / فاخر Deluxe)
 variant.1.name=
+# @optional @customer @type(string)
 # معرّف الخيار المرتبط (اتركه فارغاً ليكون متاحاً للكل)
 variant.1.option_id=
+# @optional @customer @type(number)
 # سعر هذا النوع (د.ع)
 variant.1.price=
+# @optional @customer @type(number)
 # تكلفة هذا النوع (د.ع)
 variant.1.cost=
+# @optional @customer @type(string)
 # محتويات أو وصف هذا الإصدار
 variant.1.description=
+# @optional @customer @type(string)
 # SKU الخاص بالنسخة
 variant.1.sku=
+# @optional @customer @type(string)
 # اللون
 variant.1.color=
+# @optional @customer @type(url)
 # صورة النسخة
 variant.1.image=
 
+# @optional @customer @type(string)
 # اسم النوع/الإصدار (مثال: النسخة القياسية Standard / فاخر Deluxe)
 variant.2.name=
+# @optional @customer @type(string)
 # معرّف الخيار المرتبط (اتركه فارغاً ليكون متاحاً للكل)
 variant.2.option_id=
+# @optional @customer @type(number)
 # سعر هذا النوع (د.ع)
 variant.2.price=
+# @optional @customer @type(number)
 # تكلفة هذا النوع (د.ع)
 variant.2.cost=
+# @optional @customer @type(string)
 # محتويات أو وصف هذا الإصدار
 variant.2.description=
+# @optional @customer @type(string)
 # SKU الخاص بالنسخة
 variant.2.sku=
+# @optional @customer @type(string)
 # اللون
 variant.2.color=
+# @optional @customer @type(url)
 # صورة النسخة
 variant.2.image=
 
+# @optional @customer @type(string)
 # اسم النوع/الإصدار (مثال: النسخة القياسية Standard / فاخر Deluxe)
 variant.3.name=
+# @optional @customer @type(string)
 # معرّف الخيار المرتبط (اتركه فارغاً ليكون متاحاً للكل)
 variant.3.option_id=
+# @optional @customer @type(number)
 # سعر هذا النوع (د.ع)
 variant.3.price=
+# @optional @customer @type(number)
 # تكلفة هذا النوع (د.ع)
 variant.3.cost=
+# @optional @customer @type(string)
 # محتويات أو وصف هذا الإصدار
 variant.3.description=
+# @optional @customer @type(string)
 # SKU الخاص بالنسخة
 variant.3.sku=
+# @optional @customer @type(string)
 # اللون
 variant.3.color=
+# @optional @customer @type(url)
 # صورة النسخة
 variant.3.image=
 
+# @optional @customer @repeatable @type(group)
 # الألوان القابلة للاختيار
+# @optional @customer @type(string)
 # اسم اللون
 color_option.1.name=
+# @optional @customer @type(string)
 # كود اللون #RRGGBB
 color_option.1.hex=
+# @optional @customer @type(url)
 # صورة اللون
 color_option.1.image=
 
+# @optional @customer @type(string)
 # اسم اللون
 color_option.2.name=
+# @optional @customer @type(string)
 # كود اللون #RRGGBB
 color_option.2.hex=
+# @optional @customer @type(url)
 # صورة اللون
 color_option.2.image=
 
+# @optional @customer @type(string)
 # اسم اللون
 color_option.3.name=
+# @optional @customer @type(string)
 # كود اللون #RRGGBB
 color_option.3.hex=
+# @optional @customer @type(url)
 # صورة اللون
 color_option.3.image=
 
@@ -1342,73 +1849,97 @@ color_option.3.image=
 # التقييمات والأسئلة
 # =========================================
 
+# @optional @customer @type(number)
 # متوسط تقييم النقاد (0-10)
 review_score=
 
+# @optional @customer @type(number)
 # تقييم المستخدمين (0-10)
 user_score=
 
+# @optional @customer @repeatable @type(group)
 # مراجعات مختارة
+# @optional @customer @type(string)
 # الجهة
 review.1.source=
+# @optional @customer @type(string)
 # الدرجة كما نشرتها الجهة
 review.1.score=
+# @optional @customer @type(multiline)
 # اقتباس
 review.1.quote<<EOF
 
 EOF
+# @optional @customer @type(url)
 # رابط المراجعة
 review.1.url=
 
+# @optional @customer @type(string)
 # الجهة
 review.2.source=
+# @optional @customer @type(string)
 # الدرجة كما نشرتها الجهة
 review.2.score=
+# @optional @customer @type(multiline)
 # اقتباس
 review.2.quote<<EOF
 
 EOF
+# @optional @customer @type(url)
 # رابط المراجعة
 review.2.url=
 
+# @optional @customer @type(string)
 # الجهة
 review.3.source=
+# @optional @customer @type(string)
 # الدرجة كما نشرتها الجهة
 review.3.score=
+# @optional @customer @type(multiline)
 # اقتباس
 review.3.quote<<EOF
 
 EOF
+# @optional @customer @type(url)
 # رابط المراجعة
 review.3.url=
 
+# @optional @customer @repeatable @type(string)
 # الإيجابيات
 pro.1=
 pro.2=
 pro.3=
 
+# @optional @customer @repeatable @type(string)
 # السلبيات
 con.1=
 con.2=
 con.3=
 
+# @optional @customer @repeatable @type(group)
 # الأسئلة الشائعة
+# @optional @customer @type(string)
 # السؤال
 faq.1.question=
+# @optional @customer @type(multiline)
 # الإجابة
 faq.1.answer<<EOF
 
 EOF
 
+# @optional @customer @type(string)
 # السؤال
 faq.2.question=
+# @optional @customer @type(multiline)
 # الإجابة
 faq.2.answer<<EOF
 
 EOF
 
+# @optional @customer @type(string)
 # السؤال
 faq.3.question=
+# @optional @customer @type(multiline)
 # الإجابة
 faq.3.answer<<EOF
 
@@ -1418,43 +1949,59 @@ EOF
 # التحديثات
 # =========================================
 
+# @optional @customer @repeatable @type(group)
 # تحديثات البرنامج الثابت
+# @optional @customer @type(string)
 # رقم الإصدار
 update.1.version=
+# @optional @customer @type(date)
 # تاريخ التحديث YYYY-MM-DD
 update.1.date=
+# @optional @customer @type(string)
 # عنوان التحديث
 update.1.title=
+# @optional @customer @type(multiline)
 # أبرز التغييرات
 update.1.changes<<EOF
 
 EOF
+# @optional @customer @type(url)
 # رابط التحديث
 update.1.url=
 
+# @optional @customer @type(string)
 # رقم الإصدار
 update.2.version=
+# @optional @customer @type(date)
 # تاريخ التحديث YYYY-MM-DD
 update.2.date=
+# @optional @customer @type(string)
 # عنوان التحديث
 update.2.title=
+# @optional @customer @type(multiline)
 # أبرز التغييرات
 update.2.changes<<EOF
 
 EOF
+# @optional @customer @type(url)
 # رابط التحديث
 update.2.url=
 
+# @optional @customer @type(string)
 # رقم الإصدار
 update.3.version=
+# @optional @customer @type(date)
 # تاريخ التحديث YYYY-MM-DD
 update.3.date=
+# @optional @customer @type(string)
 # عنوان التحديث
 update.3.title=
+# @optional @customer @type(multiline)
 # أبرز التغييرات
 update.3.changes<<EOF
 
 EOF
+# @optional @customer @type(url)
 # رابط التحديث
 update.3.url=
 
@@ -1462,25 +2009,35 @@ update.3.url=
 # منتجات ذات صلة
 # =========================================
 
+# @optional @customer @repeatable @type(group)
 # منتجات ذات صلة
+# @optional @customer @type(string)
 # معرّف المنتج في المتجر
 related_product.1.product_id=
+# @optional @customer @type(string)
 # الاسم (إذا لم يكن في المتجر)
 related_product.1.name=
+# @optional @customer @type(url)
 # رابط
 related_product.1.url=
 
+# @optional @customer @type(string)
 # معرّف المنتج في المتجر
 related_product.2.product_id=
+# @optional @customer @type(string)
 # الاسم (إذا لم يكن في المتجر)
 related_product.2.name=
+# @optional @customer @type(url)
 # رابط
 related_product.2.url=
 
+# @optional @customer @type(string)
 # معرّف المنتج في المتجر
 related_product.3.product_id=
+# @optional @customer @type(string)
 # الاسم (إذا لم يكن في المتجر)
 related_product.3.name=
+# @optional @customer @type(url)
 # رابط
 related_product.3.url=
 
@@ -1488,64 +2045,161 @@ related_product.3.url=
 # المصادر
 # =========================================
 
+# @recommended @customer @repeatable @type(group)
 # المصادر — الأولوية: موقع الشركة الرسمي ثم صفحة المنتج ثم التوثيق ثم الدعم
+# @optional @customer @type(string)
 # اسم المصدر
 source.1.name=
+# @optional @customer @type(url)
 # الرابط
 source.1.url=
+# @optional @customer @enum(manufacturer|official_product_page|official_documentation|official_support|retailer|press|review)
 # النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
 source.1.type=
+# @optional @customer @type(date)
 # تاريخ التحقق YYYY-MM-DD
 source.1.verified_at=
 
+# @optional @customer @type(string)
 # اسم المصدر
 source.2.name=
+# @optional @customer @type(url)
 # الرابط
 source.2.url=
+# @optional @customer @enum(manufacturer|official_product_page|official_documentation|official_support|retailer|press|review)
 # النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
 source.2.type=
+# @optional @customer @type(date)
 # تاريخ التحقق YYYY-MM-DD
 source.2.verified_at=
 
+# @optional @customer @type(string)
 # اسم المصدر
 source.3.name=
+# @optional @customer @type(url)
 # الرابط
 source.3.url=
+# @optional @customer @enum(manufacturer|official_product_page|official_documentation|official_support|retailer|press|review)
 # النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
 source.3.type=
+# @optional @customer @type(date)
 # تاريخ التحقق YYYY-MM-DD
 source.3.verified_at=
 
+# @optional @customer @type(string)
 # اسم المصدر
 source.4.name=
+# @optional @customer @type(url)
 # الرابط
 source.4.url=
+# @optional @customer @enum(manufacturer|official_product_page|official_documentation|official_support|retailer|press|review)
 # النوع: manufacturer / official_product_page / official_documentation / official_support / retailer / press / review
 source.4.type=
+# @optional @customer @type(date)
 # تاريخ التحقق YYYY-MM-DD
 source.4.verified_at=
+
+# =========================================
+# توثيق الحقول (داخلي)
+# =========================================
+
+# @optional @internal @repeatable @type(group)
+# مصدر حقل بعينه — لأي حقل يحتاج إثباتاً (عدد غير محدود)
+# @optional @customer @type(string)
+# اسم الحقل الموثَّق (مثال: battery_capacity)
+field_source.1.field=
+# @optional @customer @type(url)
+# رابط المصدر
+field_source.1.url=
+# @optional @customer @type(string)
+# ملاحظة عن الاقتباس
+field_source.1.note=
+
+# @optional @customer @type(string)
+# اسم الحقل الموثَّق (مثال: battery_capacity)
+field_source.2.field=
+# @optional @customer @type(url)
+# رابط المصدر
+field_source.2.url=
+# @optional @customer @type(string)
+# ملاحظة عن الاقتباس
+field_source.2.note=
+
+# @optional @customer @type(string)
+# اسم الحقل الموثَّق (مثال: battery_capacity)
+field_source.3.field=
+# @optional @customer @type(url)
+# رابط المصدر
+field_source.3.url=
+# @optional @customer @type(string)
+# ملاحظة عن الاقتباس
+field_source.3.note=
+
+# @optional @internal @repeatable @type(group)
+# حقل تم البحث عنه ولا توجد له معلومة منشورة — سجّل السبب بدل تركه فارغاً بلا تفسير
+# @optional @customer @type(string)
+# اسم الحقل
+data_gap.1.field=
+# @optional @customer @type(string)
+# سبب عدم توفر القيمة (لم تنشره الشركة، لا ينطبق…)
+data_gap.1.reason=
+# @optional @customer @type(date)
+# تاريخ البحث YYYY-MM-DD
+data_gap.1.checked_at=
+
+# @optional @customer @type(string)
+# اسم الحقل
+data_gap.2.field=
+# @optional @customer @type(string)
+# سبب عدم توفر القيمة (لم تنشره الشركة، لا ينطبق…)
+data_gap.2.reason=
+# @optional @customer @type(date)
+# تاريخ البحث YYYY-MM-DD
+data_gap.2.checked_at=
+
+# @optional @customer @type(string)
+# اسم الحقل
+data_gap.3.field=
+# @optional @customer @type(string)
+# سبب عدم توفر القيمة (لم تنشره الشركة، لا ينطبق…)
+data_gap.3.reason=
+# @optional @customer @type(date)
+# تاريخ البحث YYYY-MM-DD
+data_gap.3.checked_at=
+
+# @optional @internal @type(multiline)
+# ملاحظات داخلية — لا تُعرض للعميل إطلاقاً
+internal_notes<<EOF
+
+EOF
 
 # =========================================
 # تحسين محركات البحث
 # =========================================
 
+# @optional @internal @type(string)
 # كلمات البحث مفصولة بفواصل
 search_keywords=
 
+# @optional @internal @type(string)
 # عنوان SEO
 seo_title=
 
+# @optional @internal @type(multiline)
 # وصف SEO
 seo_description<<EOF
 
 EOF
 
+# @optional @internal @type(url)
 # صورة OpenGraph
 og_image=
 
+# @optional @internal @type(string)
 # عنوان OpenGraph
 og_title=
 
+# @optional @internal @type(multiline)
 # وصف OpenGraph
 og_description<<EOF
 

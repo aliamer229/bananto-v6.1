@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useTranslation } from "@/i18n";
 import { countSchemaFields } from "@/lib/productImport/generator";
 import { parseProductImport } from "@/lib/productImport/parser";
+import { buildQualityReport, type QualityReport } from "@/lib/productImport/quality";
 import type { ParseResult, ProductSchema } from "@/lib/productImport/types";
 
 interface Props {
@@ -42,6 +43,16 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
   const [view, setView] = useState<"status" | "preview">("status");
 
   const totalFields = useMemo(() => countSchemaFields(schema), [schema]);
+  /*
+    "Imported successfully" was never the whole truth: a file with the name
+    filled in and nothing else parses exactly as cleanly as a researched one.
+    This is what the admin sees before saving, so a thin product is caught here
+    rather than on the storefront.
+  */
+  const quality = useMemo(
+    () => (result ? buildQualityReport(result.data, schema) : null),
+    [result, schema],
+  );
   const errors = result?.errors.filter((e) => e.severity === "error") ?? [];
   const warnings = result?.errors.filter((e) => e.severity === "warning") ?? [];
 
@@ -244,6 +255,8 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
                 <div className="flex-1 overflow-y-auto">
                   {view === "status" ? (
                     <div className="space-y-4">
+                      {quality ? <QualityPanel report={quality} /> : null}
+
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {statCards
                           .filter((card, index) => index < 2 || card.value > 0)
@@ -377,6 +390,89 @@ export default function ProductImportModal({ schema, onClose, onImport }: Props)
           </div>
         </footer>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The import quality report (§ "TEMPLATE IMPORT QUALITY REPORT").
+ *
+ * Deliberately never blocks: recommended gaps are shown as work to do, not as
+ * a reason to refuse a file. Required gaps are listed by their template key so
+ * the admin can jump straight to the line that needs filling.
+ */
+function QualityPanel({ report }: { report: QualityReport }) {
+  const bar = (present: number, total: number) =>
+    total === 0 ? 100 : Math.round((present / total) * 100);
+  const rows: { label: string; present: number; total: number; tone: string }[] = [
+    {
+      label: "المطلوب",
+      present: report.required.present,
+      total: report.required.total,
+      tone: report.complete ? "bg-emerald-500" : "bg-red-500",
+    },
+    {
+      label: "الموصى به",
+      present: report.recommended.present,
+      total: report.recommended.total,
+      tone: "bg-amber-500",
+    },
+  ];
+
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
+      <div className="flex items-center gap-2">
+        {report.complete ? (
+          <CheckCircle className="h-4 w-4 text-emerald-500" />
+        ) : (
+          <AlertTriangle className="h-4 w-4 text-red-500" />
+        )}
+        <h3 className="text-sm font-bold">تقرير جودة الاستيراد</h3>
+      </div>
+
+      {rows.map((row) => (
+        <div key={row.label} className="space-y-1">
+          <div className="flex items-baseline justify-between text-[11px] font-bold">
+            <span>{row.label}</span>
+            <span dir="ltr" className="font-mono text-muted-foreground">
+              {row.present}/{row.total}
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className={`h-full rounded-full ${row.tone}`}
+              style={{ width: `${bar(row.present, row.total)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+        <span>
+          الاختياري المملوء: <b dir="ltr">{report.optionalPopulated}</b>
+        </span>
+        <span>
+          الصور: <b dir="ltr">{report.media}</b>
+        </span>
+        <span>
+          المصادر: <b dir="ltr">{report.sources}</b>
+        </span>
+      </div>
+
+      {report.warnings.length > 0 && (
+        <details className="rounded-lg bg-muted/50 p-2">
+          <summary className="cursor-pointer text-[11px] font-bold">
+            تنبيهات الجودة ({report.warnings.length}) — لا تمنع الاستيراد
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {report.warnings.map((warning) => (
+              <li key={warning} className="text-[11px] text-muted-foreground">
+                • {warning}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }

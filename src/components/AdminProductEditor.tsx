@@ -78,6 +78,7 @@ import {
 import { ProductOptionsEditor } from "./admin/ProductOptionsEditor";
 import { GamePerformanceEditor } from "./admin/GamePerformanceEditor";
 import { HardwareAdminEditor } from "./admin/HardwareAdminEditor";
+import { SchemaAdminEditor } from "./admin/SchemaAdminEditor";
 import { useCurrency } from "../context/CurrencyContext";
 import { productSupportsSwitch2, validateGameDevicePerformance } from "@/lib/devicePerformance";
 
@@ -1452,6 +1453,20 @@ export default function AdminProductEditor({
         {/* ========================================================================= */}
         {categoryType === "hardware" && (
           <HardwareAdminEditor value={formData} onChange={setFormData} />
+        )}
+
+        {/*
+          Every non-game section gets the full schema as a collapsible form.
+
+          The curated blocks above stay: they are the fields an admin edits
+          daily, laid out by hand. This is the rest of the template — the two
+          hundred fields the import file can carry — grouped by the schema's own
+          headings, filtered to the product's own type, and badged so it is
+          visible which groups still need work without opening all of them.
+          Hardware keeps its dedicated editor above rather than getting two.
+        */}
+        {categoryType !== "game" && categoryType !== "hardware" && activeSchema && (
+          <SchemaAdminEditor schema={activeSchema} value={formData} onChange={setFormData} />
         )}
 
         {categoryType === "hardware" && showLegacyHardwareEditor && (
