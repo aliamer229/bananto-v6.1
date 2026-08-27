@@ -409,6 +409,11 @@ export async function createOrderForUser(
   const order: Order = {
     discountAmount: discountAmount || undefined,
     couponCode: appliedCoupon && couponCode ? couponCode.trim().toUpperCase() : undefined,
+    // Which line the coupon actually came off, when it was restricted to one.
+    // Resolved above to compute the discount; recording it is what lets
+    // per-product profit attribute it to the right product.
+    ...(appliedTargetProductId ? { couponTargetProductId: appliedTargetProductId } : {}),
+    ...(appliedVariantId ? { couponTargetVariantId: appliedVariantId } : {}),
     id: orderId,
     code,
     userId: user.id,

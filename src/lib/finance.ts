@@ -52,6 +52,8 @@ export interface FinanceOrder {
   discountAmount?: number;
   /** Partial refund, when one has been recorded against the order. */
   refundedAmount?: number;
+  /** Set when the coupon was restricted to a single product. */
+  couponTargetProductId?: string;
   status?: string;
   paymentStatus?: string;
   needsAddress?: boolean;
@@ -244,19 +246,48 @@ export function financeTotals(
  * each line independently leaves a few dinars unallocated on most orders, and
  * per-product profit stops reconciling with the order totals.
  *
- * This is an **allocation, not a record**. A coupon restricted to one product
- * really did come off that one line, but the order stores only the code and the
- * amount, so which line it hit is not recoverable. Order-level totals never
- * depend on this — `net` is `gross − discount` however the parts fall.
+ * When the order records `couponTargetProductId` — a coupon restricted to a
+ * single product — the discount is attributed to that line instead, because it
+ * genuinely came off it. Orders placed before that field existed carry only the
+ * code and the amount, so those fall back to pro-rata. Order-level totals never
+ * depend on either: `net` is `gross − discount` however the parts fall.
  */
 export function allocateDiscount(
   lines: readonly FinanceLine[],
   discountAmount: number,
+  targetProductId?: string,
 ): number[] {
   const values = lines.map((line) => money(line.unitPrice) * qty(line.quantity));
   const gross = values.reduce((sum, value) => sum + value, 0);
   const discount = Math.min(Math.max(0, money(discountAmount)), gross);
   if (!gross || !discount) return values.map(() => 0);
+
+  /*
+    A coupon restricted to one product really did come off that one line, and
+    checkout records which. Spreading it pro-rata would understate the margin on
+    the discounted product and overstate it on everything else in the basket.
+  */
+  if (targetProductId) {
+    const index = lines.findIndex((line) => String(line.productId) === String(targetProductId));
+    if (index >= 0) {
+      const cap = values[index] ?? 0;
+      const out = values.map(() => 0);
+      out[index] = Math.min(discount, cap);
+      // A coupon worth more than the line it targeted spills over pro-rata
+      // across the rest, which is what the order total already reflects.
+      const spill = discount - (out[index] ?? 0);
+      if (spill > 0) {
+        const others = lines.map((line, i) => (i === index ? null : line)).filter(Boolean) as FinanceLine[];
+        const spread = allocateDiscount(others, spill);
+        let cursor = 0;
+        for (let i = 0; i < out.length; i++) {
+          if (i === index) continue;
+          out[i] = spread[cursor++] ?? 0;
+        }
+      }
+      return out;
+    }
+  }
 
   const exact = values.map((value) => (value / gross) * discount);
   const floors = exact.map((value) => Math.floor(value));

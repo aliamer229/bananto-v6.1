@@ -282,3 +282,98 @@ describe("the wiring", () => {
     expect(UI).toContain("totals.costIsEstimated");
   });
 });
+
+/**
+ * The case matrix exactly as specified, with the specified numbers.
+ *
+ * The suites above cover the same ground with the store's real figures; these
+ * are the literal cases, kept separate so the spec can be read off the file.
+ */
+describe("specified case matrix", () => {
+  const line = (productId: string, price: number, cost: number, quantity = 1) => ({
+    productId,
+    quantity,
+    unitPrice: price,
+    unitCost: cost,
+  });
+  const order = (over: Partial<FinanceOrder>): FinanceOrder => ({
+    status: "completed",
+    paymentStatus: "paid",
+    needsAddress: false,
+    ...over,
+  });
+
+  it("CASE A — price 10,000, cost 1,000, no discount, profit 9,000", () => {
+    const f = orderFinance(order({ items: [line("p1", 10000, 1000)], total: 10000 }));
+    expect(f.net).toBe(10000);
+    expect(f.cost).toBe(1000);
+    expect(f.profit).toBe(9000);
+  });
+
+  it("CASE B — 50% discount: net 5,000, profit 4,000", () => {
+    const f = orderFinance(
+      order({ items: [line("p1", 10000, 1000)], discountAmount: 5000, total: 5000 }),
+    );
+    expect(f.gross).toBe(10000);
+    expect(f.discount).toBe(5000);
+    expect(f.net).toBe(5000);
+    expect(f.profit).toBe(4000);
+  });
+
+  it("CASE C — 10,000 + 20,000 with a 9,000 order discount: net 21,000, allocation exact", () => {
+    const items = [line("p1", 10000, 1000), line("p2", 20000, 2000)];
+    const f = orderFinance(order({ items, discountAmount: 9000, total: 21000 }));
+    expect(f.gross).toBe(30000);
+    expect(f.net).toBe(21000);
+
+    const parts = allocateDiscount(items, 9000);
+    // Pro-rata: one third and two thirds of 9,000.
+    expect(parts).toEqual([3000, 6000]);
+    expect(parts[0]! + parts[1]!).toBe(9000);
+  });
+
+  it("CASE D — a discount limited to one product leaves the other untouched", () => {
+    const items = [line("p1", 10000, 1000), line("p2", 20000, 2000)];
+    const parts = allocateDiscount(items, 9000, "p2");
+    expect(parts).toEqual([0, 9000]);
+
+    // And the other way round, so this is not an artefact of ordering.
+    expect(allocateDiscount(items, 4000, "p1")).toEqual([4000, 0]);
+
+    // Order totals are unchanged by which line it came off.
+    const f = orderFinance(
+      order({ items, discountAmount: 9000, couponTargetProductId: "p2", total: 21000 }),
+    );
+    expect(f.net).toBe(21000);
+    expect(f.profit).toBe(21000 - 3000);
+  });
+
+  it("CASE E — a full refund reverses revenue and profit", () => {
+    const items = [line("p1", 10000, 1000)];
+    const f = orderFinance(order({ items, refundedAmount: 10000, total: 10000 }));
+    expect(f.net).toBe(0);
+    expect(f.profit).toBe(-1000); // the goods were still bought
+    // A cancelled order is the other shape of a full refund: it drops out.
+    const cancelled = orderFinance(order({ items, status: "cancelled", total: 10000 }));
+    expect(cancelled.counted).toBe(false);
+    expect(cancelled.net).toBe(0);
+  });
+
+  it("CASE F — a partial refund leaves profit on the retained revenue", () => {
+    const f = orderFinance(
+      order({ items: [line("p1", 10000, 1000)], refundedAmount: 4000, total: 10000 }),
+    );
+    expect(f.refunded).toBe(4000);
+    expect(f.net).toBe(6000);
+    expect(f.profit).toBe(5000);
+  });
+
+  it("records which line a single-product coupon came off, so D is data and not a guess", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const CHECKOUT = readFileSync(resolve(process.cwd(), "src/lib/orders.server.ts"), "utf8");
+    // Checkout already resolved the target to compute the discount; it now
+    // persists it rather than throwing it away.
+    expect(CHECKOUT).toContain("couponTargetProductId: appliedTargetProductId");
+  });
+});
