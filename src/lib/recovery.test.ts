@@ -14,6 +14,7 @@ describe("blank-screen recovery", () => {
   it("shows a reload button instead of leaving the page blank when a reload just happened", async () => {
     const { handleModuleReload } = await import("./polyfills");
     window.sessionStorage.setItem("bananto_chunk_reload_at", String(Date.now()));
+    window.sessionStorage.setItem("vitest_force_production", "1");
 
     handleModuleReload();
 
@@ -46,18 +47,19 @@ describe("blank-screen recovery", () => {
   it("gives up after repeated reloads instead of looping forever", async () => {
     const { handleModuleReload } = await import("./polyfills");
     window.sessionStorage.setItem("bananto_chunk_reload_count", "2");
+    window.sessionStorage.setItem("vitest_force_production", "1");
 
-    handleModuleReload(true);
+    handleModuleReload();
 
     expect(document.getElementById("bananto-recovery-screen")).not.toBeNull();
   });
 
   it("survives sessionStorage throwing, as it does in private mode", async () => {
     const { handleModuleReload } = await import("./polyfills");
-    const getItem = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+    const getItem = vi.spyOn(window.sessionStorage, "getItem").mockImplementation(() => {
       throw new Error("denied");
     });
-    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    const setItem = vi.spyOn(window.sessionStorage, "setItem").mockImplementation(() => {
       throw new Error("denied");
     });
 

@@ -1,6 +1,12 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Layers, Link as LinkIcon, Sparkles, Check, Info } from "lucide-react";
+import { Plus, Trash2, Layers, Link as LinkIcon, Sparkles, Check, Info, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  resolveOptionStandardDescription,
+  resolveTypeStandardDescription,
+  STANDARD_OPTION_DESCRIPTIONS,
+  STANDARD_TYPE_DESCRIPTIONS,
+} from "@/lib/productOptionDescriptions";
 
 export interface ProductOption {
   id: string;
@@ -126,7 +132,7 @@ export function ProductOptionsEditor({
     onTypesChange(next);
   };
 
-  // Quick preset loader
+  // Quick preset loader with standardized descriptions
   const applyAccountsPreset = () => {
     const optOfflineId = "opt_offline_" + Date.now().toString(36);
     const optOnlineId = "opt_online_" + Date.now().toString(36);
@@ -135,14 +141,14 @@ export function ProductOptionsEditor({
       {
         id: optOfflineId,
         name: "حساب أوفلاين (Offline)",
-        description: "لعب على حساب المتجر بدون اتصال بالإنترنت",
+        description: STANDARD_OPTION_DESCRIPTIONS.OFFLINE,
         price: "",
         cost: "",
       },
       {
         id: optOnlineId,
         name: "حساب أونلاين (Online)",
-        description: "لعب كامل على حسابك الشخصي مع دعم الأونلاين",
+        description: STANDARD_OPTION_DESCRIPTIONS.ONLINE,
         price: Number(basePrice || 25000) > 0 ? Number(basePrice || 25000) + 5000 : "",
         cost: Number(baseCost || 18000) > 0 ? Number(baseCost || 18000) + 3000 : "",
       },
@@ -155,7 +161,7 @@ export function ProductOptionsEditor({
         optionId: "",
         price: "",
         cost: "",
-        description: "اللعبة الأساسية كاملة (تستخدم سعر الخيار أو السعر الأساسي)",
+        description: STANDARD_TYPE_DESCRIPTIONS.BASE,
       },
       {
         id: "typ_dlx_" + Date.now(),
@@ -163,7 +169,7 @@ export function ProductOptionsEditor({
         optionId: "",
         price: Number(basePrice || 25000) + 10000,
         cost: Number(baseCost || 18000) + 7000,
-        description: "تشمل التوسعات وحزم المحتوى الإضافي",
+        description: STANDARD_TYPE_DESCRIPTIONS.DLC,
       },
       {
         id: "typ_ult_" + Date.now(),
@@ -171,10 +177,23 @@ export function ProductOptionsEditor({
         optionId: optOfflineId,
         price: Number(basePrice || 25000) + 15000,
         cost: Number(baseCost || 18000) + 10000,
-        description: "جميع الإضافات + السيزون باس الكامل مع تثبيت خاص",
+        description: STANDARD_TYPE_DESCRIPTIONS.DLC,
       },
     ];
 
+    onOptionsChange(newOptions);
+    onTypesChange(newTypes);
+  };
+
+  const standardizeAllDescriptions = () => {
+    const newOptions = options.map((opt) => ({
+      ...opt,
+      description: resolveOptionStandardDescription(opt.name || opt.id, opt.description) || opt.description,
+    }));
+    const newTypes = types.map((t) => ({
+      ...t,
+      description: resolveTypeStandardDescription(t.name || t.id, t.description) || t.description,
+    }));
     onOptionsChange(newOptions);
     onTypesChange(newTypes);
   };
@@ -252,6 +271,18 @@ export function ProductOptionsEditor({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Standardize Descriptions Action */}
+          {(options.length > 0 || types.length > 0) && (
+            <button
+              type="button"
+              onClick={standardizeAllDescriptions}
+              className="text-[11px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1 border border-emerald-500/20"
+              title="تطبيق الأوصاف الموحدة لجميع الخيارات والأنواع تلقائياً"
+            >
+              <ShieldCheck className="w-3 h-3" /> توحيد الأوصاف القياسية
+            </button>
+          )}
+
           {/* Quick Presets Menu */}
           <button
             type="button"
@@ -401,9 +432,25 @@ export function ProductOptionsEditor({
                       type="text"
                       value={opt.description || ""}
                       onChange={(e) => updateOption(idx, "description", e.target.value)}
-                      placeholder="وصف أو ملاحظة عن الخيار (مثال: لعب أوفلاين بدون اتصال)..."
+                      placeholder="الوصف (مثال: حساب مشترك أو حساب خاص بك)..."
                       className="flex-1 min-w-[200px] border border-border/60 focus:border-foreground rounded-md px-2 py-1 text-[11px] outline-none bg-muted/30 text-muted-foreground"
                     />
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => updateOption(idx, "description", STANDARD_OPTION_DESCRIPTIONS.OFFLINE)}
+                        className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
+                      >
+                        حساب مشترك
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateOption(idx, "description", STANDARD_OPTION_DESCRIPTIONS.ONLINE)}
+                        className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
+                      >
+                        حساب خاص بك
+                      </button>
+                    </div>
                     <span
                       className={cn(
                         "text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0",
@@ -582,9 +629,25 @@ export function ProductOptionsEditor({
                       type="text"
                       value={typeItem.description || ""}
                       onChange={(e) => updateType(idx, "description", e.target.value)}
-                      placeholder="وصف المحتويات أو الإضافات الخاصة بهذا الإصدار (اختياري)..."
+                      placeholder="الوصف (مثال: اللعبة الأساسية أو اللعبة مع الإضافات)..."
                       className="flex-1 min-w-[200px] border border-border/60 focus:border-foreground rounded-md px-2 py-1 text-[11px] outline-none bg-muted/30 text-muted-foreground"
                     />
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => updateType(idx, "description", STANDARD_TYPE_DESCRIPTIONS.BASE)}
+                        className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
+                      >
+                        اللعبة الأساسية
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateType(idx, "description", STANDARD_TYPE_DESCRIPTIONS.DLC)}
+                        className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
+                      >
+                        اللعبة مع الإضافات
+                      </button>
+                    </div>
                     {linkedOption && (
                       <span className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold shrink-0">
                         مرتبط فقط بـ: {linkedOption.name}

@@ -36,6 +36,10 @@ import {
   INTERNAL_FIELD_NAMES,
   customerSafeText,
 } from "./internalMetadata";
+import {
+  resolveOptionStandardDescription,
+  resolveTypeStandardDescription,
+} from "./productOptionDescriptions";
 
 /** Top-level product fields a customer never receives. */
 export const PRIVATE_PRODUCT_FIELDS = new Set([
@@ -88,16 +92,29 @@ export function redactPrivateKeys(value: unknown, depth = 0): unknown {
  * A field being *named* for customers does not mean an importer respected
  * that, which is the entire lesson of this bug.
  */
-function publicVariant(row: unknown): unknown {
+function publicVariant(row: unknown, collection?: string): unknown {
   if (!row || typeof row !== "object") return row;
   const source = row as Record<string, unknown>;
   const out: Record<string, unknown> = {};
+
+  const name = String(source["name"] ?? source["title"] ?? source["id"] ?? "");
+  const id = String(source["id"] ?? "");
 
   for (const [key, value] of Object.entries(source)) {
     if (isPrivateKey(key)) continue;
 
     if ((CUSTOMER_TEXT_FIELDS as readonly string[]).includes(key)) {
-      const safe = customerSafeText(value);
+      let safe = customerSafeText(value);
+      // If this is an option or type, resolve the standardized Arabic customer description
+      if (key === "description" || key === "customerDescription") {
+        if (collection === "options") {
+          const std = resolveOptionStandardDescription(name || id, safe);
+          if (std) safe = std;
+        } else if (collection === "types" || collection === "variants" || collection === "editions" || collection === "editionsList") {
+          const std = resolveTypeStandardDescription(name || id, safe);
+          if (std) safe = std;
+        }
+      }
       // Omitted rather than emptied: an empty string still renders as a blank
       // row in the editions comparison.
       if (safe !== undefined) out[key] = safe;
@@ -107,7 +124,7 @@ function publicVariant(row: unknown): unknown {
     // `contents` rows carry their own labels, and those are printed too.
     if (key === "contents" && Array.isArray(value)) {
       const contents = value
-        .map((item) => (item && typeof item === "object" ? publicVariant(item) : item))
+        .map((item) => (item && typeof item === "object" ? publicVariant(item, "contents") : item))
         .filter((item) => {
           if (typeof item === "string") return customerSafeText(item) !== undefined;
           if (!item || typeof item !== "object") return Boolean(item);
@@ -120,6 +137,17 @@ function publicVariant(row: unknown): unknown {
     }
 
     out[key] = redactPrivateKeys(value);
+  }
+
+  // Ensure options and types have their standard descriptions populated even if original was omitted or stripped
+  if (!out["description"]) {
+    if (collection === "options") {
+      const std = resolveOptionStandardDescription(name || id);
+      if (std) out["description"] = std;
+    } else if (collection === "types" || collection === "variants" || collection === "editions") {
+      const std = resolveTypeStandardDescription(name || id);
+      if (std) out["description"] = std;
+    }
   }
 
   return out;
@@ -141,7 +169,7 @@ export function toPublicProduct(product: Record<string, unknown>): Record<string
   for (const collection of VARIANT_COLLECTIONS) {
     const rows = redacted[collection];
     if (Array.isArray(rows)) {
-      redacted[collection] = rows.map(publicVariant);
+      redacted[collection] = rows.map((row) => publicVariant(row, collection));
     }
   }
 

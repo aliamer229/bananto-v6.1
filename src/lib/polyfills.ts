@@ -143,6 +143,7 @@ export function showRecoveryScreen(): void {
 function isDevelopmentOrPreview(): boolean {
   if (typeof window === "undefined") return false;
   try {
+    if (window.sessionStorage.getItem("vitest_force_production")) return false;
     return (
       Boolean(import.meta.env?.DEV) ||
       window.self !== window.top ||

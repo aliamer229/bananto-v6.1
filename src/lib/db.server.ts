@@ -24,6 +24,10 @@ import {
   DEFAULT_AVAILABILITY_CONFIG,
 } from "./admin-availability";
 import { dedupeDevicePerformance, getDevicePerformanceList } from "./devicePerformance";
+import {
+  normalizeProductOption,
+  normalizeProductType,
+} from "./productOptionDescriptions";
 export {
   isOwnerAccount,
   isOwnerEmail,
@@ -364,13 +368,17 @@ export function normalizeProductRecord(p: any): Product {
     created_at: createdAt,
     updatedAt,
     updated_at: updatedAt,
-    options: Array.isArray(p.options) ? p.options.filter(Boolean) : [],
+    options: Array.isArray(p.options)
+      ? p.options.filter(Boolean).map((o: any) => normalizeProductOption(o))
+      : [],
     types: Array.isArray(p.types)
-      ? p.types.filter(Boolean)
+      ? p.types.filter(Boolean).map((t: any) => normalizeProductType(t))
       : Array.isArray(p.variants)
-        ? p.variants.filter(Boolean)
+        ? p.variants.filter(Boolean).map((t: any) => normalizeProductType(t))
         : [],
-    editions: Array.isArray(p.editions) ? p.editions.filter(Boolean) : [],
+    editions: Array.isArray(p.editions)
+      ? p.editions.filter(Boolean).map((e: any) => normalizeProductType(e))
+      : [],
     dlcs: Array.isArray(p.dlcs) ? p.dlcs.filter(Boolean) : [],
     images: Array.isArray(p.images) ? p.images.filter(Boolean) : [],
     gallery: Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [],
@@ -561,15 +569,18 @@ async function loadStore(): Promise<StoreDoc> {
             if (section === "content") {
               try {
                 parsed = JSON.parse(baseRow.value);
-              } catch {
+              } catch (err) {
                 console.warn(`[store:corrupt_content_isolated] section=${section}`);
                 parsed = {};
               }
             } else {
               try {
                 parsed = JSON.parse(baseRow.value);
-              } catch {
+              } catch (err) {
                 const salvaged = parseArraySafely(baseRow.value, []);
+                if (salvaged.length === 0) {
+                   throw new Error(`store_section_unreadable:${section}`);
+                }
                 console.warn(`[store:corrupt_section_salvaged] section=${section} salvagedCount=${salvaged.length}`);
                 parsed = salvaged;
               }
@@ -598,6 +609,9 @@ async function loadStore(): Promise<StoreDoc> {
         }
       } catch (sectionErr) {
         console.error(`[store:load_section_failed] section=${section}`, sectionErr);
+        if (sectionErr instanceof Error && sectionErr.message.startsWith('store_section_unreadable')) {
+          throw sectionErr;
+        }
         doc[section] = section === "content" ? {} : [];
       }
     }
@@ -993,6 +1007,9 @@ export async function getStore(): Promise<StoreDoc> {
     })
     .catch(async (err) => {
       console.error("[getStore:failed_or_timed_out]", err);
+      if (err instanceof Error && err.message.startsWith('store_section_unreadable')) {
+        throw err;
+      }
       if (storeCache?.doc && (storeCache.doc.products?.length ?? 0) > 0) {
         console.warn("[getStore:serving_stale_cache_on_error]");
         return storeCache.doc;

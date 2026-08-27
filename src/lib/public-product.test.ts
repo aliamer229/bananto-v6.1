@@ -60,12 +60,11 @@ describe("the supplier rule never reaches a customer", () => {
     expect(serialised()).not.toContain("rounded down");
   });
 
-  it("drops the polluted description rather than emptying it", () => {
-    // An empty string still renders as a blank row in the comparison table.
+  it("replaces the polluted description with the standardized customer description", () => {
     const out = toPublicProduct(product);
     const types = out["types"] as Record<string, unknown>[];
-    expect(types[0]).not.toHaveProperty("description");
-    expect(types[1]).not.toHaveProperty("description");
+    expect(types[0]!["description"]).toBe("اللعبة الأساسية");
+    expect(types[1]!["description"]).toBe("اللعبة الأساسية");
   });
 
   it("keeps everything the customer legitimately needs", () => {
@@ -78,10 +77,10 @@ describe("the supplier rule never reaches a customer", () => {
     expect(out["title"]).toBe("FATAL FRAME II: Crimson Butterfly REMAKE");
   });
 
-  it("keeps a genuine customer description untouched", () => {
+  it("standardizes customer option descriptions to unified rules", () => {
     const out = toPublicProduct(product);
     const options = out["options"] as Record<string, unknown>[];
-    expect(options[0]!["description"]).toBe(SAFE_AR);
+    expect(options[0]!["description"]).toBe("حساب مشترك");
   });
 
   it("drops the dedicated internal note field wherever it appears", () => {

@@ -25,6 +25,10 @@ import { getDevicePerformanceList } from "@/lib/devicePerformance";
 import { getProductSlug } from "@/lib/productRouting";
 import { resolveCategoryType } from "@/lib/productSection";
 import { slugifyTitle, normalizeName } from "@/lib/gameData/identity";
+import {
+  resolveOptionStandardDescription,
+  resolveTypeStandardDescription,
+} from "@/lib/productOptionDescriptions";
 import type {
   Game,
   GameImage,
@@ -489,7 +493,12 @@ function buildEditions(p: Record<string, unknown>, locale: "ar" | "en"): GameEdi
   if (!rawList.length) return undefined;
   return rawList.map((row, i) => {
     const rawContents = rows(row["contents"]);
-    const desc = localizedValue(row, "description", "descriptionEn", locale);
+    const rawDesc = localizedValue(row, "description", "descriptionEn", locale);
+    const desc =
+      locale === "ar"
+        ? resolveTypeStandardDescription(row["name"] || row["id"], rawDesc) || rawDesc
+        : rawDesc;
+
     const contentsList =
       rawContents.length > 0
         ? rawContents.map((item, j) => ({
@@ -1256,12 +1265,18 @@ function buildCatalogOptions(p: Record<string, unknown>, locale: "ar" | "en") {
             : (opt["name"] ?? opt["title"] ?? opt["value"] ?? opt),
         );
         if (!name) return null;
+        const rawDesc = localizedValue(opt, "description", "descriptionEn", locale);
+        const desc =
+          locale === "ar"
+            ? resolveOptionStandardDescription(opt["name"] || opt["id"] || name, rawDesc) || rawDesc
+            : rawDesc;
+
         return {
           id: str(opt["id"]) || `opt-${i}`,
           name,
           price: num(opt["price"]) || undefined,
           cost: num(opt["cost"]) || undefined,
-          description: localizedValue(opt, "description", "descriptionEn", locale) || undefined,
+          description: desc || undefined,
           available: opt["available"] !== false && opt["active"] !== false,
         };
       })
@@ -1286,13 +1301,19 @@ function buildCatalogOptions(p: Record<string, unknown>, locale: "ar" | "en") {
     const OFFER_NAMES = locale === "en" ? OFFER_NAMES_EN : OFFER_NAMES_AR;
     const list = hubOffers
       .filter((o) => o.available)
-      .map((offer) => ({
-        id: offer.kind,
-        name: OFFER_NAMES[offer.kind] ?? offer.kind,
-        price: offer.price,
-        description: offer.note || undefined,
-        available: true,
-      }));
+      .map((offer) => {
+        const desc =
+          locale === "ar"
+            ? resolveOptionStandardDescription(offer.kind, offer.note) || offer.note
+            : offer.note;
+        return {
+          id: offer.kind,
+          name: OFFER_NAMES[offer.kind] ?? offer.kind,
+          price: offer.price,
+          description: desc || undefined,
+          available: true,
+        };
+      });
     if (list.length) return list;
   }
 
@@ -1308,6 +1329,12 @@ function buildCatalogTypes(p: Record<string, unknown>, locale: "ar" | "en") {
         locale === "en" && t["nameEn"] ? t["nameEn"] : (t["name"] ?? t["title"] ?? t["value"] ?? t),
       );
       if (!name) return null;
+      const rawDesc = localizedValue(t, "description", "descriptionEn", locale);
+      const desc =
+        locale === "ar"
+          ? resolveTypeStandardDescription(t["name"] || t["id"] || name, rawDesc) || rawDesc
+          : rawDesc;
+
       return {
         id: str(t["id"]) || `type-${i}`,
         name,
@@ -1315,7 +1342,7 @@ function buildCatalogTypes(p: Record<string, unknown>, locale: "ar" | "en") {
         price: num(t["price"]) || undefined,
         cost: num(t["cost"]) || undefined,
         stock: num(t["stock"]) || undefined,
-        description: localizedValue(t, "description", "descriptionEn", locale) || undefined,
+        description: desc || undefined,
       };
     })
     .filter((t): t is NonNullable<typeof t> => Boolean(t));

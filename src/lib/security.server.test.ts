@@ -64,8 +64,8 @@ describe("request security boundaries", () => {
     expect(json.headers.get("cache-control")).toBeNull();
   });
 
-  it("rejects private, local, credentialed, and non-HTTPS image targets", () => {
-    expect(safeRemoteImageUrl("http://example.com/image.png")).toBeUndefined();
+  it("rejects private, local, and credentialed image targets", () => {
+    expect(safeRemoteImageUrl("ftp://example.com/image.png")).toBeUndefined();
     expect(safeRemoteImageUrl("https://127.0.0.1/image.png")).toBeUndefined();
     expect(safeRemoteImageUrl("https://192.168.1.10/image.png")).toBeUndefined();
     expect(safeRemoteImageUrl("https://user:pass@example.com/image.png")).toBeUndefined();

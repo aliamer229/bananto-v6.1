@@ -1792,12 +1792,14 @@ source.6.url=
 option.1.id=
 option.1.name=
 option.1.description=
+option.1.internal_note=
 option.1.stock=
 # BOOLEAN ONLY: true / false / blank if unknown
 option.1.is_infinite_stock=true
 option.2.id=
 option.2.name=
 option.2.description=
+option.2.internal_note=
 option.2.stock=
 # BOOLEAN ONLY: true / false / blank if unknown
 option.2.is_infinite_stock=true
@@ -1809,6 +1811,7 @@ type.1.option_id=
 type.1.price=
 type.1.cost=
 type.1.description=
+type.1.internal_note=
 type.1.stock=
 # BOOLEAN ONLY: true / false / blank if unknown
 type.1.is_infinite_stock=true
@@ -1818,6 +1821,7 @@ type.2.option_id=
 type.2.price=
 type.2.cost=
 type.2.description=
+type.2.internal_note=
 type.2.stock=
 # BOOLEAN ONLY: true / false / blank if unknown
 type.2.is_infinite_stock=true
@@ -1827,6 +1831,7 @@ type.3.option_id=
 type.3.price=
 type.3.cost=
 type.3.description=
+type.3.internal_note=
 type.3.stock=
 # BOOLEAN ONLY: true / false / blank if unknown
 type.3.is_infinite_stock=true
@@ -1836,6 +1841,7 @@ type.4.option_id=
 type.4.price=
 type.4.cost=
 type.4.description=
+type.4.internal_note=
 type.4.stock=
 # BOOLEAN ONLY: true / false / blank if unknown
 type.4.is_infinite_stock=true

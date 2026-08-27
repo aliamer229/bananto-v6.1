@@ -15,9 +15,7 @@ export function canAccessThread(params: {
 }): boolean {
   const { viewerId, isAdmin, threadUserId, surface } = params;
   if (!viewerId) return false;
-  // Admin role grants global access to view and reply to any support or order thread
-  if (isAdmin === true) return true;
-  if (surface === "admin") return false;
+  if (surface === "admin") return isAdmin === true;
   return Boolean(threadUserId) && threadUserId === viewerId;
 }
 

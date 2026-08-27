@@ -22,6 +22,10 @@ import { getTextValue } from "../utils";
 import { detectSchema } from "./registry";
 import { SPEC_GROUP_KEYS } from "./shared";
 import { resolveSpecGroups, type ResolvedSpecGroup } from "./specLabels";
+import {
+  resolveOptionStandardDescription,
+  resolveTypeStandardDescription,
+} from "../productOptionDescriptions";
 import type { FieldDef, ProductSchema } from "./types";
 
 type Record_ = Record<string, unknown>;
@@ -422,7 +426,8 @@ export function buildProductView(
         }
         if (o["stock"] != null) item.stock = Number(o["stock"]) || 0;
         if (o["image"]) item.image = str(o["image"]);
-        if (o["description"]) item.description = str(o["description"]);
+        const stdOptDesc = resolveOptionStandardDescription(item.name || item.id, o["description"]);
+        if (stdOptDesc) item.description = stdOptDesc;
         return item;
       })
       .filter((o) => o.name),
@@ -446,7 +451,8 @@ export function buildProductView(
         if (v["color"]) item.color = str(v["color"]);
         if (v["image"]) item.image = str(v["image"]);
         if (v["sku"]) item.sku = str(v["sku"]);
-        if (v["description"]) item.description = str(v["description"]);
+        const stdTypeDesc = resolveTypeStandardDescription(item.name, v["description"]);
+        if (stdTypeDesc) item.description = stdTypeDesc;
         return item;
       })
       .filter((v) => v.name),
