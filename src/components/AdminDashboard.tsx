@@ -2199,7 +2199,15 @@ function ListingsView({
           <span className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
             {tableState.view === "loading"
               ? "جاري مزامنة المنتجات مع قاعدة البيانات D1..."
-              : `عرض ${sortedProducts.length} من أصل ${d1ProductCount ?? products.length} منتج مسجل في D1`}
+              : tableState.view === "error"
+                ? /*
+                    A failed read knows nothing about how many products exist.
+                    "عرض 0 من أصل 0" beside an error reads as "the store is
+                    empty", which is a claim about the catalogue that the
+                    failure gives no grounds for.
+                  */
+                  "تعذّر قراءة عدد المنتجات — لم تكتمل القراءة من D1"
+                : `عرض ${sortedProducts.length} من أصل ${d1ProductCount ?? products.length} منتج مسجل في D1`}
             {/* A refresh runs *over* the rows — the table is never blanked. */}
             {tableState.isRefreshing ? (
               <RefreshCw className="w-3 h-3 animate-spin text-primary" aria-label="جاري التحديث" />

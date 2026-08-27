@@ -33,6 +33,7 @@
  */
 
 import { d1All, d1BatchRun, d1First } from "./d1.server";
+import { assertBoundParameters, chunkForParams } from "./sql-params";
 import { requiresPerformanceReview } from "./devicePerformance";
 import { isGameProduct } from "./productSection";
 import { lastModifiedAt, sortableName, sortableNameKey, type ProductSort } from "./productSort";
@@ -268,36 +269,114 @@ function bindsFor(product: Row, rev: number): unknown[] {
 }
 
 /**
- * Statements that make the projection match `products` exactly, for
+ * A short signature of a projected row, so a save can tell what changed.
+ *
+ * Cheap and order-stable: the values that end up in the table, joined. It is
+ * not a cryptographic hash and does not need to be — a collision costs one
+ * unnecessary row write, not a wrong row.
+ */
+function fingerprint(binds: unknown[]): string {
+  let hash = 5381;
+  const text = binds.slice(0, -1).join("\u0000");
+  for (let i = 0; i < text.length; i++) hash = ((hash * 33) ^ text.charCodeAt(i)) >>> 0;
+  return `${hash.toString(36)}:${text.length.toString(36)}`;
+}
+
+function insertStatement(group: Row[], rev: number): { sql: string; params: unknown[] } {
+  const params = group.flatMap((product) => bindsFor(product, rev));
+  assertBoundParameters("product_index.insert", params);
+  return {
+    sql: `INSERT INTO product_index (${COLUMNS.join(",")}) VALUES ${group
+      .map(() => `(${COLUMNS.map(() => "?").join(",")})`)
+      .join(",")}`,
+    params,
+  };
+}
+
+/**
+ * Statements that bring the projection in line with `products`, for
  * `persistStore` to append to the catalogue's own batch.
  *
- * A full replace rather than a diff, because `persistStore` already rewrites
- * the whole catalogue blob: computing which rows changed would be more code
- * defending against a drift that the replace makes impossible. Rows are
- * inserted in groups so one statement never carries more parameters than
- * SQLite accepts.
+ * **Only what changed.** A save edits one product, and `persistStore` rewrites
+ * the whole catalogue blob because that is how the document is stored — but the
+ * projection is a table, and rewriting four hundred rows to change one is both
+ * wasteful and, at D1's 100-variable ceiling, hundreds of statements riding on
+ * every save. `current` is what the table already holds, keyed by id with each
+ * row's fingerprint; anything whose fingerprint still matches is left alone.
+ *
+ * Row groups are sized by {@link chunkForParams}, and every statement passes
+ * {@link assertBoundParameters} before it leaves this function. The previous
+ * version grouped twenty 27-column rows into one INSERT — 540 bound variables,
+ * which D1 refused at the hundredth with `too many SQL variables at offset 488`.
  */
 export function productIndexStatements(
   products: Row[],
   rev: number,
+  current?: Map<string, string>,
 ): { sql: string; params: unknown[] }[] {
-  const statements: { sql: string; params: unknown[] }[] = [{ sql: `DELETE FROM product_index`, params: [] }];
-  // 25 columns × 20 rows = 500 bound parameters, comfortably inside SQLite's
-  // 999-variable default ceiling.
-  const GROUP = 20;
-  const placeholders = `(${COLUMNS.map(() => "?").join(",")})`;
+  const statements: { sql: string; params: unknown[] }[] = [];
+  const valid = products.filter((p) => text(p?.["id"]));
 
-  for (let offset = 0; offset < products.length; offset += GROUP) {
-    const group = products.slice(offset, offset + GROUP).filter((p) => text(p?.["id"]));
-    if (group.length === 0) continue;
+  if (!current) {
+    // No prior state to compare against: replace the table wholesale.
+    statements.push({ sql: `DELETE FROM product_index`, params: [] });
+    for (const group of chunkForParams(valid, COLUMNS.length)) {
+      statements.push(insertStatement(group, rev));
+    }
+    return statements;
+  }
+
+  const changed: Row[] = [];
+  const live = new Set<string>();
+  for (const product of valid) {
+    const id = text(product["id"]);
+    live.add(id);
+    if (current.get(id) !== fingerprint(bindsFor(product, rev))) changed.push(product);
+  }
+
+  const removed = [...current.keys()].filter((id) => !live.has(id));
+  // Deletes bind one variable each, so they chunk against the same budget.
+  for (const group of chunkForParams(removed, 1)) {
+    const params = group;
+    assertBoundParameters("product_index.delete", params);
     statements.push({
-      sql: `INSERT INTO product_index (${COLUMNS.join(",")}) VALUES ${group
-        .map(() => placeholders)
-        .join(",")}`,
-      params: group.flatMap((product) => bindsFor(product, rev)),
+      sql: `DELETE FROM product_index WHERE id IN (${group.map(() => "?").join(",")})`,
+      params,
     });
   }
+
+  for (const group of chunkForParams(changed, COLUMNS.length)) {
+    // `INSERT OR REPLACE`, because a changed row already exists.
+    const statement = insertStatement(group, rev);
+    statements.push({ ...statement, sql: statement.sql.replace(/^INSERT/, "INSERT OR REPLACE") });
+  }
+
   return statements;
+}
+
+/**
+ * What the projection currently holds: id → fingerprint.
+ *
+ * One indexed read of two narrow columns. It is what lets a save write one row
+ * instead of the whole table.
+ */
+export async function readProductIndexFingerprints(): Promise<Map<string, string>> {
+  const rows = await d1All<Record<string, unknown>>(
+    `SELECT ${COLUMNS.filter((c) => c !== "rev").join(",")} FROM product_index`,
+  );
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    const id = String(row["id"] ?? "");
+    if (!id) continue;
+    // Rebuilt from the stored columns in the same order `bindsFor` emits them,
+    // minus `rev` — which changes on every save and would make every row look
+    // changed.
+    map.set(
+      id,
+      fingerprint([...COLUMNS.filter((c) => c !== "rev").map((c) => row[c] ?? null), 0]),
+    );
+  }
+  return map;
 }
 
 /** Writes the projection on its own, outside a catalogue save (bootstrap, repair). */

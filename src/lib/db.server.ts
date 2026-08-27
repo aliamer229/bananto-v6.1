@@ -14,7 +14,10 @@ import {
 } from "./d1.server";
 import { normalizePhone, arePhonesEqual } from "./phone";
 import { listKeys, mutateJson, readJson, writeJson } from "./storage.server";
-import { productIndexStatements } from "./product-index.server";
+import {
+  productIndexStatements,
+  readProductIndexFingerprints,
+} from "./product-index.server";
 import { sendWhatsappMessage } from "./whatsapp.server";
 import { sendTelegramMessage } from "./telegram.server";
 import { isOwnerAccount } from "./owner-auth.server";
@@ -935,8 +938,26 @@ async function persistStore(next: StoreDoc, expectedRev: number): Promise<number
     describes. Committing them together is what makes the projection safe to
     read as authoritative: it cannot exist without the products it came from,
     and a failed catalogue write leaves neither behind.
+
+    Only the rows that changed. A save edits one product; rewriting the whole
+    table to reflect it would be hundreds of statements on every save, because
+    D1 caps a statement at 100 bound variables and a projection row is 27 of
+    them. Reading the current fingerprints costs one narrow indexed scan and
+    turns a typical save into a single INSERT OR REPLACE.
   */
-  statements.push(...productIndexStatements((next.products ?? []) as Record<string, unknown>[], nextRev));
+  const currentIndex = await readProductIndexFingerprints().catch((err) => {
+    // A projection that cannot be read is rebuilt wholesale rather than skipped
+    // — a stale listing is worse than a slower save.
+    console.warn("[product_index:fingerprints_unavailable]", err);
+    return undefined;
+  });
+  statements.push(
+    ...productIndexStatements(
+      (next.products ?? []) as Record<string, unknown>[],
+      nextRev,
+      currentIndex,
+    ),
+  );
 
   // Keep the revision table at a single row.
   statements.push({ sql: `DELETE FROM store_rev WHERE rev < ?`, params: [nextRev] });
