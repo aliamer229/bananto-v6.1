@@ -899,8 +899,12 @@ export default function ChatView({
     position?: number;
     aheadCount?: number;
     estimatedWaitTime?: string;
+    estimatedMinutesText?: string;
     totalWaiting?: number;
     adminStatus?: "available" | "busy" | "offline";
+    deliveryStage?: "awaiting_login_proof" | "proof_received" | "otp_sent" | string;
+    activeOrderItemId?: string;
+    activeDeliveryItemId?: string;
   } | null>(null);
 
   /* ------------------------- human support countdown ------------------------- */
@@ -1253,13 +1257,14 @@ export default function ChatView({
     })();
 
     // Heartbeat presence interval
+    const activeTargetId = threadId || targetOrderId;
     const presenceInterval = setInterval(() => {
-      if (!controller.signal.aborted && (threadId || targetOrderId)) {
-        void api.sendPresence(threadId || targetOrderId!);
+      if (!controller.signal.aborted && activeTargetId) {
+        void api.sendPresence(activeTargetId);
       }
     }, 45_000);
-    if (threadId || targetOrderId) {
-      void api.sendPresence(threadId || targetOrderId);
+    if (activeTargetId) {
+      void api.sendPresence(activeTargetId);
     }
 
     return () => {
@@ -1960,7 +1965,6 @@ export default function ChatView({
       // left a `threadOrderId` here that was never declared, and because this
       // memo runs on every render the ReferenceError took the whole page down
       // before it could paint — "Error: threadOrderId is not defined".
-      orderId: activeOrderId,
       orderId: activeOrderId || currentThread?.orderId,
       orderStatus: currentOrder?.status,
       paymentStatus: currentOrder?.paymentStatus,

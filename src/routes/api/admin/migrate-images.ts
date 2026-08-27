@@ -6,7 +6,7 @@ import { hasObject, writeBinary, readBinary } from "@/lib/storage.server";
 import { processImageToWebP } from "@/lib/imageProcessor";
 
 async function computeSha256(bytes: Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", bytes as any);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }

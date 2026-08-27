@@ -110,8 +110,8 @@ describe("gameFromProduct Timeline and Similar Games", () => {
     const game = gameFromProduct(raw, "ar", catalog);
     expect(game.timeline).toBeDefined();
     expect(game.timeline?.length).toBe(1);
-    expect(game.timeline?.[0].kind).toBe("release");
-    expect(game.timeline?.[0].date).toBe("2024-01-01");
+    expect(game.timeline?.[0]?.kind).toBe("release");
+    expect(game.timeline?.[0]?.date).toBe("2024-01-01");
   });
 
   it("handles games with no timeline data gracefully", () => {

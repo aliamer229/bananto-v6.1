@@ -172,9 +172,7 @@ export const handleModuleReload = (force = false) => {
 
   // Throttle automatic reloads within 10 seconds unless forced
   if (!force && Date.now() - previousReload < 10_000) {
-    if (!isDevelopmentOrPreview()) {
-      showRecoveryScreen();
-    }
+    showRecoveryScreen();
     return;
   }
 
@@ -185,9 +183,7 @@ export const handleModuleReload = (force = false) => {
     /* ignore */
   }
   if (!force && attempts >= MAX_AUTOMATIC_RELOADS) {
-    if (!isDevelopmentOrPreview()) {
-      showRecoveryScreen();
-    }
+    showRecoveryScreen();
     return;
   }
 
@@ -253,7 +249,7 @@ function isScriptElement(target: EventTarget | null): target is HTMLScriptElemen
 function isOwnScriptElement(target: EventTarget | null): boolean {
   if (!isScriptElement(target)) return false;
   const src = target.getAttribute("src");
-  if (!src) return true;
+  if (!src) return false;
   try {
     const url = new URL(src, window.location.href);
     return (
@@ -265,7 +261,7 @@ function isOwnScriptElement(target: EventTarget | null): boolean {
       url.pathname.startsWith("/@")
     );
   } catch {
-    return true;
+    return false;
   }
 }
 

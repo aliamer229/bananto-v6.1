@@ -216,7 +216,7 @@ export const Route = createFileRoute("/api/orders")({
             }
 
             deliveryItemId = exactDeliveryItem.id;
-            itemId = exactDeliveryItem.orderItemId;
+            itemId = exactDeliveryItem.orderItemId || "";
 
             await recordDeliveryProof({
               orderId: order!.id,
@@ -290,7 +290,7 @@ export const Route = createFileRoute("/api/orders")({
             try {
               const next = await confirmDeliveredOrder(order!.id, user.id);
               return json({ order: redactOrder(next!) });
-            } catch (error) {
+            } catch (error: any) {
               const code = error instanceof Error ? error.message : "confirm_failed";
               const status = code === "ORDER_HAS_OPEN_DELIVERY_ISSUE" ? 409 : 400;
               return json(
@@ -326,8 +326,8 @@ export const Route = createFileRoute("/api/orders")({
                 reason: data.reason,
               });
               return json({ order: redactOrder(next!) });
-            } catch (error) {
-              const code = error instanceof Error ? error.message : "delivery_issue_failed";
+            } catch (error: any) {
+              const code = error instanceof Error ? error.message : (error?.message || "delivery_issue_failed");
               return json({ error: code }, { status: 409 });
             }
           }
@@ -367,7 +367,7 @@ export const Route = createFileRoute("/api/orders")({
             }
 
             const firstKind = order!.items[0]?.kind || "account";
-            if (!(await canTransition(order!.status, data.status, firstKind))) {
+            if (!(await canTransition(order!.status, data.status as string, firstKind))) {
               return json({ error: "invalid_transition" }, { status: 400 });
             }
 
@@ -386,7 +386,7 @@ export const Route = createFileRoute("/api/orders")({
           }
 
           const next: Order = {
-            ...order,
+            ...order!,
             ...(data.status ? { status: data.status as any } : {}),
             ...(data.address ? { address: data.address } : {}),
             updatedAt: new Date().toISOString(),

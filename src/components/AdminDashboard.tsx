@@ -1664,6 +1664,8 @@ function ListingsView({
   };
   const [showZipImport, setShowZipImport] = useState(false);
   const [showMediaRepair, setShowMediaRepair] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const unpricedCount = (products || []).filter((p: any) => !isProductPriced(p)).length;
   const hiddenCount = (products || []).filter((p: any) => isProductHidden(p)).length;
@@ -1757,17 +1759,14 @@ function ListingsView({
   };
 
   const handleDelete = async (id: string) => {
-    const productToDelete = products.find((p: any) => String(p.id) === String(id));
-    if (!productToDelete) return;
-
-    if (!confirm(`${t("admin.confirmDelete")} — ${productToDelete.title}`)) {
-      return;
-    }
-
+    if (!id) return;
+    setIsDeleting(true);
     try {
       const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) {
@@ -1782,9 +1781,12 @@ function ListingsView({
       notifyCatalogChanged(data?.catalogVersion);
       setProducts((prev: any[]) => prev.filter((p: any) => String(p.id) !== String(id)));
       toast.success(t("admin.deleted") || "تم الحذف بنجاح");
+      setProductToDelete(null);
     } catch (err: any) {
       console.error("[DeleteProductError]", err);
       toast.error(err.message || t("admin.deleteFailed"));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -1930,7 +1932,6 @@ function ListingsView({
           return [productData, ...prev];
         });
         
-        setIsEditing(false);
         setEditingProduct(null);
         return;
       }
@@ -2283,8 +2284,10 @@ function ListingsView({
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(p.id)}
-                        className="text-muted-foreground hover:text-[var(--brand-red-dark)] transition-colors"
+                        type="button"
+                        onClick={() => setProductToDelete(p)}
+                        className="text-muted-foreground hover:text-[var(--brand-red-dark)] transition-colors p-1 rounded hover:bg-destructive/10"
+                        title={t("admin.deleteProduct" as any) || "حذف"}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -2296,6 +2299,56 @@ function ListingsView({
           </table>
         </div>
       </div>
+
+      {productToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150" dir="rtl">
+            <div className="flex items-center gap-3 text-destructive">
+              <div className="p-2.5 rounded-full bg-destructive/10">
+                <Trash2 className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">تأكيد حذف المنتج</h3>
+                <p className="text-xs text-muted-foreground">لا يمكن التراجع عن هذه العملية بعد التأكيد</p>
+              </div>
+            </div>
+
+            <div className="bg-muted/40 p-3 rounded-lg border border-border/60 text-sm">
+              <p className="font-semibold text-foreground">{productToDelete.title || productToDelete.titleEn || productToDelete.id}</p>
+              {productToDelete.id && <p className="text-xs text-muted-foreground mt-0.5" dir="ltr">ID: {productToDelete.id}</p>}
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setProductToDelete(null)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-border hover:bg-muted text-foreground transition-colors disabled:opacity-50"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => handleDelete(productToDelete.id)}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-destructive hover:bg-destructive/90 text-destructive-foreground transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>جاري الحذف...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>تأكيد الحذف</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showZipImport && (
         <AdminZipImportModal

@@ -171,6 +171,7 @@ export function ImageUploadField({
       }, 750);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [cleanVal, isRemoteUrl, isStoredUrl, importingRemote, justImported, localImportError, lastImportedUrl, handleImportRemoteUrl]);
 
   const getAspectClass = () => {

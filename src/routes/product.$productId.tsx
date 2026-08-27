@@ -160,14 +160,9 @@ function ProductPage() {
         <ProductDetails
           product={product}
           schema={schema}
-          onBack={() => void navigate({ to: "/" })}
-          onViewSection={(sec) => {
-            const path = sec === "hardware" ? "/hardware" : `/?category=${sec}`;
-            void navigate({ to: path as any });
-          }}
         />
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <ProductReviews productId={String(product["id"])} productName={String(product["title"])} />
+          <ProductReviews productId={String(product["id"])} />
         </div>
       </div>
     </AppShell>

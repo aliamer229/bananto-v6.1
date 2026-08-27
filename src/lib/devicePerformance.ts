@@ -83,8 +83,8 @@ const bool = (value: unknown): boolean | undefined => {
   return undefined;
 };
 
-const compact = <T extends Record_>(value: T): T => {
-  const record = value as Record_;
+const compact = <T extends object>(value: T): T => {
+  const record = value as Record<string, unknown>;
   for (const key of Object.keys(record)) {
     const entry = record[key];
     if (entry === undefined || entry === null || entry === "") delete record[key];

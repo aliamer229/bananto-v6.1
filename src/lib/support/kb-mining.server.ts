@@ -295,9 +295,9 @@ export async function mineAllResolvedThreads(): Promise<{
       return sim >= 0.65;
     });
 
-    if (existingIndex !== -1) {
+    if (existingIndex !== -1 && currentKb[existingIndex]) {
       // Merge and increment usage count
-      const existing = currentKb[existingIndex];
+      const existing = currentKb[existingIndex]!;
       const existingMatches = (existing.match || "")
         .split(/[\n,،]+/)
         .map((s) => s.trim())
@@ -309,7 +309,7 @@ export async function mineAllResolvedThreads(): Promise<{
       currentKb[existingIndex] = {
         ...existing,
         match: combinedMatches.join("، "),
-        usageCount: (existing!.usageCount || 1) + 1,
+        usageCount: (existing.usageCount || 1) + 1,
       };
       mergedCount++;
     } else {

@@ -51,16 +51,19 @@ describe("device performance deduplication and smart merging", () => {
     const records: DevicePerformance[] = [
       {
         device: "Nintendo Switch 2",
+        deviceSlug: "nintendo-switch-2",
         hardwareId: "prd_acf4c89908764c62",
         handheld: { supported: true, resolution: "1080p", fps: "60" },
       },
       {
         device: "Nintendo Switch 2",
+        deviceSlug: "nintendo-switch-2",
         hardwareId: "prd_acf4c89908764c62",
         tv: { supported: true, resolution: "4K", fps: "60" },
       },
       {
         device: "Nintendo Switch OLED",
+        deviceSlug: "nintendo-switch-oled",
         hardwareId: "prd_switch_oled_001",
         handheld: { supported: true, resolution: "720p", fps: "30" },
       },

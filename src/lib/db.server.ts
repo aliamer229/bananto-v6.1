@@ -579,7 +579,7 @@ async function loadStore(): Promise<StoreDoc> {
               } catch (err) {
                 const salvaged = parseArraySafely(baseRow.value, []);
                 if (salvaged.length === 0) {
-                   throw new Error(`store_section_unreadable:${section}`);
+                  throw new Error(`store_section_unreadable:${section}`);
                 }
                 console.warn(`[store:corrupt_section_salvaged] section=${section} salvagedCount=${salvaged.length}`);
                 parsed = salvaged;

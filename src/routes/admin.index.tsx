@@ -1,8 +1,9 @@
 import { checkAdminAccess } from "@/lib/admin-access.functions";
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, Suspense } from "react";
+import { lazyWithRetry } from "@/lib/lazyRetry";
 
-const AdminDashboard = lazy(() => import("@/components/AdminDashboard"));
+const AdminDashboard = lazyWithRetry(() => import("@/components/AdminDashboard"));
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/")({

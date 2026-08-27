@@ -51,7 +51,7 @@ export const Route = createFileRoute("/api/admin/products/save/finalize")({
           const nowIso = new Date().toISOString();
 
           // Sanitize and verify all product images (ensure WebP in R2, isolate media errors)
-          let productToSave = {
+          let productToSave: any = {
             ...productParts,
             isActive: productParts.isActive !== false,
             status: productParts.status || "نشط",
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/api/admin/products/save/finalize")({
           };
           try {
             const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-            productToSave = imgVerification.product;
+            productToSave = { ...productToSave, ...imgVerification.product };
           } catch (imgErr) {
             console.warn(
               "[sanitizeAndVerifyProductImages] Non-blocking media ingestion fallback:",

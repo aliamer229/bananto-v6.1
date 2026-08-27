@@ -89,7 +89,14 @@ export async function findRemainingProductRepresentations(
   const products = (store.products || []) as Product[];
 
   if (products.some((p) => String(p?.id) === id)) remaining.push("aggregate:id");
-  if (slug && products.some((p) => String(p?.slug || "").toLowerCase() === slug.toLowerCase())) {
+  if (
+    slug &&
+    products.some(
+      (p) =>
+        String(p?.id) === id &&
+        String(p?.slug || "").toLowerCase() === slug.toLowerCase(),
+    )
+  ) {
     remaining.push("aggregate:slug");
   }
   if (products.filter((p) => isVisibleToPublic(p)).some((p) => String(p?.id) === id)) {

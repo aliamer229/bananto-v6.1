@@ -133,7 +133,7 @@ export const Route = createFileRoute("/api/files/$")({
                 }
 
                 // If we found a candidate URL but failed to buffer it, redirect to it directly
-                if (candidateUrls.length > 0) {
+                if (candidateUrls.length > 0 && candidateUrls[0]) {
                   return Response.redirect(candidateUrls[0], 302);
                 }
               } catch {
