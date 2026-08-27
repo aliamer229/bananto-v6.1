@@ -79,6 +79,7 @@ import { Route as ApiAdminDeliveryItemsRouteImport } from './routes/api/admin/de
 import { Route as ApiAdminHealthRouteImport } from './routes/api/admin/health'
 import { Route as ApiAdminImportGameRouteImport } from './routes/api.admin.import-game'
 import { Route as ApiAdminKnowledgeBaseRouteImport } from './routes/api/admin/knowledge-base'
+import { Route as ApiAdminMigrateImagesRouteImport } from './routes/api/admin/migrate-images'
 import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin.orders'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminPurgeRouteImport } from './routes/api/admin/purge'
@@ -472,6 +473,11 @@ const ApiAdminKnowledgeBaseRoute = ApiAdminKnowledgeBaseRouteImport.update({
   path: '/api/admin/knowledge-base',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminMigrateImagesRoute = ApiAdminMigrateImagesRouteImport.update({
+  id: '/api/admin/migrate-images',
+  path: '/api/admin/migrate-images',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminOrdersRoute = ApiAdminOrdersRouteImport.update({
   id: '/api/admin/orders',
   path: '/api/admin/orders',
@@ -770,6 +776,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/health': typeof ApiAdminHealthRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
+  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
@@ -884,6 +891,7 @@ export interface FileRoutesByTo {
   '/api/admin/health': typeof ApiAdminHealthRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
+  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
@@ -999,6 +1007,7 @@ export interface FileRoutesById {
   '/api/admin/health': typeof ApiAdminHealthRoute
   '/api/admin/import-game': typeof ApiAdminImportGameRoute
   '/api/admin/knowledge-base': typeof ApiAdminKnowledgeBaseRoute
+  '/api/admin/migrate-images': typeof ApiAdminMigrateImagesRoute
   '/api/admin/orders': typeof ApiAdminOrdersRoute
   '/api/admin/products': typeof ApiAdminProductsRouteWithChildren
   '/api/admin/purge': typeof ApiAdminPurgeRoute
@@ -1115,6 +1124,7 @@ export interface FileRouteTypes {
     | '/api/admin/health'
     | '/api/admin/import-game'
     | '/api/admin/knowledge-base'
+    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
@@ -1229,6 +1239,7 @@ export interface FileRouteTypes {
     | '/api/admin/health'
     | '/api/admin/import-game'
     | '/api/admin/knowledge-base'
+    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
@@ -1343,6 +1354,7 @@ export interface FileRouteTypes {
     | '/api/admin/health'
     | '/api/admin/import-game'
     | '/api/admin/knowledge-base'
+    | '/api/admin/migrate-images'
     | '/api/admin/orders'
     | '/api/admin/products'
     | '/api/admin/purge'
@@ -1458,6 +1470,7 @@ export interface RootRouteChildren {
   ApiAdminHealthRoute: typeof ApiAdminHealthRoute
   ApiAdminImportGameRoute: typeof ApiAdminImportGameRoute
   ApiAdminKnowledgeBaseRoute: typeof ApiAdminKnowledgeBaseRoute
+  ApiAdminMigrateImagesRoute: typeof ApiAdminMigrateImagesRoute
   ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
   ApiAdminProductsRoute: typeof ApiAdminProductsRouteWithChildren
   ApiAdminPurgeRoute: typeof ApiAdminPurgeRoute
@@ -1983,6 +1996,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminKnowledgeBaseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/migrate-images': {
+      id: '/api/admin/migrate-images'
+      path: '/api/admin/migrate-images'
+      fullPath: '/api/admin/migrate-images'
+      preLoaderRoute: typeof ApiAdminMigrateImagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/orders': {
       id: '/api/admin/orders'
       path: '/api/admin/orders'
@@ -2411,6 +2431,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminHealthRoute: ApiAdminHealthRoute,
   ApiAdminImportGameRoute: ApiAdminImportGameRoute,
   ApiAdminKnowledgeBaseRoute: ApiAdminKnowledgeBaseRoute,
+  ApiAdminMigrateImagesRoute: ApiAdminMigrateImagesRoute,
   ApiAdminOrdersRoute: ApiAdminOrdersRoute,
   ApiAdminProductsRoute: ApiAdminProductsRouteWithChildren,
   ApiAdminPurgeRoute: ApiAdminPurgeRoute,

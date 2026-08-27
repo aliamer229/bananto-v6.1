@@ -27,13 +27,51 @@ export interface FieldValidation {
   patternHint?: string;
 }
 
+/**
+ * How much a field matters to a *usable* product.
+ *
+ * Import stays fault-tolerant at every level — a blank field never rejects a
+ * file — but the three levels are what let the importer say something more
+ * useful than "imported". `required` is the short list without which the
+ * product cannot be sold or found; `recommended` is what a customer expects to
+ * see and its absence is worth a warning; `optional` is silent.
+ *
+ * The level is per schema, not per field name: `card_region` is required for a
+ * gift card and meaningless for an amiibo, so a product is never held back for
+ * a field its own category does not use.
+ */
+export type FieldLevel = "required" | "recommended" | "optional";
+
+/**
+ * Who the field is for.
+ *
+ * `customer` fields may reach the product page; `internal` ones — supplier
+ * notes, cost, research reminders — must not, whatever a renderer might
+ * otherwise be tempted to print. Defaults to `customer` only where a field is
+ * explicitly marked, so the renderer asks rather than assumes.
+ */
+export type FieldAudience = "customer" | "internal";
+
 export interface FieldDef {
   /** Key as written in the import file, e.g. `spec_group`. */
   key: string;
   type: FieldType;
   /** Property name produced in the parsed object. */
   target: string;
+  /**
+   * Hard requirement. Kept as its own flag rather than folded into `level`
+   * because the parser has always used it and every schema already sets it;
+   * `level` is derived from it when unset.
+   */
   required?: boolean;
+  /**
+   * Quality level. Defaults to `required` when `required` is true and
+   * `optional` otherwise, so a schema only spells this out to promote a field
+   * to `recommended`.
+   */
+  level?: FieldLevel;
+  /** Who may see it. Unset means "not classified" — treated as internal. */
+  audience?: FieldAudience;
   /** Accepts `key.1=`, `key.2=`, … and produces an array. */
   repeatable?: boolean;
   /** Sub-fields, required when `type === "group"`. */

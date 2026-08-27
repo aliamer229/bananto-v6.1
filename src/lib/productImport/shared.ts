@@ -6,7 +6,7 @@
  * Anything genuinely section-specific lives in that section's own schema file.
  */
 
-import type { FieldDef } from "./types";
+import type { FieldAudience, FieldDef, FieldLevel } from "./types";
 
 const str = (
   key: string,
@@ -51,6 +51,61 @@ const text = (
 ): FieldDef => ({ key, type: "multiline", target, description, ...extra });
 
 export const f = { str, num, bool, url, date, text };
+
+/**
+ * Promotes named fields to a quality level.
+ *
+ * Levels are a property of a field *in a schema*, not of a field name:
+ * `card_region` is required for a gift card and does not exist for an amiibo,
+ * and `compatibility` is the single most important thing about an accessory
+ * while being noise on a top-up card. So each schema states its own list at
+ * assembly time rather than every shared factory guessing.
+ *
+ * This never sets `required: true`. That flag blocks an import, and the
+ * templates are filled by research passes that legitimately arrive incomplete —
+ * the level drives the import quality report and the admin editor's completion
+ * badges, both of which inform without refusing.
+ */
+export function withLevel(
+  fields: FieldDef[],
+  keys: readonly string[],
+  level: FieldLevel,
+): FieldDef[] {
+  const wanted = new Set(keys);
+  return fields.map((def) => (wanted.has(def.key) ? { ...def, level } : def));
+}
+
+/** Marks named fields as internal, so no renderer can print them to a customer. */
+export function withAudience(
+  fields: FieldDef[],
+  keys: readonly string[],
+  audience: FieldAudience,
+): FieldDef[] {
+  const wanted = new Set(keys);
+  return fields.map((def) => (wanted.has(def.key) ? { ...def, audience } : def));
+}
+
+/**
+ * Applies a schema's own level and audience lists in one pass.
+ *
+ * Everything not named is `optional` and customer-facing, which is the safe
+ * default in both directions: nothing nags about a field the section does not
+ * care about, and nothing is silently withheld from the page.
+ */
+export function classify(
+  fields: FieldDef[],
+  spec: {
+    required?: readonly string[];
+    recommended?: readonly string[];
+    internal?: readonly string[];
+  },
+): FieldDef[] {
+  let out = fields;
+  if (spec.recommended) out = withLevel(out, spec.recommended, "recommended");
+  if (spec.required) out = withLevel(out, spec.required, "required");
+  if (spec.internal) out = withAudience(out, spec.internal, "internal");
+  return out.map((def) => ({ ...def, audience: def.audience ?? "customer" }));
+}
 
 /**
  * A field's `group` doubles as the Arabic section heading in the generated
@@ -691,6 +746,62 @@ export function sourceField(): FieldDef {
       verified_at: f.date("verified_at", "verifiedAt", "تاريخ التحقق YYYY-MM-DD"),
     },
   };
+}
+
+/**
+ * Where a fact came from, and — when it is genuinely unavailable — why it is
+ * blank.
+ *
+ * The old template instruction ("leave any field blank if you don't know")
+ * makes a researched gap and an unresearched one identical in the file, so the
+ * next pass re-researches what was already checked. `field_source` attaches a
+ * citation to one named field, and `data_gap` records the field that has no
+ * published answer together with the reason. Both are internal: a customer
+ * sees the clean Sources section, never the working notes.
+ *
+ * Keyed by index rather than by field name (`field_source.price.1=`) because
+ * the parser reads `key.N.sub`, and a normalized row carries the same
+ * information without a second parsing rule.
+ */
+export function fieldSourceFields(): FieldDef[] {
+  const g = "توثيق الحقول (داخلي)";
+  return [
+    {
+      key: "field_source",
+      type: "group",
+      target: "fieldSources",
+      repeatable: true,
+      templateCount: 3,
+      audience: "internal",
+      description: "مصدر حقل بعينه — لأي حقل يحتاج إثباتاً (عدد غير محدود)",
+      group: g,
+      itemFields: {
+        field: f.str("field", "field", "اسم الحقل الموثَّق (مثال: battery_capacity)"),
+        url: f.url("url", "url", "رابط المصدر"),
+        note: f.str("note", "note", "ملاحظة عن الاقتباس"),
+      },
+    },
+    {
+      key: "data_gap",
+      type: "group",
+      target: "dataGaps",
+      repeatable: true,
+      templateCount: 3,
+      audience: "internal",
+      description:
+        "حقل تم البحث عنه ولا توجد له معلومة منشورة — سجّل السبب بدل تركه فارغاً بلا تفسير",
+      group: g,
+      itemFields: {
+        field: f.str("field", "field", "اسم الحقل"),
+        reason: f.str("reason", "reason", "سبب عدم توفر القيمة (لم تنشره الشركة، لا ينطبق…)"),
+        checked_at: f.date("checked_at", "checkedAt", "تاريخ البحث YYYY-MM-DD"),
+      },
+    },
+    f.text("internal_notes", "internalNotes", "ملاحظات داخلية — لا تُعرض للعميل إطلاقاً", {
+      audience: "internal",
+      group: g,
+    }),
+  ];
 }
 
 export function updateField(): FieldDef {

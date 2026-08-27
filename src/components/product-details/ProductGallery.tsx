@@ -48,7 +48,7 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
   const NextIcon = isRtl ? ChevronLeft : ChevronRight;
 
   return (
-    <div className="space-y-3">
+    <div className="w-full min-w-0 space-y-3">
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-muted">
         {current ? (
           <img
@@ -119,11 +119,17 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
                   index === active ? "border-primary" : "border-border opacity-70 hover:opacity-100"
                 }`}
               >
+                {/*
+                  `contain`, matching the main frame. A thumbnail strip of
+                  packshots cropped to squares cuts the top off a tall box and
+                  the sides off a wide one, so the strip stops matching the
+                  picture it selects.
+                */}
                 <img
                   src={src}
                   alt=""
                   loading="lazy"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full bg-muted/40 object-contain"
                   onError={() => setBroken((prev) => new Set(prev).add(index))}
                 />
               </button>
