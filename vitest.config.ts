@@ -16,6 +16,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    include: ["src/**/*.test.{ts,tsx}"],
+    // Scripts carry logic that decides what to delete from production, so their
+    // tests belong in the same run as the app's.
+    include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.mjs"],
   },
 });

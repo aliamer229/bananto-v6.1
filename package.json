@@ -22,7 +22,9 @@
     "legacy:verify:remote": "node scripts/link-legacy-cloudflare.mjs --remote --verify-only",
     "start": "node dist/server/index.mjs",
     "check:overflow": "node scripts/check-horizontal-overflow.mjs",
-    "verify:model": "node scripts/verify-nintendo-model.mjs"
+    "verify:model": "node scripts/verify-nintendo-model.mjs",
+    "repair:products": "node scripts/repair-products.mjs",
+    "diagnose:products": "node scripts/repair-products.mjs --dry-run"
   },
   "dependencies": {
     "@fontsource-variable/cairo": "^5.3.0",
