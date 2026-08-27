@@ -3,6 +3,32 @@
 # الصيغة: field=value
 # النصوص الطويلة: field<<EOF ... EOF
 # العناصر المتكررة: genre.1=Action, genre.2=RPG
+#
+# ⚠ الترقيم مفتوح وغير محدود — الأرقام المطبوعة أدناه أمثلة وليست حداً أقصى.
+#   أكمل حتى genre.N / faq.N / gallery.N / source.N بقدر ما توجد معلومات حقيقية.
+# NUMBERING IS OPEN-ENDED: the printed indexes are examples, not a maximum.
+#   Continue to .N for as many entries as genuinely exist — 1, 10, 30, more.
+#   Never stop at the last printed slot; never invent entries to fill one.
+# =========================================
+# RESEARCH DEPTH — عمق البحث
+# =========================================
+# كل حقل يظهر في صفحة تفاصيل اللعبة يجب البحث عنه وتعبئته إن وُجدت معلومة حقيقية.
+# لا تترك حقلاً فارغاً لمجرد أنه يحتاج بحثاً أعمق. ولا تختلق معلومات.
+# Every field shown on the game details page must be researched and filled
+# whenever factual information exists. Do not leave one blank merely
+# because it needs deeper research — and never invent facts.
+#
+# إذا كانت المعلومة غير موجودة فعلاً أو غير منطبقة، اكتب جملة واضحة للقارئ:
+#   "لم يُعلن عن أي محتوى إضافي مستقل."
+#   "لا يدعم اللعب اللاسلكي المحلي."
+# When something genuinely does not exist or does not apply, write a short
+# human sentence in USER-FACING TEXT fields:
+#   "No standalone DLC has been announced."
+#   "No official soundtrack release has been announced."
+#   "Local wireless multiplayer is not supported."
+# Do NOT write N/A, Unknown, -, or "Not available" where a clear sentence
+# belongs. A section with no content is hidden on the page, so an empty
+# field is silence — not an explanation.
 # =========================================
 
 # BOOLEAN RULE:
@@ -51,6 +77,9 @@ platform=
 compatibility.1=
 compatibility.2=
 compatibility.3=
+compatibility.4=
+compatibility.5=
+compatibility.6=
 
 # الإصدار (Standard, Deluxe, etc.)
 edition=
@@ -203,6 +232,55 @@ description_ar<<EOF
 
 EOF
 
+# =========================================
+# IMAGE ROLES — أدوار الصور
+# =========================================
+# لكل حقل صورة دور مختلف. لا تضع نفس الرابط في أكثر من دور.
+# Each image field has a DIFFERENT job. Do not put the same URL in two roles.
+#
+# ── front_cover_image — Front Box Cover ─────────────────────
+#   صورة عمودية نظيفة عالية الدقة لعلبة اللعبة من الأمام مباشرة.
+#   بدون هوامش/خلفية بيضاء حول العلبة. العلبة نفسها يجب أن تبقى كاملة.
+#   A clean, high-resolution, VERTICAL photo of the retail box seen
+#   straight from the front. Crop away the outer white canvas, never
+#   the box itself — keep its edges, plastic border, ratings and logos.
+#   Used by: Latest Nintendo Releases, /nintendo_games, and as the
+#   static image shown in place of the 3D model when none is possible.
+#
+# ── nintendo_card_image — Square Card Image ─────────────────
+#   فن مربّع (أو شبه مربّع) مُعدّ لنافذة الصورة داخل بطاقة الخرطوشة.
+#   ليست صورة علبة. يجب أن تكون مقروءة بحجم صغير ومتمركزة بصرياً.
+#   SQUARE / near-square key art prepared for the artwork window inside
+#   the cartridge-style card. This is NOT a retail box cover. It must
+#   read well at small size. The card supplies its own frame.
+#   Used by: the homepage "ألعاب نينتندو سويتش" strip.
+#
+# ── cover_texture_url — 3D Texture Source (OPTIONAL) ───────
+#   الغلاف الكامل بدقة عالية: Back Cover + Spine + Front Cover في صورة واحدة.
+#   إن لم يتوفر غلاف كامل حقيقي: اترك الحقل فارغاً.
+#   The complete printed wrap in ONE image, laid out left to right as
+#   back | spine | front, matching the model's UVs.
+#   If no genuine full wrap exists, LEAVE THIS EMPTY. The product page
+#   then shows the Front Box Cover as a static image instead of the 3D
+#   case. Do NOT invent a wrap, and do NOT put a front-only cover, a
+#   square card, a banner or a screenshot here.
+#
+# ── cover_image — Cover Image ───────────────────────────────
+#   الفن الرئيسي العريض المستخدم كخلفية لقسم البطل في صفحة التفاصيل.
+#   ليست صورة العلبة الأمامية.
+#   Wide hero / key art used as the blurred, darkened background behind
+#   the title and price on the product details page. NOT the retail box:
+#   a tall box photo stretched across a landscape header looks broken.
+#
+# ── banner_image.N — Banner Images ─────────────────────────
+#   فن ترويجي عريض عالي الدقة. كل بانر يجب أن يكون مختلفاً.
+#   Wide promotional key art. Each banner should be a DISTINCT image.
+#
+# ── gallery.N.image — Gallery Images ───────────────────────
+#   لقطات رسمية من اللعب. لا تكرّر نفس الصورة لملء الخانات.
+#   Official screenshots and gameplay scenes. Do not repeat one image
+#   to fill slots — leave the extra ones blank instead.
+# =========================================
 # صورة الغلاف الأمامي للعلبة (مستطيلة، عمودية، بدون هوامش بيضاء)
 front_cover_image=
 
@@ -273,6 +351,12 @@ video.2.title=
 video.2.url=
 video.3.title=
 video.3.url=
+video.4.title=
+video.4.url=
+video.5.title=
+video.5.url=
+video.6.title=
+video.6.url=
 
 # NSUID
 nsuid=
@@ -287,11 +371,17 @@ product_code=
 genre.1=
 genre.2=
 genre.3=
+genre.4=
+genre.5=
+genre.6=
 
 # الأنواع
 genres.1=
 genres.2=
 genres.3=
+genres.4=
+genres.5=
+genres.6=
 
 # رابط eShop الرسمي
 nintendo_official_url=
@@ -369,11 +459,17 @@ upgrade_price=
 switch2_feature.1=
 switch2_feature.2=
 switch2_feature.3=
+switch2_feature.4=
+switch2_feature.5=
+switch2_feature.6=
 
 # مزايا Switch 2
 switch2_features.1=
 switch2_features.2=
 switch2_features.3=
+switch2_features.4=
+switch2_features.5=
+switch2_features.6=
 
 # سطر التعريف
 overview_tagline=
@@ -382,11 +478,17 @@ overview_tagline=
 overview_suitable_for.1=
 overview_suitable_for.2=
 overview_suitable_for.3=
+overview_suitable_for.4=
+overview_suitable_for.5=
+overview_suitable_for.6=
 
 # لا تناسب من؟
 overview_not_suitable_for.1=
 overview_not_suitable_for.2=
 overview_not_suitable_for.3=
+overview_not_suitable_for.4=
+overview_not_suitable_for.5=
+overview_not_suitable_for.6=
 
 # ساعات القصة الرئيسية
 main_story_hours=
@@ -400,16 +502,49 @@ edition.1.cover_image=
 edition.1.content.1.label=
 edition.1.content.2.label=
 edition.1.content.3.label=
+edition.1.content.4.label=
+edition.1.content.5.label=
+edition.1.content.6.label=
 edition.2.name=
 edition.2.cover_image=
 edition.2.content.1.label=
 edition.2.content.2.label=
 edition.2.content.3.label=
+edition.2.content.4.label=
+edition.2.content.5.label=
+edition.2.content.6.label=
 edition.3.name=
 edition.3.cover_image=
 edition.3.content.1.label=
 edition.3.content.2.label=
 edition.3.content.3.label=
+edition.3.content.4.label=
+edition.3.content.5.label=
+edition.3.content.6.label=
+edition.4.name=
+edition.4.cover_image=
+edition.4.content.1.label=
+edition.4.content.2.label=
+edition.4.content.3.label=
+edition.4.content.4.label=
+edition.4.content.5.label=
+edition.4.content.6.label=
+edition.5.name=
+edition.5.cover_image=
+edition.5.content.1.label=
+edition.5.content.2.label=
+edition.5.content.3.label=
+edition.5.content.4.label=
+edition.5.content.5.label=
+edition.5.content.6.label=
+edition.6.name=
+edition.6.cover_image=
+edition.6.content.1.label=
+edition.6.content.2.label=
+edition.6.content.3.label=
+edition.6.content.4.label=
+edition.6.content.5.label=
+edition.6.content.6.label=
 
 # ركائز اللعب (تجربة اللعبة)
 gameplay_pillar.1.title=
@@ -427,6 +562,21 @@ gameplay_pillar.3.description<<EOF
 
 EOF
 gameplay_pillar.3.image=
+gameplay_pillar.4.title=
+gameplay_pillar.4.description<<EOF
+
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=
+gameplay_pillar.5.description<<EOF
+
+EOF
+gameplay_pillar.5.image=
+gameplay_pillar.6.title=
+gameplay_pillar.6.description<<EOF
+
+EOF
+gameplay_pillar.6.image=
 
 # ملخص عالم اللعبة
 world_summary<<EOF
@@ -449,6 +599,21 @@ story_chapter.3.text<<EOF
 
 EOF
 story_chapter.3.image=
+story_chapter.4.title=
+story_chapter.4.text<<EOF
+
+EOF
+story_chapter.4.image=
+story_chapter.5.title=
+story_chapter.5.text<<EOF
+
+EOF
+story_chapter.5.image=
+story_chapter.6.title=
+story_chapter.6.text<<EOF
+
+EOF
+story_chapter.6.image=
 
 # معرض الصور — لقطات وصور رسمية عالية الدقة، بدون تكرار أو مصغّرات أو صور غير متعلقة (الأرقام أمثلة وليست حداً أقصى)
 gallery.1.image=
@@ -480,6 +645,9 @@ gallery.12.description=
 feature.1=
 feature.2=
 feature.3=
+feature.4=
+feature.5=
+feature.6=
 
 # الدقة (تلفاز)
 performance_tv_resolution=
@@ -585,6 +753,39 @@ device_performance.1.mode.3.vrr=
 device_performance.1.mode.3.notes<<EOF
 
 EOF
+device_performance.1.mode.4.name=
+device_performance.1.mode.4.handheld_resolution=
+device_performance.1.mode.4.handheld_fps=
+device_performance.1.mode.4.tv_resolution=
+device_performance.1.mode.4.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.1.mode.4.hdr=
+device_performance.1.mode.4.vrr=
+device_performance.1.mode.4.notes<<EOF
+
+EOF
+device_performance.1.mode.5.name=
+device_performance.1.mode.5.handheld_resolution=
+device_performance.1.mode.5.handheld_fps=
+device_performance.1.mode.5.tv_resolution=
+device_performance.1.mode.5.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.1.mode.5.hdr=
+device_performance.1.mode.5.vrr=
+device_performance.1.mode.5.notes<<EOF
+
+EOF
+device_performance.1.mode.6.name=
+device_performance.1.mode.6.handheld_resolution=
+device_performance.1.mode.6.handheld_fps=
+device_performance.1.mode.6.tv_resolution=
+device_performance.1.mode.6.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.1.mode.6.hdr=
+device_performance.1.mode.6.vrr=
+device_performance.1.mode.6.notes<<EOF
+
+EOF
 device_performance.1.upscaling=
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.1.ray_tracing=
@@ -678,6 +879,39 @@ device_performance.2.mode.3.tv_fps=
 device_performance.2.mode.3.hdr=
 device_performance.2.mode.3.vrr=
 device_performance.2.mode.3.notes<<EOF
+
+EOF
+device_performance.2.mode.4.name=
+device_performance.2.mode.4.handheld_resolution=
+device_performance.2.mode.4.handheld_fps=
+device_performance.2.mode.4.tv_resolution=
+device_performance.2.mode.4.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.2.mode.4.hdr=
+device_performance.2.mode.4.vrr=
+device_performance.2.mode.4.notes<<EOF
+
+EOF
+device_performance.2.mode.5.name=
+device_performance.2.mode.5.handheld_resolution=
+device_performance.2.mode.5.handheld_fps=
+device_performance.2.mode.5.tv_resolution=
+device_performance.2.mode.5.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.2.mode.5.hdr=
+device_performance.2.mode.5.vrr=
+device_performance.2.mode.5.notes<<EOF
+
+EOF
+device_performance.2.mode.6.name=
+device_performance.2.mode.6.handheld_resolution=
+device_performance.2.mode.6.handheld_fps=
+device_performance.2.mode.6.tv_resolution=
+device_performance.2.mode.6.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.2.mode.6.hdr=
+device_performance.2.mode.6.vrr=
+device_performance.2.mode.6.notes<<EOF
 
 EOF
 device_performance.2.upscaling=
@@ -775,6 +1009,39 @@ device_performance.3.mode.3.vrr=
 device_performance.3.mode.3.notes<<EOF
 
 EOF
+device_performance.3.mode.4.name=
+device_performance.3.mode.4.handheld_resolution=
+device_performance.3.mode.4.handheld_fps=
+device_performance.3.mode.4.tv_resolution=
+device_performance.3.mode.4.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.3.mode.4.hdr=
+device_performance.3.mode.4.vrr=
+device_performance.3.mode.4.notes<<EOF
+
+EOF
+device_performance.3.mode.5.name=
+device_performance.3.mode.5.handheld_resolution=
+device_performance.3.mode.5.handheld_fps=
+device_performance.3.mode.5.tv_resolution=
+device_performance.3.mode.5.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.3.mode.5.hdr=
+device_performance.3.mode.5.vrr=
+device_performance.3.mode.5.notes<<EOF
+
+EOF
+device_performance.3.mode.6.name=
+device_performance.3.mode.6.handheld_resolution=
+device_performance.3.mode.6.handheld_fps=
+device_performance.3.mode.6.tv_resolution=
+device_performance.3.mode.6.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.3.mode.6.hdr=
+device_performance.3.mode.6.vrr=
+device_performance.3.mode.6.notes<<EOF
+
+EOF
 device_performance.3.upscaling=
 # BOOLEAN ONLY: true / false / blank if unknown
 device_performance.3.ray_tracing=
@@ -791,6 +1058,390 @@ device_performance.3.source_url=
 device_performance.3.verified_at=
 device_performance.3.verification_status=
 device_performance.3.performance_notes<<EOF
+
+EOF
+device_performance.4.device=
+device_performance.4.device_slug=
+device_performance.4.device_model=
+device_performance.4.hardware_id=
+device_performance.4.information_status=
+device_performance.4.unavailable_reason<<EOF
+
+EOF
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.handheld.supported=
+device_performance.4.handheld.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.handheld.resolution_dynamic=
+device_performance.4.handheld.rendering_resolution=
+device_performance.4.handheld.output_resolution=
+device_performance.4.handheld.fps=
+device_performance.4.handheld.fps_min=
+device_performance.4.handheld.fps_max=
+device_performance.4.handheld.refresh_rate=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.handheld.hdr=
+device_performance.4.handheld.vrr=
+device_performance.4.handheld.mode=
+device_performance.4.handheld.notes<<EOF
+
+EOF
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.tv.supported=
+device_performance.4.tv.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.tv.resolution_dynamic=
+device_performance.4.tv.rendering_resolution=
+device_performance.4.tv.output_resolution=
+device_performance.4.tv.fps=
+device_performance.4.tv.fps_min=
+device_performance.4.tv.fps_max=
+device_performance.4.tv.refresh_rate=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.tv.hdr=
+device_performance.4.tv.vrr=
+device_performance.4.tv.mode=
+device_performance.4.tv.notes<<EOF
+
+EOF
+device_performance.4.mode.1.name=
+device_performance.4.mode.1.handheld_resolution=
+device_performance.4.mode.1.handheld_fps=
+device_performance.4.mode.1.tv_resolution=
+device_performance.4.mode.1.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.mode.1.hdr=
+device_performance.4.mode.1.vrr=
+device_performance.4.mode.1.notes<<EOF
+
+EOF
+device_performance.4.mode.2.name=
+device_performance.4.mode.2.handheld_resolution=
+device_performance.4.mode.2.handheld_fps=
+device_performance.4.mode.2.tv_resolution=
+device_performance.4.mode.2.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.mode.2.hdr=
+device_performance.4.mode.2.vrr=
+device_performance.4.mode.2.notes<<EOF
+
+EOF
+device_performance.4.mode.3.name=
+device_performance.4.mode.3.handheld_resolution=
+device_performance.4.mode.3.handheld_fps=
+device_performance.4.mode.3.tv_resolution=
+device_performance.4.mode.3.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.mode.3.hdr=
+device_performance.4.mode.3.vrr=
+device_performance.4.mode.3.notes<<EOF
+
+EOF
+device_performance.4.mode.4.name=
+device_performance.4.mode.4.handheld_resolution=
+device_performance.4.mode.4.handheld_fps=
+device_performance.4.mode.4.tv_resolution=
+device_performance.4.mode.4.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.mode.4.hdr=
+device_performance.4.mode.4.vrr=
+device_performance.4.mode.4.notes<<EOF
+
+EOF
+device_performance.4.mode.5.name=
+device_performance.4.mode.5.handheld_resolution=
+device_performance.4.mode.5.handheld_fps=
+device_performance.4.mode.5.tv_resolution=
+device_performance.4.mode.5.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.mode.5.hdr=
+device_performance.4.mode.5.vrr=
+device_performance.4.mode.5.notes<<EOF
+
+EOF
+device_performance.4.mode.6.name=
+device_performance.4.mode.6.handheld_resolution=
+device_performance.4.mode.6.handheld_fps=
+device_performance.4.mode.6.tv_resolution=
+device_performance.4.mode.6.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.mode.6.hdr=
+device_performance.4.mode.6.vrr=
+device_performance.4.mode.6.notes<<EOF
+
+EOF
+device_performance.4.upscaling=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.4.ray_tracing=
+device_performance.4.ray_tracing_mode=
+device_performance.4.loading_time=
+device_performance.4.loading_notes<<EOF
+
+EOF
+device_performance.4.game_version=
+device_performance.4.patch_version=
+device_performance.4.tested_date=
+device_performance.4.source_name=
+device_performance.4.source_url=
+device_performance.4.verified_at=
+device_performance.4.verification_status=
+device_performance.4.performance_notes<<EOF
+
+EOF
+device_performance.5.device=
+device_performance.5.device_slug=
+device_performance.5.device_model=
+device_performance.5.hardware_id=
+device_performance.5.information_status=
+device_performance.5.unavailable_reason<<EOF
+
+EOF
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.handheld.supported=
+device_performance.5.handheld.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.handheld.resolution_dynamic=
+device_performance.5.handheld.rendering_resolution=
+device_performance.5.handheld.output_resolution=
+device_performance.5.handheld.fps=
+device_performance.5.handheld.fps_min=
+device_performance.5.handheld.fps_max=
+device_performance.5.handheld.refresh_rate=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.handheld.hdr=
+device_performance.5.handheld.vrr=
+device_performance.5.handheld.mode=
+device_performance.5.handheld.notes<<EOF
+
+EOF
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.tv.supported=
+device_performance.5.tv.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.tv.resolution_dynamic=
+device_performance.5.tv.rendering_resolution=
+device_performance.5.tv.output_resolution=
+device_performance.5.tv.fps=
+device_performance.5.tv.fps_min=
+device_performance.5.tv.fps_max=
+device_performance.5.tv.refresh_rate=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.tv.hdr=
+device_performance.5.tv.vrr=
+device_performance.5.tv.mode=
+device_performance.5.tv.notes<<EOF
+
+EOF
+device_performance.5.mode.1.name=
+device_performance.5.mode.1.handheld_resolution=
+device_performance.5.mode.1.handheld_fps=
+device_performance.5.mode.1.tv_resolution=
+device_performance.5.mode.1.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.mode.1.hdr=
+device_performance.5.mode.1.vrr=
+device_performance.5.mode.1.notes<<EOF
+
+EOF
+device_performance.5.mode.2.name=
+device_performance.5.mode.2.handheld_resolution=
+device_performance.5.mode.2.handheld_fps=
+device_performance.5.mode.2.tv_resolution=
+device_performance.5.mode.2.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.mode.2.hdr=
+device_performance.5.mode.2.vrr=
+device_performance.5.mode.2.notes<<EOF
+
+EOF
+device_performance.5.mode.3.name=
+device_performance.5.mode.3.handheld_resolution=
+device_performance.5.mode.3.handheld_fps=
+device_performance.5.mode.3.tv_resolution=
+device_performance.5.mode.3.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.mode.3.hdr=
+device_performance.5.mode.3.vrr=
+device_performance.5.mode.3.notes<<EOF
+
+EOF
+device_performance.5.mode.4.name=
+device_performance.5.mode.4.handheld_resolution=
+device_performance.5.mode.4.handheld_fps=
+device_performance.5.mode.4.tv_resolution=
+device_performance.5.mode.4.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.mode.4.hdr=
+device_performance.5.mode.4.vrr=
+device_performance.5.mode.4.notes<<EOF
+
+EOF
+device_performance.5.mode.5.name=
+device_performance.5.mode.5.handheld_resolution=
+device_performance.5.mode.5.handheld_fps=
+device_performance.5.mode.5.tv_resolution=
+device_performance.5.mode.5.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.mode.5.hdr=
+device_performance.5.mode.5.vrr=
+device_performance.5.mode.5.notes<<EOF
+
+EOF
+device_performance.5.mode.6.name=
+device_performance.5.mode.6.handheld_resolution=
+device_performance.5.mode.6.handheld_fps=
+device_performance.5.mode.6.tv_resolution=
+device_performance.5.mode.6.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.mode.6.hdr=
+device_performance.5.mode.6.vrr=
+device_performance.5.mode.6.notes<<EOF
+
+EOF
+device_performance.5.upscaling=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.5.ray_tracing=
+device_performance.5.ray_tracing_mode=
+device_performance.5.loading_time=
+device_performance.5.loading_notes<<EOF
+
+EOF
+device_performance.5.game_version=
+device_performance.5.patch_version=
+device_performance.5.tested_date=
+device_performance.5.source_name=
+device_performance.5.source_url=
+device_performance.5.verified_at=
+device_performance.5.verification_status=
+device_performance.5.performance_notes<<EOF
+
+EOF
+device_performance.6.device=
+device_performance.6.device_slug=
+device_performance.6.device_model=
+device_performance.6.hardware_id=
+device_performance.6.information_status=
+device_performance.6.unavailable_reason<<EOF
+
+EOF
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.handheld.supported=
+device_performance.6.handheld.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.handheld.resolution_dynamic=
+device_performance.6.handheld.rendering_resolution=
+device_performance.6.handheld.output_resolution=
+device_performance.6.handheld.fps=
+device_performance.6.handheld.fps_min=
+device_performance.6.handheld.fps_max=
+device_performance.6.handheld.refresh_rate=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.handheld.hdr=
+device_performance.6.handheld.vrr=
+device_performance.6.handheld.mode=
+device_performance.6.handheld.notes<<EOF
+
+EOF
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.tv.supported=
+device_performance.6.tv.resolution=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.tv.resolution_dynamic=
+device_performance.6.tv.rendering_resolution=
+device_performance.6.tv.output_resolution=
+device_performance.6.tv.fps=
+device_performance.6.tv.fps_min=
+device_performance.6.tv.fps_max=
+device_performance.6.tv.refresh_rate=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.tv.hdr=
+device_performance.6.tv.vrr=
+device_performance.6.tv.mode=
+device_performance.6.tv.notes<<EOF
+
+EOF
+device_performance.6.mode.1.name=
+device_performance.6.mode.1.handheld_resolution=
+device_performance.6.mode.1.handheld_fps=
+device_performance.6.mode.1.tv_resolution=
+device_performance.6.mode.1.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.mode.1.hdr=
+device_performance.6.mode.1.vrr=
+device_performance.6.mode.1.notes<<EOF
+
+EOF
+device_performance.6.mode.2.name=
+device_performance.6.mode.2.handheld_resolution=
+device_performance.6.mode.2.handheld_fps=
+device_performance.6.mode.2.tv_resolution=
+device_performance.6.mode.2.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.mode.2.hdr=
+device_performance.6.mode.2.vrr=
+device_performance.6.mode.2.notes<<EOF
+
+EOF
+device_performance.6.mode.3.name=
+device_performance.6.mode.3.handheld_resolution=
+device_performance.6.mode.3.handheld_fps=
+device_performance.6.mode.3.tv_resolution=
+device_performance.6.mode.3.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.mode.3.hdr=
+device_performance.6.mode.3.vrr=
+device_performance.6.mode.3.notes<<EOF
+
+EOF
+device_performance.6.mode.4.name=
+device_performance.6.mode.4.handheld_resolution=
+device_performance.6.mode.4.handheld_fps=
+device_performance.6.mode.4.tv_resolution=
+device_performance.6.mode.4.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.mode.4.hdr=
+device_performance.6.mode.4.vrr=
+device_performance.6.mode.4.notes<<EOF
+
+EOF
+device_performance.6.mode.5.name=
+device_performance.6.mode.5.handheld_resolution=
+device_performance.6.mode.5.handheld_fps=
+device_performance.6.mode.5.tv_resolution=
+device_performance.6.mode.5.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.mode.5.hdr=
+device_performance.6.mode.5.vrr=
+device_performance.6.mode.5.notes<<EOF
+
+EOF
+device_performance.6.mode.6.name=
+device_performance.6.mode.6.handheld_resolution=
+device_performance.6.mode.6.handheld_fps=
+device_performance.6.mode.6.tv_resolution=
+device_performance.6.mode.6.tv_fps=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.mode.6.hdr=
+device_performance.6.mode.6.vrr=
+device_performance.6.mode.6.notes<<EOF
+
+EOF
+device_performance.6.upscaling=
+# BOOLEAN ONLY: true / false / blank if unknown
+device_performance.6.ray_tracing=
+device_performance.6.ray_tracing_mode=
+device_performance.6.loading_time=
+device_performance.6.loading_notes<<EOF
+
+EOF
+device_performance.6.game_version=
+device_performance.6.patch_version=
+device_performance.6.tested_date=
+device_performance.6.source_name=
+device_performance.6.source_url=
+device_performance.6.verified_at=
+device_performance.6.verification_status=
+device_performance.6.performance_notes<<EOF
 
 EOF
 
@@ -813,11 +1464,17 @@ EOF
 audio_language.1=
 audio_language.2=
 audio_language.3=
+audio_language.4=
+audio_language.5=
+audio_language.6=
 
 # لغات النصوص
 text_language.1=
 text_language.2=
 text_language.3=
+text_language.4=
+text_language.5=
+text_language.6=
 
 # اللغات المدعومة (نص حر)
 supported_languages_raw=
@@ -861,6 +1518,21 @@ dlc.3.description<<EOF
 
 EOF
 dlc.3.image=
+dlc.4.title=
+dlc.4.description<<EOF
+
+EOF
+dlc.4.image=
+dlc.5.title=
+dlc.5.description<<EOF
+
+EOF
+dlc.5.image=
+dlc.6.title=
+dlc.6.description<<EOF
+
+EOF
+dlc.6.image=
 
 # الأدلة
 guide.1.title=
@@ -878,6 +1550,21 @@ guide.3.summary<<EOF
 
 EOF
 guide.3.url=
+guide.4.title=
+guide.4.summary<<EOF
+
+EOF
+guide.4.url=
+guide.5.title=
+guide.5.summary<<EOF
+
+EOF
+guide.5.url=
+guide.6.title=
+guide.6.summary<<EOF
+
+EOF
+guide.6.url=
 
 # القصة الرئيسية (ساعة)
 completion_main_story_hours=
@@ -901,6 +1588,18 @@ faq.3.question=
 faq.3.answer<<EOF
 
 EOF
+faq.4.question=
+faq.4.answer<<EOF
+
+EOF
+faq.5.question=
+faq.5.answer<<EOF
+
+EOF
+faq.6.question=
+faq.6.answer<<EOF
+
+EOF
 
 # الحكم النهائي من 10
 verdict_score=
@@ -914,11 +1613,17 @@ EOF
 verdict_pro.1=
 verdict_pro.2=
 verdict_pro.3=
+verdict_pro.4=
+verdict_pro.5=
+verdict_pro.6=
 
 # السلبيات
 verdict_con.1=
 verdict_con.2=
 verdict_con.3=
+verdict_con.4=
+verdict_con.5=
+verdict_con.6=
 
 # مراجعات مختارة
 review.1.source=
@@ -939,6 +1644,24 @@ review.3.quote<<EOF
 
 EOF
 review.3.url=
+review.4.source=
+review.4.score=
+review.4.quote<<EOF
+
+EOF
+review.4.url=
+review.5.source=
+review.5.score=
+review.5.quote<<EOF
+
+EOF
+review.5.url=
+review.6.source=
+review.6.score=
+review.6.quote<<EOF
+
+EOF
+review.6.url=
 
 # الخط الزمني
 timeline.1.date=
@@ -954,6 +1677,21 @@ EOF
 timeline.3.date=
 timeline.3.title=
 timeline.3.details<<EOF
+
+EOF
+timeline.4.date=
+timeline.4.title=
+timeline.4.details<<EOF
+
+EOF
+timeline.5.date=
+timeline.5.title=
+timeline.5.details<<EOF
+
+EOF
+timeline.6.date=
+timeline.6.title=
+timeline.6.details<<EOF
 
 EOF
 
@@ -973,6 +1711,21 @@ update.3.date=
 update.3.changes<<EOF
 
 EOF
+update.4.version=
+update.4.date=
+update.4.changes<<EOF
+
+EOF
+update.5.version=
+update.5.date=
+update.5.changes<<EOF
+
+EOF
+update.6.version=
+update.6.date=
+update.6.changes<<EOF
+
+EOF
 
 # الموسيقى
 music.1.title=
@@ -981,6 +1734,12 @@ music.2.title=
 music.2.url=
 music.3.title=
 music.3.url=
+music.4.title=
+music.4.url=
+music.5.title=
+music.5.url=
+music.6.title=
+music.6.url=
 
 # اسم السلسلة
 series_name=
@@ -989,6 +1748,9 @@ series_name=
 series_game.1=
 series_game.2=
 series_game.3=
+series_game.4=
+series_game.5=
+series_game.6=
 
 # اسم الاستوديو
 studio_name=
@@ -1008,6 +1770,9 @@ EOF
 setting_requirement.1=
 setting_requirement.2=
 setting_requirement.3=
+setting_requirement.4=
+setting_requirement.5=
+setting_requirement.6=
 
 # المصادر
 source.1.name=
@@ -1016,6 +1781,12 @@ source.2.name=
 source.2.url=
 source.3.name=
 source.3.url=
+source.4.name=
+source.4.url=
+source.5.name=
+source.5.url=
+source.6.name=
+source.6.url=
 
 # خيارات المنتج الرئيسية — لكل لعبة خياران: option.1.id=offline_account (حساب أوفلاين) و option.2.id=online_account (حساب أونلاين)
 option.1.id=

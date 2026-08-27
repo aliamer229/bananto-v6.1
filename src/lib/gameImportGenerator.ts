@@ -55,6 +55,32 @@ export function generateGameImportTemplate(): string {
   comment("# الصيغة: field=value");
   comment("# النصوص الطويلة: field<<EOF ... EOF");
   comment("# العناصر المتكررة: genre.1=Action, genre.2=RPG");
+  comment("#");
+  comment("# ⚠ الترقيم مفتوح وغير محدود — الأرقام المطبوعة أدناه أمثلة وليست حداً أقصى.");
+  comment("#   أكمل حتى genre.N / faq.N / gallery.N / source.N بقدر ما توجد معلومات حقيقية.");
+  comment("# NUMBERING IS OPEN-ENDED: the printed indexes are examples, not a maximum.");
+  comment("#   Continue to .N for as many entries as genuinely exist — 1, 10, 30, more.");
+  comment("#   Never stop at the last printed slot; never invent entries to fill one.");
+  comment("# =========================================");
+  comment("# RESEARCH DEPTH — عمق البحث");
+  comment("# =========================================");
+  comment("# كل حقل يظهر في صفحة تفاصيل اللعبة يجب البحث عنه وتعبئته إن وُجدت معلومة حقيقية.");
+  comment("# لا تترك حقلاً فارغاً لمجرد أنه يحتاج بحثاً أعمق. ولا تختلق معلومات.");
+  comment("# Every field shown on the game details page must be researched and filled");
+  comment("# whenever factual information exists. Do not leave one blank merely");
+  comment("# because it needs deeper research — and never invent facts.");
+  comment("#");
+  comment("# إذا كانت المعلومة غير موجودة فعلاً أو غير منطبقة، اكتب جملة واضحة للقارئ:");
+  comment("#   \"لم يُعلن عن أي محتوى إضافي مستقل.\"");
+  comment("#   \"لا يدعم اللعب اللاسلكي المحلي.\"");
+  comment("# When something genuinely does not exist or does not apply, write a short");
+  comment("# human sentence in USER-FACING TEXT fields:");
+  comment("#   \"No standalone DLC has been announced.\"");
+  comment("#   \"No official soundtrack release has been announced.\"");
+  comment("#   \"Local wireless multiplayer is not supported.\"");
+  comment("# Do NOT write N/A, Unknown, -, or \"Not available\" where a clear sentence");
+  comment("# belongs. A section with no content is hidden on the page, so an empty");
+  comment("# field is silence — not an explanation.");
   comment("# =========================================");
   lines.push({ kind: "blank", text: "" });
   BOOLEAN_RULE.forEach(comment);
@@ -62,6 +88,65 @@ export function generateGameImportTemplate(): string {
   lines.push({ kind: "blank", text: "" });
 
   for (const field of GAME_IMPORT_SCHEMA) {
+    if (field.key === "front_cover_image") {
+      /*
+        Five image fields, five different jobs. They were being filled with the
+        same URL because nothing in the template said what each one was *for* —
+        and the storefront then showed a tall retail box in a square card slot,
+        a box photo stretched across a landscape hero, and a fabricated wrap on
+        the 3D case. The roles are enforced in code (src/lib/nintendoImages.ts);
+        this is where a human or an extraction system learns them.
+      */
+      comment("# =========================================");
+      comment("# IMAGE ROLES — أدوار الصور");
+      comment("# =========================================");
+      comment("# لكل حقل صورة دور مختلف. لا تضع نفس الرابط في أكثر من دور.");
+      comment("# Each image field has a DIFFERENT job. Do not put the same URL in two roles.");
+      comment("#");
+      comment("# ── front_cover_image — Front Box Cover ─────────────────────");
+      comment("#   صورة عمودية نظيفة عالية الدقة لعلبة اللعبة من الأمام مباشرة.");
+      comment("#   بدون هوامش/خلفية بيضاء حول العلبة. العلبة نفسها يجب أن تبقى كاملة.");
+      comment("#   A clean, high-resolution, VERTICAL photo of the retail box seen");
+      comment("#   straight from the front. Crop away the outer white canvas, never");
+      comment("#   the box itself — keep its edges, plastic border, ratings and logos.");
+      comment("#   Used by: Latest Nintendo Releases, /nintendo_games, and as the");
+      comment("#   static image shown in place of the 3D model when none is possible.");
+      comment("#");
+      comment("# ── nintendo_card_image — Square Card Image ─────────────────");
+      comment("#   فن مربّع (أو شبه مربّع) مُعدّ لنافذة الصورة داخل بطاقة الخرطوشة.");
+      comment("#   ليست صورة علبة. يجب أن تكون مقروءة بحجم صغير ومتمركزة بصرياً.");
+      comment("#   SQUARE / near-square key art prepared for the artwork window inside");
+      comment("#   the cartridge-style card. This is NOT a retail box cover. It must");
+      comment("#   read well at small size. The card supplies its own frame.");
+      comment("#   Used by: the homepage \"ألعاب نينتندو سويتش\" strip.");
+      comment("#");
+      comment("# ── cover_texture_url — 3D Texture Source (OPTIONAL) ───────");
+      comment("#   الغلاف الكامل بدقة عالية: Back Cover + Spine + Front Cover في صورة واحدة.");
+      comment("#   إن لم يتوفر غلاف كامل حقيقي: اترك الحقل فارغاً.");
+      comment("#   The complete printed wrap in ONE image, laid out left to right as");
+      comment("#   back | spine | front, matching the model's UVs.");
+      comment("#   If no genuine full wrap exists, LEAVE THIS EMPTY. The product page");
+      comment("#   then shows the Front Box Cover as a static image instead of the 3D");
+      comment("#   case. Do NOT invent a wrap, and do NOT put a front-only cover, a");
+      comment("#   square card, a banner or a screenshot here.");
+      comment("#");
+      comment("# ── cover_image — Cover Image ───────────────────────────────");
+      comment("#   الفن الرئيسي العريض المستخدم كخلفية لقسم البطل في صفحة التفاصيل.");
+      comment("#   ليست صورة العلبة الأمامية.");
+      comment("#   Wide hero / key art used as the blurred, darkened background behind");
+      comment("#   the title and price on the product details page. NOT the retail box:");
+      comment("#   a tall box photo stretched across a landscape header looks broken.");
+      comment("#");
+      comment("# ── banner_image.N — Banner Images ─────────────────────────");
+      comment("#   فن ترويجي عريض عالي الدقة. كل بانر يجب أن يكون مختلفاً.");
+      comment("#   Wide promotional key art. Each banner should be a DISTINCT image.");
+      comment("#");
+      comment("# ── gallery.N.image — Gallery Images ───────────────────────");
+      comment("#   لقطات رسمية من اللعب. لا تكرّر نفس الصورة لملء الخانات.");
+      comment("#   Official screenshots and gameplay scenes. Do not repeat one image");
+      comment("#   to fill slots — leave the extra ones blank instead.");
+      comment("# =========================================");
+    }
     if (field.key === "device_performance") {
       comment("# =========================================");
       comment("# DEVICE PERFORMANCE");
@@ -154,7 +239,19 @@ function isSimpleList(field: FieldDef): boolean {
 function renderField(field: FieldDef, path: string, group: string): TemplateLine[] {
   if (field.repeatable) {
     const out: TemplateLine[] = [];
-    const repeats = field.templateRepeat ?? 3;
+    /*
+      Example slots, never a ceiling — the parser reads whatever indices the
+      file contains (verified at 1, 3, 10 and 30 in gameImportRepeats.test.ts).
+
+      The default used to be 3, and that number was the whole problem: an
+      extraction system reading this template has nothing to go on but its
+      shape, so three printed slots taught it that three genres, three FAQs and
+      three sources were all that existed. Six is enough that the pattern reads
+      as "continue as needed" rather than as a limit; a field that genuinely
+      wants more sets `templateRepeat` explicitly, and a field that is bounded
+      by the product model (`option`) sets it lower on purpose.
+    */
+    const repeats = field.templateRepeat ?? 6;
     const simpleList = isSimpleList(field);
     for (let index = 1; index <= repeats; index++) {
       const indexedPath = `${path}.${index}`;
