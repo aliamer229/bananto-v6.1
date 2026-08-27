@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { guard } from "@/lib/http.server";
+import { detectTrimCrop } from "@/lib/imageTrim.server";
 import { fetchRemoteImage, readLimitedBody, safeRemoteImageUrl } from "@/lib/security.server";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit.server";
 
@@ -102,11 +103,25 @@ export const Route = createFileRoute("/api/img")({
           const targetWidth = Math.min(2400, Math.max(0, parseInt(url.searchParams.get("w") || "0", 10)));
           const formatParam = (url.searchParams.get("format") || "").toLowerCase();
           const targetQuality = Math.min(100, Math.max(40, parseInt(url.searchParams.get("q") || "85", 10)));
+          /*
+            Remove the empty field around a packshot before anything else.
+
+            Opt-in per call site rather than always-on: a full case wrap, a
+            banner and a screenshot all legitimately reach their own edges, and
+            trimming those would cut into the picture. Only the surfaces that
+            frame a box ask for it.
+
+            This is what repairs the covers already in production. They are
+            stored with the supplier's white margin baked in, and this session
+            cannot rewrite R2 or D1 — but every catalogue image is read through
+            this proxy, so the very next request serves the box tight to frame.
+          */
+          const wantsTrim = url.searchParams.get("trim") === "1";
 
           const safeUrl = safeRemoteImageUrl(remote);
           if (!safeUrl) return new Response("Bad request", { status: 400 });
 
-          const cacheKey = `${safeUrl.toString()}_w${targetWidth}_f${formatParam}_q${targetQuality}`;
+          const cacheKey = `${safeUrl.toString()}_w${targetWidth}_f${formatParam}_q${targetQuality}_t${wantsTrim ? 1 : 0}`;
           const cached = getCached(cacheKey);
           if (cached) {
             return new Response(cached.buffer as unknown as BodyInit, {
@@ -159,6 +174,14 @@ export const Route = createFileRoute("/api/img")({
                 if (typeof sharp === "function" && mime !== "image/gif") {
                   let pipeline = sharp(rawBuffer, { failOnError: false } as any).rotate();
 
+                  if (wantsTrim) {
+                    // Before the resize: the crop is measured in source pixels,
+                    // and cropping first also means the discarded margin is
+                    // never encoded.
+                    const trimmed = await detectTrimCrop(rawBuffer, sharp as any);
+                    if (trimmed) pipeline = pipeline.extract(trimmed.crop);
+                  }
+
                   if (targetWidth > 0) {
                     pipeline = pipeline.resize({ width: targetWidth, fit: "inside", withoutEnlargement: true });
                   }
@@ -173,7 +196,9 @@ export const Route = createFileRoute("/api/img")({
                     const webpBuf = await pipeline.webp({ quality: targetQuality, effort: 2, smartSubsample: true }).toBuffer();
                     finalBuffer = new Uint8Array(webpBuf);
                     mime = "image/webp";
-                  } else if (targetWidth > 0) {
+                  } else if (targetWidth > 0 || wantsTrim) {
+                    // A trim with no resize and no format change still has to
+                    // be encoded, or the crop is silently discarded.
                     const outBuf = await pipeline.toBuffer();
                     finalBuffer = new Uint8Array(outBuf);
                   }

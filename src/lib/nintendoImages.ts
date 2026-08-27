@@ -82,6 +82,36 @@ export type NintendoImageUsage =
   | "cart"
   | "toast";
 
+/**
+ * Usages that frame a **box**, and therefore want the empty field around the
+ * packshot removed before the image is encoded.
+ *
+ * Supplier feeds ship box art as a small box floating in a large white
+ * rectangle. `object-fit: contain` reproduces that faithfully — which is the
+ * "white outer background" on the product page and the scattered-stamps look in
+ * a cover grid. The margin lives in the file, so it is removed in the image
+ * pipeline (`/api/img?trim=1`), not with a CSS crop that only the components
+ * remembering to apply it would benefit from.
+ *
+ * Deliberately not here: `3d-texture` (a full wrap, edge to edge by design),
+ * `banner`, `gallery` and `detail-cover` — all of which legitimately reach
+ * their own edges, and trimming one would cut into the picture.
+ */
+export const TRIMMED_USAGES: ReadonlySet<NintendoImageUsage> = new Set<NintendoImageUsage>([
+  "front-box",
+  "front-cover",
+  "listing-card",
+  "bundle-card",
+  "square-card",
+  "cart",
+  "toast",
+]);
+
+/** Should this usage ask the image pipeline to trim the packshot's margin? */
+export function usageWantsTrim(usage: NintendoImageUsage): boolean {
+  return TRIMMED_USAGES.has(usage);
+}
+
 export interface ResolvedImage {
   /** The placeholder for this role when nothing usable exists. */
   url: string;

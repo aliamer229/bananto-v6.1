@@ -32,18 +32,46 @@ describe("SwitchBox3D sleeve visibility and solid structure", () => {
     expect(SOURCE).toMatch(/depthTest=\{true\}/);
   });
 
-  it("does not tint the sleeve toward white while the artwork is still drawing", () => {
-    expect(SOURCE).not.toMatch(/color=\{texture \? "#ffffff" : "#eeeeee"\}/);
-    expect(SOURCE).toMatch(/color=\{texture \? "#ffffff" : "#[0-9a-f]{6}"\}/i);
+  it("draws nothing at all while the artwork is still compositing", () => {
+    /*
+      This used to be "do not tint the sleeve toward white while the artwork is
+      still drawing" — pick a dark placeholder colour so the waiting state is
+      less obtrusive. That framing conceded the wrong thing: it accepted that an
+      empty case gets drawn and argued about its shade. Under this scene's
+      ambient plus two directional lights, the dark tint still resolved to a
+      lit grey, which is what customers were reporting.
+
+      The case is simply not drawn until it is wearing artwork, so the sleeve
+      colour is a plain white base for the map to multiply against and there is
+      no waiting state on screen to tint.
+    */
+    expect(SOURCE).toContain("visible={Boolean(texture)}");
+    expect(SOURCE).toMatch(/color="#ffffff"/);
+    expect(SOURCE).not.toMatch(/color=\{texture \?/);
+  });
+
+  it("forces the shader recompile that makes the map take effect", () => {
+    // Assigning `.map` to an already-compiled material does not add the texture
+    // fetch to its shader. See `applySleeveTexture`.
+    expect(SOURCE).toContain("applySleeveTexture(sleeveMaterialRef.current, texture)");
+    const sleeve = SOURCE.slice(SOURCE.indexOf("<meshStandardMaterial"));
+    expect(sleeve.slice(0, 400)).not.toContain("map=");
   });
 
   it("asks for CORS only on genuinely cross-origin artwork", () => {
     expect(SOURCE).toMatch(/new URL\(coverImage\)\.origin !== window\.location\.origin/);
   });
 
-  it("falls back to the branded sleeve when the artwork fails to decode", () => {
+  it("hands the slot back to the static cover when the artwork fails to decode", () => {
+    // There is no "branded sleeve" fallback any more. Composing a blank retail
+    // case out of a brand colour and a game title and uploading it as a texture
+    // is what produced a grey box on a 404; the stage shows the real Front Box
+    // Cover photograph instead.
     expect(SOURCE).toMatch(/artworkDrawn\s*=\s*true/);
     expect(SOURCE).toMatch(/if \(!artworkDrawn\)/);
+    const branch = SOURCE.slice(SOURCE.indexOf("if (!artworkDrawn)"), SOURCE.indexOf("if (!artworkDrawn)") + 300);
+    expect(branch).toContain("onTextureError");
+    expect(branch).toContain("return;");
   });
 });
 

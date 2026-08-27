@@ -1,3 +1,4 @@
+import { detectTrimCrop } from "./imageTrim.server";
 import { readBinary, writeBinary } from "./storage.server";
 
 export interface ImageProcessingOptions {
@@ -113,48 +114,29 @@ export async function processImageToAvif(
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default || sharpModule;
     if (typeof sharp === "function") {
-      let image = sharp(bytes, { failOnError: false } as any);
-      
-      const metadata = await image.metadata().catch(() => undefined);
+      // `.rotate()` up front, not at the end of the chain: `detectTrimCrop`
+      // measures against the EXIF-oriented frame, so a crop applied before the
+      // rotation would land on its side for any photo carrying an orientation.
+      let image = sharp(bytes, { failOnError: false } as any).rotate();
+
+      const metadata = await sharp(bytes, { failOnError: false } as any)
+        .metadata()
+        .catch(() => undefined);
       
       if (options.smartCrop && metadata && metadata.width && metadata.height) {
-        try {
-          const w = metadata.width;
-          const h = metadata.height;
-          // Extract 4 corners (1x1 pixels)
-          const tl = await sharp(bytes, { failOnError: false } as any).extract({ left: 0, top: 0, width: 1, height: 1 }).raw().toBuffer();
-          const tr = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: 0, width: 1, height: 1 }).raw().toBuffer();
-          const bl = await sharp(bytes, { fail: false } as any).extract({ left: 0, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
-          const br = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
-
-          const isSimilar = (c1: Buffer, c2: Buffer) => {
-            if (c1.length < 3 || c2.length < 3) return false;
-            const a1 = c1.length > 3 ? c1[3] : 255;
-            const a2 = c2.length > 3 ? c2[3] : 255;
-            if (Math.abs(a1 - a2) > 15) return false;
-            if (a1 < 15 && a2 < 15) return true;
-            return Math.abs(c1[0] - c2[0]) < 15 && Math.abs(c1[1] - c2[1]) < 15 && Math.abs(c1[2] - c2[2]) < 15;
-          };
-
-          if (isSimilar(tl, tr) && isSimilar(tl, bl) && isSimilar(tl, br)) {
-            const a = tl.length > 3 ? tl[3] : 255;
-            const r = tl[0], g = tl[1], b = tl[2];
-            
-            const isWhite = r > 240 && g > 240 && b > 240;
-            const isBlack = r < 15 && g < 15 && b < 15;
-            const isTransparent = a < 15;
-            
-            if (isWhite || isBlack || isTransparent) {
-              image = image.trim({ threshold: 12 });
-            }
-          }
-        } catch (e) {
-          // Ignore corner extraction errors
-        }
+        /*
+          One definition of "empty margin", shared with the browser and with the
+          `/api/img` read path. It replaces a four-corner pixel sample that
+          handed off to sharp's own `.trim()`: one pixel per corner is a coin
+          flip on a JPEG, and sharp's trim has none of the confidence or
+          over-crop guards, so when it did fire nothing stopped it eating a
+          rating badge. `detectTrimCrop` returns null for every uncertain case.
+        */
+        const trimmed = await detectTrimCrop(bytes, sharp as any);
+        if (trimmed) image = image.extract(trimmed.crop);
       }
 
       const pipeline = image
-        .rotate() // Auto-correct EXIF orientation
         .avif({
           quality,
           effort: 5,
@@ -217,50 +199,29 @@ export async function processImageToWebP(
     const sharpModule = await import("sharp");
     const sharp = sharpModule.default || sharpModule;
     if (typeof sharp === "function") {
-      let image = sharp(bytes, { failOnError: false } as any);
-      
-      const metadata = await image.metadata().catch(() => undefined);
+      // `.rotate()` up front, not at the end of the chain: `detectTrimCrop`
+      // measures against the EXIF-oriented frame, so a crop applied before the
+      // rotation would land on its side for any photo carrying an orientation.
+      let image = sharp(bytes, { failOnError: false } as any).rotate();
+
+      const metadata = await sharp(bytes, { failOnError: false } as any)
+        .metadata()
+        .catch(() => undefined);
       
       if (options.smartCrop && metadata && metadata.width && metadata.height) {
-        try {
-          const w = metadata.width;
-          const h = metadata.height;
-          // Extract 4 corners (1x1 pixels)
-          const tl = await sharp(bytes, { failOnError: false } as any).extract({ left: 0, top: 0, width: 1, height: 1 }).raw().toBuffer();
-          const tr = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: 0, width: 1, height: 1 }).raw().toBuffer();
-          const bl = await sharp(bytes, { failOnError: false } as any).extract({ left: 0, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
-          const br = await sharp(bytes, { failOnError: false } as any).extract({ left: w - 1, top: h - 1, width: 1, height: 1 }).raw().toBuffer();
-
-          const isSimilar = (c1: Buffer, c2: Buffer) => {
-            if (c1.length < 3 || c2.length < 3) return false;
-            const a1 = c1.length > 3 ? c1[3] : 255;
-            const a2 = c2.length > 3 ? c2[3] : 255;
-            if (Math.abs(a1 - a2) > 15) return false;
-            if (a1 < 15 && a2 < 15) return true; // both transparent
-            return Math.abs(c1[0] - c2[0]) < 15 && Math.abs(c1[1] - c2[1]) < 15 && Math.abs(c1[2] - c2[2]) < 15;
-          };
-
-          // If all 4 corners match, it's highly likely a solid padding (pillarbox, letterbox, or full border)
-          if (isSimilar(tl, tr) && isSimilar(tl, bl) && isSimilar(tl, br)) {
-            const a = tl.length > 3 ? tl[3] : 255;
-            const r = tl[0], g = tl[1], b = tl[2];
-            
-            const isWhite = r > 240 && g > 240 && b > 240;
-            const isBlack = r < 15 && g < 15 && b < 15;
-            const isTransparent = a < 15;
-            
-            // Only trim if the padded background is a typical padding color (white, black, transparent)
-            if (isWhite || isBlack || isTransparent) {
-              image = image.trim({ threshold: 12 });
-            }
-          }
-        } catch (e) {
-          // Ignore corner extraction errors
-        }
+        /*
+          One definition of "empty margin", shared with the browser and with the
+          `/api/img` read path. It replaces a four-corner pixel sample that
+          handed off to sharp's own `.trim()`: one pixel per corner is a coin
+          flip on a JPEG, and sharp's trim has none of the confidence or
+          over-crop guards, so when it did fire nothing stopped it eating a
+          rating badge. `detectTrimCrop` returns null for every uncertain case.
+        */
+        const trimmed = await detectTrimCrop(bytes, sharp as any);
+        if (trimmed) image = image.extract(trimmed.crop);
       }
       
       const pipeline = image
-        .rotate()
         .webp({
           quality,
           effort: 6,
