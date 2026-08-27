@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 
+import { describeFailure, interpretProductsPayload } from "@/lib/adminProductsPayload";
 import { financeTotals } from "@/lib/finance";
 import { lastModifiedAt, sortProducts, type ProductSort } from "@/lib/productSort";
 import {
@@ -322,203 +323,267 @@ export default function AdminDashboard() {
     return parts.filter(Boolean).join(" — ");
   };
 
-  const loadFromDb = React.useCallback(async (signal: AbortSignal): Promise<boolean> => {
-    let isTimeout = false;
-    const fetchController = new AbortController();
-    
-    const timer = setTimeout(() => {
-      isTimeout = true;
-      fetchController.abort();
-    }, 45000);
-
-    const onOuterAbort = () => fetchController.abort();
-    if (signal.aborted) return true;
-    signal.addEventListener("abort", onOuterAbort);
-
-    try {
-      // Fetch store metadata and products concurrently in parallel
-      const [storeResult, productsResult] = await Promise.allSettled([
-        fetch("/api/admin/store", {
-          credentials: "include",
-          signal: fetchController.signal,
-        }),
-        /*
-          The order travels with the request. This endpoint paginates, and a
-          page of an unordered list is not a page of anything — sorting after
-          the slice would order fifteen arbitrary products. The stored
-          preference is read here rather than passed down because the table
-          that owns the column headers is several levels below this loader.
-        */
-        fetch(`/api/admin/products?${productSortQuery(readProductSort())}`, {
-          credentials: "include",
-          signal: fetchController.signal,
-        }),
-      ]);
-
-      clearTimeout(timer);
-      signal.removeEventListener("abort", onOuterAbort);
-      if (signal.aborted) return true;
-
-      let storeOk = false;
-      let productsOk = false;
-      let storeResponse: Response | null = null;
-      let productsResponse: Response | null = null;
-
-      // Handle /api/admin/store
-      if (storeResult.status === "fulfilled" && storeResult.value.ok) {
-        storeResponse = storeResult.value;
-        const data = await storeResult.value.json();
-        storeOk = true;
-
-        for (const key of [
-          "products",
-          "bundles",
-          "banners",
-          "categories",
-          "orders",
-          "messages",
-          "musicList",
-          "notifications",
-          "gameRequests",
-          "discTrades",
-          "problemSolutions",
-        ]) {
-          hydrated.current[key] = true;
-          if (data[key] !== undefined) {
-            loadedSnapshots.current[key] = safeStringify(data[key]);
-          }
-        }
-
-        const cleanArray = <T,>(arr: unknown): T[] =>
-          (Array.isArray(arr) ? arr : []).filter((x) => x && typeof x === "object") as T[];
-
-        if (Array.isArray(data.bundles)) setBundles(cleanArray(data.bundles));
-        if (Array.isArray(data.banners)) setBanners(cleanArray(data.banners));
-        if (Array.isArray(data.categories))
-          setCategories(
-            cleanArray<any>(data.categories).map((c) => ({
-              ...c,
-              id: String(c.id || ""),
-              title: String(c.title || c.name || ""),
-            })),
-          );
-        if (Array.isArray(data.orders)) setOrders(cleanArray(data.orders));
-        if (Array.isArray(data.messages)) setMessages(cleanArray(data.messages));
-        if (Array.isArray(data.musicList)) setMusicList(cleanArray(data.musicList));
-        if (Array.isArray(data.notifications)) setNotifications(cleanArray(data.notifications));
-        if (Array.isArray(data.gameRequests)) setGameRequests(cleanArray(data.gameRequests));
-        if (Array.isArray(data.discTrades)) setDiscTrades(cleanArray(data.discTrades));
-        if (Array.isArray(data.problemSolutions)) setProblemSolutions(cleanArray(data.problemSolutions));
-
-        if (typeof data.visits === "number") setVisits(data.visits);
-        if (typeof data.views === "number") setViews(data.views);
-      } else if (storeResult.status === "fulfilled") {
-        storeResponse = storeResult.value;
-      }
-
-      // Handle /api/admin/products
-      if (productsResult.status === "fulfilled" && productsResult.value.ok) {
-        productsResponse = productsResult.value;
-        const adminData = await productsResult.value.json();
-        productsOk = true;
-
-        if (Array.isArray(adminData?.products)) {
-          const safeProducts = adminData.products
-            .filter((p: any) => p && typeof p === "object")
-            .map((p: any) => ({
-              ...p,
-              id: String(p.id || ""),
-              title:
-                typeof p.title === "string" && p.title.trim()
-                  ? p.title.trim()
-                  : typeof p.titleEn === "string" && p.titleEn.trim()
-                    ? p.titleEn.trim()
-                    : String(p.id || ""),
-              titleEn:
-                typeof p.titleEn === "string" && p.titleEn.trim()
-                  ? p.titleEn.trim()
-                  : typeof p.title === "string" && p.title.trim()
-                    ? p.title.trim()
-                    : String(p.id || ""),
-              slug: typeof p.slug === "string" ? p.slug : String(p.id || ""),
-            }));
-
-          const d1Count = adminData.d1Count ?? safeProducts.length;
-          if (safeProducts.length > 0) {
-            setProducts(safeProducts);
-            setD1ProductCount(d1Count);
-            setProductLoadStatus("loaded_with_data");
-          } else {
-            setD1ProductCount(0);
-            setProducts((prev) => {
-              if (prev && prev.length > 0) {
-                setProductLoadStatus("loaded_with_data");
-                return prev;
-              }
-              setProductLoadStatus("loaded_empty");
-              return [];
-            });
-          }
-        }
-      } else if (productsResult.status === "fulfilled") {
-        productsResponse = productsResult.value;
-      }
-
-      if (storeOk && productsOk) {
-        canWrite.current = true;
-        setDbError("");
-        setDbErrorDetail("");
-        setIsLoaded(true);
-        return true;
-      }
-
-      if (!productsOk) {
-        setProductLoadStatus((prev) => (prev === "loaded_with_data" || prev === "loaded_empty" ? prev : "failed"));
-      }
-
-      if (storeOk && !productsOk) {
-        canWrite.current = true;
-        setIsLoaded(true);
-        console.warn("[AdminDashboard] Store metadata loaded but products fetch failed");
-        return false;
-      }
-
-      throw new Error(
-        `Store HTTP ${storeResponse?.status || "err"}, Products HTTP ${productsResponse?.status || "err"}`
-      );
-    } catch (err) {
-      clearTimeout(timer);
-      signal.removeEventListener("abort", onOuterAbort);
-      
-      if (signal.aborted) return true;
-      console.error("DB load failed", err);
-      canWrite.current = true;
-
-      const isAbortError = err instanceof Error && err.name === "AbortError";
-      if (isAbortError && isTimeout) {
-        setDbError("استغرق تحميل البيانات وقتًا أطول من المتوقع. أعد المحاولة.");
-        setDbErrorDetail("انتهى وقت الطلب المسموح (Timeout)");
-      } else if (isAbortError) {
-        setDbError("");
-      } else {
-        setDbError("تعذر قراءة البيانات من قاعدة البيانات — تم تفعيل وضع الحماية.");
-        describeLoadFailure(null, err).then(setDbErrorDetail);
-      }
-      setIsLoaded(true);
-      setProductLoadStatus((prev) => (prev === "loaded_with_data" || prev === "loaded_empty" ? prev : "failed"));
-      return false;
+  /**
+   * Fans the store payload out into the panels that read it.
+   *
+   * Split out of the loader so that a bad shape anywhere in it costs the admin
+   * those panels and not the products table — it used to run inside the same
+   * `try` as the products handling, ahead of it, so one throw here discarded a
+   * products response that had already arrived intact.
+   */
+  const hydrateStore = React.useCallback((data: any) => {
+  for (const key of [
+    "products",
+    "bundles",
+    "banners",
+    "categories",
+    "orders",
+    "messages",
+    "musicList",
+    "notifications",
+    "gameRequests",
+    "discTrades",
+    "problemSolutions",
+  ]) {
+    hydrated.current[key] = true;
+    if (data[key] !== undefined) {
+      loadedSnapshots.current[key] = safeStringify(data[key]);
     }
+  }
+
+  const cleanArray = <T,>(arr: unknown): T[] =>
+    (Array.isArray(arr) ? arr : []).filter((x) => x && typeof x === "object") as T[];
+
+  if (Array.isArray(data.bundles)) setBundles(cleanArray(data.bundles));
+  if (Array.isArray(data.banners)) setBanners(cleanArray(data.banners));
+  if (Array.isArray(data.categories))
+    setCategories(
+      cleanArray<any>(data.categories).map((c) => ({
+        ...c,
+        id: String(c.id || ""),
+        title: String(c.title || c.name || ""),
+      })),
+    );
+  if (Array.isArray(data.orders)) setOrders(cleanArray(data.orders));
+  if (Array.isArray(data.messages)) setMessages(cleanArray(data.messages));
+  if (Array.isArray(data.musicList)) setMusicList(cleanArray(data.musicList));
+  if (Array.isArray(data.notifications)) setNotifications(cleanArray(data.notifications));
+  if (Array.isArray(data.gameRequests)) setGameRequests(cleanArray(data.gameRequests));
+  if (Array.isArray(data.discTrades)) setDiscTrades(cleanArray(data.discTrades));
+  if (Array.isArray(data.problemSolutions)) setProblemSolutions(cleanArray(data.problemSolutions));
+
+  if (typeof data.visits === "number") setVisits(data.visits);
+  if (typeof data.views === "number") setViews(data.views);
   }, []);
+
+  /**
+   * One request, described completely whether it worked or not.
+   *
+   * The old loader threw away everything a failure could have told us: a
+   * non-OK `/api/admin/store` never had its status recorded at all, so every
+   * store failure rendered as the literal string "Store HTTP err" and there
+   * was no way to tell a 403 from a 500 from a dropped connection. Status,
+   * body and timing are captured here so a failure can be read off the screen
+   * and matched to one server log line.
+   */
+  const fetchAdminJson = React.useCallback(
+    async (
+      path: string,
+      signal: AbortSignal,
+    ): Promise<
+      | { ok: true; path: string; status: number; ms: number; data: any }
+      | { ok: false; path: string; status: number | null; ms: number; reason: string; body?: string }
+    > => {
+      const startedAt = Date.now();
+      let res: Response;
+      try {
+        res = await fetch(path, { credentials: "include", signal });
+      } catch (err) {
+        const ms = Date.now() - startedAt;
+        const reason = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+        return { ok: false, path, status: null, ms, reason };
+      }
+
+      const ms = Date.now() - startedAt;
+      if (!res.ok) {
+        // Read a little of the body: the API answers errors as JSON with a
+        // `ref` that matches the server log.
+        const body = await res.text().catch(() => "");
+        return { ok: false, path, status: res.status, ms, reason: `HTTP ${res.status}`, body: body.slice(0, 300) };
+      }
+
+      try {
+        return { ok: true, path, status: res.status, ms, data: await res.json() };
+      } catch (err) {
+        /*
+          A 200 whose body will not parse is a failure, not a success. Treating
+          it as one is how an empty table came to report itself as loaded.
+        */
+        return {
+          ok: false,
+          path,
+          status: res.status,
+          ms,
+          reason: `HTTP ${res.status} but the body is not JSON: ${err instanceof Error ? err.message : String(err)}`,
+        };
+      }
+    },
+    [],
+  );
+
+  /**
+   * Loads the admin catalogue.
+   *
+   * ## Why the two requests are independent
+   *
+   * They used to share one `try`, with the store parsed first — so anything
+   * that threw while hydrating the store (a body that would not parse, any one
+   * of a dozen `setX` calls) skipped the products block entirely and discarded
+   * a products response that had arrived perfectly intact. And a store that
+   * merely failed fell through to a thrown error, which put the whole page into
+   * protection mode even when the products table had everything it needed.
+   *
+   * The store is secondary. It carries banners, categories, orders and
+   * messages; it does not carry the products table. A failure there must cost
+   * the admin those panels and nothing else.
+   *
+   * ## Why the outcome is not a boolean
+   *
+   * The old signature returned `true` for "loaded" *and* for "this attempt was
+   * superseded", which is how the table could sit on "جاري التحميل" forever:
+   * an aborted attempt reported success, the retry loop stopped, and nothing
+   * had ever moved the status off `loading`. The four outcomes are now
+   * distinct, and only `failed` is worth retrying.
+   */
+  const loadFromDb = React.useCallback(
+    async (signal: AbortSignal): Promise<"ok" | "partial" | "failed" | "aborted"> => {
+      if (signal.aborted) return "aborted";
+
+      let timedOut = false;
+      const fetchController = new AbortController();
+      const timer = setTimeout(() => {
+        timedOut = true;
+        fetchController.abort();
+      }, 45000);
+      const onOuterAbort = () => fetchController.abort();
+      signal.addEventListener("abort", onOuterAbort);
+
+      try {
+        const [store, products] = await Promise.all([
+          fetchAdminJson("/api/admin/store", fetchController.signal),
+          fetchAdminJson(
+            `/api/admin/products?${productSortQuery(readProductSort())}`,
+            fetchController.signal,
+          ),
+        ]);
+
+        if (signal.aborted) return "aborted";
+
+        // ---- store: secondary, and never allowed to block the table ----
+        let storeOk = false;
+        if (store.ok) {
+          try {
+            hydrateStore(store.data);
+            storeOk = true;
+          } catch (err) {
+            // Hydration is a long series of setters over data we do not
+            // control. One bad shape must not cost us the products table.
+            console.error("[AdminDashboard] store hydration failed", { path: store.path, err });
+          }
+        } else {
+          console.error("[AdminDashboard] store request failed", store);
+        }
+
+        // ---- products: the thing this screen exists to show ----
+        const verdict = interpretProductsPayload(products);
+        const productsOk = verdict.usable;
+        const productsProblem = verdict.problem;
+
+        if (productsOk) {
+          setProducts(verdict.products);
+          setD1ProductCount(verdict.d1Count);
+          setProductLoadStatus(verdict.products.length > 0 ? "loaded_with_data" : "loaded_empty");
+        } else {
+          console.error("[AdminDashboard] products unusable", { verdict, products });
+        }
+
+        // ---- exactly one terminal state ----
+        if (productsOk) {
+          canWrite.current = true;
+          setIsLoaded(true);
+          if (storeOk) {
+            setDbError("");
+            setDbErrorDetail("");
+            return "ok";
+          }
+          /*
+            Products are on screen; only the secondary panels are missing. The
+            admin is told what is degraded rather than being shown a
+            protection-mode screen over a working table.
+          */
+          setDbError("تعذر تحميل بيانات المتجر الإضافية (البانرات، الأقسام، الطلبات). قائمة المنتجات محمّلة.");
+          setDbErrorDetail(
+            store.ok ? `${store.path} — تعذّر تفسير البيانات (${store.ms}ms)` : describeFailure(store),
+          );
+          return "partial";
+        }
+
+        setProductLoadStatus("failed");
+        setIsLoaded(true);
+        canWrite.current = true;
+
+        if (timedOut) {
+          setDbError("استغرق تحميل البيانات وقتًا أطول من المتوقع. أعد المحاولة.");
+          setDbErrorDetail(`انتهى وقت الطلب المسموح بعد 45 ثانية — ${productsProblem}`);
+        } else {
+          setDbError("تعذر تحميل قائمة المنتجات من قاعدة البيانات.");
+          setDbErrorDetail(productsProblem);
+          void describeLoadFailure(null, new Error(productsProblem)).then(setDbErrorDetail);
+        }
+        return "failed";
+      } catch (err) {
+        // Nothing above is expected to throw; if it does, the screen must still
+        // land somewhere actionable rather than on a spinner.
+        if (signal.aborted) return "aborted";
+        console.error("[AdminDashboard] load failed", err);
+        canWrite.current = true;
+        setIsLoaded(true);
+        setProductLoadStatus("failed");
+        setDbError("تعذر قراءة البيانات من قاعدة البيانات.");
+        setDbErrorDetail(err instanceof Error ? `${err.name}: ${err.message}` : String(err));
+        return "failed";
+      } finally {
+        // Both used to be skipped on every success path, leaving an armed
+        // 45-second abort and a listener behind for each attempt.
+        clearTimeout(timer);
+        signal.removeEventListener("abort", onOuterAbort);
+      }
+    },
+    [fetchAdminJson, hydrateStore],
+  );
 
   React.useEffect(() => {
     const controller = new AbortController();
 
     const run = async () => {
+      /*
+        Bounded, and it retries only what is worth retrying. "aborted" means
+        this attempt was superseded — retrying it would race the attempt that
+        replaced it. "partial" means the products table is on screen and only
+        the secondary panels are missing, which no amount of retrying fixes.
+      */
       for (let attempt = 0; attempt < 3; attempt++) {
         if (controller.signal.aborted) return;
-        if (await loadFromDb(controller.signal)) return;
+        const outcome = await loadFromDb(controller.signal);
+        if (outcome !== "failed") return;
         await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** attempt));
       }
+      /*
+        Every attempt failed. `loadFromDb` has already put the screen into its
+        error state, so there is nothing to do here but make sure the retry
+        loop itself cannot be the reason a spinner is still turning.
+      */
+      if (!controller.signal.aborted) setProductLoadStatus("failed");
     };
     void run();
 
@@ -537,15 +602,17 @@ export default function AdminDashboard() {
         console.log("[D1 Health Check]", healthData);
       }
 
-      const fakeController = new AbortController();
-      const ok = await loadFromDb(fakeController.signal);
-      if (ok) {
+      const outcome = await loadFromDb(new AbortController().signal);
+      if (outcome === "ok") {
         canWrite.current = true;
         setDbError("");
         setDbErrorDetail("");
         toast.success("تم الاتصال بقاعدة البيانات بنجاح — الحفظ مفعّل");
+      } else if (outcome === "partial") {
+        // The table is loaded; saying "failed" here would contradict the screen.
+        toast.success("تم تحميل قائمة المنتجات — تعذّر تحميل بيانات المتجر الإضافية");
       } else {
-        toast.error("تعذر استرجاع كامل البيانات، يرجى المحاولة بعد لحظات");
+        toast.error("تعذر استرجاع قائمة المنتجات، يرجى المحاولة بعد لحظات");
       }
     } finally {
       setIsReloading(false);

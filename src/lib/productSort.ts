@@ -111,12 +111,32 @@ export function sortableName(product: Row): string {
 }
 
 /**
- * Arabic-aware, case-insensitive, and stable across runtimes.
+ * Arabic-aware, case-insensitive comparison.
  *
- * Built once: constructing an `Intl.Collator` per comparison turns a sort of a
- * few thousand products into a visible pause.
+ * Built once and lazily. Once, because constructing an `Intl.Collator` per
+ * comparison turns a sort of a few thousand products into a visible pause.
+ * Lazily, because this module is imported by a Cloudflare Worker route and
+ * module-scope work runs in the isolate's global scope, where a runtime
+ * carrying reduced ICU data is a worse place to discover a problem than the
+ * first call.
+ *
+ * The fallback matters for correctness, not just for safety: this same
+ * comparator runs on the server (which paginates) and in the browser (which
+ * re-sorts in place). If one of them silently collated differently, rows would
+ * move when you touched them. Falling back to `localeCompare` keeps both ends
+ * on the same rule whatever the runtime offers.
  */
-const collator = new Intl.Collator("ar", { numeric: true, sensitivity: "base" });
+let collatorCache: { compare: (a: string, b: string) => number } | null = null;
+function compareNames(a: string, b: string): number {
+  if (!collatorCache) {
+    try {
+      collatorCache = new Intl.Collator("ar", { numeric: true, sensitivity: "base" });
+    } catch {
+      collatorCache = { compare: (x, y) => x.localeCompare(y, "ar", { numeric: true }) };
+    }
+  }
+  return collatorCache.compare(a, b);
+}
 
 /** Existing default ordering: explicit display order, then release/creation date. */
 function orderRank(product: Row): number {
@@ -155,7 +175,7 @@ function compareOn(a: Row, b: Row, field: ProductSortField): number {
       if (!left && !right) return 0;
       if (!left) return Number.POSITIVE_INFINITY;
       if (!right) return Number.NEGATIVE_INFINITY;
-      return collator.compare(left, right);
+      return compareNames(left, right);
     }
     case "order":
     default: {

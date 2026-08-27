@@ -159,10 +159,24 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           const total = products.length;
-          // Sort the whole filtered set, then slice. `productComparator` ends
-          // every comparison in an id tie-break, so equal rows keep a fixed
-          // order and a product cannot appear on two pages or on none.
-          products = sortProducts(products as unknown as Record<string, unknown>[], sort) as typeof products;
+          /*
+            Sort the whole filtered set, then slice. `productComparator` ends
+            every comparison in an id tie-break, so equal rows keep a fixed
+            order and a product cannot appear on two pages or on none.
+
+            Wrapped, because ordering is a presentation concern and this
+            endpoint is the only way the admin can see their catalogue at all.
+            An unsorted list is a far better failure than a 500 that empties
+            the products table.
+          */
+          try {
+            products = sortProducts(
+              products as unknown as Record<string, unknown>[],
+              sort,
+            ) as typeof products;
+          } catch (sortErr) {
+            console.error(`[ADMIN_PRODUCTS_SORT_FAILED] reqId=${reqId} sort=${sort.field}`, sortErr);
+          }
           let paginated = products;
           if (limit > 0) {
             const offset = Math.max(0, (page > 0 ? page - 1 : 0) * limit);
