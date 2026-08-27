@@ -66,6 +66,20 @@ const LIST_FIELDS = [
   "box_front_url",
   "banner",
   "bannerImage",
+  /*
+    The non-game image roles. A hardware, accessory, amiibo or gift-card card
+    resolves `listing_image → main_image → front_image → packaging_front_image`
+    (src/lib/productImages.ts), and none of those fields used to travel in the
+    listing payload — so a product whose template set `listing_image` still
+    showed the placeholder in a grid, and only got its real picture after the
+    full record loaded on the details page.
+  */
+  "listingImage",
+  "mainImage",
+  "frontImage",
+  "packagingFrontImage",
+  "thumbnailImage",
+  "brand",
   "releaseDate",
   "release_date",
   "releaseYear",

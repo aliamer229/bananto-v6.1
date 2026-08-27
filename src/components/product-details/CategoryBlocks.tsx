@@ -12,9 +12,12 @@
  * defence against a heading with nothing under it.
  */
 
+import { useMemo } from "react";
 import { BadgeCheck, CircleAlert, ExternalLink, Link2, ShieldCheck, Sparkles } from "lucide-react";
 
 import { useTranslation } from "@/i18n";
+import { useStoreData } from "@/hooks/useStoreData";
+import { productImageUrl } from "@/lib/productImages";
 import { formatDate } from "@/lib/i18n";
 import type {
   AmiiboView,
@@ -195,6 +198,26 @@ export function BundleContentsBlock({
   formatPrice: (value: number) => string;
 }) {
   const { t } = useTranslation();
+  const { data: store } = useStoreData();
+
+  /*
+    A bundle item carries a copy of the game's title, platform and cover so the
+    row still renders for a title the store does not stock. When it *does* name
+    a store product, the live record wins: the copy in the bundle was written
+    the day the bundle was built, and a re-titled or re-shot product would
+    otherwise keep showing its old identity here for as long as the bundle
+    exists. `cover_url` stays the fallback the template calls it.
+  */
+  const live = useMemo(() => {
+    const index = new Map<string, Record<string, unknown>>();
+    for (const product of (store?.products ?? []) as Record<string, unknown>[]) {
+      const id = String(product?.["id"] ?? "").trim();
+      const slug = String(product?.["slug"] ?? "").trim();
+      if (id) index.set(id.toLowerCase(), product);
+      if (slug) index.set(slug.toLowerCase(), product);
+    }
+    return index;
+  }, [store?.products]);
 
   return (
     <div className="space-y-4">
@@ -211,11 +234,25 @@ export function BundleContentsBlock({
       */}
       <ul className="grid gap-2 sm:grid-cols-2">
         {bundle.items.map((item, index) => {
+          const linked = item.productId ? live.get(item.productId.toLowerCase()) : undefined;
+          const title =
+            (linked &&
+              String(linked["titleEn"] || linked["title"] || linked["english_name"] || "").trim()) ||
+            item.title;
+          const platform = (linked && String(linked["platform"] ?? "").trim()) || item.platform;
+          const cover = linked ? productImageUrl(linked, "thumbnail") : item.coverUrl;
+          // Slug is the public identity; the immutable id is the fallback link.
+          const href = linked
+            ? `/product/${String(linked["slug"] || linked["id"] || item.productId)}`
+            : item.productId
+              ? `/product/${item.productId}`
+              : "";
+
           const content = (
             <>
-              {item.coverUrl ? (
+              {cover ? (
                 <img
-                  src={item.coverUrl}
+                  src={cover}
                   alt=""
                   loading="lazy"
                   className="h-14 w-10 shrink-0 rounded-md bg-muted object-contain"
@@ -223,9 +260,9 @@ export function BundleContentsBlock({
               ) : null}
               <span className="min-w-0 flex-1">
                 {/* Game titles are proper nouns — never translated. */}
-                <span className="block truncate font-bold">{item.title}</span>
+                <span className="block truncate font-bold">{title}</span>
                 <span className="block truncate text-[12px] text-muted-foreground">
-                  {[item.platform, item.edition].filter(Boolean).join(" · ")}
+                  {[platform, item.edition].filter(Boolean).join(" · ")}
                 </span>
               </span>
               {item.value > 0 ? (
@@ -249,11 +286,8 @@ export function BundleContentsBlock({
           */
           return (
             <li key={`${item.title}-${index}`} className="min-w-0">
-              {item.productId ? (
-                <a
-                  href={`/product/${item.productId}`}
-                  className={`${className} transition hover:border-primary/50`}
-                >
+              {href ? (
+                <a href={href} className={`${className} transition hover:border-primary/50`}>
                   {content}
                   <Link2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                 </a>

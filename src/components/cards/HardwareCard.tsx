@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "@tanstack/react-router";
 import { Cpu, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useCurrency } from "@/context/CurrencyContext";
-import { resolvePurchaseImage } from "@/lib/nintendoImages";
+import { productImageUrl } from "@/lib/productImages";
 import { getProductSlug } from "@/lib/productRouting";
 
 export function HardwareCard({ product }: { product: any }) {
@@ -11,7 +11,13 @@ export function HardwareCard({ product }: { product: any }) {
   const title = product.titleEn || product.english_name || product.title || "";
   const model = product.model || product.modelNumber || product.hardwareModel || "";
   const price = Number(product.price) || 0;
-  const image = resolvePurchaseImage(product).url;
+  /*
+    The listing chain, not the purchase chain: a card wants
+    `listing_image → main_image → front_image → packaging_front_image`, which
+    is the picture cropped for a grid. The cart and the toast keep the purchase
+    chain so the line item matches what was clicked.
+  */
+  const image = productImageUrl(product, "listing");
 
   // Extract key specs
   const displaySpec = product.displayTech || product.screen || product.display || "120Hz OLED";

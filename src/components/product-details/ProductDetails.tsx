@@ -453,9 +453,13 @@ function HeroFacts({
     );
   }
 
-  rows.push(...view.identity);
-
-  const visible = rows.filter((row) => row.value).slice(0, 6);
+  /*
+    Deliberately not `view.identity`: brand, model and SKU are the "Key facts"
+    section's content, and printing them in both places is the duplication the
+    page is supposed to have stopped. This strip is the category's own headline
+    facts, capped so the buy button stays above the fold on a phone.
+  */
+  const visible = rows.filter((row) => row.value).slice(0, 4);
   if (visible.length === 0) return null;
 
   return (

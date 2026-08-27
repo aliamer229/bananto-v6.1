@@ -446,6 +446,69 @@ function buildAmiibo(p: Record_, t: (key: string) => string): AmiiboView | null 
   return populated(view as unknown as Record<string, unknown>) ? view : null;
 }
 
+/**
+ * Fields a category's own block already renders, and which must therefore not
+ * also appear as generic specification rows.
+ *
+ * `spec_group` is an extension mechanism — the way a template adds a
+ * specification nobody wrote code for — not a second home for fields the page
+ * already understands. Without this, a gift card printed its region, validity
+ * and delivery method inside "Card details" and then printed them again in a
+ * "Specifications" table underneath, which reads as a rendering bug even
+ * though both were correct.
+ */
+const BLOCK_OWNED_TARGETS: Record<string, readonly string[]> = {
+  gift_card: [
+    "cardType",
+    "cardValue",
+    "cardCurrency",
+    "cardRegion",
+    "regionLocked",
+    "platform",
+    "codeLength",
+    "validity",
+    "expiryDate",
+    "deliveryMethod",
+    "deliveryTime",
+  ],
+  used: [
+    "usedType",
+    "conditionGrade",
+    "packaging",
+    "guaranteeStatus",
+    "tested",
+    "testedAt",
+    "cleaned",
+    "previousOwners",
+    "usagePeriodMonths",
+    "platform",
+  ],
+  bundle: [
+    "gamesCount",
+    "savingsPercent",
+    "accountType",
+    "devicesLimit",
+    "onlinePlay",
+    "deliveryTime",
+    "platform",
+  ],
+  amiibo: [
+    "figureType",
+    "edition",
+    "rarity",
+    "productionStatus",
+    "nfcSupport",
+    "character",
+    "franchise",
+    "amiiboSeries",
+  ],
+};
+
+/** Normalized key for spec de-duplication: case and separators do not count. */
+function specIdentity(label: string, value: string): string {
+  return `${label}`.trim().toLowerCase().replace(/[\s_-]+/g, "") + "\u0000" + value.trim().toLowerCase();
+}
+
 export function buildProductView(
   productInput: Record_,
   locale: Locale,
@@ -484,9 +547,13 @@ export function buildProductView(
     bucket.specs.push(entry);
   };
 
+  const blockOwned = new Set(BLOCK_OWNED_TARGETS[schema.id] ?? []);
   for (const def of schema.fields) {
     if (!def.specKey || def.type === "group" || def.repeatable) continue;
     if (IDENTITY_FIELDS.some((f) => f.target === def.target)) continue;
+    // Internal fields are data sources for the team, never product-page rows.
+    if (def.audience === "internal") continue;
+    if (blockOwned.has(def.target)) continue;
     pushSpec(def, p[def.target]);
   }
 
@@ -500,10 +567,23 @@ export function buildProductView(
   // "Connectivity", say). Rendering that twice looks like a bug, so same-named
   // groups are folded into one table, schema rows first.
   const mergedGroups: ResolvedSpecGroup[] = [];
+  /*
+    A dynamic `spec_group` row that repeats a schema field verbatim adds
+    nothing, so identical label/value pairs are kept once — schema rows first,
+    since those carry the localized label and the unit.
+  */
+  const seenSpecs = new Set<string>();
   for (const group of [...scalarGroups, ...dynamicGroups]) {
+    const fresh = group.specs.filter((spec) => {
+      const key = specIdentity(spec.label, spec.value);
+      if (seenSpecs.has(key)) return false;
+      seenSpecs.add(key);
+      return true;
+    });
+    if (fresh.length === 0) continue;
     const existing = mergedGroups.find((g) => g.label === group.label);
-    if (existing) existing.specs.push(...group.specs);
-    else mergedGroups.push({ label: group.label, specs: [...group.specs] });
+    if (existing) existing.specs.push(...fresh);
+    else mergedGroups.push({ label: group.label, specs: fresh });
   }
 
   /* -------------------------------- assembly -------------------------------- */

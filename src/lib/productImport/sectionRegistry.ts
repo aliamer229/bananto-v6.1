@@ -84,15 +84,17 @@ const text = (value: string | undefined | null) => Boolean(value && value.trim()
  */
 export const PRODUCT_SECTIONS: SectionDef[] = [
   {
+    /*
+      The identity rows — brand, model, SKU, release date, region. The
+      category's own headline facts are in the hero strip instead, so this
+      predicate is exactly what the section renders: anything looser produced a
+      heading with nothing under it, which is the empty space this whole
+      registry exists to remove.
+    */
     id: "keyFacts",
     titleKey: "product.sections.keyFacts",
     order: 10,
-    has: (v) =>
-      v.identity.length > 0 ||
-      Boolean(v.giftCard) ||
-      Boolean(v.condition) ||
-      Boolean(v.bundle) ||
-      Boolean(v.amiibo),
+    has: (v) => v.identity.length > 0,
   },
 
   /* ------------------------ the category's headline ------------------------ */

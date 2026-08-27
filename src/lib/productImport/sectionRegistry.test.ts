@@ -49,7 +49,10 @@ describe("resolveSections", () => {
       ].join("\n"),
       USED_SCHEMA,
     );
-    expect(sections[0]).toBe("keyFacts");
+    // No brand/model/SKU on this fixture, so there is no "Key facts" table and
+    // the page opens on the thing a second-hand buyer actually reads first.
+    expect(sections[0]).toBe("condition");
+    expect(sections).not.toContain("keyFacts");
     expect(sections.indexOf("condition")).toBeLessThan(sections.indexOf("overview"));
     expect(sections).toContain("inspection");
   });
