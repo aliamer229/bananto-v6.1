@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
 
+import { lastModifiedAt, sortProducts, type ProductSort } from "@/lib/productSort";
+import {
+  productSortQuery,
+  readProductSort,
+  toggleProductSort,
+  writeProductSort,
+} from "@/lib/productSort.browser";
 import { useTranslation } from "../i18n";
 import {
   Search,
@@ -334,7 +341,14 @@ export default function AdminDashboard() {
           credentials: "include",
           signal: fetchController.signal,
         }),
-        fetch("/api/admin/products", {
+        /*
+          The order travels with the request. This endpoint paginates, and a
+          page of an unordered list is not a page of anything — sorting after
+          the slice would order fifteen arbitrary products. The stored
+          preference is read here rather than passed down because the table
+          that owns the column headers is several levels below this loader.
+        */
+        fetch(`/api/admin/products?${productSortQuery(readProductSort())}`, {
           credentials: "include",
           signal: fetchController.signal,
         }),
@@ -1560,6 +1574,43 @@ function DashboardHome({
   );
 }
 
+/**
+ * A column header that sorts the products table.
+ *
+ * The arrow points the way the column is currently ordered and is only drawn on
+ * the active column, so it reads as state rather than as an affordance on every
+ * header. `aria-sort` carries the same information to a screen reader, which the
+ * arrow glyph alone does not.
+ */
+function SortHeader({
+  label,
+  field,
+  sort,
+  onSort,
+}: {
+  label: string;
+  field: ProductSort["field"];
+  sort: ProductSort;
+  onSort: (field: ProductSort["field"]) => void;
+}) {
+  const active = sort.field === field;
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(field)}
+      aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
+      className={`inline-flex items-center gap-1 rounded transition-colors hover:text-primary ${
+        active ? "text-primary" : "text-foreground"
+      }`}
+    >
+      <span>{label}</span>
+      <span aria-hidden className="text-[10px] leading-none opacity-80">
+        {active ? (sort.direction === "asc" ? "\u25B2" : "\u25BC") : "\u21C5"}
+      </span>
+    </button>
+  );
+}
+
 function ListingsView({
   products,
   setProducts,
@@ -1590,6 +1641,18 @@ function ListingsView({
   const [onlyUnpriced, setOnlyUnpriced] = useState(false);
   const [onlyMissingPerformance, setOnlyMissingPerformance] = useState(false);
   const [onlyHidden, setOnlyHidden] = useState(false);
+  /*
+    Read from storage, not reset to a default. Changing the search box or a
+    filter changes *which* products are listed, never the order they are listed
+    in, and an admin working through a price audit must not lose their place
+    because they opened a product and came back.
+  */
+  const [sort, setSortState] = useState<ProductSort>(() => readProductSort());
+  const applySort = (field: ProductSort["field"]) => {
+    const next = toggleProductSort(sort, field);
+    setSortState(next);
+    writeProductSort(next);
+  };
   const [showZipImport, setShowZipImport] = useState(false);
   const [showMediaRepair, setShowMediaRepair] = useState(false);
 
@@ -1637,14 +1700,16 @@ function ListingsView({
     );
   });
 
-  // Sort by order or date so the newest imports appear on top/correctly
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    return (
-      (b.displayOrder || 0) - (a.displayOrder || 0) ||
-      new Date(b.releaseDate || b.createdAt || 0).getTime() -
-        new Date(a.releaseDate || a.createdAt || 0).getTime()
-    );
-  });
+  /*
+    The same comparator the server used, applied again here.
+
+    Not redundant: this view keeps the catalogue in memory and edits it in place
+    — saving a price updates the row without a refetch — so a locally changed
+    product has to move to its new position immediately. Sharing one comparator
+    is what stops the two orders drifting, which shows up as a row that is in
+    the right place right up until you touch it.
+  */
+  const sortedProducts = sortProducts(filteredProducts, sort);
 
   // Log product diagnostics to verify D1 single source of truth and active filters
   useEffect(() => {
@@ -2035,11 +2100,28 @@ function ListingsView({
           <table className="w-full text-sm text-right">
             <thead className="bg-muted text-foreground font-semibold border-b border-border">
               <tr>
-                <th className="px-4 py-3">{t("admin.products")}</th>
-                <th className="px-4 py-3">{t("admin.price")}</th>
+                <th className="px-4 py-3">
+                  <SortHeader
+                    label={t("admin.products")}
+                    field="name"
+                    sort={sort}
+                    onSort={applySort}
+                  />
+                </th>
+                <th className="px-4 py-3">
+                  <SortHeader
+                    label={t("admin.price")}
+                    field="price"
+                    sort={sort}
+                    onSort={applySort}
+                  />
+                </th>
                 <th className="px-4 py-3">{t("admin.categories")}</th>
                 <th className="px-4 py-3">{t("admin.stock")}</th>
                 <th className="px-4 py-3">المبيعات</th>
+                <th className="px-4 py-3">
+                  <SortHeader label="آخر تعديل" field="updated" sort={sort} onSort={applySort} />
+                </th>
                 <th className="px-4 py-3">{t("common.status")}</th>
                 <th className="px-4 py-3">إجراء</th>
               </tr>
@@ -2047,7 +2129,7 @@ function ListingsView({
             <tbody className="divide-y divide-border text-[14px]">
               {loadStatus === "loading" && products.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center justify-center gap-3">
                       <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                       <p className="text-sm font-medium text-foreground">
@@ -2063,7 +2145,7 @@ function ListingsView({
 
               {loadStatus === "failed" && products.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center">
+                  <td colSpan={8} className="px-4 py-10 text-center">
                     <div className="max-w-md mx-auto rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
                       <p className="text-sm font-bold text-destructive mb-1">
                         فشل تحميل قائمة المنتجات من قاعدة البيانات
@@ -2088,7 +2170,7 @@ function ListingsView({
 
               {loadStatus === "loaded_empty" && products.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center justify-center gap-3">
                       <Package className="w-8 h-8 text-muted-foreground/50" />
                       <p className="text-sm font-medium text-foreground">
@@ -2108,7 +2190,7 @@ function ListingsView({
 
               {products.length > 0 && sortedProducts.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center">
+                  <td colSpan={8} className="px-4 py-10 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <p className="text-sm font-medium text-foreground">
                         لا توجد منتجات تطابق الفلاتر المحددة
@@ -2134,6 +2216,9 @@ function ListingsView({
                 const safeStock = p.isInfiniteStock ? t("admin.infiniteStock") : String(p.stock ?? "0");
                 const safeSales = String(p.sales ?? "0");
                 const safeStatus = String(p.status ?? "نشط");
+                const editedAt = lastModifiedAt(p);
+                const lastEdited =
+                  editedAt === null ? null : new Date(editedAt).toISOString().slice(0, 10);
                 return (
                 <tr key={String(p.id || Math.random())} className="hover:bg-muted transition-colors">
                   <td className="px-4 py-3 font-medium text-[var(--admin-ink)]">
@@ -2169,6 +2254,10 @@ function ListingsView({
                     {safeStock}
                   </td>
                   <td className="px-4 py-3 text-foreground">{safeSales}</td>
+                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap" dir="ltr">
+                    {/* A sortable column an admin cannot read is half a feature. */}
+                    {lastEdited ?? "—"}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-0.5 rounded-md text-[12px] font-medium ${safeStatus === "نشط" ? "bg-[var(--ok-bg)] text-[var(--ok-ink)]" : "bg-[var(--bad-bg)] text-[var(--brand-red-dark)]"}`}
