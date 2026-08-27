@@ -269,14 +269,21 @@ describe("the server orders the catalogue before it paginates", () => {
     return readFileSync(resolve(process.cwd(), p), "utf8");
   };
 
-  it("sorts the whole filtered set, not the page", async () => {
+  it("orders in SQL rather than sorting a slice in JavaScript", async () => {
     const API = await read("src/routes/api/admin/products.ts");
-    const sortAt = API.indexOf("sortProducts(");
-    const sliceAt = API.indexOf("products.slice(offset");
-    expect(sortAt).toBeGreaterThan(-1);
-    expect(sliceAt).toBeGreaterThan(-1);
-    // Sorting after the slice would order fifteen arbitrary products.
-    expect(sortAt).toBeLessThan(sliceAt);
+    // The listing is a paginated query now: ordering it in the browser, or in
+    // the Worker after slicing, would order fifty arbitrary products.
+    expect(API).toContain("readProductIndexPage");
+    expect(API).not.toContain("products.slice(offset");
+    expect(API).not.toContain("sortProducts(");
+  });
+
+  it("keeps the order clause and the comparator on the same key", async () => {
+    const INDEX = await read("src/lib/product-index.server.ts");
+    // `sort_name` is written from `sortableNameKey`, which is what the
+    // browser's comparator folds to as well — one definition, both sides.
+    expect(INDEX).toContain("sortableNameKey");
+    expect(INDEX).toContain("ORDER BY");
   });
 
   it("reads the order off the request rather than hard-coding one", async () => {
@@ -293,9 +300,13 @@ describe("the server orders the catalogue before it paginates", () => {
     expect(UI).not.toContain("(b.displayOrder || 0) - (a.displayOrder || 0)");
   });
 
-  it("sends the stored order with the request", async () => {
+  it("sends the stored order, and a page, with the request", async () => {
     const UI = await read("src/components/AdminDashboard.tsx");
-    expect(UI).toContain("productSortQuery(readProductSort())");
+    expect(UI).toContain("productSortQuery(sort)");
+    // A page, because the endpoint paginates — asking for the catalogue is
+    // what made the request time out.
+    expect(UI).toContain('params.set("page"');
+    expect(UI).toContain('params.set("limit"');
   });
 
   it("stamps a modification time on the single-product save path", async () => {

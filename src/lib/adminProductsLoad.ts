@@ -24,9 +24,17 @@ export interface AdminProductRow {
   [key: string]: unknown;
 }
 
+export interface PaginationFacts {
+  page: number;
+  limit: number;
+  hasMore: boolean;
+  /** Chip counts over the whole catalogue; absent on an older response. */
+  facets?: { hidden: number; unpriced: number; performanceRequired: number };
+}
+
 export type ProductsPayloadVerdict =
-  | { state: "loaded"; products: AdminProductRow[]; d1Count: number }
-  | { state: "empty"; products: []; d1Count: 0 }
+  | ({ state: "loaded"; products: AdminProductRow[]; d1Count: number } & PaginationFacts)
+  | ({ state: "empty"; products: []; d1Count: number } & PaginationFacts)
   /** Retry-worthy: the response cannot be believed, whatever its status was. */
   | { state: "unusable"; reason: string };
 
@@ -50,31 +58,72 @@ export function interpretProductsPayload(payload: unknown): ProductsPayloadVerdi
   if (!payload || typeof payload !== "object") {
     return { state: "unusable", reason: "payload is not an object" };
   }
-  const body = payload as { products?: unknown; d1Count?: unknown; error?: unknown };
-  if (!Array.isArray(body.products)) {
+  const body = payload as {
+    items?: unknown;
+    products?: unknown;
+    total?: unknown;
+    d1Count?: unknown;
+    page?: unknown;
+    limit?: unknown;
+    hasMore?: unknown;
+    error?: unknown;
+  };
+  // `items` is what the endpoint means; `products` is the name the admin page
+  // shipped with, and both are sent so a page loaded before the rename keeps
+  // reading the same response.
+  const rows = Array.isArray(body.items) ? body.items : body.products;
+  if (!Array.isArray(rows)) {
     return {
       state: "unusable",
       reason: text(body.error) || "response carries no products array",
     };
   }
 
-  const products = body.products
+  const products = rows
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === "object")
     .map(normalizeRow);
 
-  const declared = Number(body.d1Count);
-  const d1Count = Number.isFinite(declared) ? declared : products.length;
+  const declaredTotal = Number(body.total ?? body.d1Count);
+  if (rows.length > 0 && !Number.isFinite(declaredTotal)) {
+    // A page without a total cannot be paginated against, and silently
+    // substituting the page length is how a first page became "the catalogue".
+    return { state: "unusable", reason: "response carries rows but no total" };
+  }
+  const d1Count = Number.isFinite(declaredTotal) ? declaredTotal : products.length;
 
-  if (products.length > 0) return { state: "loaded", products, d1Count };
+  const page = Number(body.page);
+  const limit = Number(body.limit);
+  const facets = (payload as { facets?: unknown }).facets;
+  const pagination: PaginationFacts = {
+    page: Number.isFinite(page) && page > 0 ? page : 1,
+    limit: Number.isFinite(limit) && limit > 0 ? limit : products.length,
+    ...(facets && typeof facets === "object"
+      ? { facets: facets as PaginationFacts["facets"] }
+      : {}),
+    hasMore:
+      typeof body.hasMore === "boolean"
+        ? body.hasMore
+        : products.length > 0 && products.length < d1Count,
+  };
 
+  if (products.length > 0) return { state: "loaded", products, d1Count, ...pagination };
+
+  /*
+    An empty page is an empty catalogue only when the server says the catalogue
+    is empty — with one exception the paginated endpoint introduces: page 3 of
+    a two-page list is legitimately empty and is not a failed read.
+  */
   if (d1Count > 0) {
+    if (pagination.page > 1) {
+      return { state: "empty", products: [], d1Count, ...pagination };
+    }
     return {
       state: "unusable",
       reason: `empty page while D1 reports ${d1Count} products`,
     };
   }
 
-  return { state: "empty", products: [], d1Count: 0 };
+  return { state: "empty", products: [], d1Count: 0, ...pagination };
 }
 
 /* ------------------------------ retry policy ------------------------------ */
@@ -89,8 +138,13 @@ export interface EndpointAttempt {
 export type FetchJson = (path: string, signal: AbortSignal) => Promise<EndpointAttempt>;
 
 export type LoadOutcome =
-  | { state: "loaded"; products: AdminProductRow[]; d1Count: number; attempts: number }
-  | { state: "empty"; attempts: number }
+  | ({
+      state: "loaded";
+      products: AdminProductRow[];
+      d1Count: number;
+      attempts: number;
+    } & PaginationFacts)
+  | ({ state: "empty"; d1Count: number; attempts: number } & PaginationFacts)
   | { state: "failed"; detail: string; attempts: number }
   /** The caller navigated away; the UI must keep whatever it already showed. */
   | { state: "aborted" };
@@ -141,10 +195,24 @@ export async function loadAdminProducts({
           state: "loaded",
           products: verdict.products,
           d1Count: verdict.d1Count,
+          page: verdict.page,
+          limit: verdict.limit,
+          hasMore: verdict.hasMore,
+          ...(verdict.facets ? { facets: verdict.facets } : {}),
           attempts: attempt + 1,
         };
       }
-      if (verdict.state === "empty") return { state: "empty", attempts: attempt + 1 };
+      if (verdict.state === "empty") {
+        return {
+          state: "empty",
+          d1Count: verdict.d1Count,
+          page: verdict.page,
+          limit: verdict.limit,
+          hasMore: verdict.hasMore,
+          ...(verdict.facets ? { facets: verdict.facets } : {}),
+          attempts: attempt + 1,
+        };
+      }
       detail = `${result.detail} — ${verdict.reason}`;
     } else {
       detail = result.detail;
@@ -155,4 +223,66 @@ export async function loadAdminProducts({
 
   if (signal.aborted) return { state: "aborted" };
   return { state: "failed", detail, attempts };
+}
+
+/* --------------------------- request lifecycle ---------------------------- */
+
+/**
+ * The identity of a products request: page, size, order, filters.
+ *
+ * Two loads with the same key are the same question, and asking it twice
+ * concurrently is how a sort change that fired from both a click handler and a
+ * state effect produced two requests whose answers raced — the slower one
+ * winning and putting the table back in the previous order.
+ */
+export interface ProductsRequestKey {
+  page: number;
+  limit: number;
+  sort: string;
+  dir: string;
+  search: string;
+}
+
+export function productsRequestKey(key: ProductsRequestKey): string {
+  return [key.page, key.limit, key.sort, key.dir, key.search.trim().toLowerCase()].join("|");
+}
+
+/**
+ * Runs one load per distinct key, sharing the promise with anything that asks
+ * for the same key while it is in flight.
+ *
+ * Deliberately not a cache: the entry is dropped the moment the request
+ * settles, so a Retry after a failure really re-asks, and a refresh after a
+ * save really re-reads. It only collapses *simultaneous* duplicates.
+ */
+export function createProductsRequestGate() {
+  const inFlight = new Map<string, Promise<LoadOutcome>>();
+
+  return {
+    run(key: string, load: () => Promise<LoadOutcome>): Promise<LoadOutcome> {
+      const existing = inFlight.get(key);
+      if (existing) return existing;
+      const promise = load().finally(() => {
+        // Only clear our own entry: a later request for the same key that
+        // started after this one settled owns the slot now.
+        if (inFlight.get(key) === promise) inFlight.delete(key);
+      });
+      inFlight.set(key, promise);
+      return promise;
+    },
+    get size() {
+      return inFlight.size;
+    },
+  };
+}
+
+/** Everything that identifies one products request. */
+export interface ProductsQuery {
+  page?: number;
+  search?: string;
+  hidden?: boolean;
+  unpriced?: boolean;
+  performance?: boolean;
+  category?: string;
+  sort?: { field: "updated" | "price" | "name" | "order"; direction: "asc" | "desc" };
 }

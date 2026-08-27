@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 
 import { financeTotals } from "@/lib/finance";
 import { lastModifiedAt, sortProducts, type ProductSort } from "@/lib/productSort";
-import { loadAdminProducts, LOAD_ATTEMPTS } from "@/lib/adminProductsLoad";
+import {
+  createProductsRequestGate,
+  loadAdminProducts,
+  productsRequestKey,
+  LOAD_ATTEMPTS,
+  type ProductsQuery,
+} from "@/lib/adminProductsLoad";
 import {
   productSortQuery,
   readProductSort,
@@ -154,6 +160,15 @@ const defaultMessages: any[] = [];
 
 import { safeStringify } from "../utils/safeJson";
 import { isProductPriced, isProductHidden } from "@/lib/purchasable";
+import { productsTableState } from "@/lib/adminProductsTableState";
+
+/**
+ * Rows per request.
+ *
+ * The endpoint's own default. Asking for more moves work back into the request
+ * that used to time out, and the table shows one page at a time regardless.
+ */
+const ADMIN_PAGE_SIZE = 50;
 
 /**
  * The read-only notice, with the reason and a way out.
@@ -298,6 +313,20 @@ export default function AdminDashboard() {
     an empty catalogue.
   */
   const [productsErrorDetail, setProductsErrorDetail] = useState("");
+  /*
+    The catalogue is paginated server-side now, so the table holds one page and
+    the endpoint holds the total. Fifty is the endpoint's own default; asking
+    for more only moves work back into the request that used to time out.
+  */
+  const [productPage, setProductPage] = useState({ page: 1, limit: 50, hasMore: false });
+  /** A refresh in progress over rows that are still on screen. */
+  const [isRefreshingProducts, setIsRefreshingProducts] = useState(false);
+  /** Filter-chip counts over the whole catalogue, from the endpoint. */
+  const [productFacets, setProductFacets] = useState({
+    hidden: 0,
+    unpriced: 0,
+    performanceRequired: 0,
+  });
   const [isReloading, setIsReloading] = useState(false);
 
   /**
@@ -435,26 +464,88 @@ export default function AdminDashboard() {
    * policy lives in `loadAdminProducts`, which is bounded — so there is no
    * fourth state where the spinner just keeps turning.
    */
+  /*
+    One request per distinct question. A sort change used to be able to fire
+    from the click handler and again from an effect watching the sort state,
+    and the two answers raced — the slower one landing last and putting the
+    table back in the previous order. The gate collapses simultaneous
+    duplicates by key and keeps nothing after they settle, so Retry still
+    really re-asks.
+  */
+  const requestGate = React.useRef(createProductsRequestGate()).current;
+
   const loadProducts = React.useCallback(
-    async (signal: AbortSignal): Promise<boolean> => {
-      const outcome = await loadAdminProducts({
-        fetchJson: (path, sig) => fetchAdminJson<unknown>(path, sig),
-        path: `/api/admin/products?${productSortQuery(readProductSort())}`,
-        signal,
-        delay: (ms) => backoff(ms, signal),
+    async (signal: AbortSignal, request?: ProductsQuery): Promise<boolean> => {
+      const sort = request?.sort ?? readProductSort();
+      const page = Math.max(1, request?.page ?? 1);
+      const search = (request?.search ?? "").trim();
+      /*
+        Filters travel with the request. Applying them in the browser would
+        filter the fifty rows this page happens to hold, so "المخفية" would
+        mean "hidden on this page" — and the counts beside the chips would mean
+        even less. Both come from the endpoint, over the whole catalogue.
+      */
+      const filters = [
+        request?.hidden ? "hidden" : "",
+        request?.unpriced ? "unpriced" : "",
+        request?.performance ? "performance" : "",
+        request?.category ?? "",
+      ]
+        .filter(Boolean)
+        .join(",");
+
+      const key = productsRequestKey({
+        page,
+        limit: ADMIN_PAGE_SIZE,
+        sort: sort.field,
+        dir: sort.direction,
+        search: `${search}#${filters}`,
       });
 
+      const params = new URLSearchParams(productSortQuery(sort));
+      params.set("page", String(page));
+      params.set("limit", String(ADMIN_PAGE_SIZE));
+      if (search) params.set("search", search);
+      if (request?.hidden) params.set("hidden", "1");
+      if (request?.unpriced) params.set("unpriced", "1");
+      if (request?.performance) params.set("performance", "1");
+      if (request?.category) params.set("category", request.category);
+
+      /*
+        The table is not cleared first. A refresh that empties the rows and then
+        refills them flashes an empty catalogue on every sort click, and if the
+        refresh fails the admin is left looking at zero products that do exist.
+        Rows are replaced only after a response has been validated.
+      */
+      setIsRefreshingProducts(true);
+      const outcome = await requestGate
+        .run(key, () =>
+          loadAdminProducts({
+            fetchJson: (path, sig) => fetchAdminJson<unknown>(path, sig),
+            path: `/api/admin/products?${params.toString()}`,
+            signal,
+            delay: (ms) => backoff(ms, signal),
+          }),
+        )
+        .finally(() => setIsRefreshingProducts(false));
+
       if (outcome.state === "aborted") return true;
+
       if (outcome.state === "loaded") {
         setProducts(outcome.products as any);
         setD1ProductCount(outcome.d1Count);
+        setProductPage({ page: outcome.page, limit: outcome.limit, hasMore: outcome.hasMore });
+        if (outcome.facets) setProductFacets(outcome.facets);
         setProductLoadStatus("loaded_with_data");
         setProductsErrorDetail("");
         return true;
       }
+
       if (outcome.state === "empty") {
         setProducts([]);
-        setD1ProductCount(0);
+        setD1ProductCount(outcome.d1Count);
+        setProductPage({ page: outcome.page, limit: outcome.limit, hasMore: outcome.hasMore });
+        if (outcome.facets) setProductFacets(outcome.facets);
         setProductLoadStatus("loaded_empty");
         setProductsErrorDetail("");
         return true;
@@ -468,7 +559,7 @@ export default function AdminDashboard() {
       );
       return false;
     },
-    [fetchAdminJson],
+    [fetchAdminJson, requestGate],
   );
 
   /**
@@ -522,6 +613,25 @@ export default function AdminDashboard() {
       return productsOk && storeOk;
     },
     [loadProducts, loadStoreMeta],
+  );
+
+  /*
+    The products view asks for a page, an order or a filter; this runs it.
+
+    Each call aborts the one before it, so an answer that arrives late — a slow
+    first sort landing after a fast second one — cannot write its rows over the
+    newer result. That is the other half of "one authoritative request": the
+    gate stops duplicates, this stops stale winners.
+  */
+  const productsQueryController = React.useRef<AbortController | null>(null);
+  const runProductsQuery = React.useCallback(
+    (query: ProductsQuery) => {
+      productsQueryController.current?.abort();
+      const controller = new AbortController();
+      productsQueryController.current = controller;
+      void loadProducts(controller.signal, query);
+    },
+    [loadProducts],
   );
 
   React.useEffect(() => {
@@ -746,6 +856,10 @@ export default function AdminDashboard() {
             isReloading={isReloading}
             loadError={dbError}
             loadErrorDetail={productsErrorDetail}
+            onQuery={runProductsQuery}
+            pageInfo={productPage}
+            facets={productFacets}
+            isRefreshing={isRefreshingProducts}
           />
         );
       }
@@ -1627,6 +1741,10 @@ function ListingsView({
   isReloading,
   loadError,
   loadErrorDetail,
+  onQuery,
+  pageInfo,
+  facets,
+  isRefreshing,
 }: {
   products: any[];
   setProducts: any;
@@ -1638,6 +1756,11 @@ function ListingsView({
   isReloading?: boolean;
   loadError?: string;
   loadErrorDetail?: string;
+  /** Asks the server for a different page, order or filter. */
+  onQuery?: (query: ProductsQuery) => void;
+  pageInfo?: { page: number; limit: number; hasMore: boolean };
+  facets?: { hidden: number; unpriced: number; performanceRequired: number };
+  isRefreshing?: boolean;
 }) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
@@ -1663,8 +1786,13 @@ function ListingsView({
   const [productToDelete, setProductToDelete] = useState<any | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const unpricedCount = (products || []).filter((p: any) => !isProductPriced(p)).length;
-  const hiddenCount = (products || []).filter((p: any) => isProductHidden(p)).length;
+  /*
+    Counted by the endpoint over the whole catalogue. Counting the loaded rows
+    would make "المخفية (0)" mean "none on this page", which reads as a fact
+    about the store and is not one.
+  */
+  const unpricedCount = facets?.unpriced ?? 0;
+  const hiddenCount = facets?.hidden ?? 0;
   const isGameProduct = (product: any) => {
     const categoryId = typeof product.category === "string" ? product.category : (typeof product.categoryId === "string" ? product.categoryId : product.category?.id);
     const category = categories.find((item: any) => String(item.id) === String(categoryId));
@@ -1672,9 +1800,7 @@ function ListingsView({
       resolveCategoryType(categoryId, category?.title, product.kind, product.schemaId) === "game"
     );
   };
-  const missingPerformanceCount = (products || []).filter(
-    (product: any) => isGameProduct(product) && requiresPerformanceReview(product),
-  ).length;
+  const missingPerformanceCount = facets?.performanceRequired ?? 0;
   /* The batch importer belongs to Nintendo Switch Games and nowhere else. */
   const sectionCategory = categories.find((item: any) => item.id === initialCategoryId);
   const isGamesSection =
@@ -1690,22 +1816,46 @@ function ListingsView({
     );
   });
 
-  const filteredProducts = (products || []).filter((p: any) => {
-    if (!p || typeof p !== "object") return false;
-    const titleStr = typeof p.title === "string" ? p.title : (typeof p.titleEn === "string" ? p.titleEn : "");
-    const searchStr = (searchTerm || "").trim().toLowerCase();
-    const matchesSearch = searchStr === "" ? true : titleStr.toLowerCase().includes(searchStr);
-    const pCat = p.category || p.categoryId;
-    const matchesCategory = initialCategoryId ? pCat === initialCategoryId : true;
-    const matchesPricing = onlyUnpriced ? !isProductPriced(p) : true;
-    const matchesPerformance = onlyMissingPerformance
-      ? isGameProduct(p) && requiresPerformanceReview(p)
-      : true;
-    const matchesHidden = onlyHidden ? isProductHidden(p) : true;
-    return (
-      matchesSearch && matchesCategory && matchesPricing && matchesPerformance && matchesHidden
+  /*
+    The search box, the chips, the column headers and the pager all describe one
+    question, and the endpoint answers it. Filtering here as well would filter
+    the fifty rows this page holds — so "unpriced" would mean "unpriced on page
+    one" and a search would miss every product the page does not contain.
+
+    Debounced, because a search box fires per keystroke and each keystroke is a
+    different question; the request gate collapses the duplicates a fast typist
+    still produces.
+  */
+  React.useEffect(() => {
+    if (!onQuery) return;
+    const timer = window.setTimeout(
+      () => {
+        onQuery({
+          page: 1,
+          sort,
+          search: searchTerm,
+          hidden: onlyHidden,
+          unpriced: onlyUnpriced,
+          performance: onlyMissingPerformance,
+          ...(initialCategoryId ? { category: initialCategoryId } : {}),
+        });
+      },
+      searchTerm ? 300 : 0,
     );
-  });
+    return () => window.clearTimeout(timer);
+  }, [
+    onQuery,
+    sort,
+    searchTerm,
+    onlyHidden,
+    onlyUnpriced,
+    onlyMissingPerformance,
+    initialCategoryId,
+  ]);
+
+  const filteredProducts = (products || []).filter(
+    (p: any) => p && typeof p === "object",
+  );
 
   /*
     The same comparator the server used, applied again here.
@@ -1717,6 +1867,18 @@ function ListingsView({
     the right place right up until you touch it.
   */
   const sortedProducts = sortProducts(filteredProducts, sort);
+
+  /*
+    One rule for what the table shows, shared with its tests. Four independent
+    `loadStatus === X && products.length === 0` conditions had no guarantee that
+    exactly one of them held — which is how a response that set no state left
+    every branch false but the spinner.
+  */
+  const tableState = productsTableState({
+    status: loadStatus,
+    rowCount: sortedProducts.length,
+    isRefreshing,
+  });
 
   // Log product diagnostics to verify D1 single source of truth and active filters
   useEffect(() => {
@@ -2034,10 +2196,14 @@ function ListingsView({
               ? categories.find((c: any) => c.id === initialCategoryId)?.title || t("admin.products")
               : t("admin.products")}
           </h1>
-          <span className="text-xs text-muted-foreground mt-0.5">
-            {loadStatus === "loading"
+          <span className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+            {tableState.view === "loading"
               ? "جاري مزامنة المنتجات مع قاعدة البيانات D1..."
-              : `عرض ${sortedProducts.length} من أصل ${products.length} منتج مسجل في D1`}
+              : `عرض ${sortedProducts.length} من أصل ${d1ProductCount ?? products.length} منتج مسجل في D1`}
+            {/* A refresh runs *over* the rows — the table is never blanked. */}
+            {tableState.isRefreshing ? (
+              <RefreshCw className="w-3 h-3 animate-spin text-primary" aria-label="جاري التحديث" />
+            ) : null}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -2133,7 +2299,7 @@ function ListingsView({
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-[14px]">
-              {loadStatus === "loading" && products.length === 0 && (
+              {tableState.view === "loading" && (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center justify-center gap-3">
@@ -2149,7 +2315,7 @@ function ListingsView({
                 </tr>
               )}
 
-              {loadStatus === "failed" && products.length === 0 && (
+              {tableState.view === "error" && (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center">
                     <div className="max-w-md mx-auto rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
@@ -2174,7 +2340,7 @@ function ListingsView({
                 </tr>
               )}
 
-              {loadStatus === "loaded_empty" && products.length === 0 && (
+              {tableState.view === "empty" && (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center justify-center gap-3">
@@ -2294,6 +2460,42 @@ function ListingsView({
             </tbody>
           </table>
         </div>
+
+        {/*
+          The catalogue is paginated server-side, so a page that does not say so
+          would simply hide every product past the fiftieth. Rendered only when
+          there is more than one page — a pager over a single page is noise.
+        */}
+        {pageInfo && (pageInfo.hasMore || pageInfo.page > 1) ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-[13px]">
+            <span className="text-muted-foreground">
+              صفحة <b dir="ltr">{pageInfo.page}</b> — عرض{" "}
+              <b dir="ltr">
+                {(pageInfo.page - 1) * pageInfo.limit + 1}–
+                {(pageInfo.page - 1) * pageInfo.limit + products.length}
+              </b>{" "}
+              من <b dir="ltr">{d1ProductCount ?? products.length}</b>
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={pageInfo.page <= 1 || isRefreshing}
+                onClick={() => onQuery?.({ page: pageInfo.page - 1, sort, search: searchTerm, hidden: onlyHidden, unpriced: onlyUnpriced, performance: onlyMissingPerformance, ...(initialCategoryId ? { category: initialCategoryId } : {}) })}
+                className="rounded-lg border border-border px-3 py-1.5 font-bold transition-colors hover:bg-muted disabled:opacity-40"
+              >
+                السابق
+              </button>
+              <button
+                type="button"
+                disabled={!pageInfo.hasMore || isRefreshing}
+                onClick={() => onQuery?.({ page: pageInfo.page + 1, sort, search: searchTerm, hidden: onlyHidden, unpriced: onlyUnpriced, performance: onlyMissingPerformance, ...(initialCategoryId ? { category: initialCategoryId } : {}) })}
+                className="rounded-lg border border-border px-3 py-1.5 font-bold transition-colors hover:bg-muted disabled:opacity-40"
+              >
+                التالي
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {productToDelete && (

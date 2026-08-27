@@ -100,6 +100,7 @@ import { Route as ApiAdminMediaRepairRouteImport } from './routes/api/admin/medi
 import { Route as ApiAdminMediaStatusRouteImport } from './routes/api/admin/media/status'
 import { Route as ApiAdminProductsProductIdRouteImport } from './routes/api/admin/products.$productId'
 import { Route as ApiAdminProductsDiagnoseRouteImport } from './routes/api/admin/products/diagnose'
+import { Route as ApiAdminProductsReindexRouteImport } from './routes/api/admin/products/reindex'
 import { Route as ApiAdminSystemHealthRouteImport } from './routes/api/admin/system/health'
 import { Route as ApiFilesLegacyMediaIdRouteImport } from './routes/api/files.legacy.$mediaId'
 import { Route as ApiGamesSlugPerformanceRouteImport } from './routes/api/games/$slug/performance'
@@ -580,6 +581,11 @@ const ApiAdminProductsDiagnoseRoute =
     path: '/diagnose',
     getParentRoute: () => ApiAdminProductsRoute,
   } as any)
+const ApiAdminProductsReindexRoute = ApiAdminProductsReindexRouteImport.update({
+  id: '/reindex',
+  path: '/reindex',
+  getParentRoute: () => ApiAdminProductsRoute,
+} as any)
 const ApiAdminSystemHealthRoute = ApiAdminSystemHealthRouteImport.update({
   id: '/api/admin/system/health',
   path: '/api/admin/system/health',
@@ -797,6 +803,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/media/status': typeof ApiAdminMediaStatusRoute
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/products/diagnose': typeof ApiAdminProductsDiagnoseRoute
+  '/api/admin/products/reindex': typeof ApiAdminProductsReindexRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
   '/api/games/$slug/performance': typeof ApiGamesSlugPerformanceRoute
@@ -912,6 +919,7 @@ export interface FileRoutesByTo {
   '/api/admin/media/status': typeof ApiAdminMediaStatusRoute
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/products/diagnose': typeof ApiAdminProductsDiagnoseRoute
+  '/api/admin/products/reindex': typeof ApiAdminProductsReindexRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
   '/api/games/$slug/performance': typeof ApiGamesSlugPerformanceRoute
@@ -1028,6 +1036,7 @@ export interface FileRoutesById {
   '/api/admin/media/status': typeof ApiAdminMediaStatusRoute
   '/api/admin/products/$productId': typeof ApiAdminProductsProductIdRoute
   '/api/admin/products/diagnose': typeof ApiAdminProductsDiagnoseRoute
+  '/api/admin/products/reindex': typeof ApiAdminProductsReindexRoute
   '/api/admin/system/health': typeof ApiAdminSystemHealthRoute
   '/api/files/legacy/$mediaId': typeof ApiFilesLegacyMediaIdRoute
   '/api/games/$slug/performance': typeof ApiGamesSlugPerformanceRoute
@@ -1145,6 +1154,7 @@ export interface FileRouteTypes {
     | '/api/admin/media/status'
     | '/api/admin/products/$productId'
     | '/api/admin/products/diagnose'
+    | '/api/admin/products/reindex'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
     | '/api/games/$slug/performance'
@@ -1260,6 +1270,7 @@ export interface FileRouteTypes {
     | '/api/admin/media/status'
     | '/api/admin/products/$productId'
     | '/api/admin/products/diagnose'
+    | '/api/admin/products/reindex'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
     | '/api/games/$slug/performance'
@@ -1375,6 +1386,7 @@ export interface FileRouteTypes {
     | '/api/admin/media/status'
     | '/api/admin/products/$productId'
     | '/api/admin/products/diagnose'
+    | '/api/admin/products/reindex'
     | '/api/admin/system/health'
     | '/api/files/legacy/$mediaId'
     | '/api/games/$slug/performance'
@@ -2143,6 +2155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminProductsDiagnoseRouteImport
       parentRoute: typeof ApiAdminProductsRoute
     }
+    '/api/admin/products/reindex': {
+      id: '/api/admin/products/reindex'
+      path: '/reindex'
+      fullPath: '/api/admin/products/reindex'
+      preLoaderRoute: typeof ApiAdminProductsReindexRouteImport
+      parentRoute: typeof ApiAdminProductsRoute
+    }
     '/api/admin/system/health': {
       id: '/api/admin/system/health'
       path: '/api/admin/system/health'
@@ -2321,6 +2340,7 @@ const ApiWalletRouteWithChildren = ApiWalletRoute._addFileChildren(
 interface ApiAdminProductsRouteChildren {
   ApiAdminProductsProductIdRoute: typeof ApiAdminProductsProductIdRoute
   ApiAdminProductsDiagnoseRoute: typeof ApiAdminProductsDiagnoseRoute
+  ApiAdminProductsReindexRoute: typeof ApiAdminProductsReindexRoute
   ApiAdminProductsSaveChunkRoute: typeof ApiAdminProductsSaveChunkRoute
   ApiAdminProductsSaveFinalizeRoute: typeof ApiAdminProductsSaveFinalizeRoute
   ApiAdminProductsSaveStartRoute: typeof ApiAdminProductsSaveStartRoute
@@ -2329,6 +2349,7 @@ interface ApiAdminProductsRouteChildren {
 const ApiAdminProductsRouteChildren: ApiAdminProductsRouteChildren = {
   ApiAdminProductsProductIdRoute: ApiAdminProductsProductIdRoute,
   ApiAdminProductsDiagnoseRoute: ApiAdminProductsDiagnoseRoute,
+  ApiAdminProductsReindexRoute: ApiAdminProductsReindexRoute,
   ApiAdminProductsSaveChunkRoute: ApiAdminProductsSaveChunkRoute,
   ApiAdminProductsSaveFinalizeRoute: ApiAdminProductsSaveFinalizeRoute,
   ApiAdminProductsSaveStartRoute: ApiAdminProductsSaveStartRoute,

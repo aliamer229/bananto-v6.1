@@ -657,6 +657,58 @@ const SCHEMA: string[] = [
  * (SQLite has no `ADD COLUMN IF NOT EXISTS`), so their errors are swallowed.
  */
 const SCHEMA_PATCHES: string[] = [
+  /*
+    The admin products table, as a table.
+
+    The catalogue itself stays in `store_kv` — see product-index.server.ts for
+    why. This is the narrow projection the listing is read from, so rendering
+    fifty rows is two indexed queries instead of parsing the whole document.
+  */
+  `CREATE TABLE IF NOT EXISTS product_index (
+     id TEXT PRIMARY KEY,
+     slug TEXT NOT NULL DEFAULT '',
+     title TEXT NOT NULL DEFAULT '',
+     title_en TEXT NOT NULL DEFAULT '',
+     category TEXT NOT NULL DEFAULT '',
+     category_id TEXT NOT NULL DEFAULT '',
+     kind TEXT NOT NULL DEFAULT '',
+     schema_id TEXT NOT NULL DEFAULT '',
+     platform TEXT NOT NULL DEFAULT '',
+     price REAL,
+     cost REAL,
+     stock INTEGER,
+     infinite_stock INTEGER NOT NULL DEFAULT 0,
+     hidden INTEGER NOT NULL DEFAULT 0,
+     status TEXT NOT NULL DEFAULT '',
+     sales INTEGER NOT NULL DEFAULT 0,
+     image TEXT NOT NULL DEFAULT '',
+     display_order INTEGER NOT NULL DEFAULT 0,
+     updated_at TEXT NOT NULL DEFAULT '',
+     created_at TEXT NOT NULL DEFAULT '',
+     release_date TEXT NOT NULL DEFAULT '',
+     sort_name TEXT NOT NULL DEFAULT '',
+     sort_updated INTEGER,
+     sort_release INTEGER,
+     sort_rank INTEGER NOT NULL DEFAULT 0,
+     performance_required INTEGER NOT NULL DEFAULT 0,
+     rev INTEGER NOT NULL DEFAULT 0
+   )`,
+  // One index per column *and direction* the table can be ordered by, each
+  // declaring the same leading expression as the ORDER BY it serves. Without
+  // the expression (`price IS NULL` — missing values sort last in both
+  // directions) SQLite cannot use the index and sorts the whole table to
+  // return one page, which is the cost this set exists to avoid. Verified by
+  // EXPLAIN QUERY PLAN in product-index.test.ts.
+  `CREATE INDEX IF NOT EXISTS idx_pi_updated_desc ON product_index (sort_updated IS NULL, sort_updated DESC, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_updated_asc ON product_index (sort_updated IS NULL, sort_updated, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_price_desc ON product_index (price IS NULL, price DESC, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_price_asc ON product_index (price IS NULL, price, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_name_desc ON product_index (sort_name = '', sort_name DESC, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_name_asc ON product_index (sort_name = '', sort_name, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_rank_desc ON product_index (display_order DESC, sort_rank DESC, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_rank_asc ON product_index (display_order, sort_rank, id)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_category ON product_index (category_id, display_order DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_pi_hidden ON product_index (hidden, sort_updated DESC)`,
   `CREATE TABLE IF NOT EXISTS store_kv (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS store_rev (rev INTEGER PRIMARY KEY, updated_at TEXT NOT NULL)`,
   `ALTER TABLE users ADD COLUMN wallet_balance REAL NOT NULL DEFAULT 0`,
@@ -1697,7 +1749,7 @@ export function ensureCouponsSchema(): Promise<void> {
 // Bumped whenever SCHEMA_PATCHES gains a statement existing databases need.
 // The stamp below short-circuits the bootstrap, so a new patch is invisible to
 // already-deployed databases until this number moves.
-const RUNTIME_SCHEMA_VERSION = 18;
+const RUNTIME_SCHEMA_VERSION = 19;
 
 async function runSchemaStatements(
   db: D1Like,

@@ -14,6 +14,7 @@ import {
 } from "./d1.server";
 import { normalizePhone, arePhonesEqual } from "./phone";
 import { listKeys, mutateJson, readJson, writeJson } from "./storage.server";
+import { productIndexStatements } from "./product-index.server";
 import { sendWhatsappMessage } from "./whatsapp.server";
 import { sendTelegramMessage } from "./telegram.server";
 import { isOwnerAccount } from "./owner-auth.server";
@@ -77,7 +78,11 @@ import type {
 export async function d1Batch(sqls: { sql: string; params: unknown[] }[]) {
   const db = getD1();
   if (db && db.batch) {
-    const stmts = sqls.map((s) => db.prepare(s.sql).bind(...s.params));
+    // `.bind()` with no arguments is not accepted by every D1 adapter, and a
+    // parameterless statement (a plain DELETE) is a legitimate batch member.
+    const stmts = sqls.map((s) =>
+      s.params.length ? db.prepare(s.sql).bind(...s.params) : db.prepare(s.sql),
+    );
     return db.batch(stmts);
   } else {
     for (const s of sqls) {
@@ -212,6 +217,10 @@ export function getStoreCacheVersion(): number {
 export function invalidateStoreCache() {
   storeCache = undefined;
   storeInFlight = undefined;
+  // The metadata snapshot is a projection of the same rows, so a write that
+  // invalidates one has to invalidate the other or the two disagree.
+  storeMetaCache = undefined;
+  storeMetaInFlight = undefined;
   storeCacheVersion++;
 }
 
@@ -497,11 +506,31 @@ async function readStoreRev(): Promise<number> {
   }
 }
 
-async function loadStore(): Promise<StoreDoc> {
+/**
+ * Everything except the catalogue.
+ *
+ * `store:products#NNN` chunks are 400 KB apiece and the per-product overlay
+ * rows are the rest of the document; together they are almost all of it. A
+ * caller that only wants categories, banners or settings was still reading,
+ * transferring, parsing and normalising the entire catalogue to get them —
+ * which is why `/api/admin/store`, an endpoint that *deletes* `products` from
+ * its own response, was timing out alongside the products endpoint.
+ */
+const NON_PRODUCT_ROWS_SQL = `SELECT key, value FROM store_kv
+   WHERE (key = 'store' OR key LIKE 'store:%' OR key LIKE 'analytics:%')
+     AND key NOT LIKE 'store:product:%'
+     AND key <> 'store:products'
+     AND key NOT LIKE 'store:products#%'
+   ORDER BY key ASC`;
+
+const ALL_ROWS_SQL = `SELECT key, value FROM store_kv WHERE key = 'store' OR key LIKE 'store:%' OR key LIKE 'analytics:%' ORDER BY key ASC`;
+
+async function loadStore(options?: { skipProducts?: boolean }): Promise<StoreDoc> {
+  const skipProducts = options?.skipProducts === true;
   if (await d1Ready()) {
     const [allStoreRows, rev] = await Promise.all([
       d1RawAll<{ key: string; value: string }>(
-        `SELECT key, value FROM store_kv WHERE key = 'store' OR key LIKE 'store:%' OR key LIKE 'analytics:%' ORDER BY key ASC`,
+        skipProducts ? NON_PRODUCT_ROWS_SQL : ALL_ROWS_SQL,
       ).catch(() => []),
       readStoreRev(),
     ]);
@@ -514,6 +543,10 @@ async function loadStore(): Promise<StoreDoc> {
 
     // Process each heavy section from the fetched rows
     for (const section of HEAVY_SECTIONS) {
+      if (skipProducts && section === "products") {
+        doc.products = [];
+        continue;
+      }
       try {
         const chunkRegex = new RegExp(`^store:${section}#(\\d+)$`);
         const chunkRows = allStoreRows
@@ -618,7 +651,9 @@ async function loadStore(): Promise<StoreDoc> {
 
     // Load granular products and merge them
     try {
-      const granularRows = allStoreRows.filter((r) => r.key.startsWith("store:product:"));
+      const granularRows = skipProducts
+        ? []
+        : allStoreRows.filter((r) => r.key.startsWith("store:product:"));
       if (granularRows.length > 0) {
         if (!Array.isArray(doc.products)) {
           doc.products = [];
@@ -895,6 +930,14 @@ async function persistStore(next: StoreDoc, expectedRev: number): Promise<number
     }
   }
 
+  /*
+    The admin listing projection, in the same batch as the catalogue it
+    describes. Committing them together is what makes the projection safe to
+    read as authoritative: it cannot exist without the products it came from,
+    and a failed catalogue write leaves neither behind.
+  */
+  statements.push(...productIndexStatements((next.products ?? []) as Record<string, unknown>[], nextRev));
+
   // Keep the revision table at a single row.
   statements.push({ sql: `DELETE FROM store_rev WHERE rev < ?`, params: [nextRev] });
 
@@ -952,6 +995,40 @@ export async function getCatalogVersion(): Promise<number> {
   if (!(await d1Ready())) return storeRev;
   const rev = await readStoreRev();
   return rev || storeRev;
+}
+
+/**
+ * Store metadata without the catalogue: categories, banners, bundles, content,
+ * settings, counters.
+ *
+ * Its own cache slot, because it is a different document — caching it as
+ * `storeCache` would hand a later caller a store whose `products` array is
+ * empty and let it conclude the catalogue was deleted. Callers that need
+ * products call {@link getStore}; callers that never look at them (the admin
+ * store endpoint, settings) call this and skip almost the entire payload.
+ */
+let storeMetaCache: { doc: StoreDoc; at: number } | undefined;
+let storeMetaInFlight: Promise<StoreDoc> | undefined;
+
+export function invalidateStoreMetaCache() {
+  storeMetaCache = undefined;
+  storeMetaInFlight = undefined;
+}
+
+export async function getStoreMeta(): Promise<StoreDoc> {
+  const cached = storeMetaCache;
+  if (cached && Date.now() - cached.at < STORE_TTL_MS) return cached.doc;
+  if (storeMetaInFlight) return storeMetaInFlight;
+
+  storeMetaInFlight = loadStore({ skipProducts: true })
+    .then((doc) => {
+      storeMetaCache = { doc, at: Date.now() };
+      return doc;
+    })
+    .finally(() => {
+      storeMetaInFlight = undefined;
+    });
+  return storeMetaInFlight;
 }
 
 export async function getStore(): Promise<StoreDoc> {
