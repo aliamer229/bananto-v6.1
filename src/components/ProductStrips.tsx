@@ -6,6 +6,15 @@ import NintendoCover from "./NintendoCover";
 import type { NintendoMediaRole } from "@/lib/nintendoImages";
 
 /**
+ * How many cards in a strip are treated as above the fold.
+ *
+ * Three is what fits across the narrowest supported phone (320px) before the
+ * strip scrolls. Every card used to be lazy with low fetch priority, which put
+ * the homepage's LCP candidate at the back of the queue.
+ */
+const PRIORITY_CARDS = 3;
+
+/**
  * Horizontal cartridge shelf. Renders in batches: reaching the end of the strip
  * reveals the next batch with the staggered fade-in.
  */
@@ -33,6 +42,9 @@ export function CartridgeStrip({
             animate={false}
             clicked={clickedId === game.id}
             onSelect={() => onSelect(game)}
+            /* The first row is on screen at first paint; the rest is a
+               horizontal scroll away and can wait. */
+            priority={i < PRIORITY_CARDS}
           />
         </StaggerItem>
       ))}
@@ -137,6 +149,8 @@ export function ProductStrip({
                 product={product.source ?? product}
                 usage={imageRole}
                 alt={product.title}
+                loading={i < PRIORITY_CARDS ? "eager" : "lazy"}
+                fetchPriority={i < PRIORITY_CARDS ? "high" : "auto"}
                 className="w-full rounded-xl"
                 imgClassName="group-hover:scale-105 transition-transform duration-300"
               />
