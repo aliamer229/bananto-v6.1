@@ -54,6 +54,23 @@ const say = (t = "") => {
   console.log(safe);
 };
 
+/*
+  Progress, with the clock on it.
+
+  Two runs were cancelled for being slow on a guess about which query was to
+  blame, and the guesses were wrong twice. Every step that talks to the database
+  now says how long it took, so the next slow run names the culprit instead of
+  inviting a third guess.
+*/
+const startedAt = Date.now();
+const since = () => `${((Date.now() - startedAt) / 1000).toFixed(1)}s`;
+const step = async (label, work) => {
+  const began = Date.now();
+  const value = await work();
+  console.log(`  [${since()}] ${label} — took ${((Date.now() - began) / 1000).toFixed(1)}s`);
+  return value;
+};
+
 process.env.D1_DATABASE_ID ||= process.env.CLOUDFLARE_D1_DATABASE_ID || "";
 for (const key of ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "D1_DATABASE_ID"]) {
   if (!process.env[key]) throw new Error(`missing ${key}`);
@@ -255,22 +272,6 @@ say();
 
 const nowIso = () => new Date().toISOString();
 
-/*
-  Progress, with the clock on it.
-
-  Two runs were cancelled for being slow on a guess about which query was to
-  blame, and the guesses were wrong twice. Every step that talks to the database
-  now says how long it took, so the next slow run names the culprit instead of
-  inviting a third guess.
-*/
-const startedAt = Date.now();
-const since = () => `${((Date.now() - startedAt) / 1000).toFixed(1)}s`;
-const step = async (label, work) => {
-  const began = Date.now();
-  const value = await work();
-  console.log(`  [${since()}] ${label} — took ${((Date.now() - began) / 1000).toFixed(1)}s`);
-  return value;
-};
 
 const filled = (v) => {
   if (v === null || v === undefined) return false;
