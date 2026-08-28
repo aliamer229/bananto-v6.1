@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  showsPerformanceWarning,
   createProductsRequestGate,
   interpretProductsPayload,
   loadAdminProducts,
@@ -260,5 +261,36 @@ describe("request lifecycle", () => {
     await gate.run("k", load);
     expect(calls).toBe(2);
     expect(gate.size).toBe(0);
+  });
+});
+
+describe("showsPerformanceWarning", () => {
+  it("trusts the flag the server computed from the whole document", () => {
+    expect(showsPerformanceWarning({ id: "a", performanceRequired: true })).toBe(true);
+    expect(showsPerformanceWarning({ id: "a", performanceRequired: false })).toBe(false);
+  });
+
+  it("does not warn on a listing row that simply lacks performance data", () => {
+    /*
+      The table row is a product_index projection: it has no devicePerformance,
+      because the projection has no such column. Re-deriving the warning here
+      found no records, concluded every Switch 2 game was missing its
+      performance information, and showed the badge on all of them — while the
+      documents passed validation and the stored flag was zero.
+    */
+    const projectionRow = {
+      id: "prd_1",
+      title: "Hades II — Nintendo Switch 2 Edition",
+      platform: "switch2",
+      slug: "hades-ii-nintendo-switch-2-edition",
+      price: 25000,
+      image: "/api/files/products/prd_1/front.avif",
+    };
+    expect(showsPerformanceWarning(projectionRow)).toBe(false);
+  });
+
+  it("stays false when the server said nothing at all", () => {
+    expect(showsPerformanceWarning({ id: "a" })).toBe(false);
+    expect(showsPerformanceWarning({ id: "a", performanceRequired: 1 })).toBe(false);
   });
 });
