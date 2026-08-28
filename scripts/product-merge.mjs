@@ -173,18 +173,12 @@ async function referencingColumns() {
   return found;
 }
 const REFS = await step("discover product-id columns", referencingColumns);
+const DOC_TABLES = await step("discover json-bodied tables", docColumns);
 
-/** Tables whose JSON body can name a product without a column saying so. */
 /** Tables a reference count could not be read from. Never treated as empty. */
 const UNREADABLE = [];
 
 const DOC_ALIAS = "body";
-const DOC_TABLES = [
-  { table: "orders", column: "doc" },
-  { table: "cart_items", column: "doc" },
-  { table: "threads", column: "doc" },
-  { table: "order_queue", column: "doc" },
-];
 
 /**
  * How many rows in each table name each of these products.
