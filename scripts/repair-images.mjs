@@ -158,6 +158,29 @@ function roleForKind(kind) {
 
 const SINGLE_ROLES = ["image", "banner", "cartridgeImage", "nintendoCardImage", "coverImage", "coverHiResImage"];
 
+/*
+  Hosts whose objects live in our R2 and are served through the Worker. A URL
+  pointing anywhere else — Nintendo's CDN, Cloudinary, Amazon, a news site — is
+  loaded directly by the browser and has nothing to do with R2. Stripping its
+  hostname and looking for the leftover path in our bucket finds nothing and
+  says "dead", which is how a working hotlinked image got reported as missing.
+*/
+const OWN_HOSTS = /(^|\.)(banan\.to|r2\.dev|r2\.cloudflarestorage\.com)$/i;
+
+/** "r2" — ours, resolvable and repairable. "external" — not ours, never touched. */
+function classifyUrl(url) {
+  const raw = String(url ?? "").trim();
+  if (!raw) return { kind: "empty", host: "" };
+  if (raw.startsWith("data:")) return { kind: "external", host: "data:" };
+  if (!/^https?:\/\//i.test(raw)) return { kind: "r2", host: "" };
+  try {
+    const { hostname } = new URL(raw);
+    return OWN_HOSTS.test(hostname) ? { kind: "r2", host: hostname } : { kind: "external", host: hostname };
+  } catch {
+    return { kind: "external", host: "unparseable" };
+  }
+}
+
 function assetKey(url) {
   let path = String(url ?? "");
   try {
@@ -252,9 +275,16 @@ for (const id of targets) {
   const claimed = new Set();
   const fixes = [];
   const unrecoverable = [];
+  const external = [];
 
   const check = (role, current) => {
     if (!current) return;
+    const kind = classifyUrl(current);
+    if (kind.kind === "external") {
+      external.push({ role, host: kind.host });
+      return;
+    }
+    if (kind.kind === "empty") return;
     const key = assetKey(current);
     // A URL game_images already knows is a verified-present new-generation key.
     if (known.has(key) || existsInR2(current)) {
@@ -275,8 +305,8 @@ for (const id of targets) {
     doc.bannerImages.forEach((url, i) => check(`bannerImages[${i}]`, url));
   }
 
-  if (fixes.length || unrecoverable.length) {
-    plans.push({ id, slug: String(doc.slug ?? ""), fixes, unrecoverable });
+  if (fixes.length || unrecoverable.length || external.length) {
+    plans.push({ id, slug: String(doc.slug ?? ""), fixes, unrecoverable, external });
   }
 }
 
@@ -284,13 +314,18 @@ say(`## Plan`);
 say();
 say(`- Products needing at least one change: **${plans.filter((p) => p.fixes.length).length}**`);
 say(`- Total role re-points: **${plans.reduce((n, p) => n + p.fixes.length, 0)}**`);
-say(`- Roles with no surviving asset anywhere: **${plans.reduce((n, p) => n + p.unrecoverable.length, 0)}**`);
+say(`- Roles whose R2 object is gone and has no replacement: **${plans.reduce((n, p) => n + p.unrecoverable.length, 0)}**`);
+say(`- Roles hosted outside R2 (left untouched, not broken): **${plans.reduce((n, p) => n + p.external.length, 0)}**`);
+const hosts = {};
+for (const p of plans) for (const e of p.external) hosts[e.host] = (hosts[e.host] ?? 0) + 1;
+say(`- External hosts in use: ${Object.entries(hosts).sort((a, b) => b[1] - a[1]).map(([h, n]) => `${h} (${n})`).join(", ") || "none"}`);
 say(`- R2 probes: ${probes}`);
 say();
 for (const p of plans.slice(0, 40)) {
   say(`### \`${p.id}\` ${p.slug}`);
-  for (const f of p.fixes) say(`  - ${f.role}: dead → \`${assetKey(f.to)}\` (kind \`${f.kind}\`)`);
-  for (const u of p.unrecoverable) say(`  - ${u.role}: **no replacement** — \`${assetKey(u.url)}\``);
+  for (const f of p.fixes) say(`  - ${f.role}: \`${String(f.from).slice(0, 70)}\` (gone) → \`${assetKey(f.to)}\``);
+  for (const u of p.unrecoverable) say(`  - ${u.role}: **R2 object gone, no replacement** — \`${String(u.url).slice(0, 70)}\``);
+  if (p.external.length) say(`  - hosted externally, untouched: ${p.external.map((e) => `${e.role}@${e.host}`).join(", ")}`);
 }
 say();
 
