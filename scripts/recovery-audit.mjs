@@ -376,6 +376,97 @@ for (const g of ["A", "B", "C", "E"]) {
 }
 say();
 
+/*
+  Which sections are filled, across the whole catalogue.
+
+  This is the test that separates "erased" from "never populated". A
+  destructive regression hits the products it touched and leaves the rest
+  alone, so a lost section shows an uneven fill rate. A section that is empty
+  on all 90 products was never written by the import pipeline, and restoring it
+  from a snapshot would be restoring something that never existed.
+*/
+say("## Detail-section fill rate across all live products");
+say();
+const sectionRate = [];
+for (const key of [...DETAIL_SECTIONS, ...GAME_DATA, ...COMMERCIAL]) {
+  const n = [...live.values()].filter((doc) => filled(doc?.[key]) > 0).length;
+  sectionRate.push({ field: key, filled: n, pct: Math.round((n / live.size) * 100) });
+}
+sectionRate.sort((a, b) => b.filled - a.filled);
+say("```");
+say("field                     filled/90   %");
+for (const r of sectionRate) {
+  say(`${r.field.padEnd(24)} ${String(r.filled).padStart(6)}/${live.size}  ${String(r.pct).padStart(3)}%`);
+}
+say("```");
+say();
+const never = sectionRate.filter((r) => r.filled === 0).map((r) => r.field);
+const partial = sectionRate.filter((r) => r.filled > 0 && r.filled < live.size);
+say(`- Empty on **every** product (never populated, not erased): **${never.length}** — ${never.join(", ") || "none"}`);
+say(`- Partially filled (uneven — the only shape a loss can take): **${partial.length}** — ${partial.map((r) => `${r.field} ${r.filled}/${live.size}`).join(", ") || "none"}`);
+say();
+
+/* --- performance, the flag the admin shows --- */
+say("## Performance");
+say();
+const perfRows = [];
+for (const [id, doc] of live) {
+  const dp = Array.isArray(doc?.devicePerformance) ? doc.devicePerformance : [];
+  const complete = dp.filter((entry) => {
+    const hh = entry?.handheld ?? {};
+    const tv = entry?.tv ?? {};
+    return Boolean((hh.resolution || hh.outputResolution || hh.fps) || (tv.resolution || tv.outputResolution || tv.fps));
+  }).length;
+  perfRows.push({
+    id,
+    slug: String(doc?.slug ?? ""),
+    doc_entries: dp.length,
+    doc_complete: complete,
+    table_active: perfBy.get(id) ?? 0,
+    modes: modesBy.get(id) ?? 0,
+    switch2: /switch\s*2|switch2/i.test(String(doc?.platform ?? "") + String(doc?.title ?? "")) ? 1 : 0,
+  });
+}
+say(`- Products with a \`devicePerformance\` array in the document: **${perfRows.filter((r) => r.doc_entries > 0).length}**`);
+say(`- ...of which at least one entry carries a resolution or FPS: **${perfRows.filter((r) => r.doc_complete > 0).length}**`);
+say(`- Products with an active \`game_device_performance\` row: **${perfRows.filter((r) => r.table_active > 0).length}**`);
+say(`- Document has entries but the table has none: **${perfRows.filter((r) => r.doc_entries > 0 && r.table_active === 0).length}**`);
+say(`- Table has rows but the document has none: **${perfRows.filter((r) => r.table_active > 0 && r.doc_entries === 0).length}**`);
+say(`- Neither has anything: **${perfRows.filter((r) => r.table_active === 0 && r.doc_entries === 0).length}**`);
+say();
+say("Products where neither source has performance data (nothing to recover from):");
+say();
+for (const r of perfRows.filter((x) => x.table_active === 0 && x.doc_entries === 0).slice(0, 60)) {
+  say(`  - \`${r.id}\` ${r.slug.slice(0, 34)}`);
+}
+say();
+
+/* --- products live in the catalogue but absent from the admin index --- */
+say("## Live but absent from `product_index`");
+say();
+const unindexed = [...live.keys()].filter((id) => !indexById.has(id));
+for (const id of unindexed) {
+  const doc = live.get(id);
+  const overlay = overlayById.get(id);
+  say(
+    `- \`${id}\` ${String(doc?.slug ?? "").slice(0, 40)} — overlay: ${overlay ? (overlay._deleted ? "TOMBSTONE" : "live") : "none"}, aggregate: yes`,
+  );
+}
+say();
+say(`- Total: **${unindexed.length}** — live on the storefront, invisible in the admin list.`);
+say();
+
+/* --- oversized documents --- */
+const huge = [...live.entries()]
+  .map(([id, doc]) => ({ id, slug: String(doc?.slug ?? ""), bytes: JSON.stringify(doc).length }))
+  .filter((r) => r.bytes > 200_000);
+if (huge.length) {
+  say("## Oversized product documents");
+  say();
+  for (const r of huge) say(`- \`${r.id}\` ${r.slug} — **${(r.bytes / 1024 / 1024).toFixed(2)} MB**`);
+  say();
+}
+
 say("## Aggregate coverage of missing roles");
 say();
 const missingRole = (role) => rows.filter((r) => !r.roles[role]).length;
