@@ -24,13 +24,6 @@ on:
       limit:
         description: "How many templates this run covers"
         default: "100"
-  push:
-    branches: [claude/nintendo-product-template-schema-6dtvza]
-    paths:
-      - .github/workflows/zip-import.yml
-      - scripts/zip-import.mjs
-      - scripts/lib/import-entry.ts
-
 permissions:
   contents: read
 

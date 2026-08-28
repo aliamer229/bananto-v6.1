@@ -23,14 +23,6 @@ on:
       products:
         description: "Optional comma-separated product ids (overrides offset/limit)"
         default: ""
-  push:
-    branches: [claude/nintendo-product-template-schema-6dtvza]
-    paths:
-      - .github/workflows/research-import.yml
-      - scripts/research-import.mjs
-      - scripts/lib/nintendo-store.mjs
-      - scripts/lib/r2-store.mjs
-
 permissions:
   contents: read
 
