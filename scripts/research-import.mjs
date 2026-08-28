@@ -296,8 +296,10 @@ const totals = {
   written: 0,
   writeFailed: 0,
   unchanged: 0,
+  nsuidConflicts: 0,
 };
 const unresolved = [];
+const nsuidConflicts = [];
 const perProduct = [];
 
 for (let start = 0; start < selected.length; start += BATCH_SIZE) {
@@ -314,13 +316,18 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
     if (!product) {
       totals.unresolved++;
       unresolved.push({ id, label, tried });
-      say(`- **Not resolved** — tried: ${tried.join(", ") || "no candidates"}`);
+      say(`- **Not resolved.** Candidates tried:`);
+      for (const t of tried) say(`  - ${t}`);
       say(`- Nothing written for this product.`);
       say();
       continue;
     }
     totals.resolved++;
     say(`- Resolved: ${url} (${verdict.reason})`);
+    if (verdict.nsuidConflict) {
+      totals.nsuidConflicts++;
+      nsuidConflicts.push({ id, label, stored: verdict.storedNsuid, page: verdict.pageNsuid, url });
+    }
 
     /* ---- what production is missing that the page can answer ---- */
     const page = metadataFrom(product);
@@ -329,6 +336,11 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
     for (const field of RESEARCH_FIELDS) {
       if (!(field in page)) continue;
       if (filled(doc[field])) continue;
+      /*
+        A regional storefront's nsuid is not ours to adopt. The page is trusted
+        for what the game is, not for which listing this product represents.
+      */
+      if (field === "nsuid" && verdict.nsuidConflict) continue;
       patch[field] = page[field];
       filledNames.push(field);
     }
@@ -345,10 +357,15 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
     const stored = galleryEntries(doc.galleryImages);
     let deadCount = 0;
     let aliveCount = 0;
+    let hotlinked = 0;
+    let sample = "";
     for (const entry of stored) {
-      const ref = classifyRef(entry.url ?? entry.image ?? entry.src);
+      const value = entry.url ?? entry.image ?? entry.src;
+      const ref = classifyRef(value);
+      if (!sample) sample = String(value ?? "").slice(0, 90);
       if (ref.kind === "external") {
         // Someone else's CDN is not ours to repair, and it is not broken.
+        hotlinked++;
         aliveCount++;
       } else if (ref.kind === "own" && (await r2.exists(ref.key))) {
         aliveCount++;
@@ -356,16 +373,25 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
         deadCount++;
       }
     }
-    const galleryBroken = stored.length === 0 || (deadCount > 0 && aliveCount === 0);
+    /*
+      A gallery is re-sourced when it is empty, when every one of our own
+      objects is gone, or when the entries are hotlinks — those work today, but
+      they are someone else's server, and the brief is to hold this media in R2.
+    */
+    const allHotlinked = stored.length > 0 && hotlinked === stored.length;
+    const galleryBroken = stored.length === 0 || (deadCount > 0 && aliveCount === 0) || allHotlinked;
     say(
       `- Stored gallery: ${stored.length} entr${stored.length === 1 ? "y" : "ies"}` +
-        (stored.length ? ` (${aliveCount} resolve, ${deadCount} do not)` : ""),
+        (stored.length
+          ? ` — ${aliveCount - hotlinked} in our R2, ${hotlinked} hotlinked elsewhere, ${deadCount} missing` +
+            (sample ? ` (e.g. \`${sample}\`)` : "")
+          : ""),
     );
 
     const shots = galleryFrom(product);
     if (!galleryBroken) {
       totals.galleryKept++;
-      say(`- Gallery left alone — stored entries still resolve.`);
+      say(`- Gallery left alone — its entries are ours and they resolve.`);
     } else if (!shots.length) {
       say(`- **No screenshots on the store page** — gallery left as it is.`);
     } else {
@@ -431,6 +457,7 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
       if (!sources.some((s) => String(s?.url ?? "") === url)) {
         sources.push({ name: "Nintendo eShop (US)", url });
         patch.sources = sources;
+        filledNames.push("sources");
       }
     }
 
@@ -498,14 +525,26 @@ say(`| Fields filled | ${totals.fieldsFilled} |`);
 say(`| Documents written and verified | ${totals.written} |`);
 say(`| Write or verification failures | ${totals.writeFailed} |`);
 say(`| Already complete, nothing to add | ${totals.unchanged} |`);
+say(`| Stored nsuid disagreeing with the page | ${totals.nsuidConflicts} |`);
 say();
+
+if (nsuidConflicts.length) {
+  say(`### Stored nsuid disagrees with the store page (${nsuidConflicts.length})`);
+  say();
+  say(`The title and the console match, so the page was used — but the stored nsuid was left alone.`);
+  say();
+  say(`| product | stored | page | page url |`);
+  say(`| --- | --- | --- | --- |`);
+  for (const c of nsuidConflicts) say(`| ${c.label} | \`${c.stored}\` | \`${c.page}\` | ${c.url} |`);
+  say();
+}
 
 if (unresolved.length) {
   say(`### Not resolved (${unresolved.length}) — nothing was written for these`);
   say();
   say(`| product | url keys tried |`);
   say(`| --- | --- |`);
-  for (const u of unresolved) say(`| ${u.label} | ${u.tried.join(", ") || "none"} |`);
+  for (const u of unresolved) say(`| ${u.label} | ${u.tried.join("<br>") || "none"} |`);
   say();
 }
 

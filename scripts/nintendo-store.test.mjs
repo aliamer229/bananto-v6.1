@@ -16,6 +16,10 @@ describe("slugifyTitle", () => {
     );
     expect(slugifyTitle("Bayonetta 3 — Trinity Masquerade")).toBe("bayonetta-3-trinity-masquerade");
   });
+
+  it("spells out the plus sign the way Nintendo's url keys do", () => {
+    expect(slugifyTitle("Mario + Rabbids Sparks of Hope")).toBe("mario-plus-rabbids-sparks-of-hope");
+  });
 });
 
 describe("candidateKeys", () => {
@@ -38,6 +42,38 @@ describe("candidateKeys", () => {
     expect(keys).toContain("metroid-prime-4-beyond-nintendo-switch-2-edition-switch-2");
   });
 
+  it("tries the plus both spelled out and dropped", () => {
+    const keys = candidateKeys({ title: "Mario + Rabbids Sparks of Hope", platform: "Nintendo Switch" });
+    expect(keys).toContain("mario-plus-rabbids-sparks-of-hope-switch");
+    expect(keys).toContain("mario-rabbids-sparks-of-hope-switch");
+  });
+
+  it("reports a stored nsuid that disagrees with the page instead of refusing it", () => {
+    const verdict = identityMatch(
+      { title: "Persona 4 Golden", platform: "Nintendo Switch", nsuid: "70010000060999" },
+      { platform: { label: "Nintendo Switch" }, name: "Persona 4 Golden", nsuid: "70010000060320" },
+    );
+    expect(verdict.ok).toBe(true);
+    expect(verdict.nsuidConflict).toBe(true);
+    expect(verdict.pageNsuid).toBe("70010000060320");
+  });
+
+  it("still refuses a conflicting nsuid when the console generation differs", () => {
+    const verdict = identityMatch(
+      { title: "Metroid Prime 4: Beyond", platform: "Nintendo Switch 2", nsuid: "70010000104849" },
+      { platform: { label: "Nintendo Switch" }, name: "Metroid Prime™ 4: Beyond", nsuid: "70010000084766" },
+    );
+    expect(verdict.ok).toBe(false);
+  });
+
+  it("matches a title whose trademark mark sits inside the platform words", () => {
+    const verdict = identityMatch(
+      { title: "Nintendo Switch 2 Welcome Tour", platform: "Nintendo Switch 2" },
+      { platform: { label: "Nintendo Switch 2" }, name: "Nintendo Switch™ 2 Welcome Tour" },
+    );
+    expect(verdict.ok).toBe(true);
+  });
+
   it("asks for the Switch 1 key first for a Switch 1 product", () => {
     const keys = candidateKeys({ title: "Pikmin 4", platform: "Nintendo Switch" });
     expect(keys[0]).toBe("pikmin-4-switch");
@@ -57,10 +93,19 @@ describe("identityMatch", () => {
     expect(verdict.confidence).toBe("nsuid");
   });
 
-  it("refuses a page whose nsuid is a different game", () => {
+  it("flags a conflicting nsuid rather than refusing a page the title and console both fit", () => {
     const verdict = identityMatch(
-      { title: "Pikmin 4", nsuid: "70010000005308" },
+      { title: "Pikmin 4", platform: "Nintendo Switch", nsuid: "70010000005308" },
       { ...switch1, name: "Pikmin™ 4", nsuid: "70010000005302" },
+    );
+    expect(verdict.ok).toBe(true);
+    expect(verdict.nsuidConflict).toBe(true);
+  });
+
+  it("refuses a conflicting nsuid when the title does not fit either", () => {
+    const verdict = identityMatch(
+      { title: "Pikmin 4", platform: "Nintendo Switch", nsuid: "70010000005308" },
+      { ...switch1, name: "Pikmin™ 3 Deluxe", nsuid: "70010000005302" },
     );
     expect(verdict.ok).toBe(false);
   });

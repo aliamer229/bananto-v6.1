@@ -22,6 +22,8 @@ export function slugifyTitle(title) {
       .normalize("NFKD")
       .replace(/['’]/g, "")
       .replace(/&/g, " and ")
+      // Nintendo writes "Mario + Rabbids" as "mario-plus-rabbids".
+      .replace(/\+/g, " plus ")
       .replace(/[^a-zA-Z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .toLowerCase()
@@ -272,6 +274,9 @@ export function metadataFrom(product) {
 const bareTitle = (title) =>
   normalizeTitle(
     String(title ?? "")
+      // Before the platform words are stripped: Nintendo writes "Switch™ 2",
+      // and a mark sitting inside the phrase stops it matching.
+      .replace(/[™®©]/g, "")
       .replace(/[-–—:]\s*nintendo\s*switch\s*2\s*edition.*$/i, "")
       .replace(/\bnintendo\s*switch\s*2\s*edition\b/gi, "")
       .replace(/\b(standard|deluxe|digital|physical|complete|definitive|gold|ultimate)\s+edition\b/gi, "")
@@ -297,6 +302,10 @@ export function candidateKeys(doc) {
   const guesses = two
     ? [`${base}-switch-2`, `${base}-nintendo-switch-2-edition-switch-2`, `${base}-switch`]
     : [`${base}-switch`, `${base}-switch-2`];
+
+  // "+" is spelled out in Nintendo's keys, but not always; try it both ways.
+  const bare = base.replace(/-plus-/g, "-");
+  if (bare !== base) guesses.push(two ? `${bare}-switch-2` : `${bare}-switch`);
 
   const fromSlug = String(doc.slug ?? "").replace(/-switch(-2)?$/, "");
   if (fromSlug && fromSlug !== base) {
@@ -335,11 +344,10 @@ export function apolloProducts(html) {
 export function identityMatch(doc, node) {
   const storedNsuid = String(doc.nsuid ?? "").trim();
   const nodeNsuid = String(node.nsuid ?? "").trim();
-  if (storedNsuid && nodeNsuid) {
-    return storedNsuid === nodeNsuid
-      ? { ok: true, confidence: "nsuid", reason: "nsuid matches" }
-      : { ok: false, reason: `nsuid ${storedNsuid} vs page ${nodeNsuid}` };
+  if (storedNsuid && nodeNsuid && storedNsuid === nodeNsuid) {
+    return { ok: true, confidence: "nsuid", reason: "nsuid matches" };
   }
+  const nsuidConflict = Boolean(storedNsuid && nodeNsuid && storedNsuid !== nodeNsuid);
 
   const want = bareTitle(doc.title ?? doc.name);
   const got = bareTitle(node.name);
@@ -352,7 +360,23 @@ export function identityMatch(doc, node) {
   if (wantTwo !== gotTwo) {
     return { ok: false, reason: `platform generation differs (stored ${wantTwo ? "Switch 2" : "Switch"}, page ${gotTwo ? "Switch 2" : "Switch"})` };
   }
-  return { ok: true, confidence: "title+platform", reason: "title and platform agree" };
+  /*
+    A stored nsuid that disagrees with the page is usually a regional id — the
+    same game, a different storefront — not a different game, because the title
+    and the console both agree. That is worth acting on for screenshots and
+    stated facts, and worth reporting; it is never worth overwriting our own
+    nsuid from, so the caller is told and leaves that one field alone.
+  */
+  return nsuidConflict
+    ? {
+        ok: true,
+        confidence: "title+platform",
+        nsuidConflict: true,
+        storedNsuid,
+        pageNsuid: nodeNsuid,
+        reason: `title and platform agree, but the stored nsuid ${storedNsuid} is not the page's ${nodeNsuid}`,
+      }
+    : { ok: true, confidence: "title+platform", reason: "title and platform agree" };
 }
 
 const STORE = "https://www.nintendo.com/us/store/products";
@@ -362,9 +386,15 @@ const STORE = "https://www.nintendo.com/us/store/products";
  *
  * A page carries its whole product family in the GraphQL cache, but only the
  * page's own node is hydrated — siblings arrive with an empty gallery. So a
- * sibling match is not used directly: its url key is followed and that page is
- * fetched instead. This is what makes a Switch 2 Edition resolvable from the
+ * matching sibling is not used directly: its url key is followed and that page
+ * is fetched instead. This is what makes a Switch 2 Edition resolvable from the
  * Switch 1 url key.
+ *
+ * A url key ending in a bare number is a physical or bundle SKU — the boxed
+ * copy, or the console-plus-game bundle. Those nodes match the title, carry no
+ * nsuid and have no gallery of their own, and filling a game from one gives it
+ * the bundle's editions and the box's artwork. The software node, the one with
+ * an nsuid, is always preferred.
  */
 export async function resolveProduct(doc, seen = new Set()) {
   const tried = [];
@@ -373,25 +403,47 @@ export async function resolveProduct(doc, seen = new Set()) {
     seen.add(key);
     const url = `${STORE}/${key}/`;
     const { status, body } = await fetchText(url);
-    tried.push(`${key} → ${status}`);
-    if (!body) continue;
+    if (!body) {
+      tried.push(`${key} → HTTP ${status}`);
+      continue;
+    }
 
     const { nodes, state } = apolloProducts(body);
     const own = nodes.find((n) => String(n.urlKey ?? "") === key);
-    if (own) {
-      const verdict = identityMatch(doc, own);
-      if (verdict.ok) {
-        return { product: deref(state, own), url, key, verdict, tried };
-      }
-      // The right edition may be a sibling on this page; follow its url key.
-      const sibling = nodes.find(
-        (n) => n.urlKey && n.urlKey !== key && identityMatch(doc, n).ok && !seen.has(String(n.urlKey)),
-      );
-      if (sibling) {
-        const hop = await resolveProduct({ ...doc, slug: "", nintendoEshopUrl: `${STORE}/${sibling.urlKey}/`, eshopUrl: "", officialUrl: "" }, seen);
-        if (hop.product) return { ...hop, tried: [...tried, ...hop.tried] };
-        tried.push(...hop.tried);
-      }
+    const ownVerdict = own ? identityMatch(doc, own) : { ok: false, reason: "the page has no node for this url key" };
+
+    // A sibling worth hopping to: it matches, and it is more of a product than
+    // whatever this page is about — an nsuid where the page's own node has none.
+    const better = nodes.find(
+      (n) =>
+        n.urlKey &&
+        String(n.urlKey) !== key &&
+        !seen.has(String(n.urlKey)) &&
+        identityMatch(doc, n).ok &&
+        String(n.nsuid ?? "") &&
+        !String(own?.nsuid ?? ""),
+    );
+    if (better) {
+      tried.push(`${key} → ${status}, hopping to the software listing ${better.urlKey}`);
+      const hop = await resolveProduct({ ...doc, slug: "", nintendoEshopUrl: `${STORE}/${better.urlKey}/`, eshopUrl: "", officialUrl: "" }, seen);
+      if (hop.product) return { ...hop, tried: [...tried, ...hop.tried] };
+      tried.push(...hop.tried);
+    }
+
+    if (ownVerdict.ok) {
+      tried.push(`${key} → ${status}, matched`);
+      return { product: deref(state, own), url, key, verdict: ownVerdict, tried };
+    }
+    tried.push(`${key} → ${status}, rejected: ${ownVerdict.reason}`);
+
+    // The right edition may be a different member of the family on this page.
+    const sibling = nodes.find(
+      (n) => n.urlKey && String(n.urlKey) !== key && !seen.has(String(n.urlKey)) && identityMatch(doc, n).ok,
+    );
+    if (sibling) {
+      const hop = await resolveProduct({ ...doc, slug: "", nintendoEshopUrl: `${STORE}/${sibling.urlKey}/`, eshopUrl: "", officialUrl: "" }, seen);
+      if (hop.product) return { ...hop, tried: [...tried, ...hop.tried] };
+      tried.push(...hop.tried);
     }
   }
   return { product: null, tried };
