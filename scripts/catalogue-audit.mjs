@@ -249,16 +249,36 @@ for (const r of d1("SELECT game_id, alias, normalized FROM game_aliases", { allo
   aliasBy.set(String(r.normalized ?? r.alias).toLowerCase(), String(r.game_id));
 }
 
-/* Nintendo games only: exclude hardware, amiibo, cards, accessories. */
+/*
+  What a game actually looks like in this catalogue.
+
+  The first attempt filtered on `kind === "game"` and matched nothing: every
+  product carries `kind=account`, because what is sold is a game account, and
+  the templates say the same. The distribution is printed before the filter is
+  applied so a filter that selects nothing is visible as such rather than
+  reported as an empty audit.
+*/
+const tally = (get) => {
+  const counts = new Map();
+  for (const [, doc] of live) {
+    const k = String(get(doc) ?? "").trim() || "(empty)";
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+};
+say(`- Live products: **${live.size}**`);
+say(`- \`kind\` values: ${tally((d) => d.kind).map(([k, n]) => `\`${k}\` ${n}`).join(", ")}`);
+say(`- \`category\` values: ${tally((d) => d.category ?? d.categoryId).map(([k, n]) => `\`${k}\` ${n}`).join(", ")}`);
+
+/** A game is decided by its category; hardware, amiibo and gift cards are not. */
 const isGame = (doc) => {
-  const kind = String(doc?.kind ?? "").toLowerCase();
   const cat = `${doc?.categoryId ?? ""} ${doc?.category ?? ""}`.toLowerCase();
-  if (kind && kind !== "game") return false;
-  if (/hardware|accessor|amiibo|card|giftcard|bundle/.test(cat)) return false;
-  return true;
+  if (/hardware|accessor|amiibo|gift|console|controller/.test(cat)) return false;
+  return /game/.test(cat);
 };
 const games = [...live.entries()].filter(([, doc]) => isGame(doc));
-say(`- Live products: **${live.size}** — Nintendo games among them: **${games.length}**`);
+say(`- **Nintendo games selected for Report A: ${games.length}**`);
+if (!games.length) say("- **the category filter matched nothing — see the distribution above**");
 say();
 
 /* ------------------------------------------------------------------ Report A */
