@@ -407,6 +407,35 @@ say(`- Partially filled (uneven — the only shape a loss can take): **${partial
 say();
 
 /* --- performance, the flag the admin shows --- */
+/*
+  Ground truth, not a probe.
+
+  Twice now a field list of mine has reported data missing that was simply
+  stored under another name — `dlcs` vs `dlc`, `metacriticScore` vs
+  `metacriticRating`, `performance` vs `devicePerformance`. So before anything
+  is called lost, dump every key that actually holds a value on a few products
+  and read what is there.
+*/
+say("## Every non-empty key, on three products");
+say();
+for (const id of [...live.keys()].slice(0, 3)) {
+  const doc = live.get(id);
+  say(`### \`${id}\` — ${String(doc?.slug ?? "")}`);
+  say();
+  const entries = Object.entries(doc)
+    .filter(([k]) => !k.startsWith("_"))
+    .map(([k, v]) => ({ k, n: filled(v), size: JSON.stringify(v ?? null).length }))
+    .filter((e) => e.n > 0)
+    .sort((a, b) => b.size - a.size);
+  say("```");
+  say(entries.map((e) => `${e.k}(${e.n})`).join("  "));
+  say("```");
+  const emptyKeys = Object.keys(doc).filter((k) => !k.startsWith("_") && filled(doc[k]) === 0);
+  say(`- non-empty keys: **${entries.length}** of ${Object.keys(doc).length}`);
+  say(`- empty keys: ${emptyKeys.slice(0, 70).join(", ")}`);
+  say();
+}
+
 say("## Performance");
 say();
 const perfRows = [];

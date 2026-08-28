@@ -1765,6 +1765,7 @@ function ListingsView({
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [isOpeningEditor, setIsOpeningEditor] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [onlyUnpriced, setOnlyUnpriced] = useState(false);
   const [onlyMissingPerformance, setOnlyMissingPerformance] = useState(false);
@@ -1948,6 +1949,46 @@ function ListingsView({
     }
   };
 
+  /*
+    The row the table holds is a `product_index` projection — id, title, price,
+    a single image. It is display data. Opening the editor on it meant the form
+    initialised every field the projection lacks to "" or [], and `handleSave`
+    diffed the result against that same thin row, so those empty defaults came
+    back as deliberate changes and the server wrote them over the real product.
+
+    The editor is therefore never handed a listing row. It gets the stored
+    document, fetched by id, or it does not open.
+  */
+  const openProductForEdit = React.useCallback(
+    async (row: any) => {
+      const id = row?.id === undefined || row?.id === null ? "" : String(row.id).trim();
+      if (!id) {
+        toast.error("لا يمكن فتح منتج بدون معرّف");
+        return;
+      }
+      setIsOpeningEditor(id);
+      try {
+        const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+          credentials: "include",
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.success || !data.product) {
+          toast.error(
+            data?.error || `تعذر تحميل المنتج الكامل (HTTP ${res.status}) — لم يتم فتح المحرر`,
+            { duration: 8000 },
+          );
+          return;
+        }
+        setEditingProduct(data.product);
+      } catch (err: any) {
+        toast.error(`تعذر تحميل المنتج: ${err?.message || "خطأ في الشبكة"}`, { duration: 8000 });
+      } finally {
+        setIsOpeningEditor(null);
+      }
+    },
+    [],
+  );
+
   const handleSave = async (productData: any) => {
     try {
       if (!isAdding && editingProduct) {
@@ -2128,7 +2169,7 @@ function ListingsView({
                 label: "فتح المنتج الموجود",
                 onClick: () => {
                   setIsAdding(false);
-                  setEditingProduct(existing);
+                  void openProductForEdit(existing);
                 },
               },
             });
@@ -2448,10 +2489,20 @@ function ListingsView({
                   <td className="px-4 py-3">
                     <div className="flex gap-3">
                       <button
-                        onClick={() => setEditingProduct(p)}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        type="button"
+                        onClick={() => void openProductForEdit(p)}
+                        disabled={isOpeningEditor !== null}
+                        aria-busy={isOpeningEditor === String(p.id)}
+                        title={
+                          isOpeningEditor === String(p.id)
+                            ? "جاري تحميل المنتج الكامل..."
+                            : t("admin.editProduct" as any) || "تعديل"
+                        }
+                        className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit
+                          className={`w-4 h-4 ${isOpeningEditor === String(p.id) ? "animate-pulse" : ""}`}
+                        />
                       </button>
                       <button
                         type="button"
