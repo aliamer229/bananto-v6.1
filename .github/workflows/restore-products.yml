@@ -15,13 +15,20 @@ on:
         default: false
       runs:
         description: "Space-separated workflow run ids whose pre-change artifacts to restore from"
-        required: true
+        default: "33151869780 33166150208"
       artifact:
         description: "Artifact name pattern to download"
         default: "research-import-before-*"
       products:
         description: "Optional comma-separated product ids (default: everything in the artifacts)"
         default: ""
+  # A workflow that has only ever been described is not yet a workflow GitHub
+  # will dispatch on a branch. One push registers it; it is a dry run.
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/restore-products.yml
+      - scripts/restore-products.mjs
 
 permissions:
   contents: read
@@ -45,7 +52,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Fetch the pre-change documents
         env:
-          RUNS: ${{ inputs.runs }}
+          RUNS: ${{ inputs.runs || '33151869780 33166150208' }}
           PATTERN: ${{ inputs.artifact }}
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
