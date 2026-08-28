@@ -702,7 +702,53 @@ for (const bucket of [PUBLIC_BUCKET, PRIVATE_BUCKET]) {
 }
 say();
 
-say("### Do the assets of the sampled damaged products still exist?");
+/*
+  Checking only the URLs recorded in `game_images` answers the wrong question.
+  Those are the assets the media ingest wrote; the storefront renders whatever
+  the *product document* points at, and on un-migrated products that is an
+  older `r2_<uuid>.jpg` or 56-hex name the ingest never recorded. If those
+  objects were removed when the new ones landed, D1 looks healthy and the site
+  shows nothing — which is the reported symptom. So the document's own URLs are
+  checked too.
+*/
+say("### Do the assets the product documents point at still exist?");
+say();
+const docChecked = [];
+for (const id of sample) {
+  const entry = live.get(id);
+  if (!entry) continue;
+  const urls = [...collectAssetUrls(entry.doc)].slice(0, 6);
+  for (const url of urls) {
+    const candidates = [...new Set([assetKey(url), String(url).replace(/^\/+/, "")])];
+    let found = "";
+    for (const bucket of [PUBLIC_BUCKET, PRIVATE_BUCKET]) {
+      for (const key of candidates) {
+        if (!key) continue;
+        const got = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--remote", "--pipe"], {
+          allowFail: true,
+        });
+        if (got && got.length > 0) {
+          found = bucket;
+          break;
+        }
+      }
+      if (found) break;
+    }
+    const shown = assetKey(url);
+    docChecked.push({
+      id: id.slice(0, 22),
+      document_url: shown.length > 56 ? "…" + shown.slice(-54) : shown,
+      present: found || "NOT FOUND in either bucket",
+    });
+  }
+}
+for (const line of table(docChecked, ["id", "document_url", "present"])) say(line);
+const orphanedDocUrls = docChecked.filter((r) => r.present.startsWith("NOT FOUND")).length;
+say();
+say(`- Document-referenced assets missing from R2: **${orphanedDocUrls} of ${docChecked.length} sampled**${orphanedDocUrls ? " — these render as broken images on the storefront" : ""}`);
+say();
+
+say("### Do the assets `game_images` recorded still exist?");
 say();
 const checked = [];
 for (const { id, kind, url } of sampleUrls.slice(0, 12)) {
