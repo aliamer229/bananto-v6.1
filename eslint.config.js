@@ -16,8 +16,47 @@ export default tseslint.config(
       "*.cjs",
       "*.mjs",
       "*.js",
-      "scripts/**",
+      /*
+        `scripts/**` is deliberately NOT ignored any more. These run against
+        production from a workflow, and two bugs reached a `--apply` dispatch
+        that a parser would have refused: a const called before its definition,
+        and a call to a function that was never defined at all. Both parse
+        cleanly, so `node --check` passed and only the run failed.
+      */
+      "scripts/**/*.ts",
     ],
+  },
+  {
+    extends: [js.configs.recommended],
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: { ...globals.node },
+    },
+    rules: {
+      /*
+        Correctness only. These are operational scripts, not shipped source, and
+        reformatting several hundred lines of them would bury the two rules that
+        are here for a reason.
+      */
+      "prettier/prettier": "off",
+      "no-undef": "error",
+      /*
+        Left to `scripts/script-hygiene.test.mjs`, which checks the module level
+        specifically. ESLint flags a const referenced inside a function defined
+        above it, which is fine as long as the call happens later — and several
+        of these scripts do exactly that, correctly.
+      */
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      /* A `\x00` test is how you find a NUL byte in imported legacy text. */
+      "no-control-regex": "off",
+    },
+  },
+  {
+    /* Runs inside `page.evaluate`, where the browser globals are the point. */
+    files: ["scripts/check-horizontal-overflow.mjs"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   eslintPluginPrettier,
   {

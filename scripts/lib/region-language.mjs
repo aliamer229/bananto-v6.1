@@ -199,7 +199,7 @@ export async function fetchHkTitle(nsuid) {
 export function comparableTitle(text) {
   return String(text ?? "")
     .replace(/[™®©]/g, "")
-    .replace(/[《》「」『』【】（）()［］\[\]]/g, " ")
+    .replace(/[《》「」『』【】（）()［］[\]]/g, " ")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()

@@ -134,44 +134,46 @@ const find = (key) => live.get(key) ?? bySlug.get(key) ?? null;
 /* ------------------------------------------------- every table that points here */
 
 /**
- * Columns that hold a product id, discovered rather than listed.
+ * Every column this database has, read out of the schema itself in one query.
  *
- * A hard-coded list of tables goes stale the moment a migration adds one, and
- * the cost of missing a table here is an orphaned order. SQLite is asked what
- * it actually has — in one query. Walking `PRAGMA table_info` table by table is
- * a hundred and thirty round trips against a remote database before any real
- * work starts, and `pragma_table_info` as a table-valued function answers the
- * same question once.
+ * Not `PRAGMA table_info` per table: D1 refuses `pragma_table_info` as a
+ * table-valued function with SQLITE_AUTH, so that attempt silently fell back to
+ * walking a hundred and thirty tables one at a time — three hundred and
+ * fifty-eight seconds of the last run, and the real reason these runs were
+ * slow. `sqlite_master` already holds each table's CREATE statement, and the
+ * column names are in the text.
+ *
+ * A hard-coded list of tables goes stale on the next migration and the cost of
+ * missing one is an orphaned order, so the schema is still asked rather than
+ * assumed — just asked once.
  */
-async function referencingColumns() {
-  try {
-    const rows = await app.d1All(
-      "SELECT m.name AS tbl, p.name AS col FROM sqlite_master m JOIN pragma_table_info(m.name) p" +
-        " WHERE m.type = 'table' AND m.name NOT LIKE 'sqlite_%' AND p.name IN ('product_id', 'game_id')",
-    );
-    if (rows.length) return rows.map((r) => ({ table: String(r.tbl), column: String(r.col) }));
-  } catch {
-    /* older SQLite without the table-valued pragma — fall through */
-  }
-  const tables = await app.d1All(
-    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+async function schemaColumns() {
+  const rows = await app.d1All(
+    "SELECT name, sql FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
   );
-  const found = [];
-  for (const t of tables) {
-    const name = String(t.name);
-    let cols = [];
-    try {
-      cols = await app.d1All(`PRAGMA table_info(${name})`);
-    } catch {
-      continue;
-    }
-    for (const c of cols) {
-      const col = String(c.name);
-      if (/^(product_id|game_id)$/.test(col)) found.push({ table: name, column: col });
+  const out = [];
+  for (const row of rows) {
+    const table = String(row?.name ?? "");
+    const body = String(row?.sql ?? "");
+    const open = body.indexOf("(");
+    if (!table || open < 0) continue;
+    for (const m of body.slice(open).matchAll(/(?:^|[(,])\s*["'`[]?([A-Za-z_][\w$]*)["'`\]]?\s+(?:TEXT|INTEGER|REAL|BLOB|NUMERIC)/gi)) {
+      out.push({ table, column: m[1] });
     }
   }
-  return found;
+  if (!out.length) throw new Error("the schema came back with no columns — refusing to count references against nothing");
+  return out;
 }
+
+const COLUMNS = await step("read the schema", schemaColumns);
+
+/** Columns that hold a product id. */
+const referencingColumns = () =>
+  COLUMNS.filter((c) => /^(product_id|game_id)$/.test(c.column));
+
+/** Tables whose JSON body can name a product without a column saying so. */
+const docColumns = () => COLUMNS.filter((c) => /^(doc|payload|body)$/.test(c.column));
+
 const REFS = await step("discover product-id columns", referencingColumns);
 const DOC_TABLES = await step("discover json-bodied tables", docColumns);
 
