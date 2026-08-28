@@ -50,7 +50,7 @@ say();
 let idx = [];
 try {
   idx = await app.d1All(
-    "SELECT count(*) AS n, SUM(CASE WHEN is_hidden=1 THEN 1 ELSE 0 END) AS hidden FROM product_index",
+    "SELECT count(*) AS n, SUM(CASE WHEN hidden=1 THEN 1 ELSE 0 END) AS hidden FROM product_index",
   );
 } catch (err) {
   say(`- \`product_index\` unreadable: ${String(err).slice(0, 120)}`);
