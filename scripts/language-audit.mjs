@@ -23,6 +23,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
+  ARABIC_REGION_NOTICE,
   ARABIC_WARNING,
   VERDICTS,
   classify,
@@ -215,24 +216,37 @@ for (const identity of identities) {
 
 say(`## Per game`);
 say();
-say(`| game | platform | code | Japan SKU | Japan languages | Hong Kong SKU | Hong Kong languages | verdict |`);
-say(`| --- | --- | --- | --- | --- | --- | --- | --- |`);
+say(`| game | platform | code | Japan SKU | Japan languages | Japan | Hong Kong SKU | Hong Kong languages | Hong Kong | combined |`);
+say(`| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |`);
 for (const r of results) {
   const jpLangs = r.jp.row?.languages?.join(", ") ?? `— ${r.jp.reason}`;
   const hkLangs = r.hk.row?.languages?.join(", ") ?? `— ${r.hk.why}`;
   say(
-    `| \`${r.identity.slug}\` | ${r.identity.platform} | ${r.identity.code || "—"} | ${r.jp.row?.title ?? "—"} | ${jpLangs} | ${r.hk.row?.storeName || r.hk.row?.catalogueTitle || "—"} | ${hkLangs} | **${r.verdict}** |`,
+    `| \`${r.identity.slug}\` | ${r.identity.platform} | ${r.identity.code || "—"} | ${r.jp.row?.title ?? "—"} | ${jpLangs} | **${r.japan}** | ${r.hk.row?.storeName || r.hk.row?.catalogueTitle || "—"} | ${hkLangs} | **${r.hongKong}** | ${r.verdict} |`,
   );
 }
 say();
 
 say(`## What each game's customers should be told`);
 say();
-say(`| game | verdict | Arabic notice |`);
+say(
+  "Each account region gets its own line, because that is what a customer buys. A settled Japanese answer is worth telling someone while Hong Kong is still open.",
+);
+say();
+say(`| game | Japan notice | Hong Kong notice |`);
 say(`| --- | --- | --- |`);
 for (const r of results) {
-  const notice = ARABIC_WARNING[r.verdict];
-  say(`| \`${r.identity.slug}\` | ${r.verdict} | ${notice || "— no notice needed"} |`);
+  say(
+    `| \`${r.identity.slug}\` | ${ARABIC_REGION_NOTICE.japan[r.japan]} | ${ARABIC_REGION_NOTICE.hongKong[r.hongKong]} |`,
+  );
+}
+say();
+say(`Where both regions are settled, the combined notice is:`);
+say();
+say(`| game | combined | Arabic notice |`);
+say(`| --- | --- | --- |`);
+for (const r of results.filter((x) => x.verdict !== VERDICTS.RESEARCH)) {
+  say(`| \`${r.identity.slug}\` | ${r.verdict} | ${ARABIC_WARNING[r.verdict] || "— no notice needed"} |`);
 }
 say();
 
@@ -240,11 +254,23 @@ say(`## Summary`);
 say();
 const tally = {};
 for (const r of results) tally[r.verdict] = (tally[r.verdict] ?? 0) + 1;
-say(`| verdict | games |`);
+say(`| combined verdict | games |`);
 say(`| --- | ---: |`);
 for (const key of [VERDICTS.UNLOCKED, VERDICTS.VARIANT, VERDICTS.LOCKED, VERDICTS.RESEARCH]) {
   say(`| ${key} | ${tally[key] ?? 0} |`);
 }
+say();
+const per = (which) => {
+  const t = {};
+  for (const r of results) t[r[which]] = (t[r[which]] ?? 0) + 1;
+  return t;
+};
+const jpTally = per("japan");
+const hkTally = per("hongKong");
+say(`| account region | English confirmed | no English | still open |`);
+say(`| --- | ---: | ---: | ---: |`);
+say(`| Japan | ${jpTally.ENGLISH ?? 0} | ${jpTally.NO_ENGLISH ?? 0} | ${jpTally.NEEDS_RESEARCH ?? 0} |`);
+say(`| Hong Kong | ${hkTally.ENGLISH ?? 0} | ${hkTally.NO_ENGLISH ?? 0} | ${hkTally.NEEDS_RESEARCH ?? 0} |`);
 say();
 say(`- Japanese SKU established: **${results.filter((r) => r.jp.row).length}** of ${results.length}`);
 say(`- Hong Kong SKU established: **${results.filter((r) => r.hk.row).length}** of ${results.length}`);

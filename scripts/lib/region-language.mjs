@@ -218,11 +218,30 @@ export function hkIndexFrom(json) {
   for (const row of json?.titles ?? []) {
     if (!row?.languages?.length) continue;
     for (const name of [row.storeName, row.catalogueTitle]) {
-      const key = comparableTitle(name);
-      if (key && !byName.has(key)) byName.set(key, row);
+      for (const form of [name, ...latinFragments(name)]) {
+        const key = comparableTitle(form);
+        if (key && !byName.has(key)) byName.set(key, row);
+      }
     }
   }
   return byName;
+}
+
+/**
+ * The Latin name a Chinese title carries in brackets after it.
+ *
+ * Hong Kong writes several titles as `《英靈神殿大亂鬥》(Brawlhalla)`. Reducing
+ * that whole string to one key buries the only part of it an English-titled
+ * catalogue could ever match, so the bracketed Latin run is indexed as a name
+ * in its own right.
+ */
+export function latinFragments(text) {
+  const out = [];
+  for (const m of String(text ?? "").matchAll(/[（(]\s*([^）)]{2,80})\s*[）)]/g)) {
+    const inner = m[1].trim();
+    if (/^[\x20-\x7e™®©:'\u2019.,&!?+-]+$/.test(inner) && /[a-zA-Z]{3}/.test(inner)) out.push(inner);
+  }
+  return out;
 }
 
 /** The Hong Kong SKU for a game, or none — never a near-miss. */
@@ -248,43 +267,61 @@ export const VERDICTS = {
   RESEARCH: "NEEDS_RESEARCH",
 };
 
+/** What one region's own list says, on its own. */
+export const REGION_VERDICTS = {
+  ENGLISH: "ENGLISH",
+  NO_ENGLISH: "NO_ENGLISH",
+  RESEARCH: "NEEDS_RESEARCH",
+};
+
 const readable = (langs) =>
   Array.isArray(langs) && langs.some((l) => READABLE.has(String(l)) || String(l).startsWith("en"));
+
+/** One region, answered from that region's list alone. */
+export function classifyRegion(languages) {
+  if (!Array.isArray(languages)) return REGION_VERDICTS.RESEARCH;
+  return readable(languages) ? REGION_VERDICTS.ENGLISH : REGION_VERDICTS.NO_ENGLISH;
+}
 
 /**
  * Classifies one game from the two regional lists, which are kept apart.
  *
- * `null` means the region was not established — that is NEEDS_RESEARCH, never
- * an assumption that the other region's list also applies here.
+ * Each region is answered on its own first, and the combined verdict is derived
+ * from the pair — so a game whose Japanese SKU is settled still reports that,
+ * instead of the fact of an unknown Hong Kong SKU erasing it. `null` means the
+ * region was not established: never an assumption that the other region's list
+ * applies here.
  */
 export function classify({ jpLanguages, hkLanguages }) {
-  const haveJp = Array.isArray(jpLanguages);
-  const haveHk = Array.isArray(hkLanguages);
-  if (!haveJp && !haveHk) return { verdict: VERDICTS.RESEARCH, why: "neither region established" };
+  const japan = classifyRegion(jpLanguages);
+  const hongKong = classifyRegion(hkLanguages);
+  const R = REGION_VERDICTS;
 
-  const jpOk = haveJp ? readable(jpLanguages) : null;
-  const hkOk = haveHk ? readable(hkLanguages) : null;
-
-  if (jpOk === true && hkOk === true) return { verdict: VERDICTS.UNLOCKED, why: "English on both regional SKUs" };
-  if (jpOk === false && hkOk === false) {
-    return { verdict: VERDICTS.LOCKED, why: "neither regional SKU carries English" };
-  }
-  if (jpOk !== null && hkOk !== null && jpOk !== hkOk) {
-    return {
-      verdict: VERDICTS.VARIANT,
-      why: jpOk
+  let verdict;
+  let why;
+  if (japan === R.RESEARCH && hongKong === R.RESEARCH) {
+    verdict = VERDICTS.RESEARCH;
+    why = "neither region established";
+  } else if (japan === R.ENGLISH && hongKong === R.ENGLISH) {
+    verdict = VERDICTS.UNLOCKED;
+    why = "English on both regional SKUs";
+  } else if (japan === R.NO_ENGLISH && hongKong === R.NO_ENGLISH) {
+    verdict = VERDICTS.LOCKED;
+    why = "neither regional SKU carries English";
+  } else if (japan !== R.RESEARCH && hongKong !== R.RESEARCH) {
+    verdict = VERDICTS.VARIANT;
+    why =
+      japan === R.ENGLISH
         ? "English on the Japanese SKU only — a Hong Kong account will not read it"
-        : "English on the Hong Kong SKU only — a Japanese account will not read it",
-    };
+        : "English on the Hong Kong SKU only — a Japanese account will not read it";
+  } else {
+    const known = japan === R.RESEARCH ? "Hong Kong" : "Japan";
+    const missing = japan === R.RESEARCH ? "Japan" : "Hong Kong";
+    const settled = japan === R.RESEARCH ? hongKong : japan;
+    verdict = VERDICTS.RESEARCH;
+    why = `${known} ${settled === R.ENGLISH ? "carries" : "does not carry"} English; ${missing} not established`;
   }
-  /* One region known, the other not: report what is known and what is missing. */
-  const known = jpOk === null ? "Hong Kong" : "Japan";
-  const missing = jpOk === null ? "Japan" : "Hong Kong";
-  const ok = jpOk === null ? hkOk : jpOk;
-  return {
-    verdict: VERDICTS.RESEARCH,
-    why: `${known} ${ok ? "carries" : "does not carry"} English; ${missing} not established`,
-  };
+  return { verdict, why, japan, hongKong };
 }
 
 /** What the customer is told, in the store's own Arabic. */
@@ -293,4 +330,24 @@ export const ARABIC_WARNING = {
   [VERDICTS.LOCKED]: "هذه اللعبة لا تدعم اللغة الإنجليزية على حسابات اليابان أو هونغ كونغ.",
   [VERDICTS.VARIANT]: "دعم اللغة الإنجليزية يختلف بين حساب اليابان وحساب هونغ كونغ — راجع الوصف قبل الشراء.",
   [VERDICTS.RESEARCH]: "لم يتم تأكيد دعم اللغة الإنجليزية لهذه النسخة بعد.",
+};
+
+/**
+ * The notice for one account region, since that is what a customer buys.
+ *
+ * A settled Japanese answer is worth telling someone even while Hong Kong is
+ * still open, and the reverse; one notice covering both would have to hedge on
+ * the half that is known.
+ */
+export const ARABIC_REGION_NOTICE = {
+  japan: {
+    [REGION_VERDICTS.ENGLISH]: "حساب اليابان: اللعبة تدعم اللغة الإنجليزية.",
+    [REGION_VERDICTS.NO_ENGLISH]: "حساب اليابان: اللعبة لا تدعم اللغة الإنجليزية.",
+    [REGION_VERDICTS.RESEARCH]: "حساب اليابان: دعم اللغة الإنجليزية غير مؤكد بعد.",
+  },
+  hongKong: {
+    [REGION_VERDICTS.ENGLISH]: "حساب هونغ كونغ: اللعبة تدعم اللغة الإنجليزية.",
+    [REGION_VERDICTS.NO_ENGLISH]: "حساب هونغ كونغ: اللعبة لا تدعم اللغة الإنجليزية.",
+    [REGION_VERDICTS.RESEARCH]: "حساب هونغ كونغ: دعم اللغة الإنجليزية غير مؤكد بعد.",
+  },
 };

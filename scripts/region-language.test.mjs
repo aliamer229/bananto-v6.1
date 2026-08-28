@@ -6,6 +6,7 @@ import {
   comparableTitle,
   hkIndexFrom,
   iCode,
+  latinFragments,
   matchHk,
   matchJp,
   platformOfHard,
@@ -90,6 +91,13 @@ describe("matchJp", () => {
 });
 
 describe("classify", () => {
+  it("answers each region on its own, so one unknown does not erase the other", () => {
+    const got = classify({ jpLanguages: ["ja", "en"], hkLanguages: null });
+    expect(got.japan).toBe("ENGLISH");
+    expect(got.hongKong).toBe("NEEDS_RESEARCH");
+  });
+
+
   it("clears a game only when both regional SKUs carry English", () => {
     const got = classify({ jpLanguages: ["ja", "en"], hkLanguages: ["zh", "en"] });
     expect(got.verdict).toBe(VERDICTS.UNLOCKED);
@@ -116,6 +124,17 @@ describe("classify", () => {
 
   it("reports nothing known as nothing known", () => {
     expect(classify({ jpLanguages: null, hkLanguages: null }).verdict).toBe(VERDICTS.RESEARCH);
+  });
+});
+
+describe("latinFragments", () => {
+  it("pulls out the Latin name a Chinese title carries in brackets", () => {
+    expect(latinFragments("《英靈神殿大亂鬥》(Brawlhalla)")).toEqual(["Brawlhalla"]);
+  });
+
+  it("takes nothing when the brackets hold no Latin name", () => {
+    expect(latinFragments("魔法氣泡eSports")).toEqual([]);
+    expect(latinFragments("勇者戰機少女（宇宙）")).toEqual([]);
   });
 });
 
