@@ -121,9 +121,21 @@ const find = (key) => live.get(key) ?? bySlug.get(key) ?? null;
  *
  * A hard-coded list of tables goes stale the moment a migration adds one, and
  * the cost of missing a table here is an orphaned order. SQLite is asked what
- * it actually has.
+ * it actually has — in one query. Walking `PRAGMA table_info` table by table is
+ * a hundred and thirty round trips against a remote database before any real
+ * work starts, and `pragma_table_info` as a table-valued function answers the
+ * same question once.
  */
 async function referencingColumns() {
+  try {
+    const rows = await app.d1All(
+      "SELECT m.name AS tbl, p.name AS col FROM sqlite_master m JOIN pragma_table_info(m.name) p" +
+        " WHERE m.type = 'table' AND m.name NOT LIKE 'sqlite_%' AND p.name IN ('product_id', 'game_id')",
+    );
+    if (rows.length) return rows.map((r) => ({ table: String(r.tbl), column: String(r.col) }));
+  } catch {
+    /* older SQLite without the table-valued pragma — fall through */
+  }
   const tables = await app.d1All(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
   );
@@ -153,31 +165,50 @@ const DOC_TABLES = [
   { table: "order_queue", column: "doc" },
 ];
 
-async function countRefs(id) {
-  const out = [];
+/**
+ * How many rows in each table name each of these products.
+ *
+ * Every id in one pass per table, grouped, rather than a query per id: the
+ * database is remote and one round trip per table per product is most of the
+ * run. The `doc` tables still cost one scan each per id, because `LIKE` cannot
+ * be grouped, but there are four of those rather than forty.
+ */
+async function countRefsFor(ids) {
+  const byId = new Map(ids.map((id) => [id, []]));
+  const holes = ids.map(() => "?").join(",");
   for (const { table, column } of REFS) {
     try {
-      const r = await app.d1All(`SELECT count(*) AS n FROM ${table} WHERE ${column} = ?`, id);
-      const n = Number(r?.[0]?.n ?? 0);
-      if (n) out.push({ table, column, n });
+      const rows = await app.d1All(
+        `SELECT ${column} AS pid, count(*) AS n FROM ${table} WHERE ${column} IN (${holes}) GROUP BY ${column}`,
+        ...ids,
+      );
+      for (const r of rows) {
+        const n = Number(r?.n ?? 0);
+        const pid = String(r?.pid ?? "");
+        if (n && byId.has(pid)) byId.get(pid).push({ table, column, n });
+      }
     } catch {
       /* a table the deployment does not have */
     }
   }
   for (const { table, column } of DOC_TABLES) {
-    try {
-      const r = await app.d1All(
-        `SELECT count(*) AS n FROM ${table} WHERE ${column} LIKE ?`,
-        `%${id}%`,
-      );
-      const n = Number(r?.[0]?.n ?? 0);
-      if (n) out.push({ table, column: `${column} (json)`, n });
-    } catch {
-      /* likewise */
+    for (const id of ids) {
+      try {
+        const r = await app.d1All(
+          `SELECT count(*) AS n FROM ${table} WHERE ${column} LIKE ?`,
+          `%${id}%`,
+        );
+        const n = Number(r?.[0]?.n ?? 0);
+        if (n) byId.get(id).push({ table, column: `${column} (json)`, n });
+      } catch {
+        /* likewise */
+      }
     }
   }
-  return out;
+  return byId;
 }
+
+const countRefs = async (id) => (await countRefsFor([id])).get(id) ?? [];
 
 const weight = (refs) => refs.reduce((a, r) => a + r.n, 0);
 
@@ -211,6 +242,18 @@ const NEVER_MOVE = new Set(["id", "createdAt", "created_at", "slug", "_deleted"]
 
 const results = [];
 
+/* Every product in every pair, counted in one sweep of the database. */
+const everyId = [
+  ...new Set(
+    PAIRS.flatMap((p) => [find(p.keep), find(p.drop)])
+      .filter(Boolean)
+      .map((d) => String(d.id)),
+  ),
+];
+const refsById = everyId.length ? await countRefsFor(everyId) : new Map();
+say(`- products resolved and counted in one sweep: **${everyId.length}**`);
+say();
+
 for (const pair of PAIRS) {
   const keep = find(pair.keep);
   const drop = find(pair.drop);
@@ -229,8 +272,8 @@ for (const pair of PAIRS) {
     continue;
   }
 
-  const keepRefs = await countRefs(String(keep.id));
-  const dropRefs = await countRefs(String(drop.id));
+  const keepRefs = refsById.get(String(keep.id)) ?? [];
+  const dropRefs = refsById.get(String(drop.id)) ?? [];
 
   say(`| | canonical candidate | duplicate candidate |`);
   say(`| --- | --- | --- |`);
