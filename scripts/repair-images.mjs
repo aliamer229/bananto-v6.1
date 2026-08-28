@@ -153,6 +153,9 @@ function roleForKind(kind) {
   const banner = k.match(/^banner-(\d+)$/);
   if (banner) return `bannerImages[${banner[1]}]`;
   if (/^banner$|^bannerimages$/.test(k)) return "banner";
+  const gallery = k.match(/^(?:gallery|screenshot|shot)-?(\d+)$/);
+  if (gallery) return `galleryImages[${gallery[1]}]`;
+  if (/^gallery|^screenshot/.test(k)) return "galleryImages";
   return "";
 }
 
@@ -260,6 +263,13 @@ say(`- Products with \`game_images\` rows: **${byProduct.size}**`);
 say();
 
 const allIds = [...live.keys()].sort();
+const roleStats = new Map();
+const bump = (role, bucket) => {
+  const base = String(role).replace(/\[\d+\]$/, "");
+  if (!roleStats.has(base)) roleStats.set(base, { external: 0, alive: 0, dead: 0, replaced: 0, unfixable: 0 });
+  roleStats.get(base)[bucket]++;
+};
+
 const targets = ONLY
   ? ONLY.split(",").map((s) => s.trim())
   : allIds.slice(OFFSET, OFFSET + LIMIT);
@@ -282,6 +292,7 @@ for (const id of targets) {
     const kind = classifyUrl(current);
     if (kind.kind === "external") {
       external.push({ role, host: kind.host });
+      bump(role, "external");
       return;
     }
     if (kind.kind === "empty") return;
@@ -289,20 +300,30 @@ for (const id of targets) {
     // A URL game_images already knows is a verified-present new-generation key.
     if (known.has(key) || existsInR2(current)) {
       claimed.add(key);
+      bump(role, "alive");
       return;
     }
+    bump(role, "dead");
     const match = candidates.find((c) => c.role === role && !claimed.has(assetKey(c.url)));
     if (match && existsInR2(match.url)) {
       claimed.add(assetKey(match.url));
       fixes.push({ role, from: current, to: match.url, kind: match.kind });
+      bump(role, "replaced");
     } else {
       unrecoverable.push({ role, url: current });
+      bump(role, "unfixable");
     }
   };
 
   for (const role of SINGLE_ROLES) check(role, doc[role]);
   if (Array.isArray(doc.bannerImages)) {
     doc.bannerImages.forEach((url, i) => check(`bannerImages[${i}]`, url));
+  }
+  // The audit found a dead gallery reference on all 89 games; whether any of
+  // them can be repaired from D1 depends on game_images carrying a gallery
+  // kind at all, which this run answers rather than assumes.
+  if (Array.isArray(doc.galleryImages)) {
+    doc.galleryImages.forEach((url, i) => check(`galleryImages[${i}]`, url));
   }
 
   if (fixes.length || unrecoverable.length || external.length) {
@@ -320,6 +341,16 @@ const hosts = {};
 for (const p of plans) for (const e of p.external) hosts[e.host] = (hosts[e.host] ?? 0) + 1;
 say(`- External hosts in use: ${Object.entries(hosts).sort((a, b) => b[1] - a[1]).map(([h, n]) => `${h} (${n})`).join(", ") || "none"}`);
 say(`- R2 probes: ${probes}`);
+say();
+say("| role | external | R2 alive | R2 dead | replaceable | no replacement |");
+say("| --- | ---: | ---: | ---: | ---: | ---: |");
+for (const [role, st] of [...roleStats.entries()].sort()) {
+  say(`| \`${role}\` | ${st.external} | ${st.alive} | ${st.dead} | ${st.replaced} | ${st.unfixable} |`);
+}
+say();
+const kinds = new Map();
+for (const rows of byProduct.values()) for (const r of rows) kinds.set(r.kind, (kinds.get(r.kind) ?? 0) + 1);
+say(`\`game_images\` kinds available as replacements: ${[...kinds.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => `\`${k}\` ${n}`).join(", ")}`);
 say();
 for (const p of plans.slice(0, 40)) {
   say(`### \`${p.id}\` ${p.slug}`);
