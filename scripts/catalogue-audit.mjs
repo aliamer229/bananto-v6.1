@@ -144,7 +144,13 @@ const filled = (v) => {
   if (v === null || v === undefined) return 0;
   if (typeof v === "string") return v.trim() ? 1 : 0;
   if (typeof v === "number") return Number.isFinite(v) ? 1 : 0;
-  if (typeof v === "boolean") return v ? 1 : 0;
+  /*
+    `false` is an answer, not a gap. Counting it as missing put
+    nintendoGameKeyCard on 84 of 89 games and nintendoOnlineRequired on 62 into
+    the research list, when for most titles the stored `false` is already
+    correct and researching it would confirm what is there.
+  */
+  if (typeof v === "boolean") return 1;
   if (Array.isArray(v)) return v.filter((x) => filled(x) > 0).length;
   if (typeof v === "object") return Object.values(v).some((x) => filled(x) > 0) ? 1 : 0;
   return 0;
