@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   candidateKeys,
   familyFacts,
+  htmlToText,
   galleryFrom,
   identityMatch,
   metadataFrom,
@@ -255,6 +256,15 @@ describe("metadataFrom", () => {
     expect("compatibility" in md).toBe(false);
   });
 
+  it("records local and online player counts separately when the page has them", () => {
+    const md = metadataFrom({
+      numberOfPlayers: { system: { min: 1, max: 4 }, local: { max: 4 }, online: { max: 8 } },
+    });
+    expect(md.numberOfPlayers).toBe("1-4");
+    expect(md.mpLocalPlayers).toBe(4);
+    expect(md.mpOnlinePlayers).toBe(8);
+  });
+
   it("reports Arabic support when the page lists it", () => {
     const md = metadataFrom({ supportedLanguages: ["American English", "Arabic"] });
     expect(md.arabicSupport).toBe(true);
@@ -282,6 +292,23 @@ describe("metadataFrom", () => {
   it("gives a single-player game a plain player count", () => {
     const md = metadataFrom({ numberOfPlayers: { system: { min: 1, max: 1 } } });
     expect(md.numberOfPlayers).toBe("1");
+  });
+});
+
+describe("htmlToText", () => {
+  it("turns the store's markup into the plain text the storefront renders", () => {
+    expect(htmlToText("<p>Meet Pikmin, small &amp; plantlike.<br><br>Grow them.</p>")).toBe(
+      "Meet Pikmin, small & plantlike.\n\nGrow them.",
+    );
+  });
+
+  it("keeps every word", () => {
+    const text = htmlToText("<p>One</p><p>Two</p><ul><li>Three</li><li>Four</li></ul>");
+    for (const word of ["One", "Two", "Three", "Four"]) expect(text).toContain(word);
+  });
+
+  it("leaves plain text alone", () => {
+    expect(htmlToText("Just a sentence.")).toBe("Just a sentence.");
   });
 });
 

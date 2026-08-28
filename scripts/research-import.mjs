@@ -284,6 +284,7 @@ const RESEARCH_FIELDS = [
   "nintendoCloudSaves", "nsuid", "product_code", "title_id", "nintendoEshopUrl", "officialUrl",
   "edition", "tagline", "dlc", "editionsList", "nintendoNotes", "arabicSupport",
   "switch2UpgradePrice", "switch2Enhanced", "switch2Exclusive",
+  "description", "description_short", "mpLocalPlayers", "mpOnlinePlayers",
 ];
 
 const totals = {

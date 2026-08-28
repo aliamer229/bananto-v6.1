@@ -178,6 +178,27 @@ const isSwitch2 = (text) => PLATFORM_2.test(String(text ?? ""));
 
 const bytesToGb = (n) => Math.round((Number(n) / 1024 ** 3) * 100) / 100;
 
+const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'" };
+
+/**
+ * Nintendo's description is HTML; the storefront renders descriptions as text.
+ *
+ * Storing the markup verbatim would put literal `<p>` and `<br>` on the page,
+ * so the tags become paragraph breaks and the entities become characters. No
+ * words are removed.
+ */
+export function htmlToText(html) {
+  return String(html ?? "")
+    .replace(/<\s*br\s*\/?\s*>/gi, "\n")
+    .replace(/<\/\s*(p|div|li|h[1-6])\s*>/gi, "\n\n")
+    .replace(/<\s*li\s*>/gi, "• ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&(#?\w+);/g, (m, name) => ENTITIES[name.toLowerCase()] ?? m)
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 /** Only what the page states outright. Nothing is inferred or averaged. */
 export function metadataFrom(product) {
   const out = {};
@@ -210,12 +231,20 @@ export function metadataFrom(product) {
   put("supportedLanguages", langs);
   if (langs.length) put("arabicSupport", langs.some((l) => /arabic/i.test(String(l))));
 
+  const description = htmlToText(product['description({"html":true})'] ?? product.description);
+  put("description", description);
+  put("description_short", product.metaDescription);
+
   const sys = product.numberOfPlayers?.system;
   if (sys && (sys.min || sys.max)) {
     const min = Number(sys.min ?? 1);
     const max = Number(sys.max ?? min);
     put("numberOfPlayers", max > min ? `${min}-${max}` : String(min));
   }
+  const local = Number(product.numberOfPlayers?.local?.max);
+  if (Number.isFinite(local)) put("mpLocalPlayers", local);
+  const online = Number(product.numberOfPlayers?.online?.max);
+  if (Number.isFinite(online)) put("mpOnlinePlayers", online);
 
   const modes = (product.playModes ?? []).map((m) => String(m?.code ?? ""));
   if (modes.length) {
