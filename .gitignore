@@ -56,3 +56,5 @@ normalize-embedded-media.md
 media-backup/
 sync-performance.md
 .perf-sync-bundle.mjs
+rebuild-index.md
+.index-rebuild-bundle.mjs

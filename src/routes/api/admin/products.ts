@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCatalogVersion, getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
-import { destructiveUpdateLog, mergeProductUpdate } from "@/lib/productMergeGuard";
+import { destructiveUpdateLog, mergeProductUpdate, oversizedMediaLog } from "@/lib/productMergeGuard";
 import { deleteProductEverywhere } from "@/lib/product-delete.server";
 import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
@@ -574,6 +574,9 @@ export const Route = createFileRoute("/api/admin/products")({
           if (guard.blocked.length) {
             console.warn(destructiveUpdateLog(productId, guard.blocked));
           }
+          if (guard.rejectedMedia.length) {
+            console.warn(oversizedMediaLog(productId, guard.rejectedMedia));
+          }
           const productToSave: Product = guard.merged;
 
           // Fast DB Update (UPSERT style on KV value)
@@ -605,6 +608,7 @@ export const Route = createFileRoute("/api/admin/products")({
               catalogVersion: await getCatalogVersion(),
               ...(guard.blocked.length ? { blockedFields: guard.blocked } : {}),
               ...(guard.cleared.length ? { clearedFields: guard.cleared } : {}),
+              ...(guard.rejectedMedia.length ? { rejectedMedia: guard.rejectedMedia } : {}),
             });
           } catch (dbErr: any) {
             console.error("[PatchProduct:DatabaseError]", dbErr);
@@ -770,9 +774,12 @@ export const Route = createFileRoute("/api/admin/products")({
 
           const putGuard = stored
             ? mergeProductUpdate(stored, normalised, { clear: putClearFields })
-            : { merged: normalised as Product, blocked: [], cleared: [], changed: [] };
+            : { merged: normalised as Product, blocked: [], rejectedMedia: [], cleared: [], changed: [] };
           if (putGuard.blocked.length) {
             console.warn(destructiveUpdateLog(productId, putGuard.blocked));
+          }
+          if (putGuard.rejectedMedia?.length) {
+            console.warn(oversizedMediaLog(productId, putGuard.rejectedMedia));
           }
           let productToSave: Product = putGuard.merged;
 

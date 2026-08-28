@@ -91,6 +91,24 @@ export function contentSize(value: unknown): number {
   return 0;
 }
 
+/**
+ * A product document stores references, not payloads.
+ *
+ * street-fighter-6-switch-2 arrived carrying a 5.9 MB base64 JPEG in
+ * `coverHiResImage` — 99.6% of that document and three quarters of the entire
+ * catalogue, paid for on every catalogue read. Media belongs in R2 with a URL
+ * in the field.
+ */
+const DATA_URI = /^\s*data:[a-z0-9.+/-]+;base64,/i;
+/** Generous for any real URL, far below anything worth storing as a payload. */
+export const MAX_FIELD_BYTES = 8_192;
+
+export interface OversizedField {
+  field: string;
+  bytes: number;
+  reason: "data-uri" | "oversized";
+}
+
 export interface BlockedField {
   field: string;
   from: number;
@@ -99,6 +117,8 @@ export interface BlockedField {
 
 export interface MergeResult {
   merged: Product;
+  /** Fields refused for carrying an embedded payload instead of a reference. */
+  rejectedMedia: OversizedField[];
   /** Fields the patch tried to empty without saying so. None of them applied. */
   blocked: BlockedField[];
   /** Fields the patch cleared with explicit intent. */
@@ -130,12 +150,24 @@ export function mergeProductUpdate(
   const clear = new Set((options.clear ?? []).map(String));
   const merged: Record<string, unknown> = { ...(stored as Record<string, unknown>) };
   const blocked: BlockedField[] = [];
+  const rejectedMedia: OversizedField[] = [];
   const cleared: string[] = [];
   const changed: string[] = [];
 
   for (const [field, incoming] of Object.entries(patch)) {
     // An explicitly undefined key is the same as an absent one: no opinion.
     if (incoming === undefined) continue;
+
+    // A payload is never accepted into a document field, whatever else is true
+    // of the patch. The caller stores it in R2 and sends the URL.
+    if (typeof incoming === "string" && incoming.length > MAX_FIELD_BYTES) {
+      rejectedMedia.push({
+        field,
+        bytes: incoming.length,
+        reason: DATA_URI.test(incoming) ? "data-uri" : "oversized",
+      });
+      continue;
+    }
 
     const before = contentSize((stored as Record<string, unknown>)[field]);
     const after = contentSize(incoming);
@@ -153,7 +185,13 @@ export function mergeProductUpdate(
     merged[field] = incoming;
   }
 
-  return { merged: merged as Product, blocked, cleared, changed };
+  return { merged: merged as Product, blocked, rejectedMedia, cleared, changed };
+}
+
+/** The log line an operator can grep for after a refused payload. */
+export function oversizedMediaLog(productId: string, rejected: readonly OversizedField[]): string {
+  const detail = rejected.map((r) => `${r.field}:${r.reason}:${r.bytes}`).join(",");
+  return `EMBEDDED_MEDIA_REJECTED product=${productId} fields=${rejected.length} ${detail}`;
 }
 
 /** The log line an operator can grep for after a refused save. */

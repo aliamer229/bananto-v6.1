@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MAX_FIELD_BYTES,
   contentSize,
   destructiveUpdateLog,
   mergeProductUpdate,
+  oversizedMediaLog,
 } from "./productMergeGuard";
 import type { Product } from "./types";
 
@@ -145,5 +147,52 @@ describe("mergeProductUpdate", () => {
     expect(line).toContain("prd_1");
     expect(line).toContain("bannerImages:3->0");
     expect(line).toContain("variants:1->0");
+  });
+});
+
+describe("embedded media", () => {
+  const dataUri = (bytes: number) => `data:image/jpeg;base64,${"A".repeat(bytes)}`;
+
+  it("refuses the payload that made one product 76% of the catalogue", () => {
+    /*
+      street-fighter-6-switch-2 carried a 5.9 MB base64 JPEG in
+      coverHiResImage. The document was 5.67 MB; every catalogue read paid for
+      it.
+    */
+    const { merged, rejectedMedia, changed } = mergeProductUpdate(base(), {
+      coverHiResImage: dataUri(5_900_000),
+      price: 15000,
+    } as Partial<Product>);
+
+    expect(rejectedMedia).toMatchObject([{ field: "coverHiResImage", reason: "data-uri" }]);
+    expect(rejectedMedia[0]!.bytes).toBeGreaterThan(5_000_000);
+    // The stored URL survives untouched, and the real edit still lands.
+    expect(merged.coverHiResImage).toBe("/api/files/products/prd_1/3d.webp");
+    expect(merged.price).toBe(15000);
+    expect(changed).toEqual(["price"]);
+  });
+
+  it("refuses an oversized non-data-uri string too", () => {
+    const { rejectedMedia } = mergeProductUpdate(base(), {
+      description: "x".repeat(MAX_FIELD_BYTES + 1),
+    } as Partial<Product>);
+    expect(rejectedMedia).toMatchObject([{ field: "description", reason: "oversized" }]);
+  });
+
+  it("accepts an ordinary URL, which is the whole point", () => {
+    const { merged, rejectedMedia } = mergeProductUpdate(base(), {
+      coverHiResImage: "/api/files/products/prd_1/3d-texture-abc123.webp",
+    } as Partial<Product>);
+    expect(rejectedMedia).toEqual([]);
+    expect(merged.coverHiResImage).toBe("/api/files/products/prd_1/3d-texture-abc123.webp");
+  });
+
+  it("names what it rejected so the log is actionable", () => {
+    const { rejectedMedia } = mergeProductUpdate(base(), {
+      coverHiResImage: dataUri(9000),
+    } as Partial<Product>);
+    const line = oversizedMediaLog("prd_1", rejectedMedia);
+    expect(line).toContain("EMBEDDED_MEDIA_REJECTED");
+    expect(line).toContain("coverHiResImage:data-uri");
   });
 });
