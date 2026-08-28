@@ -54,3 +54,5 @@ catalogue-audit.md
 inspect-product.md
 normalize-embedded-media.md
 media-backup/
+sync-performance.md
+.perf-sync-bundle.mjs
