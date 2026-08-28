@@ -1,0 +1,410 @@
+schema_version=24
+name=Mario Kart World
+title=Mario Kart World
+title_ar=ماريو كارت وورلد
+name_ar=ماريو كارت وورلد
+slug=mario-kart-world-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=Not supported on Nintendo Switch 1
+edition=Standard / Store Variants
+region=Global
+release_date=2025-06-05
+release_status=Released
+status=Active
+developer=Nintendo
+publisher=Nintendo
+genre.1=Racing
+genres.1=Racing
+genre.2=Action
+genres.2=Action
+genre.3=Party
+genres.3=Party
+series_name=Mario Kart World
+players_count=Single system (1-4) / Local wireless (2-8) / Online (2-24)
+players=Single system (1-4) / Local wireless (2-8) / Online (2-24)
+player_count=Single system (1-4) / Local wireless (2-8) / Online (2-24)
+age_rating=ESRB E — Mild Fantasy Violence, Users Interact
+metacritic_score=86
+metacritic=86
+metacritic_url=https://www.metacritic.com/game/mario-kart-world/
+opencritic_score=86
+opencritic=86
+user_score=8.1
+userscore=8.1
+user_rating=8.1
+game_size_gb=22.1
+size=22.1 GB
+size_gb=22.1
+price=1500
+price_iqd=1500
+price_usd=79.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=13750
+trade_value_iqd=13750
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.nintendo.com/us/store/products/mario-kart-world-switch-2/
+eshop_url=https://www.nintendo.com/us/store/products/mario-kart-world-switch-2/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+Mario Kart World turns a connected open world into a racetrack, supports up to 24 drivers online, and adds Free Roam, Knockout Tour, and new movement techniques.
+EOF
+description_full<<EOF
+Mario Kart World turns a connected open world into a racetrack, supports up to 24 drivers online, and adds Free Roam, Knockout Tour, and new movement techniques. The game reframes Mario Kart around one huge interconnected environment. Long-term skill comes from learning terrain, advanced movement, item timing, and routes across the world.
+EOF
+description<<EOF
+Mario Kart World turns a connected open world into a racetrack, supports up to 24 drivers online, and adds Free Roam, Knockout Tour, and new movement techniques. The game reframes Mario Kart around one huge interconnected environment. Long-term skill comes from learning terrain, advanced movement, item timing, and routes across the world.
+EOF
+description_en<<EOF
+Mario Kart World turns a connected open world into a racetrack, supports up to 24 drivers online, and adds Free Roam, Knockout Tour, and new movement techniques. The game reframes Mario Kart around one huge interconnected environment. Long-term skill comes from learning terrain, advanced movement, item timing, and routes across the world.
+EOF
+description_ar<<EOF
+ماريو كارت وورلد — Mario Kart World turns a connected open world into a racetrack, supports up to 24 drivers online, and adds Free Roam, Knockout Tour, and new movement techniques.
+EOF
+front_cover_image=https://www.achorao.com/cdn/shop/files/nintendo-gamer-default-title-mario-kart-world-nintendo-switch-2-45496905453-39603769049328.jpg?v=1754485966&width=1080
+cartridge_image=https://www.achorao.com/cdn/shop/files/nintendo-gamer-default-title-mario-kart-world-nintendo-switch-2-45496905453-39603769049328.jpg?v=1754485966&width=1080
+cartridge=https://www.achorao.com/cdn/shop/files/nintendo-gamer-default-title-mario-kart-world-nintendo-switch-2-45496905453-39603769049328.jpg?v=1754485966&width=1080
+cartridge_url=https://www.achorao.com/cdn/shop/files/nintendo-gamer-default-title-mario-kart-world-nintendo-switch-2-45496905453-39603769049328.jpg?v=1754485966&width=1080
+box_front_url=https://www.achorao.com/cdn/shop/files/nintendo-gamer-default-title-mario-kart-world-nintendo-switch-2-45496905453-39603769049328.jpg?v=1754485966&width=1080
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/0485f410193ca12f92a2f615ea608bb437540f321bd05e464593c33fefa09bf2
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/0485f410193ca12f92a2f615ea608bb437540f321bd05e464593c33fefa09bf2
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/0485f410193ca12f92a2f615ea608bb437540f321bd05e464593c33fefa09bf2
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/0485f410193ca12f92a2f615ea608bb437540f321bd05e464593c33fefa09bf2
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/0485f410193ca12f92a2f615ea608bb437540f321bd05e464593c33fefa09bf2
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/b8ca3bbb06f7a4149bea701e6764ed302b9ec0b41b3d7137d52eddb6ed05d704
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/b8ca3bbb06f7a4149bea701e6764ed302b9ec0b41b3d7137d52eddb6ed05d704
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/b8ca3bbb06f7a4149bea701e6764ed302b9ec0b41b3d7137d52eddb6ed05d704
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://www.achorao.com/cdn/shop/files/nintendo-gamer-default-title-mario-kart-world-nintendo-switch-2-45496905453-39603769049328.jpg?v=1754485966&width=1080
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/0485f410193ca12f92a2f615ea608bb437540f321bd05e464593c33fefa09bf2
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Connected world racing
+gameplay_pillar.1.description<<EOF
+Courses are linked by driveable roads, cities, mountains, water, and wilderness instead of existing only as isolated tracks.
+EOF
+gameplay_pillar.2.title=24-driver races
+gameplay_pillar.2.description<<EOF
+Grand Prix and online competition scale up to 24 racers, creating denser pack dynamics.
+EOF
+gameplay_pillar.3.title=Free Roam exploration
+gameplay_pillar.3.description<<EOF
+Players can leave formal races and explore the world for challenges, collectibles, and landmarks.
+EOF
+gameplay_pillar.4.title=Knockout Tour
+gameplay_pillar.4.description<<EOF
+Checkpoint eliminations create a long-form survival race across connected routes.
+EOF
+gameplay_pillar.5.title=New movement skills
+gameplay_pillar.5.description<<EOF
+Wall riding, rail grinding, jumps, and environmental shortcuts expand advanced driving possibilities.
+EOF
+world_summary<<EOF
+Mario Kart World turns a connected open world into a racetrack, supports up to 24 drivers online, and adds Free Roam, Knockout Tour, and new movement techniques. The game reframes Mario Kart around one huge interconnected environment. Long-term skill comes from learning terrain, advanced movement, item timing, and routes across the world.
+EOF
+story_chapter.1.title=Enter a connected Mario world
+story_chapter.1.text<<EOF
+The game reframes Mario Kart around one huge interconnected environment.
+EOF
+story_chapter.2.title=Race Grand Prix routes
+story_chapter.2.text<<EOF
+Traditional cups now connect courses through travel sections and changing conditions.
+EOF
+story_chapter.3.title=Explore outside races
+story_chapter.3.text<<EOF
+Free Roam encourages searching the world and learning terrain beyond standard circuits.
+EOF
+story_chapter.4.title=Survive Knockout Tour
+story_chapter.4.text<<EOF
+Large races become elimination events where weak positions are cut at checkpoints.
+EOF
+story_chapter.5.title=Master shortcuts and movement
+story_chapter.5.text<<EOF
+Long-term skill comes from learning terrain, advanced movement, item timing, and routes across the world.
+EOF
+feature.1=24-player online racing
+feature.2=Connected open world
+feature.3=Free Roam mode
+feature.4=Knockout Tour
+feature.5=New rail/wall movement techniques
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+main_story_hours=0
+completion_main_story_hours=0
+completion_story_plus_dlc_hours=0
+faq.1.question=Is Mario Kart World Switch 2 exclusive?
+faq.1.answer<<EOF
+Yes. Nintendo lists it as a Nintendo Switch 2 game.
+EOF
+faq.2.question=How many online racers are supported?
+faq.2.answer<<EOF
+Nintendo lists online play for up to 24 players.
+EOF
+faq.3.question=What is Free Roam?
+faq.3.answer<<EOF
+A mode that lets players drive around the connected world outside normal race events.
+EOF
+faq.4.question=Does it support local multiplayer?
+faq.4.answer<<EOF
+Yes. It supports split-screen local play and local wireless sessions.
+EOF
+faq.5.question=Does it support HDR?
+faq.5.answer<<EOF
+Nintendo lists HDR output on compatible TVs.
+EOF
+verdict_score=8.5
+verdict_pro.1=Massive multiplayer scale
+verdict_pro.2=Open-world structure changes the series formula
+verdict_pro.3=Excellent party value
+verdict_pro.4=Free Roam adds exploration
+verdict_pro.5=Strong launch showcase for Switch 2
+verdict_con.1=Higher digital price than many prior Mario Kart games
+verdict_con.2=24-player races can become chaotic
+verdict_con.3=Open-world pacing differs from classic track menus
+verdict_con.4=Some modes rely heavily on online population
+verdict_con.5=Switch 2 only
+review.1.source=Metacritic
+review.1.score=86
+review.1.url=https://www.metacritic.com/game/mario-kart-world/
+review.2.source=OpenCritic
+review.2.score=86
+review.2.url=https://opencritic.com/
+timeline.1.date=2025-06-05
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/mario-kart-world-switch-2/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/mario-kart-world-switch-2/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/mario-kart-world/
+storage_download_size_gb=22.1
+storage_required_space_gb=22.1
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=true
+multiplayer_online=true
+multiplayer_cooperative=true
+multiplayer_competitive=true
+multiplayer_local_wireless=true
+multiplayer_split_screen=true
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Regular / Offline; user-supplied store price 1,500 IQD; recorded cost 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=25000
+type.2.cost=1500
+type.2.description=Standard / Online; user-supplied store price 25,000 IQD; recorded cost 1,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+No standalone paid expansion pass is required for the base import entry.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Native Switch 2 racing title targeting a smooth 60 fps presentation; Nintendo lists HDR output on compatible TVs.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Native Switch 2 racing title targeting a smooth 60 fps presentation; Nintendo lists HDR output on compatible TVs.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Native Switch 2 racing title targeting a smooth 60 fps presentation; Nintendo lists HDR output on compatible TVs.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/mario-kart-world-switch-2/
+device_performance.1.performance_notes<<EOF
+Native Switch 2 racing title targeting a smooth 60 fps presentation; Nintendo lists HDR output on compatible TVs.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Nintendo Switch 1 is not supported.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Nintendo Switch 1 is not supported.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Nintendo Switch 1 is not supported.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/mario-kart-world-switch-2/
+device_performance.2.performance_notes<<EOF
+Nintendo Switch 1 is not supported.
+EOF
+upgrade_price=0
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/9d7ae6016a8ebf66742a83298fe229aaf81784ea6eb05f69625acdbd070b2b8b
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/bbe82fcb30221d01b574da4526ca167e4a1bb911bf013a813c0f656d087d11f6
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e1d4d1107e7c54899eccc1b12b6c4426f471fd7600a43b3f37aca34865d48d94
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e0c211ccca9b4e1d4f1359b21c05c07ab62638929256a50518b6efe1ec185ee8
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/ecfbcc3227114c09fb1984843f188a531cc6e64180bfaf2f7386613b0ca51afe
+gallery.1.description=Verified game-world/promotional media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/9d7ae6016a8ebf66742a83298fe229aaf81784ea6eb05f69625acdbd070b2b8b
+gallery.2.description=Verified game-world/promotional media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/bbe82fcb30221d01b574da4526ca167e4a1bb911bf013a813c0f656d087d11f6
+gallery.3.description=Verified game-world/promotional media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e1d4d1107e7c54899eccc1b12b6c4426f471fd7600a43b3f37aca34865d48d94
+gallery.4.description=Verified game-world/promotional media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e0c211ccca9b4e1d4f1359b21c05c07ab62638929256a50518b6efe1ec185ee8
+gallery.5.description=Verified game-world/promotional media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/ecfbcc3227114c09fb1984843f188a531cc6e64180bfaf2f7386613b0ca51afe
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/9d7ae6016a8ebf66742a83298fe229aaf81784ea6eb05f69625acdbd070b2b8b
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/bbe82fcb30221d01b574da4526ca167e4a1bb911bf013a813c0f656d087d11f6
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e1d4d1107e7c54899eccc1b12b6c4426f471fd7600a43b3f37aca34865d48d94
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e0c211ccca9b4e1d4f1359b21c05c07ab62638929256a50518b6efe1ec185ee8
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/ecfbcc3227114c09fb1984843f188a531cc6e64180bfaf2f7386613b0ca51afe
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/bbe82fcb30221d01b574da4526ca167e4a1bb911bf013a813c0f656d087d11f6
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e1d4d1107e7c54899eccc1b12b6c4426f471fd7600a43b3f37aca34865d48d94
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/e0c211ccca9b4e1d4f1359b21c05c07ab62638929256a50518b6efe1ec185ee8
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/ecfbcc3227114c09fb1984843f188a531cc6e64180bfaf2f7386613b0ca51afe
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000095431/9d7ae6016a8ebf66742a83298fe229aaf81784ea6eb05f69625acdbd070b2b8b

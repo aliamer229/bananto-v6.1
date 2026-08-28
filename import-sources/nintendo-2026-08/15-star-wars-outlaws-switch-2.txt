@@ -1,0 +1,308 @@
+schema_version=24
+name=Star Wars Outlaws
+title=Star Wars Outlaws
+title_ar=ستار وورز أوتلاوز
+name_ar=ستار وورز أوتلاوز
+slug=star-wars-outlaws-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=Separate Nintendo Switch product may exist
+edition=Standard
+region=Global
+release_date=2025-09-04
+release_status=Released
+status=Active
+developer=Massive Entertainment
+publisher=Ubisoft
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Open World
+genres.3=Open World
+series_name=Star Wars Outlaws
+players_count=Single system (1)
+players=Single system (1)
+age_rating=PEGI 16 / ESRB T
+metacritic_score=75
+metacritic=75
+opencritic_score=76
+opencritic=76
+user_score=7.4
+game_size_gb=20.0
+size_gb=20.0
+size=20.0 GB
+price=1250
+price_iqd=1250
+cost=1250
+cost_iqd=1250
+upgrade_price=0
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=19000
+trade_value_iqd=19000
+store_offer_bonus=3500
+store_offer_bonus_iqd=3500
+official_url=https://news.ubisoft.com/en-us/article/5yG2lSsv3rvVH2J1zhHRY0/star-wars-outlaws-now-available-on-nintendo-switch-2
+eshop_url=https://news.ubisoft.com/en-us/article/5yG2lSsv3rvVH2J1zhHRY0/star-wars-outlaws-now-available-on-nintendo-switch-2
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=An open-world Star Wars adventure starring scoundrel Kay Vess and her companion Nix.
+description_full<<EOF
+Star Wars Outlaws follows Kay Vess and Nix across the criminal underworld of the Star Wars galaxy. Explore open-world planets, ride a speeder across large landscapes, infiltrate enemy locations, bargain with syndicates, engage in blaster combat, and assemble a crew for a major heist. Ubisoft released the game on Nintendo Switch 2 on September 4, 2025.
+EOF
+description<<EOF
+Star Wars Outlaws follows Kay Vess and Nix across the criminal underworld of the Star Wars galaxy. Explore open-world planets, ride a speeder across large landscapes, infiltrate enemy locations, bargain with syndicates, engage in blaster combat, and assemble a crew for a major heist. Ubisoft released the game on Nintendo Switch 2 on September 4, 2025.
+EOF
+description_en<<EOF
+Star Wars Outlaws follows Kay Vess and Nix across the criminal underworld of the Star Wars galaxy. Explore open-world planets, ride a speeder across large landscapes, infiltrate enemy locations, bargain with syndicates, engage in blaster combat, and assemble a crew for a major heist. Ubisoft released the game on Nintendo Switch 2 on September 4, 2025.
+EOF
+description_ar<<EOF
+مغامرة عالم مفتوح في عالم Star Wars من بطولة Kay Vess وNix، تعتمد على الاستكشاف والتخفي والقتال والتعامل مع العصابات والتحرك بين عدة كواكب.
+EOF
+front_cover_image=
+cartridge_image=
+nintendo_card_image=
+square_game_image=
+main_image=
+cover_image=
+cover=
+cover_url=
+front_cover_hires_url=
+cover_texture_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+gallery.1.image=
+gallery.1.description=Star Wars Outlaws world/gameplay media 1
+banner_image.2=
+gallery.2.image=
+gallery.2.description=Star Wars Outlaws world/gameplay media 2
+banner_image.3=
+gallery.3.image=
+gallery.3.description=Star Wars Outlaws world/gameplay media 3
+banner_image.4=
+gallery.4.image=
+gallery.4.description=Star Wars Outlaws world/gameplay media 4
+banner_image.5=
+gallery.5.image=
+gallery.5.description=Star Wars Outlaws world/gameplay media 5
+banner_image.6=
+gallery.6.image=
+gallery.6.description=Star Wars Outlaws world/gameplay media 6
+trailer_url=https://news.ubisoft.com/en-us/article/5yG2lSsv3rvVH2J1zhHRY0/star-wars-outlaws-now-available-on-nintendo-switch-2
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=true
+nintendo_notes<<EOF
+Platform and package information verified against the official product/source page for Star Wars Outlaws.
+EOF
+overview_tagline=Live the life of a scoundrel in the Star Wars underworld.
+overview_suitable_for.1=Fans of the listed genres
+overview_suitable_for.2=Players who value the game’s core mechanics
+overview_suitable_for.3=Players looking for this platform version
+overview_suitable_for.4=Collectors or storefront users comparing platform editions
+overview_not_suitable_for.1=Players who dislike the listed genre
+overview_not_suitable_for.2=Players seeking a different platform entry
+overview_not_suitable_for.3=Players who require unsupported multiplayer modes
+overview_not_suitable_for.4=Players expecting a different edition package
+main_story_hours=18
+completionist_hours=35
+gameplay_pillar.1.title=Open-world planets
+gameplay_pillar.1.description<<EOF
+Explore locations such as Toshara and Tatooine on foot and by speeder.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Scoundrel gameplay
+gameplay_pillar.2.description<<EOF
+Stealth, blasters, gadgets, and negotiation all support the outlaw fantasy.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Syndicate relationships
+gameplay_pillar.3.description<<EOF
+Choices and jobs affect standing with criminal factions.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Nix companion actions
+gameplay_pillar.4.description<<EOF
+Nix can distract enemies and interact with the environment.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Switch 2-specific release
+gameplay_pillar.5.description<<EOF
+Ubisoft launched the game directly on Nintendo Switch 2 in 2025.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Star Wars Outlaws follows Kay Vess and Nix across the criminal underworld of the Star Wars galaxy. Explore open-world planets, ride a speeder across large landscapes, infiltrate enemy locations, bargain with syndicates, engage in blaster combat, and assemble a crew for a major heist. Ubisoft released the game on Nintendo Switch 2 on September 4, 2025.
+EOF
+story_chapter.1.title=Kay needs a new life
+story_chapter.1.text<<EOF
+A dangerous bounty pushes Kay toward a high-risk plan.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Build a crew
+story_chapter.2.text<<EOF
+She recruits allies for a major Outer Rim heist.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Navigate syndicates
+story_chapter.3.text<<EOF
+Reputation with criminal factions shapes opportunities and danger.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Travel across the galaxy
+story_chapter.4.text<<EOF
+The adventure moves through cities, wilderness, space, and criminal hideouts.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Attempt the big score
+story_chapter.5.text<<EOF
+The story builds toward one of the largest heists of Kay’s life.
+EOF
+story_chapter.5.image=
+feature.1=Open-world Star Wars setting
+feature.2=Speeder traversal
+feature.3=Syndicate reputation system
+feature.4=Nix companion mechanics
+feature.5=Dedicated Switch 2 release
+performance_handheld_resolution=1080p
+performance_tv_resolution=1440p
+performance_fps=30
+performance_hdr=false
+performance_notes<<EOF
+Switch 2 profile recorded for a demanding open-world release.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Switch 2 profile recorded for a demanding open-world release.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Switch 2 profile recorded for a demanding open-world release.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Switch 2 profile recorded for a demanding open-world release.
+EOF
+device_performance.1.performance_notes<<EOF
+Switch 2 profile recorded for a demanding open-world release.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.unavailable_reason<<EOF
+This product file belongs to a different Nintendo platform entry.
+EOF
+device_performance.2.performance_notes<<EOF
+Not supported for this product entry.
+EOF
+faq.1.question=When did Star Wars Outlaws release on Switch 2?
+faq.1.answer<<EOF
+Ubisoft released it on September 4, 2025.
+EOF
+faq.2.question=Is it open world?
+faq.2.answer<<EOF
+Yes. It features multiple open-world areas across the Star Wars galaxy.
+EOF
+faq.3.question=Is it multiplayer?
+faq.3.answer<<EOF
+No. It is a single-player action-adventure.
+EOF
+faq.4.question=Why only two variants?
+faq.4.answer<<EOF
+Only Regular and Standard prices were supplied.
+EOF
+faq.5.question=Does the Switch 2 version have special controls?
+faq.5.answer<<EOF
+Nintendo’s Gold Edition page mentions touch controls for menu navigation and selected minigames, optimized handheld mode, and motion controls for some features.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Regular / Offline; supplier cost 1,250 IQD; selling price 1,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard-online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=33750
+type.2.cost=1250
+type.2.description=Standard / Online; supplier cost 1,250 IQD; selling price 33,750 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+source.1.name=Official product / publisher page
+source.1.url=https://news.ubisoft.com/en-us/article/5yG2lSsv3rvVH2J1zhHRY0/star-wars-outlaws-now-available-on-nintendo-switch-2
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/search/star-wars-outlaws/

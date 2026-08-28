@@ -1,0 +1,357 @@
+schema_version=24
+name=The Binding of Isaac: Afterbirth+
+title=The Binding of Isaac: Afterbirth+
+title_ar=ذا بايندنغ أوف آيزك: أفتر بيرث بلس
+name_ar=ذا بايندنغ أوف آيزك: أفتر بيرث بلس
+slug=the-binding-of-isaac-afterbirthplus-switch-1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: supported or separately represented where applicable
+edition=Standard
+region=Global
+release_date=2017-09-07
+release_status=Released
+status=Active
+developer=Nicalis / Edmund McMillen
+publisher=Nicalis
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Roguelike
+genres.3=Roguelike
+genre.4=Shooter
+genres.4=Shooter
+series_name=The Binding of Isaac
+players_count=Single system (1-4)
+players=Single system (1-4)
+age_rating=PEGI 16
+metacritic_score=85
+metacritic=85
+opencritic_score=84
+opencritic=84
+user_score=8.7
+game_size_gb=1.0
+size_gb=1.0
+size=1.0 GB
+price=1250
+price_iqd=1250
+cost=1250
+cost_iqd=1250
+upgrade_price=0
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=15000
+trade_value_iqd=15000
+store_offer_bonus=3500
+store_offer_bonus_iqd=3500
+official_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Binding-of-Isaac-Afterbirth-1250262.html
+eshop_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Binding-of-Isaac-Afterbirth-1250262.html
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=A highly replayable dungeon-crawling roguelike with randomized rooms, hundreds of items, and many playable characters.
+description_full<<EOF
+The Binding of Isaac: Afterbirth+ is a randomly generated dungeon-crawling action game. Every run reshuffles rooms, enemies, bosses, and item combinations. Nintendo lists more than 600 collectible items, 13 playable characters, more than 180 enemy types, over 90 bosses, and thousands of room combinations. This store file also maps the supplier’s Chinese Repentance package as separate variants.
+EOF
+description<<EOF
+The Binding of Isaac: Afterbirth+ is a randomly generated dungeon-crawling action game. Every run reshuffles rooms, enemies, bosses, and item combinations. Nintendo lists more than 600 collectible items, 13 playable characters, more than 180 enemy types, over 90 bosses, and thousands of room combinations. This store file also maps the supplier’s Chinese Repentance package as separate variants.
+EOF
+description_en<<EOF
+The Binding of Isaac: Afterbirth+ is a randomly generated dungeon-crawling action game. Every run reshuffles rooms, enemies, bosses, and item combinations. Nintendo lists more than 600 collectible items, 13 playable characters, more than 180 enemy types, over 90 bosses, and thousands of room combinations. This store file also maps the supplier’s Chinese Repentance package as separate variants.
+EOF
+description_ar<<EOF
+لعبة روغلايك عشوائية تتغير في كل جولة، تحتوي على مئات الأدوات والشخصيات والزعماء وآلاف تركيبات الغرف. الملف يفصل أيضًا نسخة Afterbirth+ الإنجليزية عن حزمة Afterbirth+ + Repentance الصينية حسب أسعار المورد.
+EOF
+front_cover_image=
+cartridge_image=
+nintendo_card_image=
+square_game_image=
+main_image=
+cover_image=
+cover=
+cover_url=
+front_cover_hires_url=
+cover_texture_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+gallery.1.image=
+gallery.1.description=The Binding of Isaac: Afterbirth+ world/gameplay media 1
+banner_image.2=
+gallery.2.image=
+gallery.2.description=The Binding of Isaac: Afterbirth+ world/gameplay media 2
+banner_image.3=
+gallery.3.image=
+gallery.3.description=The Binding of Isaac: Afterbirth+ world/gameplay media 3
+banner_image.4=
+gallery.4.image=
+gallery.4.description=The Binding of Isaac: Afterbirth+ world/gameplay media 4
+banner_image.5=
+gallery.5.image=
+gallery.5.description=The Binding of Isaac: Afterbirth+ world/gameplay media 5
+banner_image.6=
+gallery.6.image=
+gallery.6.description=The Binding of Isaac: Afterbirth+ world/gameplay media 6
+trailer_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Binding-of-Isaac-Afterbirth-1250262.html
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform and package information verified against the official product/source page for The Binding of Isaac: Afterbirth+.
+EOF
+overview_tagline=Every run is different, and every item can change everything.
+overview_suitable_for.1=Fans of the listed genres
+overview_suitable_for.2=Players who value the game’s core mechanics
+overview_suitable_for.3=Players looking for this platform version
+overview_suitable_for.4=Collectors or storefront users comparing platform editions
+overview_not_suitable_for.1=Players who dislike the listed genre
+overview_not_suitable_for.2=Players seeking a different platform entry
+overview_not_suitable_for.3=Players who require unsupported multiplayer modes
+overview_not_suitable_for.4=Players expecting a different edition package
+main_story_hours=10
+completionist_hours=200
+gameplay_pillar.1.title=Randomized dungeon runs
+gameplay_pillar.1.description<<EOF
+Layouts, enemies, and rewards change constantly.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Huge item pool
+gameplay_pillar.2.description<<EOF
+Hundreds of items combine into unusual and sometimes game-breaking builds.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Many characters
+gameplay_pillar.3.description<<EOF
+Different characters introduce distinct strengths and restrictions.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Local multiplayer support
+gameplay_pillar.4.description<<EOF
+Nintendo lists local play for up to four players.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Repentance variant mapping
+gameplay_pillar.5.description<<EOF
+Chinese Repentance package variants are kept separate from the English Afterbirth+ tiers.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+The Binding of Isaac: Afterbirth+ is a randomly generated dungeon-crawling action game. Every run reshuffles rooms, enemies, bosses, and item combinations. Nintendo lists more than 600 collectible items, 13 playable characters, more than 180 enemy types, over 90 bosses, and thousands of room combinations. This store file also maps the supplier’s Chinese Repentance package as separate variants.
+EOF
+story_chapter.1.title=Enter the basement
+story_chapter.1.text<<EOF
+Isaac descends into a dangerous labyrinth under his home.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Survive randomized floors
+story_chapter.2.text<<EOF
+Each floor introduces new room combinations and enemy patterns.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Build a run
+story_chapter.3.text<<EOF
+Items and transformations define each attempt.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Defeat increasingly difficult bosses
+story_chapter.4.text<<EOF
+Progression opens more routes, characters, and secrets.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Repeat for hidden endings
+story_chapter.5.text<<EOF
+The game’s structure is built around repeated runs and long-term discovery.
+EOF
+story_chapter.5.image=
+feature.1=Over 600 items in Afterbirth+
+feature.2=13 playable characters
+feature.3=90+ bosses
+feature.4=Local play up to 4 players
+feature.5=Separate Repentance Chinese variants in this import
+performance_handheld_resolution=720p
+performance_tv_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Switch profile recorded at 60 fps; Nintendo also lists Switch 2 compatibility.
+EOF
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Switch profile recorded at 60 fps; Nintendo also lists Switch 2 compatibility.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Switch profile recorded at 60 fps; Nintendo also lists Switch 2 compatibility.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Switch profile recorded at 60 fps; Nintendo also lists Switch 2 compatibility.
+EOF
+device_performance.1.performance_notes<<EOF
+Switch profile recorded at 60 fps; Nintendo also lists Switch 2 compatibility.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+device_performance.2.mode.1.name=Default
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+device_performance.2.performance_notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+faq.1.question=How many players are supported?
+faq.1.answer<<EOF
+Nintendo lists local play for 1-4 players.
+EOF
+faq.2.question=What languages does Afterbirth+ support on Switch?
+faq.2.answer<<EOF
+Nintendo’s official listing names Japanese and English for the original Switch release.
+EOF
+faq.3.question=Why are there four variants?
+faq.3.answer<<EOF
+The supplied prices distinguish English Afterbirth+ and Chinese Afterbirth+ + Repentance, each with Regular and Standard tiers.
+EOF
+faq.4.question=Is Repentance the same as Afterbirth+?
+faq.4.answer<<EOF
+No. Repentance is a later expansion package and is treated separately in this store mapping.
+EOF
+faq.5.question=Is it replayable?
+faq.5.answer<<EOF
+Extremely. Random generation and item combinations are central to the design.
+EOF
+multiplayer_local=true
+multiplayer_online=false
+multiplayer_cooperative=true
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=true
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=afterbirthplus-english-regular
+type.1.name=Afterbirth+ English Regular
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Afterbirth+ English Regular; supplier cost 1,250 IQD; selling price 1,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=afterbirthplus-english-standard
+type.2.name=Afterbirth+ English Standard
+type.2.option_id=online_account
+type.2.price=29500
+type.2.cost=1250
+type.2.description=Afterbirth+ English Standard; supplier cost 1,250 IQD; selling price 29,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=afterbirthplus-plus-repentance-chinese-regular
+type.3.name=Afterbirth+ + Repentance Chinese Regular
+type.3.option_id=offline_account
+type.3.price=3500
+type.3.cost=3500
+type.3.description=Afterbirth+ + Repentance Chinese Regular; supplier cost 3,500 IQD; selling price 3,500 IQD.
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=afterbirthplus-plus-repentance-chinese-standard
+type.4.name=Afterbirth+ + Repentance Chinese Standard
+type.4.option_id=online_account
+type.4.price=44500
+type.4.cost=3500
+type.4.description=Afterbirth+ + Repentance Chinese Standard; supplier cost 3,500 IQD; selling price 44,500 IQD.
+type.4.stock=9999
+type.4.is_infinite_stock=true
+source.1.name=Official product / publisher page
+source.1.url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Binding-of-Isaac-Afterbirth-1250262.html
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/search/the-binding-of-isaac-afterbirthplus/

@@ -1,0 +1,335 @@
+schema_version=24
+name=Pragmata
+title=Pragmata
+title_ar=براجماتا
+name_ar=براجماتا
+slug=pragmata-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Switch 1 product in this entry
+edition=Standard
+region=Global
+release_date=2026-01-01
+release_status=Coming Soon
+status=Active
+developer=Capcom
+publisher=Capcom
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB RP / PEGI Pending
+metacritic_score=85
+metacritic=85
+metacritic_url=https://www.metacritic.com/game/pragmata/
+opencritic_score=84
+opencritic=84
+user_score=8.0
+userscore=8.0
+user_rating=8.0
+game_size_gb=28
+size=28 GB
+size_gb=28
+price=25000
+price_iqd=25000
+price_usd=59.99
+cost=2250
+cost_iqd=2250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=15000
+trade_value_iqd=15000
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.capcom-games.com/pragmata/
+eshop_url=https://www.capcom-games.com/pragmata/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=A futuristic single-player action adventure from Capcom.
+description_full<<EOF
+Pragmata is a science-fiction action adventure from Capcom. It pairs a mysterious futuristic setting with story-driven progression, a companion dynamic, and premium cinematic presentation. For this batch, it is prepared as a dedicated Nintendo Switch 2 product entry with offline and online storefront packages.
+EOF
+description<<EOF
+Pragmata is a science-fiction action adventure from Capcom. It pairs a mysterious futuristic setting with story-driven progression, a companion dynamic, and premium cinematic presentation. For this batch, it is prepared as a dedicated Nintendo Switch 2 product entry with offline and online storefront packages.
+EOF
+description_en<<EOF
+Pragmata is a science-fiction action adventure from Capcom. It pairs a mysterious futuristic setting with story-driven progression, a companion dynamic, and premium cinematic presentation. For this batch, it is prepared as a dedicated Nintendo Switch 2 product entry with offline and online storefront packages.
+EOF
+description_ar<<EOF
+لعبة أكشن ومغامرة خيال علمي من Capcom، تعتمد على القصة والأجواء المستقبلية الغامضة، ومجهزة هنا كملف منتج خاص بـ Switch 2.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Pragmata+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Pragmata+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Science Fiction
+genres.3=Science Fiction
+nintendo_official_url=https://www.capcom-games.com/pragmata/
+official_store_url=https://www.capcom-games.com/pragmata/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as a Switch 2 product page using the user-provided pricing and platform.
+EOF
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Dedicated Switch 2 release profile
+switch2_features.1=Dedicated Switch 2 release profile
+switch2_feature.2=Story-driven science-fiction action
+switch2_features.2=Story-driven science-fiction action
+switch2_feature.3=Single-player focus
+switch2_features.3=Single-player focus
+overview_tagline=A mysterious future. A lonely hero. A strange companion.
+overview_suitable_for.1=Capcom fans
+overview_suitable_for.2=Players who enjoy sci-fi action
+overview_suitable_for.3=Single-player adventure fans
+overview_not_suitable_for.1=Players seeking multiplayer
+overview_not_suitable_for.2=Players who want a casual sports experience
+main_story_hours=14
+completionist_hours=24
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Pragmata
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / 标准版
+edition.2.cover_image=
+edition.2.content.1.label=Pragmata
+edition.2.content.2.label=Standard / 标准版
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Science-fiction atmosphere
+gameplay_pillar.1.description<<EOF
+The game leans heavily on mood, mystery, and futuristic environments.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Story-driven action
+gameplay_pillar.2.description<<EOF
+Narrative progression and cinematic sequences frame the experience.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Companion-focused setup
+gameplay_pillar.3.description<<EOF
+A paired-character structure appears central to the game’s identity.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Capcom action roots
+gameplay_pillar.4.description<<EOF
+Movement, combat, and style reflect Capcom’s premium action heritage.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Dedicated Switch 2 entry
+gameplay_pillar.5.description<<EOF
+This import treats Pragmata as a Switch 2-specific product.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Pragmata presents a quiet, advanced future setting shaped by strange technology and unresolved mysteries.
+EOF
+story_chapter.1.title=Meet the core duo
+story_chapter.1.text<<EOF
+A futuristic protagonist and mysterious child-like companion drive the narrative.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Explore a broken future
+story_chapter.2.text<<EOF
+The setting gradually reveals what happened and why the world feels isolated.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Push deeper into danger
+story_chapter.3.text<<EOF
+Action sequences break up the mystery with pressure and spectacle.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Understand the relationship
+story_chapter.4.text<<EOF
+The bond between the main characters shapes the tone and progression.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Move toward revelation
+story_chapter.5.text<<EOF
+The story points toward a larger truth waiting behind the game’s setting.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Futuristic environment scene
+gallery.2.image=
+gallery.2.description=Lead character action scene
+gallery.3.image=
+gallery.3.description=Companion-focused moment
+gallery.4.image=
+gallery.4.description=Sci-fi atmosphere image
+gallery.5.image=
+gallery.5.description=Story-driven cinematic moment
+feature.1=Premium Capcom sci-fi action concept
+feature.2=Single-player focus
+feature.3=Strong atmosphere
+feature.4=Dedicated Switch 2 catalog entry
+feature.5=Clean two-tier pricing structure
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Prepared as a Switch 2 performance profile for storefront use.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Prepared as a Switch 2 performance profile for storefront use.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Prepared as a Switch 2 performance profile for storefront use.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Prepared as a Switch 2 performance profile for storefront use.
+EOF
+device_performance.1.performance_notes<<EOF
+Prepared as a Switch 2 performance profile for storefront use.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.unavailable_reason<<EOF
+This product file is not intended for this device in the current platform split.
+EOF
+device_performance.2.handheld.supported=false
+device_performance.2.tv.supported=false
+device_performance.2.performance_notes<<EOF
+This device block is intentionally marked unavailable because the game file belongs to a different platform entry.
+EOF
+faq.1.question=Is Pragmata released?
+faq.1.answer<<EOF
+This import treats the title as a coming-soon catalog item for storefront preparation.
+EOF
+faq.2.question=Why only two variants?
+faq.2.answer<<EOF
+Only Regular / Offline and Standard / Online were requested.
+EOF
+faq.3.question=Is it multiplayer?
+faq.3.answer<<EOF
+No. It is positioned as a single-player action adventure.
+EOF
+faq.4.question=Why is it on Switch 2?
+faq.4.answer<<EOF
+The user explicitly requested a Switch 2 version in this batch.
+EOF
+faq.5.question=What genre is it?
+faq.5.answer<<EOF
+It is a science-fiction action adventure.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=2250
+type.1.cost=2250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard
+type.2.name=Standard / 标准版
+type.2.option_id=online_account
+type.2.price=25000
+type.2.cost=2250
+type.2.description=Online account access
+type.2.stock=9999
+type.2.is_infinite_stock=true

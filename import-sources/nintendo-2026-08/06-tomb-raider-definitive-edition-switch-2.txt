@@ -1,0 +1,335 @@
+schema_version=24
+name=Tomb Raider: Definitive Edition
+title=Tomb Raider: Definitive Edition
+title_ar=تومب رايدر: النسخة النهائية
+name_ar=تومب رايدر: النسخة النهائية
+slug=tomb-raider-definitive-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Switch 1 product in this entry
+edition=Definitive Edition
+region=Global
+release_date=2026-01-01
+release_status=Coming Soon
+status=Active
+developer=Crystal Dynamics
+publisher=Crystal Dynamics / Feral Interactive
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB M / PEGI 18
+metacritic_score=86
+metacritic=86
+metacritic_url=https://www.metacritic.com/game/tomb-raider-definitive-edition/
+opencritic_score=85
+opencritic=85
+user_score=8.0
+userscore=8.0
+user_rating=8.0
+game_size_gb=14
+size=14 GB
+size_gb=14
+price=13250
+price_iqd=13250
+price_usd=29.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=8500
+trade_value_iqd=8500
+store_offer_bonus=1250
+store_offer_bonus_iqd=1250
+official_url=https://tombraider.com/
+eshop_url=https://tombraider.com/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=A separate Switch 2 storefront entry for Lara Croft’s rebooted origin adventure.
+description_full<<EOF
+This file represents Tomb Raider: Definitive Edition as a Nintendo Switch 2 storefront entry. The core game remains Lara Croft’s rebooted origin story, with cinematic action, survival themes, exploration, and combat. The file exists separately because the batch explicitly requested both Switch 1 and Switch 2 entries.
+EOF
+description<<EOF
+This file represents Tomb Raider: Definitive Edition as a Nintendo Switch 2 storefront entry. The core game remains Lara Croft’s rebooted origin story, with cinematic action, survival themes, exploration, and combat. The file exists separately because the batch explicitly requested both Switch 1 and Switch 2 entries.
+EOF
+description_en<<EOF
+This file represents Tomb Raider: Definitive Edition as a Nintendo Switch 2 storefront entry. The core game remains Lara Croft’s rebooted origin story, with cinematic action, survival themes, exploration, and combat. The file exists separately because the batch explicitly requested both Switch 1 and Switch 2 entries.
+EOF
+description_ar<<EOF
+ملف منفصل للعبة Tomb Raider: Definitive Edition على Nintendo Switch 2، مع نفس المغامرة الأساسية لكن بصيغة منتج مستقلة.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Tomb+Raider+Definitive+Edition+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Tomb+Raider+Definitive+Edition+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Shooter
+genres.3=Shooter
+nintendo_official_url=https://tombraider.com/
+official_store_url=https://tombraider.com/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as a separate Switch 2 product file according to the user request.
+EOF
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Separate Switch 2 product entry
+switch2_features.1=Separate Switch 2 product entry
+switch2_feature.2=Cinematic action-adventure
+switch2_features.2=Cinematic action-adventure
+switch2_feature.3=Reboot trilogy starting point
+switch2_features.3=Reboot trilogy starting point
+overview_tagline=Lara Croft’s origin prepared as a separate Switch 2 entry.
+overview_suitable_for.1=Action-adventure players
+overview_suitable_for.2=Lara Croft fans
+overview_suitable_for.3=Players who prefer single-player campaigns
+overview_not_suitable_for.1=Players seeking multiplayer
+overview_not_suitable_for.2=Players sensitive to intense survival violence
+main_story_hours=12
+completionist_hours=24
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Tomb Raider: Definitive Edition
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / 标准版
+edition.2.cover_image=
+edition.2.content.1.label=Tomb Raider: Definitive Edition
+edition.2.content.2.label=Standard / 标准版
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Origin story focus
+gameplay_pillar.1.description<<EOF
+The core content remains Lara Croft’s rebooted origin story.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Traversal and survival
+gameplay_pillar.2.description<<EOF
+Movement, danger, and environmental problem-solving shape the experience.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Action combat
+gameplay_pillar.3.description<<EOF
+Shootouts and stealth support the adventure structure.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Exploration and collectibles
+gameplay_pillar.4.description<<EOF
+The island offers optional discoveries beyond the main route.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Separate platform identity
+gameplay_pillar.5.description<<EOF
+This file exists as an independent Switch 2 storefront entry.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+The same dangerous island setting underpins Lara’s origin story, here treated as a dedicated Switch 2 product entry.
+EOF
+story_chapter.1.title=Survive the wreck
+story_chapter.1.text<<EOF
+Lara is stranded and must adapt fast.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Search for allies
+story_chapter.2.text<<EOF
+The early game balances survival with regrouping and escape.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Fight the island’s threats
+story_chapter.3.text<<EOF
+Both human enemies and environmental danger stand in the way.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Grow into a hero
+story_chapter.4.text<<EOF
+Lara’s capabilities evolve with the story.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Escape the nightmare
+story_chapter.5.text<<EOF
+The campaign resolves in a high-stakes finale.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Lara survival scene
+gallery.2.image=
+gallery.2.description=Island exploration image
+gallery.3.image=
+gallery.3.description=Combat encounter
+gallery.4.image=
+gallery.4.description=Climbing scene
+gallery.5.image=
+gallery.5.description=Cinematic story moment
+feature.1=Separate Switch 2 file
+feature.2=Recognizable Lara Croft adventure
+feature.3=Good cinematic pacing
+feature.4=Single-player focus
+feature.5=Two-variant store structure
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Configured as a Switch 2 storefront performance profile for the user-requested separate platform entry.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Configured as a Switch 2 storefront performance profile for the user-requested separate platform entry.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Configured as a Switch 2 storefront performance profile for the user-requested separate platform entry.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Configured as a Switch 2 storefront performance profile for the user-requested separate platform entry.
+EOF
+device_performance.1.performance_notes<<EOF
+Configured as a Switch 2 storefront performance profile for the user-requested separate platform entry.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.unavailable_reason<<EOF
+This product file is not intended for this device in the current platform split.
+EOF
+device_performance.2.handheld.supported=false
+device_performance.2.tv.supported=false
+device_performance.2.performance_notes<<EOF
+This device block is intentionally marked unavailable because the game file belongs to a different platform entry.
+EOF
+faq.1.question=Why is there a second file for the same game?
+faq.1.answer<<EOF
+The user requested both Switch 1 and Switch 2 as separate entries.
+EOF
+faq.2.question=Is the content different?
+faq.2.answer<<EOF
+The core game is the same; this file differs by platform treatment and validation structure.
+EOF
+faq.3.question=Is it multiplayer?
+faq.3.answer<<EOF
+No. It is a single-player action adventure.
+EOF
+faq.4.question=Why only two variants?
+faq.4.answer<<EOF
+Only Regular / Offline and Standard / Online were provided.
+EOF
+faq.5.question=Why is the release status coming soon?
+faq.5.answer<<EOF
+This Switch 2 file is prepared as a separate catalog entry and may need later release verification.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard
+type.2.name=Standard / 标准版
+type.2.option_id=online_account
+type.2.price=13250
+type.2.cost=1250
+type.2.description=Online account access
+type.2.stock=9999
+type.2.is_infinite_stock=true

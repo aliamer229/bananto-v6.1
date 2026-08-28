@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCatalogVersion, getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
+import { destructiveUpdateLog, mergeProductUpdate } from "@/lib/productMergeGuard";
 import { deleteProductEverywhere } from "@/lib/product-delete.server";
 import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
@@ -558,8 +559,22 @@ export const Route = createFileRoute("/api/admin/products")({
              );
           }
 
-          // Dirty fields overlay
-          const productToSave: Product = { ...stored, ...payload };
+          /*
+            A patch names the fields it changed. It does not get to erase the
+            ones it merely left empty: the editor defaults every rich field it
+            was not given to "" or [], and when it was opened on a listing row
+            that is the whole product arriving as a deletion.
+          */
+          const clearFields = Array.isArray((payload as Record<string, unknown>)._clear)
+            ? ((payload as Record<string, unknown>)._clear as unknown[]).map(String)
+            : [];
+          delete (payload as Record<string, unknown>)._clear;
+
+          const guard = mergeProductUpdate(stored, payload, { clear: clearFields });
+          if (guard.blocked.length) {
+            console.warn(destructiveUpdateLog(productId, guard.blocked));
+          }
+          const productToSave: Product = guard.merged;
 
           // Fast DB Update (UPSERT style on KV value)
           try {
@@ -584,7 +599,13 @@ export const Route = createFileRoute("/api/admin/products")({
                ).catch(e => console.error("[BackgroundSyncError]", e));
             }
 
-            return json({ success: true, product: productToSave, catalogVersion: await getCatalogVersion() });
+            return json({
+              success: true,
+              product: productToSave,
+              catalogVersion: await getCatalogVersion(),
+              ...(guard.blocked.length ? { blockedFields: guard.blocked } : {}),
+              ...(guard.cleared.length ? { clearedFields: guard.cleared } : {}),
+            });
           } catch (dbErr: any) {
             console.error("[PatchProduct:DatabaseError]", dbErr);
             return json(
@@ -715,7 +736,19 @@ export const Route = createFileRoute("/api/admin/products")({
           }
 
           const nowIso = new Date().toISOString();
-          let productToSave: Product = {
+          /*
+            A PUT used to spread only the payload, so any field the caller did
+            not send was dropped from the stored product. For an existing
+            product the payload is merged onto what is stored, under the same
+            guard as PATCH; only a genuinely new product starts from the
+            payload alone.
+          */
+          const putClearFields = Array.isArray((payload as Record<string, unknown>)._clear)
+            ? ((payload as Record<string, unknown>)._clear as unknown[]).map(String)
+            : [];
+          delete (payload as Record<string, unknown>)._clear;
+
+          const normalised: Partial<Product> = {
             ...payload,
             id: productId,
             title: payload.title || titleEn,
@@ -734,6 +767,14 @@ export const Route = createFileRoute("/api/admin/products")({
             updatedAt: nowIso,
             updated_at: nowIso,
           };
+
+          const putGuard = stored
+            ? mergeProductUpdate(stored, normalised, { clear: putClearFields })
+            : { merged: normalised as Product, blocked: [], cleared: [], changed: [] };
+          if (putGuard.blocked.length) {
+            console.warn(destructiveUpdateLog(productId, putGuard.blocked));
+          }
+          let productToSave: Product = putGuard.merged;
 
           const performanceIssues = performanceValidation(
             productToSave,

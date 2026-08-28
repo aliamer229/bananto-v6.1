@@ -1,0 +1,365 @@
+schema_version=24
+name=Dead by Daylight
+title=Dead by Daylight
+title_ar=ديد باي دايلايت
+name_ar=ديد باي دايلايت
+slug=dead-by-daylight-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Switch 1 product in this entry
+edition=Standard
+region=Global
+release_date=2019-09-24
+release_status=Released
+status=Active
+developer=Behaviour Interactive
+publisher=Behaviour Interactive
+players_count=Online multiplayer (1 killer vs 4 survivors)
+players=Online multiplayer (1 killer vs 4 survivors)
+player_count=Online multiplayer (1 killer vs 4 survivors)
+age_rating=ESRB M / PEGI 18
+metacritic_score=71
+metacritic=71
+metacritic_url=https://www.metacritic.com/game/dead-by-daylight/
+opencritic_score=74
+opencritic=74
+user_score=7.3
+userscore=7.3
+user_rating=7.3
+game_size_gb=25
+size=25 GB
+size_gb=25
+price=14250
+price_iqd=14250
+price_usd=29.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=9500
+trade_value_iqd=9500
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://deadbydaylight.com/
+eshop_url=https://deadbydaylight.com/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short=Asymmetrical multiplayer horror where survivors try to escape a relentless killer.
+description_full<<EOF
+Dead by Daylight is an asymmetrical horror title built around tense 4v1 matches. Four survivors repair generators, rescue teammates, and try to escape, while one killer tracks, hunts, and sacrifices them. Its identity comes from tense chases, perk builds, a large character roster, and a constant flow of live-service content.
+EOF
+description<<EOF
+Dead by Daylight is an asymmetrical horror title built around tense 4v1 matches. Four survivors repair generators, rescue teammates, and try to escape, while one killer tracks, hunts, and sacrifices them. Its identity comes from tense chases, perk builds, a large character roster, and a constant flow of live-service content.
+EOF
+description_en<<EOF
+Dead by Daylight is an asymmetrical horror title built around tense 4v1 matches. Four survivors repair generators, rescue teammates, and try to escape, while one killer tracks, hunts, and sacrifices them. Its identity comes from tense chases, perk builds, a large character roster, and a constant flow of live-service content.
+EOF
+description_ar<<EOF
+لعبة رعب جماعية غير متماثلة، يحاول فيها أربعة ناجين الهروب من قاتل واحد عبر إصلاح المولدات والتخفي وإنقاذ بعضهم.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Dead+by+Daylight+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Dead+by+Daylight+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Horror
+genres.2=Horror
+genre.3=Multiplayer
+genres.3=Multiplayer
+genre.4=Survival
+genres.4=Survival
+nintendo_official_url=https://deadbydaylight.com/
+official_store_url=https://deadbydaylight.com/
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as a dedicated Switch 2 store entry according to the user-provided platform and pricing.
+EOF
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Dedicated Switch 2 storefront entry
+switch2_features.1=Dedicated Switch 2 storefront entry
+switch2_feature.2=Portable online horror sessions
+switch2_features.2=Portable online horror sessions
+switch2_feature.3=Live-service progression
+switch2_features.3=Live-service progression
+overview_tagline=Four survivors. One killer. Endless horror tension.
+overview_suitable_for.1=Horror fans
+overview_suitable_for.2=Players who enjoy online multiplayer
+overview_suitable_for.3=Fans of progression systems
+overview_suitable_for.4=Players who like tense cat-and-mouse gameplay
+overview_not_suitable_for.1=Players who want offline-only play
+overview_not_suitable_for.2=Young children
+overview_not_suitable_for.3=Players who dislike repetitive mastery loops
+main_story_hours=0
+completionist_hours=0
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Dead by Daylight
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Bonus / 特典版
+edition.2.cover_image=
+edition.2.content.1.label=Dead by Daylight
+edition.2.content.2.label=Bonus / 特典版
+edition.2.content.3.label=Offline bonus package
+edition.3.name=Standard / 标准版
+edition.3.cover_image=
+edition.3.content.1.label=Dead by Daylight
+edition.3.content.2.label=Standard / 标准版
+edition.3.content.3.label=Online account access
+edition.4.name=Deluxe / 豪华版
+edition.4.cover_image=
+edition.4.content.1.label=Dead by Daylight
+edition.4.content.2.label=Deluxe / 豪华版
+edition.4.content.3.label=Online premium package
+gameplay_pillar.1.title=Asymmetrical 4v1 gameplay
+gameplay_pillar.1.description<<EOF
+One player becomes the killer while four others work together to escape.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Stealth and pursuit
+gameplay_pillar.2.description<<EOF
+Hiding, juking, looping, and tracking are central to every match.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Perk builds and progression
+gameplay_pillar.3.description<<EOF
+Each character can be customized through perks, items, and progression systems.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Licensed horror content
+gameplay_pillar.4.description<<EOF
+The roster mixes original characters with famous horror crossovers.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Long-term replay value
+gameplay_pillar.5.description<<EOF
+Every match plays out differently thanks to maps, loadouts, and opponents.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+The Entity traps survivors and killers inside eerie realms built for ritualized hunts and desperate escapes.
+EOF
+story_chapter.1.title=Enter The Entity’s realm
+story_chapter.1.text<<EOF
+Survivors wake in a supernatural trial where death is never the end.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Learn the survivor routine
+story_chapter.2.text<<EOF
+Repair generators, rescue allies, and open the exit before the killer stops you.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Master the killer role
+story_chapter.3.text<<EOF
+Track movement and use your killer power to dominate the map.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Grow stronger through progression
+story_chapter.4.text<<EOF
+Bloodweb systems gradually unlock better tools and builds.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Expand through chapters
+story_chapter.5.text<<EOF
+New killers, survivors, and themes continue to broaden the game.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Atmospheric horror match scene
+gallery.2.image=
+gallery.2.description=Killer pursuit scene
+gallery.3.image=
+gallery.3.description=Survivor teamwork scene
+gallery.4.image=
+gallery.4.description=Dark map environment
+gallery.5.image=
+gallery.5.description=Perk and progression showcase
+feature.1=Asymmetrical online horror gameplay
+feature.2=Many killers and survivors
+feature.3=Extensive perk customization
+feature.4=Strong replayability
+feature.5=Frequent crossover content
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+This Switch 2 entry is configured as a higher-end storefront performance profile suitable for a dedicated Switch 2 product page.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+This Switch 2 entry is configured as a higher-end storefront performance profile suitable for a dedicated Switch 2 product page.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+This Switch 2 entry is configured as a higher-end storefront performance profile suitable for a dedicated Switch 2 product page.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+This Switch 2 entry is configured as a higher-end storefront performance profile suitable for a dedicated Switch 2 product page.
+EOF
+device_performance.1.performance_notes<<EOF
+This Switch 2 entry is configured as a higher-end storefront performance profile suitable for a dedicated Switch 2 product page.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.unavailable_reason<<EOF
+This product file is not intended for this device in the current platform split.
+EOF
+device_performance.2.handheld.supported=false
+device_performance.2.tv.supported=false
+device_performance.2.performance_notes<<EOF
+This device block is intentionally marked unavailable because the game file belongs to a different platform entry.
+EOF
+faq.1.question=Is Dead by Daylight mainly online?
+faq.1.answer<<EOF
+Yes. The main experience depends on online multiplayer matches.
+EOF
+faq.2.question=Why are there four pricing tiers?
+faq.2.answer<<EOF
+The requested store structure includes regular, bonus, standard, and deluxe tiers.
+EOF
+faq.3.question=Can I play both killer and survivor?
+faq.3.answer<<EOF
+Yes. You can choose either side and progress both.
+EOF
+faq.4.question=Is it good for solo players?
+faq.4.answer<<EOF
+It is playable solo, but teamwork and matchmaking heavily affect the experience.
+EOF
+faq.5.question=Why is this a Switch 2 file?
+faq.5.answer<<EOF
+This batch specifically requested a dedicated Nintendo Switch 2 entry.
+EOF
+multiplayer_local=false
+multiplayer_online=true
+multiplayer_cooperative=false
+multiplayer_competitive=true
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=bonus
+type.2.name=Bonus / 特典版
+type.2.option_id=offline_account
+type.2.price=2500
+type.2.cost=2500
+type.2.description=Offline bonus package
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=standard
+type.3.name=Standard / 标准版
+type.3.option_id=online_account
+type.3.price=14250
+type.3.cost=1250
+type.3.description=Online account access
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=deluxe
+type.4.name=Deluxe / 豪华版
+type.4.option_id=online_account
+type.4.price=20750
+type.4.cost=2500
+type.4.description=Online premium package
+type.4.stock=9999
+type.4.is_infinite_stock=true

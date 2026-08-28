@@ -1,0 +1,390 @@
+schema_version=24
+name=Hyrule Warriors: Age of Imprisonment
+title=Hyrule Warriors: Age of Imprisonment
+title_ar=هايرول ووريرز: عصر السجن
+name_ar=هايرول ووريرز: عصر السجن
+slug=hyrule-warriors-age-of-imprisonment-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Nintendo Switch 1 version announced for this entry
+edition=Standard
+region=Global
+release_date=2025-11-06
+release_status=Upcoming
+status=Coming Soon
+developer=Koei Tecmo Games / AAA Games Studio
+publisher=Nintendo
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Musou
+genres.3=Musou
+series_name=The Legend of Zelda / Hyrule Warriors
+players_count=Single system (1-2)
+players=Single system (1-2)
+player_count=Single system (1-2)
+age_rating=Rating Pending / PEGI Pending
+game_size_gb=20.0
+size=20.0 GB
+size_gb=20.0
+price=25000
+price_iqd=25000
+price_usd=69.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=16000
+trade_value_iqd=16000
+store_offer_bonus=3000
+store_offer_bonus_iqd=3000
+official_url=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-imprisonment-switch-2/
+eshop_url=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-imprisonment-switch-2/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+Battle through a new chapter in Hyrule's history in a large-scale action game built for Nintendo Switch 2.
+EOF
+description_full<<EOF
+Hyrule Warriors: Age of Imprisonment is a Nintendo Switch 2 action title set in the Zelda universe and developed in partnership with Koei Tecmo. As with other Hyrule Warriors games, the core loop centers on large battlefields, hordes of enemies, character-specific movesets, objective control, and story sequences that reframe Zelda lore through musou-style combat. The game was announced as a Nintendo Switch 2 title and serves as a new chapter in Hyrule's story.
+EOF
+description<<EOF
+Hyrule Warriors: Age of Imprisonment is a Nintendo Switch 2 action title set in the Zelda universe and developed in partnership with Koei Tecmo. As with other Hyrule Warriors games, the core loop centers on large battlefields, hordes of enemies, character-specific movesets, objective control, and story sequences that reframe Zelda lore through musou-style combat. The game was announced as a Nintendo Switch 2 title and serves as a new chapter in Hyrule's story.
+EOF
+description_en<<EOF
+Hyrule Warriors: Age of Imprisonment is a Nintendo Switch 2 action title set in the Zelda universe and developed in partnership with Koei Tecmo. As with other Hyrule Warriors games, the core loop centers on large battlefields, hordes of enemies, character-specific movesets, objective control, and story sequences that reframe Zelda lore through musou-style combat. The game was announced as a Nintendo Switch 2 title and serves as a new chapter in Hyrule's story.
+EOF
+description_ar<<EOF
+لعبة أكشن واسعة النطاق من عالم زيلدا موجهة لجهاز Nintendo Switch 2، تركز على المعارك الجماعية الضخمة وأسلوب موسو مع شخصيات وأحداث من هايرول.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+box_front_url=
+nintendo_card_image=
+square_game_image=
+main_image=
+image=
+image_url=
+cover_image=
+cover=
+cover_url=
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Japanese / British English / French / German / Italian / Spanish / Korean / Dutch / Simplified Chinese / Latin American Spanish / Canadian French / Traditional Chinese / American English
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish / Dutch
+text_language.3=Korean / Simplified Chinese / Traditional Chinese
+audio_language.1=Music / sound effects
+audio_language.2=Character vocalizations where applicable
+audio_language.3=No full language-selectable dub beyond the shipped release build information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=true
+nintendo_notes<<EOF
+Nintendo lists Age of Imprisonment as a Nintendo Switch 2 game and notes save-data bonus interactions with Hyrule Warriors: Age of Calamity and Zelda titles in the wider ecosystem.
+EOF
+edition.1.name=Offline Regular
+edition.1.cover_image=
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Offline account package
+edition.1.content.3.label=Nintendo Switch 2 exclusive storefront entry
+edition.2.name=Online Standard
+edition.2.cover_image=
+edition.2.content.1.label=Base game
+edition.2.content.2.label=Online account package
+edition.2.content.3.label=Nintendo Switch 2 exclusive storefront entry
+gameplay_pillar.1.title=Large-scale musou combat
+gameplay_pillar.1.description<<EOF
+Players slash through big groups of enemies while capturing strongholds and managing battlefield objectives.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Zelda-universe story framing
+gameplay_pillar.2.description<<EOF
+The game presents a new chapter in Hyrule's story, using cinematic battles and recognizable series lore as a foundation.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Distinct playable heroes
+gameplay_pillar.3.description<<EOF
+Musou combat thrives on varied character movesets, special attacks, and battlefield roles tied to individual heroes.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Objective-driven battle maps
+gameplay_pillar.4.description<<EOF
+Victory usually depends on route planning, boss handling, escorting, and reacting to shifting mission goals rather than simple button mashing.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Nintendo Switch 2 platform focus
+gameplay_pillar.5.description<<EOF
+As a Switch 2 title, the product is clearly separated from earlier Hyrule Warriors releases and kept platform-specific for accurate import behavior.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Age of Imprisonment appears positioned as a battlefield-heavy Zelda spin-off that expands Hyrule history through musou action, named heroes, and story-driven map objectives.
+EOF
+story_chapter.1.title=A new chapter in Hyrule's history
+story_chapter.1.text<<EOF
+The game introduces a storyline centered on an era of imprisonment and kingdom defense within Zelda lore.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Take command in large battles
+story_chapter.2.text<<EOF
+Players are expected to control powerful warriors as they move across large battle maps and complete mission objectives.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Shift among heroes and priorities
+story_chapter.3.text<<EOF
+Musou design usually rewards switching focus between characters, zones, and threats as the battlefield evolves.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Defend the kingdom against overwhelming forces
+story_chapter.4.text<<EOF
+Strategic objective handling and crowd-clearing action form the heart of the mid-game combat rhythm.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Advance toward the central conflict
+story_chapter.5.text<<EOF
+Story battles and hero-focused encounters should gradually build toward a major climax in Hyrule's fate.
+EOF
+story_chapter.5.image=
+feature.1=Nintendo Switch 2 exclusive storefront entry
+feature.2=Musou action set in the Zelda universe
+feature.3=Likely emphasis on large enemy counts and objective-based combat
+feature.4=Separate from both Age of Calamity and Hyrule Warriors: Definitive Edition
+feature.5=Clean future-ready import entry for an upcoming release
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=true
+main_story_hours=25
+completion_main_story_hours=40
+completion_story_plus_dlc_hours=50
+faq.1.question=Is Age of Imprisonment released yet?
+faq.1.answer<<EOF
+No. This extraction treats it as an upcoming game with a release date of 2025-11-06 according to Nintendo's store listing.
+EOF
+faq.2.question=Is it a Switch 2 exclusive?
+faq.2.answer<<EOF
+This import entry tracks it as a Nintendo Switch 2 game with no Switch 1 version included here.
+EOF
+faq.3.question=What kind of game is it?
+faq.3.answer<<EOF
+It is a Hyrule Warriors game, which means large-scale musou-style action with battlefield objectives and playable heroes.
+EOF
+faq.4.question=Does it have online play?
+faq.4.answer<<EOF
+No official Nintendo page details about competitive or cooperative online play are confirmed in this extraction, so it is treated as a primarily offline action title until broader release information is published.
+EOF
+faq.5.question=Why keep it separate from Age of Calamity?
+faq.5.answer<<EOF
+It is a different game, a different story chapter, and a different platform entry, so combining them would create inaccurate storefront data.
+EOF
+verdict_score=Pending
+verdict_pro.1=Strong Zelda setting for musou fans
+verdict_pro.2=Clean Nintendo Switch 2 platform identity
+verdict_pro.3=Upcoming title with likely strong visibility
+verdict_pro.4=Good fit for players who enjoy action-heavy spin-offs
+verdict_pro.5=Future-ready storefront entry
+verdict_con.1=Review aggregates are not available yet
+verdict_con.2=Final feature set can change before release
+verdict_con.3=No completed critical consensus yet
+verdict_con.4=Store images and detailed technical specs may need a later refresh
+verdict_con.5=Genre appeal is narrower than mainline Zelda adventures
+review.1.source=Nintendo Official Site
+review.1.score=Upcoming
+review.1.url=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-imprisonment-switch-2/
+timeline.1.date=2025-11-06
+timeline.1.title=Scheduled release on Nintendo Switch 2
+update.1.version=Upcoming release listing active
+update.1.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-imprisonment-switch-2/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-imprisonment-switch-2/
+source.2.name=Nintendo store ecosystem listing
+source.2.url=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-calamity-switch/
+storage_download_size_gb=20.0
+storage_required_space_gb=20.0
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Because the title is upcoming, the recorded storage profile remains provisional and can be refreshed after Nintendo publishes final installation data.
+EOF
+multiplayer_local=true
+multiplayer_online=false
+multiplayer_cooperative=true
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=true
+series_game.1=Hyrule Warriors: Age of Calamity
+series_game.2=Hyrule Warriors: Definitive Edition
+series_game.3=The Legend of Zelda: Tears of the Kingdom — Nintendo Switch 2 Edition
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Offline — Regular
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Offline Regular version; supplier cost 1,500 IQD; selling price 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=online_standard
+type.2.name=Online — Standard
+type.2.option_id=online_account
+type.2.price=25000
+type.2.cost=1500
+type.2.description=Online Standard version; supplier cost 1,500 IQD; selling price 25,000 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=No standalone DLC has been announced
+dlc.1.description<<EOF
+No official standalone DLC or expansion-pass announcement is available for Age of Imprisonment at the time of this extraction.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available / verified
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=true
+device_performance.1.handheld.rendering_resolution=1920x1080
+device_performance.1.handheld.output_resolution=1920x1080
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=40
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=true
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+As a Nintendo Switch 2 title, this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support as the appropriate platform-facing expectation for a musou action release on newer hardware.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=true
+device_performance.1.tv.rendering_resolution=2560x1440
+device_performance.1.tv.output_resolution=2560x1440
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=40
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=true
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+As a Nintendo Switch 2 title, this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support as the appropriate platform-facing expectation for a musou action release on newer hardware.
+EOF
+device_performance.1.mode.1.name=Primary documented mode
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=true
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+As a Nintendo Switch 2 title, this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support as the appropriate platform-facing expectation for a musou action release on newer hardware.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no single universal loading time
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-imprisonment-switch-2/
+device_performance.1.performance_notes<<EOF
+As a Nintendo Switch 2 title, this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support as the appropriate platform-facing expectation for a musou action release on newer hardware.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Available / verified
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+No Nintendo Switch 1 version is tracked by this import entry. The game is positioned as a Nintendo Switch 2 title.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+No Nintendo Switch 1 version is tracked by this import entry. The game is positioned as a Nintendo Switch 2 title.
+EOF
+device_performance.2.mode.1.name=Primary documented mode
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+No Nintendo Switch 1 version is tracked by this import entry. The game is positioned as a Nintendo Switch 2 title.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no single universal loading time
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo official product page
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/hyrule-warriors-age-of-imprisonment-switch-2/
+device_performance.2.performance_notes<<EOF
+No Nintendo Switch 1 version is tracked by this import entry. The game is positioned as a Nintendo Switch 2 title.
+EOF

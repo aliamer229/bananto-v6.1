@@ -1,0 +1,308 @@
+schema_version=24
+name=Lies of P: Complete Edition
+title=Lies of P: Complete Edition
+title_ar=لايز أوف بي: النسخة الكاملة
+name_ar=لايز أوف بي: النسخة الكاملة
+slug=lies-of-p-complete-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=Separate Nintendo Switch product may exist
+edition=Standard
+region=Global
+release_date=2026-08-05
+release_status=Released
+status=Active
+developer=Nough Studio / NEOWIZ
+publisher=NEOWIZ
+genre.1=Action
+genres.1=Action
+genre.2=RPG
+genres.2=RPG
+genre.3=Soulslike
+genres.3=Soulslike
+series_name=Lies of P
+players_count=Single system (1)
+players=Single system (1)
+age_rating=PEGI 16 / ESRB M
+metacritic_score=84
+metacritic=84
+opencritic_score=84
+opencritic=84
+user_score=8.5
+game_size_gb=35.0
+size_gb=35.0
+size=35.0 GB
+price=6500
+price_iqd=6500
+cost=6500
+cost_iqd=6500
+upgrade_price=0
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=17500
+trade_value_iqd=17500
+store_offer_bonus=6500
+store_offer_bonus_iqd=6500
+official_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Lies-of-P-Complete-Edition-3109443.html
+eshop_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Lies-of-P-Complete-Edition-3109443.html
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=The complete soulslike adventure through Krat, including the base game and the Overture expansion.
+description_full<<EOF
+Lies of P: Complete Edition is the Nintendo Switch 2 release of NEOWIZ’s acclaimed soulslike. It includes the full base game and the Overture expansion, combining the fall of Krat with the prequel story that reveals more about the Puppet Frenzy. Combat centers on precise guarding, weapon assembly, Legion Arms, boss mastery, and dark Belle Époque atmosphere.
+EOF
+description<<EOF
+Lies of P: Complete Edition is the Nintendo Switch 2 release of NEOWIZ’s acclaimed soulslike. It includes the full base game and the Overture expansion, combining the fall of Krat with the prequel story that reveals more about the Puppet Frenzy. Combat centers on precise guarding, weapon assembly, Legion Arms, boss mastery, and dark Belle Époque atmosphere.
+EOF
+description_en<<EOF
+Lies of P: Complete Edition is the Nintendo Switch 2 release of NEOWIZ’s acclaimed soulslike. It includes the full base game and the Overture expansion, combining the fall of Krat with the prequel story that reveals more about the Puppet Frenzy. Combat centers on precise guarding, weapon assembly, Legion Arms, boss mastery, and dark Belle Époque atmosphere.
+EOF
+description_ar<<EOF
+النسخة الكاملة من Lies of P على Nintendo Switch 2، وتشمل اللعبة الأساسية وتوسعة Overture، مع قتال soulslike دقيق ونظام تركيب الأسلحة وأجواء مدينة Krat المظلمة.
+EOF
+front_cover_image=
+cartridge_image=
+nintendo_card_image=
+square_game_image=
+main_image=
+cover_image=
+cover=
+cover_url=
+front_cover_hires_url=
+cover_texture_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+gallery.1.image=
+gallery.1.description=Lies of P: Complete Edition world/gameplay media 1
+banner_image.2=
+gallery.2.image=
+gallery.2.description=Lies of P: Complete Edition world/gameplay media 2
+banner_image.3=
+gallery.3.image=
+gallery.3.description=Lies of P: Complete Edition world/gameplay media 3
+banner_image.4=
+gallery.4.image=
+gallery.4.description=Lies of P: Complete Edition world/gameplay media 4
+banner_image.5=
+gallery.5.image=
+gallery.5.description=Lies of P: Complete Edition world/gameplay media 5
+banner_image.6=
+gallery.6.image=
+gallery.6.description=Lies of P: Complete Edition world/gameplay media 6
+trailer_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Lies-of-P-Complete-Edition-3109443.html
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=true
+nintendo_notes<<EOF
+Platform and package information verified against the official product/source page for Lies of P: Complete Edition.
+EOF
+overview_tagline=Uncover the complete tragedy of Krat.
+overview_suitable_for.1=Fans of the listed genres
+overview_suitable_for.2=Players who value the game’s core mechanics
+overview_suitable_for.3=Players looking for this platform version
+overview_suitable_for.4=Collectors or storefront users comparing platform editions
+overview_not_suitable_for.1=Players who dislike the listed genre
+overview_not_suitable_for.2=Players seeking a different platform entry
+overview_not_suitable_for.3=Players who require unsupported multiplayer modes
+overview_not_suitable_for.4=Players expecting a different edition package
+main_story_hours=30
+completionist_hours=55
+gameplay_pillar.1.title=Soulslike combat
+gameplay_pillar.1.description<<EOF
+Precise guarding, dodging, stamina control, and boss learning are essential.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Weapon assembly
+gameplay_pillar.2.description<<EOF
+Blades and handles can be mixed to create personalized weapons.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Legion Arms
+gameplay_pillar.3.description<<EOF
+Mechanical arms provide specialized combat tools.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Overture expansion
+gameplay_pillar.4.description<<EOF
+Complete Edition includes the prequel expansion alongside the main game.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Belle Époque atmosphere
+gameplay_pillar.5.description<<EOF
+Krat’s ornate architecture contrasts with violent puppet horror.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Lies of P: Complete Edition is the Nintendo Switch 2 release of NEOWIZ’s acclaimed soulslike. It includes the full base game and the Overture expansion, combining the fall of Krat with the prequel story that reveals more about the Puppet Frenzy. Combat centers on precise guarding, weapon assembly, Legion Arms, boss mastery, and dark Belle Époque atmosphere.
+EOF
+story_chapter.1.title=Enter the fallen city of Krat
+story_chapter.1.text<<EOF
+A puppet frenzy has transformed the city into a deadly labyrinth.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Search for Geppetto
+story_chapter.2.text<<EOF
+The protagonist follows clues through a city collapsing under its own secrets.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Question truth and lies
+story_chapter.3.text<<EOF
+Choices and narrative themes revolve around identity and humanity.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Master powerful bosses
+story_chapter.4.text<<EOF
+Major encounters test defensive timing and build choices.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Explore the Overture prequel
+story_chapter.5.text<<EOF
+The expansion reveals events and characters tied to Krat before the main story.
+EOF
+story_chapter.5.image=
+feature.1=Base game + Overture expansion
+feature.2=Weapon assembly
+feature.3=Legion Arms
+feature.4=Soulslike boss design
+feature.5=Native Switch 2 Complete Edition
+performance_handheld_resolution=1080p
+performance_tv_resolution=1440p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Switch 2 Complete Edition performance profile recorded for storefront use.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Switch 2 Complete Edition performance profile recorded for storefront use.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Switch 2 Complete Edition performance profile recorded for storefront use.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Switch 2 Complete Edition performance profile recorded for storefront use.
+EOF
+device_performance.1.performance_notes<<EOF
+Switch 2 Complete Edition performance profile recorded for storefront use.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.unavailable_reason<<EOF
+This product file belongs to a different Nintendo platform entry.
+EOF
+device_performance.2.performance_notes<<EOF
+Not supported for this product entry.
+EOF
+faq.1.question=What is the official Switch 2 title?
+faq.1.answer<<EOF
+Nintendo lists Lies of P: Complete Edition.
+EOF
+faq.2.question=What is included?
+faq.2.answer<<EOF
+The base game and Overture expansion.
+EOF
+faq.3.question=When did it release on Switch 2?
+faq.3.answer<<EOF
+Nintendo lists August 5, 2026.
+EOF
+faq.4.question=Is it multiplayer?
+faq.4.answer<<EOF
+No. It is a single-player action RPG.
+EOF
+faq.5.question=Why does the file name differ from the supplier title?
+faq.5.answer<<EOF
+The official Nintendo Switch 2 product is Complete Edition, so the file uses the official name while preserving the supplier prices.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=6500
+type.1.cost=6500
+type.1.description=Regular / Offline; supplier cost 6,500 IQD; selling price 6,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard-online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=25000
+type.2.cost=6500
+type.2.description=Standard / Online; supplier cost 6,500 IQD; selling price 25,000 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+source.1.name=Official product / publisher page
+source.1.url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Lies-of-P-Complete-Edition-3109443.html
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/search/lies-of-p-complete-edition/

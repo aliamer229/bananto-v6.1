@@ -1,0 +1,394 @@
+schema_version=24
+name=Fitness Boxing 3: Your Personal Trainer — Nintendo Switch 2 Edition
+title=Fitness Boxing 3: Your Personal Trainer — Nintendo Switch 2 Edition
+title_ar=فيتنس بوكسينغ 3 — إصدار نينتندو سويتش 2
+name_ar=فيتنس بوكسينغ 3 — إصدار نينتندو سويتش 2
+slug=fitness-boxing-3-your-personal-trainer-nintendo-switch-2-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=Nintendo Switch 1 version exists separately
+edition=Standard / Store Variants
+region=Global
+release_date=2026-07-16
+release_status=Released
+status=Active
+developer=Imagineer
+publisher=Nintendo
+genre.1=Sports
+genres.1=Sports
+genre.2=Training
+genres.2=Training
+genre.3=Fitness
+genres.3=Fitness
+series_name=Fitness Boxing 3
+players_count=Single system (1-2) / GameShare local
+players=Single system (1-2) / GameShare local
+player_count=Single system (1-2) / GameShare local
+age_rating=ESRB E — In-Game Purchases
+game_size_gb=10.0
+size=10.0 GB
+size_gb=10.0
+price=5750
+price_iqd=5750
+price_usd=59.99
+cost=5750
+cost_iqd=5750
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=17250
+trade_value_iqd=17250
+store_offer_bonus=3000
+store_offer_bonus_iqd=3000
+official_url=https://www.nintendo.com/us/store/products/fitness-boxing-3-your-personal-trainer-nintendo-switch-2-edition-switch-2/
+eshop_url=https://www.nintendo.com/us/store/products/fitness-boxing-3-your-personal-trainer-nintendo-switch-2-edition-switch-2/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+The Switch 2 Edition enhances resolution and frame rate, adds Advanced Scoring, Boost Up, CameraPlay support, and local GameShare while keeping the core boxing workout system.
+EOF
+description_full<<EOF
+The Switch 2 Edition enhances resolution and frame rate, adds Advanced Scoring, Boost Up, CameraPlay support, and local GameShare while keeping the core boxing workout system. The Switch 2 Edition starts from the established Fitness Boxing 3 workout structure. GameShare allows local workout sharing to another compatible Nintendo system.
+EOF
+description<<EOF
+The Switch 2 Edition enhances resolution and frame rate, adds Advanced Scoring, Boost Up, CameraPlay support, and local GameShare while keeping the core boxing workout system. The Switch 2 Edition starts from the established Fitness Boxing 3 workout structure. GameShare allows local workout sharing to another compatible Nintendo system.
+EOF
+description_en<<EOF
+The Switch 2 Edition enhances resolution and frame rate, adds Advanced Scoring, Boost Up, CameraPlay support, and local GameShare while keeping the core boxing workout system. The Switch 2 Edition starts from the established Fitness Boxing 3 workout structure. GameShare allows local workout sharing to another compatible Nintendo system.
+EOF
+description_ar<<EOF
+فيتنس بوكسينغ 3 — إصدار نينتندو سويتش 2 — The Switch 2 Edition enhances resolution and frame rate, adds Advanced Scoring, Boost Up, CameraPlay support, and local GameShare while keeping the core boxing workout system.
+EOF
+front_cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+cartridge_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+cartridge=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+cartridge_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+box_front_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/e78baa00848a9c8c0a67d493ad416b21e5280c785578455edefdcb7a0a7102db
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/e78baa00848a9c8c0a67d493ad416b21e5280c785578455edefdcb7a0a7102db
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/e78baa00848a9c8c0a67d493ad416b21e5280c785578455edefdcb7a0a7102db
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=false
+nintendo_play_modes=TV / Tabletop
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/6ec83542de00a10ef871eb3a3dff9238e57c1782f5453e0079dd36ed90cff665
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Enhanced performance
+gameplay_pillar.1.description<<EOF
+Nintendo explicitly states that the Switch 2 Edition increases resolution and frame rate.
+EOF
+gameplay_pillar.2.title=Advanced Scoring Mode
+gameplay_pillar.2.description<<EOF
+A new scoring option evaluates hit timing more strictly.
+EOF
+gameplay_pillar.3.title=Boost Up workouts
+gameplay_pillar.3.description<<EOF
+Workout speed can gradually increase round by round for added challenge.
+EOF
+gameplay_pillar.4.title=CameraPlay support
+gameplay_pillar.4.description<<EOF
+Compatible camera use can show the player’s movements on screen during workouts.
+EOF
+gameplay_pillar.5.title=GameShare local
+gameplay_pillar.5.description<<EOF
+Owners can share the game locally with another Nintendo Switch or Switch 2 system for supported sessions.
+EOF
+world_summary<<EOF
+The Switch 2 Edition enhances resolution and frame rate, adds Advanced Scoring, Boost Up, CameraPlay support, and local GameShare while keeping the core boxing workout system. The Switch 2 Edition starts from the established Fitness Boxing 3 workout structure. GameShare allows local workout sharing to another compatible Nintendo system.
+EOF
+story_chapter.1.title=Upgrade the training setup
+story_chapter.1.text<<EOF
+The Switch 2 Edition starts from the established Fitness Boxing 3 workout structure.
+EOF
+story_chapter.2.title=Use improved scoring
+story_chapter.2.text<<EOF
+Advanced Scoring rewards more precise timing and encourages better technique.
+EOF
+story_chapter.3.title=Increase intensity
+story_chapter.3.text<<EOF
+Boost Up can progressively accelerate a workout to raise the challenge.
+EOF
+story_chapter.4.title=Add CameraPlay
+story_chapter.4.text<<EOF
+Compatible camera support brings visual feedback into the training experience.
+EOF
+story_chapter.5.title=Share a workout locally
+story_chapter.5.text<<EOF
+GameShare allows local workout sharing to another compatible Nintendo system.
+EOF
+feature.1=Enhanced resolution and frame rate
+feature.2=Advanced Scoring Mode
+feature.3=Boost Up feature
+feature.4=CameraPlay support
+feature.5=Local GameShare
+performance_tv_resolution=Enhanced resolution — exact official number not published
+performance_handheld_resolution=Not Supported
+performance_fps=0
+performance_hdr=false
+main_story_hours=0
+completion_main_story_hours=0
+completion_story_plus_dlc_hours=0
+faq.1.question=When was the Switch 2 Edition released?
+faq.1.answer<<EOF
+Nintendo lists July 16, 2026.
+EOF
+faq.2.question=What is the file size?
+faq.2.answer<<EOF
+Nintendo lists 10 GB for the Switch 2 Edition.
+EOF
+faq.3.question=Does it support Handheld mode?
+faq.3.answer<<EOF
+No. Nintendo lists TV and Tabletop modes.
+EOF
+faq.4.question=Can original owners upgrade?
+faq.4.answer<<EOF
+Yes. Nintendo sells a separate Switch 2 Edition Upgrade Pack.
+EOF
+faq.5.question=What does GameShare do?
+faq.5.answer<<EOF
+It can share supported local play to another Nintendo Switch or Switch 2 system.
+EOF
+verdict_score=8.5
+verdict_pro.1=Clear enhancements over Switch 1
+verdict_pro.2=Advanced scoring improves training feedback
+verdict_pro.3=CameraPlay is a useful new option
+verdict_pro.4=GameShare expands local access
+verdict_pro.5=Higher resolution/frame-rate profile
+verdict_con.1=Requires Joy-Con motion play
+verdict_con.2=Handheld mode remains unsupported
+verdict_con.3=CameraPlay needs compatible hardware
+verdict_con.4=Workout value depends on personal routine consistency
+verdict_con.5=Upgrade is a separate product for original owners
+timeline.1.date=2026-07-16
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=Imagineer
+studio_website=https://www.nintendo.com/us/store/products/fitness-boxing-3-your-personal-trainer-nintendo-switch-2-edition-switch-2/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/fitness-boxing-3-your-personal-trainer-nintendo-switch-2-edition-switch-2/
+storage_download_size_gb=10.0
+storage_required_space_gb=10.0
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=true
+multiplayer_online=false
+multiplayer_cooperative=true
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=true
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=5750
+type.1.cost=5750
+type.1.description=Regular / Offline; user-supplied store price 5,750 IQD; recorded cost 5,750 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=31500
+type.2.cost=5750
+type.2.description=Standard / Online; user-supplied store price 31,500 IQD; recorded cost 5,750 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+Optional music/cosmetic packs remain available; the Switch 2 Upgrade Pack is a migration path from the original version.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=false
+device_performance.1.handheld.resolution=Not Supported
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=Not Supported
+device_performance.1.handheld.output_resolution=Not Supported
+device_performance.1.handheld.fps=Enhanced frame rate — exact official number not published
+device_performance.1.handheld.fps_min=Enhanced frame rate — exact official number not published
+device_performance.1.handheld.fps_max=Enhanced frame rate — exact official number not published
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Nintendo confirms enhanced resolution and frame rate but does not publish exact resolution/FPS figures on the product page.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Enhanced resolution — exact official number not published
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=Enhanced resolution — exact official number not published
+device_performance.1.tv.output_resolution=Enhanced resolution — exact official number not published
+device_performance.1.tv.fps=Enhanced frame rate — exact official number not published
+device_performance.1.tv.fps_min=Enhanced frame rate — exact official number not published
+device_performance.1.tv.fps_max=Enhanced frame rate — exact official number not published
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Nintendo confirms enhanced resolution and frame rate but does not publish exact resolution/FPS figures on the product page.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=Not Supported
+device_performance.1.mode.1.handheld_fps=Enhanced frame rate — exact official number not published
+device_performance.1.mode.1.tv_resolution=Enhanced resolution — exact official number not published
+device_performance.1.mode.1.tv_fps=Enhanced frame rate — exact official number not published
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Nintendo confirms enhanced resolution and frame rate but does not publish exact resolution/FPS figures on the product page.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/fitness-boxing-3-your-personal-trainer-nintendo-switch-2-edition-switch-2/
+device_performance.1.performance_notes<<EOF
+Nintendo confirms enhanced resolution and frame rate but does not publish exact resolution/FPS figures on the product page.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+This file is for the native Switch 2 Edition. The original Switch 1 version is a separate product.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+This file is for the native Switch 2 Edition. The original Switch 1 version is a separate product.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+This file is for the native Switch 2 Edition. The original Switch 1 version is a separate product.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/fitness-boxing-3-your-personal-trainer-121188/
+device_performance.2.performance_notes<<EOF
+This file is for the native Switch 2 Edition. The original Switch 1 version is a separate product.
+EOF
+upgrade_price=0
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/3f31c12f8fdc1988c9e6fff6993b7c4e61662aa39bc1b702947249b2edb1de32
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/484dbc1d6dc1a5dc39b1f814bcb5391d79fb39fc7f5660e272e4c309b17de83f
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/f24f10aaab870df6ab31c8c576df29a022f411c95047920945edef011bbcfd1f
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/0227b403402d0e94bb08b1c2db83dc61b0163e18053e022922b935dc78583634
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/705e59b7c52cad88c0c37d75dd4ed83ef23a52c280d7c2bc7c3f4d5f5d3d59cc
+gallery.1.description=Verified game-world/promotional media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/3f31c12f8fdc1988c9e6fff6993b7c4e61662aa39bc1b702947249b2edb1de32
+gallery.2.description=Verified game-world/promotional media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/484dbc1d6dc1a5dc39b1f814bcb5391d79fb39fc7f5660e272e4c309b17de83f
+gallery.3.description=Verified game-world/promotional media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/f24f10aaab870df6ab31c8c576df29a022f411c95047920945edef011bbcfd1f
+gallery.4.description=Verified game-world/promotional media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/0227b403402d0e94bb08b1c2db83dc61b0163e18053e022922b935dc78583634
+gallery.5.description=Verified game-world/promotional media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/705e59b7c52cad88c0c37d75dd4ed83ef23a52c280d7c2bc7c3f4d5f5d3d59cc
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/3f31c12f8fdc1988c9e6fff6993b7c4e61662aa39bc1b702947249b2edb1de32
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/484dbc1d6dc1a5dc39b1f814bcb5391d79fb39fc7f5660e272e4c309b17de83f
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/f24f10aaab870df6ab31c8c576df29a022f411c95047920945edef011bbcfd1f
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/0227b403402d0e94bb08b1c2db83dc61b0163e18053e022922b935dc78583634
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/705e59b7c52cad88c0c37d75dd4ed83ef23a52c280d7c2bc7c3f4d5f5d3d59cc
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/484dbc1d6dc1a5dc39b1f814bcb5391d79fb39fc7f5660e272e4c309b17de83f
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/f24f10aaab870df6ab31c8c576df29a022f411c95047920945edef011bbcfd1f
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/0227b403402d0e94bb08b1c2db83dc61b0163e18053e022922b935dc78583634
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/705e59b7c52cad88c0c37d75dd4ed83ef23a52c280d7c2bc7c3f4d5f5d3d59cc
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000120066/3f31c12f8fdc1988c9e6fff6993b7c4e61662aa39bc1b702947249b2edb1de32

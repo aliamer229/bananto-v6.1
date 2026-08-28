@@ -1,0 +1,389 @@
+schema_version=24
+name=Mario + Rabbids Kingdom Battle
+title=Mario + Rabbids Kingdom Battle
+title_ar=ماريو + رابيدز: كينغدوم باتل
+name_ar=ماريو + رابيدز: كينغدوم باتل
+slug=mario-rabbids-kingdom-battle-switch-1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard
+region=Global
+release_date=2017-08-29
+release_status=Released
+status=Active
+developer=Ubisoft Milan
+publisher=Ubisoft
+genre.1=Strategy
+genre.2=Turn-based Tactics
+genre.3=Adventure
+series_name=Mario + Rabbids
+players_count=Single system (1); Local co-op (2) in select modes
+players=Single system (1); Local co-op (2) in select modes
+player_count=Single system (1); Local co-op (2) in select modes
+age_rating=ESRB E10+ / PEGI 7
+metacritic_score=85
+metacritic=85
+user_score=8.5
+userscore=8.5
+user_rating=8.5
+game_size_gb=2.3
+size=2.3 GB
+size_gb=2.3
+price=12000
+price_iqd=12000
+price_usd=59.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=9000
+trade_value_iqd=9000
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.nintendo.com/us/store/products/mario-plus-rabbids-kingdom-battle-switch/
+eshop_url=https://www.nintendo.com/us/store/products/mario-plus-rabbids-kingdom-battle-switch/
+gallery.1.description=Verified direct image URL 1
+gallery.2.description=Verified direct image URL 2
+gallery.3.description=Verified direct image URL 3
+gallery.4.description=Verified direct image URL 4
+trailer_url=https://www.youtube.com/watch?v=DqH-iwA0ZmU
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+Mario joins forces with Rabbid heroes in a colorful turn-based strategy adventure packed with movement skills, overwatch tactics, weapon synergies and humorous exploration.
+EOF
+description_full<<EOF
+Mario joins forces with Rabbid heroes in a colorful turn-based strategy adventure packed with movement skills, overwatch tactics, weapon synergies and humorous exploration. Travel across the Mushroom Kingdom, build a team of three, use pipes and dashes to reposition, and defeat enemy waves and bosses through smart tactical play.
+EOF
+description<<EOF
+Mario joins forces with Rabbid heroes in a colorful turn-based strategy adventure packed with movement skills, overwatch tactics, weapon synergies and humorous exploration. Travel across the Mushroom Kingdom, build a team of three, use pipes and dashes to reposition, and defeat enemy waves and bosses through smart tactical play.
+EOF
+description_en<<EOF
+Mario joins forces with Rabbid heroes in a colorful turn-based strategy adventure packed with movement skills, overwatch tactics, weapon synergies and humorous exploration. Travel across the Mushroom Kingdom, build a team of three, use pipes and dashes to reposition, and defeat enemy waves and bosses through smart tactical play.
+EOF
+description_ar<<EOF
+يتعاون ماريو مع أبطال رابيدز في لعبة تكتيكية بنظام الأدوار مليئة بالحركة والمهارات والتكتيك والأسلحة والتجوال المرح. تتنقل بين عوالم مملكة الفطر، تبني فريقًا من ثلاثة أبطال، وتستخدم الأنابيب والاندفاع والقدرات الخاصة للفوز على الأعداء والزعماء عبر تخطيط ذكي.
+EOF
+front_cover_image=https://images.launchbox-app.com/f28e8b8d-6050-4713-8c21-6837cb37e574.jpg
+cartridge_image=https://images.launchbox-app.com/f28e8b8d-6050-4713-8c21-6837cb37e574.jpg
+cartridge=https://images.launchbox-app.com/f28e8b8d-6050-4713-8c21-6837cb37e574.jpg
+cartridge_url=https://images.launchbox-app.com/f28e8b8d-6050-4713-8c21-6837cb37e574.jpg
+box_front_url=https://images.launchbox-app.com/f28e8b8d-6050-4713-8c21-6837cb37e574.jpg
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+box_back_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/d7c227b987e2c656c89e5181fb0c32234fe80a591fd6ecc72b3810af7fb3dbbd
+edition.1.name=Standard Edition
+edition.1.cover_image=https://images.launchbox-app.com/f28e8b8d-6050-4713-8c21-6837cb37e574.jpg
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Full campaign
+edition.1.content.3.label=Core tactical battles
+edition.2.name=Digital Edition
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+edition.2.content.1.label=Nintendo eShop release
+edition.2.content.2.label=Fast download size
+edition.2.content.3.label=Save Data Cloud support
+edition.3.name=Current Store Package
+edition.3.cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/c0544d71c50c0595b8589451e9fc8b2deaf5cab52415202e0585e137fbe3d5fb
+edition.3.content.1.label=Offline account option
+edition.3.content.2.label=Online account option
+edition.3.content.3.label=Hidden by default until review
+gameplay_pillar.1.title=Tactical movement
+gameplay_pillar.1.description<<EOF
+Use team jumps, dashes, pipes, high cover and low cover to build strong turn-by-turn positioning advantages.
+EOF
+gameplay_pillar.2.title=Hero synergy
+gameplay_pillar.2.description<<EOF
+Combine Mario, Luigi, Peach and the Rabbid heroes to create complementary attacks, buffs and battlefield control.
+EOF
+gameplay_pillar.3.title=Exploration and puzzles
+gameplay_pillar.3.description<<EOF
+Outside battles you explore connected zones, collect secrets, solve simple puzzles and unlock new weapons and paths.
+EOF
+world_summary<<EOF
+A dimensional accident fuses the Mushroom Kingdom with the chaotic Rabbids world. Mario and his unusual new allies journey across warped regions filled with puzzles, enemy encounters and comic set pieces to restore order.
+EOF
+story_chapter.1.title=Worlds collide
+story_chapter.1.text<<EOF
+A strange machine merges the Rabbids and the Mushroom Kingdom, creating chaos across familiar Mario locations.
+EOF
+story_chapter.2.title=Build the team
+story_chapter.2.text<<EOF
+Mario gathers Rabbid allies and unlocks new hero combinations, weapons and special skills as the journey expands.
+EOF
+story_chapter.3.title=Defeat the corruption
+story_chapter.3.text<<EOF
+Late-game battles demand smart positioning, weapon synergy and careful management of cooldowns and status effects.
+EOF
+feature.1=Turn-based battles with cover mechanics
+feature.2=Hero upgrades and weapon progression
+feature.3=Local co-op in dedicated challenges
+performance_tv_resolution=Up to 900p docked
+performance_handheld_resolution=Up to 720p handheld
+performance_fps=30
+performance_hdr=false
+faq.1.question=What kind of game is it?
+faq.1.answer<<EOF
+It is a turn-based tactics game with exploration, character upgrades and puzzle-like positioning.
+EOF
+faq.2.question=Does it support multiplayer?
+faq.2.answer<<EOF
+The main campaign is single-player, while select challenge and co-op modes support local two-player play.
+EOF
+faq.3.question=Is it beginner friendly?
+faq.3.answer<<EOF
+Yes. The early game introduces core mechanics gradually, while later difficulty comes from deeper tactical combinations.
+EOF
+verdict_score=8.7
+verdict_summary<<EOF
+Overall score: 8.7/10. Strengths include Excellent tactical readability; Charming crossover presentation; Strong mix of accessibility and depth. Main drawbacks include 30 fps presentation; Exploration can feel light.
+EOF
+verdict_pro.1=Excellent tactical readability
+verdict_pro.2=Charming crossover presentation
+verdict_pro.3=Strong mix of accessibility and depth
+verdict_con.1=30 fps presentation
+verdict_con.2=Exploration can feel light
+verdict_con.3=Some encounters repeat ideas
+review.1.source=Metacritic
+review.1.score=85/100
+review.1.quote<<EOF
+Widely praised for its tactical design and crossover concept.
+EOF
+review.1.url=https://www.metacritic.com/game/mario-rabbids-kingdom-battle/
+review.2.source=Nintendo
+review.2.score=Official
+review.2.quote<<EOF
+Nintendo store listing highlights tactical movement, hero teams and exploration.
+EOF
+review.2.url=https://www.nintendo.com/us/store/products/mario-plus-rabbids-kingdom-battle-switch/
+review.3.source=YouTube trailer
+review.3.score=Official Trailer
+review.3.quote<<EOF
+The reveal trailer established the tone of the Mario and Rabbids crossover.
+EOF
+review.3.url=https://www.youtube.com/watch?v=DqH-iwA0ZmU
+timeline.1.date=2017-06-13
+timeline.1.title=Official reveal
+timeline.1.details<<EOF
+The game was formally presented during E3 2017.
+EOF
+timeline.2.date=2017-08-29
+timeline.2.title=Worldwide release
+timeline.2.details<<EOF
+Mario + Rabbids Kingdom Battle launched on Nintendo Switch.
+EOF
+timeline.3.date=2018-06-26
+timeline.3.title=Donkey Kong Adventure
+timeline.3.details<<EOF
+The major post-launch expansion added a new adventure starring Donkey Kong.
+EOF
+update.1.version=Launch build
+update.1.date=2017-08
+update.1.changes<<EOF
+Base game release.
+EOF
+update.2.version=Versus update
+update.2.date=2017
+update.2.changes<<EOF
+Post-launch support added extra modes and fixes.
+EOF
+update.3.version=Current build
+update.3.date=2026-08-27
+update.3.changes<<EOF
+Stable retail version compatible with Nintendo Switch 2 behavior mode.
+EOF
+studio_name=Ubisoft Milan
+studio_website=https://www.ubisoft.com/
+studio_location=Milan, Italy
+studio_description<<EOF
+Ubisoft Milan is credited as the developer of this Nintendo Switch release. Ubisoft is credited as the publisher.
+EOF
+source.1.name=Nintendo Store
+source.1.url=https://www.nintendo.com/us/store/products/mario-plus-rabbids-kingdom-battle-switch/
+source.2.name=Official Trailer
+source.2.url=https://www.youtube.com/watch?v=DqH-iwA0ZmU
+source.3.name=LaunchBox art reference
+source.3.url=https://gamesdb.launchbox-app.com/games/details/76749-mario-rabbids-kingdom-battle
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=standard_offline
+type.1.name=Offline Account
+type.1.option_id=offline_account
+type.1.price=12000
+type.1.cost=1250
+type.1.description=Offline Account; supplier cost 1,250 IQD; selling price 12,000 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Online Account
+type.2.option_id=online_account
+type.2.price=20000
+type.2.cost=10000
+type.2.description=Online Account; supplier cost 10,000 IQD; selling price 20,000 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / Backward Compatible
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=1280x720
+device_performance.2.handheld.output_resolution=1920x1080 system output / backward-compatible rendering profile
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition or graphics patch is used here; the original Switch rendering profile and 30 fps cap are retained, with system-level loading/consistency benefits possible.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=900p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1600x900
+device_performance.2.tv.output_resolution=1920x1080
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition or graphics patch is used here; the original Switch rendering profile and 30 fps cap are retained, with system-level loading/consistency benefits possible.
+EOF
+device_performance.2.mode.1.name=Backward Compatibility
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=900p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition or graphics patch is used here; the original Switch rendering profile and 30 fps cap are retained, with system-level loading/consistency benefits possible.
+EOF
+device_performance.2.upscaling=System output scaling only; no native Switch 2 edition assumed
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Generally faster system/storage access may occur; exact loading time varies by scene
+device_performance.2.loading_notes<<EOF
+Backward compatibility can reduce some loading bottlenecks, but no single universal loading-time value is used.
+EOF
+device_performance.2.game_version=Current Nintendo Switch retail build
+device_performance.2.patch_version=Current available Switch update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 backward compatibility + established Nintendo Switch performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/gaming-systems/switch-2/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.verification_status=Verified profile / Backward Compatible
+device_performance.2.unavailable_reason<<EOF
+No required Handheld or TV mode is marked unsupported.
+EOF
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition or graphics patch is used here; the original Switch rendering profile and 30 fps cap are retained, with system-level loading/consistency benefits possible.
+EOF
+upgrade_price=0
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/d7c227b987e2c656c89e5181fb0c32234fe80a591fd6ecc72b3810af7fb3dbbd
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/91823f4de86d308747cd319e0a83ea5df7b39de182ae8f76bda2ad3143356940
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/82f7e88f885af8a855e40d22fa04028a4704e9de8bd2821fab42f8ae4c781ea9
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/5e95a3a99d0c5e4e8f09de72a210a13e7e5a9aa520876a0da4810f5c19f9c163
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/110d9895cfbbf7131e7ce54b4acef974a7e5d01f1bda33fd8d5462e6655168db
+banner_image.6=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/f0989040c1749800f66d97fa54cd79b89fbe3080809d0c8869614025dd97391d
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/d7c227b987e2c656c89e5181fb0c32234fe80a591fd6ecc72b3810af7fb3dbbd
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/91823f4de86d308747cd319e0a83ea5df7b39de182ae8f76bda2ad3143356940
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/82f7e88f885af8a855e40d22fa04028a4704e9de8bd2821fab42f8ae4c781ea9
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/5e95a3a99d0c5e4e8f09de72a210a13e7e5a9aa520876a0da4810f5c19f9c163
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/110d9895cfbbf7131e7ce54b4acef974a7e5d01f1bda33fd8d5462e6655168db
+gallery.6.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/f0989040c1749800f66d97fa54cd79b89fbe3080809d0c8869614025dd97391d
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/d7c227b987e2c656c89e5181fb0c32234fe80a591fd6ecc72b3810af7fb3dbbd
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/91823f4de86d308747cd319e0a83ea5df7b39de182ae8f76bda2ad3143356940
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/82f7e88f885af8a855e40d22fa04028a4704e9de8bd2821fab42f8ae4c781ea9
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/d7c227b987e2c656c89e5181fb0c32234fe80a591fd6ecc72b3810af7fb3dbbd
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/91823f4de86d308747cd319e0a83ea5df7b39de182ae8f76bda2ad3143356940
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/82f7e88f885af8a855e40d22fa04028a4704e9de8bd2821fab42f8ae4c781ea9
+nintendo_official_url=https://www.nintendo.com/us/store/products/mario-plus-rabbids-kingdom-battle-switch/
+official_store_url=https://www.nintendo.com/us/store/products/mario-plus-rabbids-kingdom-battle-switch/
+front_cover_hires_url=
+cover_texture_url=
+supports_arabic=false
+overview_tagline=Mario joins forces with Rabbid heroes in a colorful turn-based strategy adventure packed with movement skills, overwatch tactics, weapon synergies and humorous exploration.
+overview_suitable_for.1=Players looking for strategy, turn-based tactics gameplay.
+overview_suitable_for.2=Players who want the game modes supported by the official player-count specification: Single system (1); Local co-op (2) in select modes.
+overview_not_suitable_for.1=Players specifically seeking online multiplayer; this title does not list online multiplayer support.
+overview_not_suitable_for.2=Players specifically seeking local multiplayer; this title does not list local multiplayer support.
+setting_requirement.1=Nintendo Switch-compatible hardware for this release.
+setting_requirement.2=Internet connection is required for online features.
+dlc.1.title=Donkey Kong Adventure
+dlc.1.description<<EOF
+A standalone story expansion starring Donkey Kong, Rabbid Peach, and Rabbid Cranky, with new combat and environments.
+EOF
+guide.1.title=Official Nintendo game page
+guide.1.summary<<EOF
+Official Nintendo reference for game description, supported modes, player counts, languages, file size, and compatibility information.
+EOF
+guide.1.url=https://www.nintendo.com/us/store/products/mario-plus-rabbids-kingdom-battle-switch/
+
+# Expanded detail-page point rule: added more than 3 items where appropriate.
+gameplay_pillar.4.title=Tactical positioning and cover
+gameplay_pillar.4.description<<EOF
+Battles revolve around movement ranges, flanking lanes, and smart use of full or partial cover. Good positioning often matters as much as raw damage output.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/5e95a3a99d0c5e4e8f09de72a210a13e7e5a9aa520876a0da4810f5c19f9c163
+gameplay_pillar.5.title=Kingdom exploration and secrets
+gameplay_pillar.5.description<<EOF
+Between fights, each kingdom includes light exploration, environmental puzzles, hidden chests, and collectible content that expands the adventure beyond combat.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/110d9895cfbbf7131e7ce54b4acef974a7e5d01f1bda33fd8d5462e6655168db
+story_chapter.4.title=Clean up the Megabug disaster
+story_chapter.4.text<<EOF
+Mario, Luigi, Peach, and Rabbid allies travel across the Mushroom Kingdom after a chaotic invention fuses Rabbids, technology, and familiar locations.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/f0989040c1749800f66d97fa54cd79b89fbe3080809d0c8869614025dd97391d
+story_chapter.5.title=Donkey Kong Adventure and extra battles
+story_chapter.5.text<<EOF
+Post-launch content adds a separate Donkey Kong-focused campaign with its own maps, enemy types, and tactical twists for players who want more combat scenarios.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000819/d7c227b987e2c656c89e5181fb0c32234fe80a591fd6ecc72b3810af7fb3dbbd
+feature.4=Deep turn-based tactics with approachable controls
+feature.5=Distinct hero abilities, weapons, and team synergies
+feature.6=Donkey Kong Adventure DLC expands the campaign with a separate storyline
+faq.4.question=Is Mario + Rabbids Kingdom Battle beginner-friendly?
+faq.4.answer<<EOF
+Yes. It starts gently, explains movement and cover clearly, and remains approachable while still offering tougher optional challenges later on.
+EOF
+faq.5.question=Does the game include extra content?
+faq.5.answer<<EOF
+Yes. The best-known expansion is Donkey Kong Adventure, which adds a separate side campaign with new heroes, new areas, and additional tactical encounters.
+EOF
+overview_suitable_for.3=Players who enjoy XCOM-style tactical decision making without extreme complexity.
+overview_suitable_for.4=Fans of Mario crossovers who want a long single-player adventure with exploration between battles.
+overview_not_suitable_for.3=Players looking for fast real-time action instead of turn-based encounters.
+overview_not_suitable_for.4=Players who want competitive online multiplayer; the focus is on solo play and local challenge content.
+verdict_pro.4=Smart map design keeps battles varied
+verdict_pro.5=Exploration adds charm between combat arenas
+verdict_con.4=Some difficulty spikes can surprise casual players
+verdict_con.5=Exploration segments are lighter than the tactical combat itself

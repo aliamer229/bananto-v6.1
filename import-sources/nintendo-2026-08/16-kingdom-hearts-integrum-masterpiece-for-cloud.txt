@@ -1,0 +1,377 @@
+schema_version=24
+name=KINGDOM HEARTS INTEGRUM MASTERPIECE for Cloud
+title=KINGDOM HEARTS INTEGRUM MASTERPIECE for Cloud
+title_ar=كينغدوم هارتس إنتيغروم ماستر بيس فور كلاود
+name_ar=كينغدوم هارتس إنتيغروم ماستر بيس فور كلاود
+slug=kingdom-hearts-integrum-masterpiece-for-cloud
+platform=switch1
+compatibility.1=Nintendo Switch Cloud Version
+compatibility.2=Nintendo Switch 2 can run the Switch cloud software, but native Switch 2 collection is separate
+edition=Standard / Store Variants
+region=Global
+release_date=2022-02-10
+release_status=Released
+status=Active
+developer=SQUARE ENIX
+publisher=SQUARE ENIX
+genre.1=Action RPG
+genres.1=Action RPG
+genre.2=Adventure
+genres.2=Adventure
+series_name=KINGDOM HEARTS INTEGRUM MASTERPIECE for Cloud
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E10+ / T depending on included title
+game_size_gb=0.1
+size=0.1 GB
+size_gb=0.1
+price=1500
+price_iqd=1500
+price_usd=89.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=7750
+trade_value_iqd=7750
+store_offer_bonus=1250
+store_offer_bonus_iqd=1250
+official_url=https://www.nintendo.com/us/store/products/kingdom-hearts-integrum-masterpiece-for-cloud-switch/
+eshop_url=https://www.nintendo.com/us/store/products/kingdom-hearts-integrum-masterpiece-for-cloud-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+The official Switch 1 Kingdom Hearts collection is the cloud-streaming Integrum Masterpiece bundle, combining HD 1.5+2.5, HD 2.8, and Kingdom Hearts III + Re Mind.
+EOF
+description_full<<EOF
+The official Switch 1 Kingdom Hearts collection is the cloud-streaming Integrum Masterpiece bundle, combining HD 1.5+2.5, HD 2.8, and Kingdom Hearts III + Re Mind. Kingdom Hearts introduces Sora, Donald, and Goofy as they travel between worlds searching for friends. The bundle culminates in Kingdom Hearts III and its Re Mind content.
+EOF
+description<<EOF
+The official Switch 1 Kingdom Hearts collection is the cloud-streaming Integrum Masterpiece bundle, combining HD 1.5+2.5, HD 2.8, and Kingdom Hearts III + Re Mind. Kingdom Hearts introduces Sora, Donald, and Goofy as they travel between worlds searching for friends. The bundle culminates in Kingdom Hearts III and its Re Mind content.
+EOF
+description_en<<EOF
+The official Switch 1 Kingdom Hearts collection is the cloud-streaming Integrum Masterpiece bundle, combining HD 1.5+2.5, HD 2.8, and Kingdom Hearts III + Re Mind. Kingdom Hearts introduces Sora, Donald, and Goofy as they travel between worlds searching for friends. The bundle culminates in Kingdom Hearts III and its Re Mind content.
+EOF
+description_ar<<EOF
+كينغدوم هارتس إنتيغروم ماستر بيس فور كلاود — The official Switch 1 Kingdom Hearts collection is the cloud-streaming Integrum Masterpiece bundle, combining HD 1.5+2.5, HD 2.8, and Kingdom Hearts III + Re Mind.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+box_front_url=
+nintendo_card_image=
+square_game_image=
+main_image=
+image=
+image_url=
+cover_image=
+cover=
+cover_url=
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=false
+save_data_cloud=false
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Large series compilation
+gameplay_pillar.1.description<<EOF
+The bundle packages the main Kingdom Hearts collections and Kingdom Hearts III into one Switch purchase.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Action RPG combat
+gameplay_pillar.2.description<<EOF
+Real-time Keyblade combat combines physical attacks, magic, forms, summons, and character-specific systems.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Disney and Square Enix worlds
+gameplay_pillar.3.description<<EOF
+The series crosses original Kingdom Hearts characters with Disney settings and recurring FINAL FANTASY elements.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Cloud streaming requirement
+gameplay_pillar.4.description<<EOF
+The Switch 1 versions in this bundle are cloud-based and require a persistent internet connection for gameplay.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Long-form connected story
+gameplay_pillar.5.description<<EOF
+Multiple games and cinematic collections connect a large timeline spanning Sora, Roxas, Aqua, Terra, Ventus, and others.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+The official Switch 1 Kingdom Hearts collection is the cloud-streaming Integrum Masterpiece bundle, combining HD 1.5+2.5, HD 2.8, and Kingdom Hearts III + Re Mind. Kingdom Hearts introduces Sora, Donald, and Goofy as they travel between worlds searching for friends. The bundle culminates in Kingdom Hearts III and its Re Mind content.
+EOF
+story_chapter.1.title=Begin Sora’s journey
+story_chapter.1.text<<EOF
+Kingdom Hearts introduces Sora, Donald, and Goofy as they travel between worlds searching for friends.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Follow the wider timeline
+story_chapter.2.text<<EOF
+Prequels and side stories expand the histories of Keyblade wielders and Organization XIII.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Reach Kingdom Hearts II and beyond
+story_chapter.3.text<<EOF
+The narrative broadens through multiple games with increasingly interconnected lore.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Play the 2.8 collection
+story_chapter.4.text<<EOF
+Dream Drop Distance and related content bridge major story threads toward Kingdom Hearts III.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Complete Kingdom Hearts III + Re Mind
+story_chapter.5.text<<EOF
+The bundle culminates in Kingdom Hearts III and its Re Mind content.
+EOF
+story_chapter.5.image=
+feature.1=Three major Kingdom Hearts packages
+feature.2=Cloud-streaming Switch versions
+feature.3=Large amount of story content
+feature.4=Real-time action RPG combat
+feature.5=Re Mind content included with KHIII package
+performance_tv_resolution=Cloud stream — client output varies
+performance_handheld_resolution=Cloud stream — client output varies
+performance_fps=0
+performance_hdr=false
+main_story_hours=150
+completion_main_story_hours=250
+completion_story_plus_dlc_hours=350
+faq.1.question=What is the actual Switch 1 collection called?
+faq.1.answer<<EOF
+Nintendo sells KINGDOM HEARTS INTEGRUM MASTERPIECE for Cloud as the Switch 1 collection.
+EOF
+faq.2.question=Does it require internet?
+faq.2.answer<<EOF
+Yes. These are cloud versions and require a stable internet connection to play.
+EOF
+faq.3.question=Is it a native download of all games?
+faq.3.answer<<EOF
+No. The Switch 1 collection streams the games from cloud servers.
+EOF
+faq.4.question=What is included?
+faq.4.answer<<EOF
+HD 1.5+2.5 ReMIX Cloud Version, HD 2.8 Final Chapter Prologue Cloud Version, and Kingdom Hearts III + Re Mind Cloud Version.
+EOF
+faq.5.question=Is there a different Switch 2 collection?
+faq.5.answer<<EOF
+A separate native Switch 2 collection has been announced for 2026, so it should not be confused with this Switch 1 cloud bundle.
+EOF
+verdict_score=8.5
+verdict_pro.1=Huge series compilation
+verdict_pro.2=Includes major story arcs
+verdict_pro.3=Strong action-RPG variety
+verdict_pro.4=Convenient single purchase structure
+verdict_pro.5=Re Mind included
+verdict_con.1=Requires persistent internet
+verdict_con.2=Cloud latency/quality depends on connection
+verdict_con.3=Cannot be treated like a normal offline native Switch game
+verdict_con.4=Very dense series story
+verdict_con.5=Switch 2 native collection is a separate future product
+timeline.1.date=2022-02-10
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=SQUARE ENIX
+studio_website=https://www.nintendo.com/us/store/products/kingdom-hearts-integrum-masterpiece-for-cloud-switch/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/kingdom-hearts-integrum-masterpiece-for-cloud-switch/
+storage_download_size_gb=0.1
+storage_required_space_gb=0.1
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=false
+multiplayer_online=true
+multiplayer_cooperative=false
+multiplayer_competitive=true
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Regular / Offline; user-supplied store price 1,500 IQD; recorded cost 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=14250
+type.2.cost=1500
+type.2.description=Standard / Online; user-supplied store price 14,250 IQD; recorded cost 1,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+The bundle already includes the Re Mind content within the Kingdom Hearts III package; no separate store DLC variant is required.
+EOF
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=Cloud stream — client output varies
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=Cloud stream — client output varies
+device_performance.1.handheld.output_resolution=Cloud stream — client output varies
+device_performance.1.handheld.fps=Cloud stream — connection dependent
+device_performance.1.handheld.fps_min=Cloud stream — connection dependent
+device_performance.1.handheld.fps_max=Cloud stream — connection dependent
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+The games are streamed from cloud servers; delivered resolution and frame rate depend on connection quality and service conditions.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Cloud stream — client output varies
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=Cloud stream — client output varies
+device_performance.1.tv.output_resolution=Cloud stream — client output varies
+device_performance.1.tv.fps=Cloud stream — connection dependent
+device_performance.1.tv.fps_min=Cloud stream — connection dependent
+device_performance.1.tv.fps_max=Cloud stream — connection dependent
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+The games are streamed from cloud servers; delivered resolution and frame rate depend on connection quality and service conditions.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=Cloud stream — client output varies
+device_performance.1.mode.1.handheld_fps=Cloud stream — connection dependent
+device_performance.1.mode.1.tv_resolution=Cloud stream — client output varies
+device_performance.1.mode.1.tv_fps=Cloud stream — connection dependent
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+The games are streamed from cloud servers; delivered resolution and frame rate depend on connection quality and service conditions.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/kingdom-hearts-integrum-masterpiece-for-cloud-switch/
+device_performance.1.performance_notes<<EOF
+The games are streamed from cloud servers; delivered resolution and frame rate depend on connection quality and service conditions.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=Cloud stream — client output varies
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Cloud stream — client output varies
+device_performance.2.handheld.output_resolution=Cloud stream — client output varies
+device_performance.2.handheld.fps=Cloud stream — connection dependent
+device_performance.2.handheld.fps_min=Cloud stream — connection dependent
+device_performance.2.handheld.fps_max=Cloud stream — connection dependent
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Backward compatibility does not convert the cloud release into a native Switch 2 version.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=Cloud stream — client output varies
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Cloud stream — client output varies
+device_performance.2.tv.output_resolution=Cloud stream — client output varies
+device_performance.2.tv.fps=Cloud stream — connection dependent
+device_performance.2.tv.fps_min=Cloud stream — connection dependent
+device_performance.2.tv.fps_max=Cloud stream — connection dependent
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Backward compatibility does not convert the cloud release into a native Switch 2 version.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Cloud stream — client output varies
+device_performance.2.mode.1.handheld_fps=Cloud stream — connection dependent
+device_performance.2.mode.1.tv_resolution=Cloud stream — client output varies
+device_performance.2.mode.1.tv_fps=Cloud stream — connection dependent
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward compatibility does not convert the cloud release into a native Switch 2 version.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/kingdom-hearts-integrum-masterpiece-for-cloud-switch/
+device_performance.2.performance_notes<<EOF
+Backward compatibility does not convert the cloud release into a native Switch 2 version.
+EOF
+upgrade_price=0

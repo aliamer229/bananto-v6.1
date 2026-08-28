@@ -1,0 +1,436 @@
+schema_version=24
+name=Super Smash Bros. Ultimate
+title=Super Smash Bros. Ultimate
+title_ar=سوبر سماش برذرز ألتميت
+name_ar=سوبر سماش برذرز ألتميت
+slug=super-smash-bros-ultimate
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard / Store Variants
+region=Global
+release_date=2018-12-07
+release_status=Released
+status=Active
+developer=Bandai Namco Studios / Sora Ltd.
+publisher=Nintendo
+genre.1=Fighting
+genres.1=Fighting
+genre.2=Action
+genres.2=Action
+genre.3=Party
+genres.3=Party
+series_name=Super Smash Bros. Ultimate
+players_count=Single system (1-8) / Local wireless (2-8) / Online (2-4)
+players=Single system (1-8) / Local wireless (2-8) / Online (2-4)
+player_count=Single system (1-8) / Local wireless (2-8) / Online (2-4)
+age_rating=ESRB E10+ / PEGI 12
+metacritic_score=93
+metacritic=93
+metacritic_url=https://www.metacritic.com/game/super-smash-bros-ultimate/
+opencritic_score=92
+opencritic=92
+user_score=8.7
+userscore=8.7
+user_rating=8.7
+game_size_gb=17.3
+size=17.3 GB
+size_gb=17.3
+price=1750
+price_iqd=1750
+price_usd=59.99
+cost=1750
+cost_iqd=1750
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=20750
+trade_value_iqd=20750
+store_offer_bonus=3750
+store_offer_bonus_iqd=3750
+official_url=https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/
+eshop_url=https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+Nintendo’s giant crossover fighter brings together a huge roster of gaming icons, dozens of stages, deep competitive systems, and an enormous amount of solo and multiplayer content.
+EOF
+description_full<<EOF
+Super Smash Bros. Ultimate is the definitive Nintendo crossover fighting game on Nintendo Switch. It combines a massive roster of fighters, stages, music, Spirits, World of Light, Classic Mode, local multiplayer, local wireless, and online battles. The game is also backward compatible with Nintendo Switch 2, but Nintendo does not sell a native Switch 2 Edition, so this file correctly remains a Nintendo Switch entry.
+EOF
+description<<EOF
+Super Smash Bros. Ultimate is the definitive Nintendo crossover fighting game on Nintendo Switch. It combines a massive roster of fighters, stages, music, Spirits, World of Light, Classic Mode, local multiplayer, local wireless, and online battles. The game is also backward compatible with Nintendo Switch 2, but Nintendo does not sell a native Switch 2 Edition, so this file correctly remains a Nintendo Switch entry.
+EOF
+description_en<<EOF
+Super Smash Bros. Ultimate is the definitive Nintendo crossover fighting game on Nintendo Switch. It combines a massive roster of fighters, stages, music, Spirits, World of Light, Classic Mode, local multiplayer, local wireless, and online battles. The game is also backward compatible with Nintendo Switch 2, but Nintendo does not sell a native Switch 2 Edition, so this file correctly remains a Nintendo Switch entry.
+EOF
+description_ar<<EOF
+أضخم لعبة قتال كروس أوفر من نينتندو، تجمع عشرات الشخصيات والمراحل والموسيقى مع أطوار فردية وجماعية وأونلاين. تعمل على Nintendo Switch 2 بالتوافق الخلفي، لكنها ليست إصدار Switch 2 مستقلًا.
+EOF
+front_cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+cartridge_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+cartridge=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+cartridge_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+box_front_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/8b42e00012633320624f3894179b5d6bec44c255998a58ceb54e07bd352df171
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/8b42e00012633320624f3894179b5d6bec44c255998a58ceb54e07bd352df171
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/8b42e00012633320624f3894179b5d6bec44c255998a58ceb54e07bd352df171
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Special
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+edition.2.content.1.label=Special store package
+edition.2.content.2.label=Offline account access
+edition.2.content.3.label=Infinite stock by default
+edition.3.name=Standard / Online
+edition.3.cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/8b42e00012633320624f3894179b5d6bec44c255998a58ceb54e07bd352df171
+edition.3.content.1.label=Standard / Online store package
+edition.3.content.2.label=Online account access
+edition.3.content.3.label=Infinite stock by default
+edition.4.name=Deluxe
+edition.4.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/ac4d1fc9824876ce756406f0525d50c57ded4b2a666f6dfe40a6ac5c3563fad9
+edition.4.content.1.label=Deluxe store package
+edition.4.content.2.label=Online account access
+edition.4.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Massive crossover roster
+gameplay_pillar.1.description<<EOF
+The roster spans Nintendo franchises and major third-party series, with highly varied movement, recovery, combo, and matchup styles.
+EOF
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/245420c78ce40337bdca7ce9c2dd819bd4ae33b022da9b922c0710b8420b59dd
+gameplay_pillar.2.title=Accessible but deep combat
+gameplay_pillar.2.description<<EOF
+Simple directional inputs make the basics approachable while advanced movement, spacing, teching, and matchup knowledge support competitive play.
+EOF
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/0a381c9a157deda7997e47a40ebedf5d6357daa54eadb8747c85535247b5966a
+gameplay_pillar.3.title=World of Light and Spirits
+gameplay_pillar.3.description<<EOF
+Solo players can progress through the World of Light adventure and build Spirit teams that modify character attributes and challenges.
+EOF
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/039c33416d22f81d72efa2f1646bb97627f2be0a0bfaea7f4a3638ce0ce73eba
+gameplay_pillar.4.title=Local and online multiplayer
+gameplay_pillar.4.description<<EOF
+The game supports large local battles, local wireless sessions, online matchmaking, arenas, and custom rule sets.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/4a0b002c60e6fd1cbbf3165fb666fde994decf73d60902957963f7d17113a3e5
+gameplay_pillar.5.title=Stage and music variety
+gameplay_pillar.5.description<<EOF
+A huge stage catalog and extensive soundtrack make the game unusually rich for both casual party play and competitive sessions.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/a1194f11c5397e5134cad94a723d9afb2c9ab274ee5d824aa80c6ea4d60f0dc7
+world_summary<<EOF
+Super Smash Bros. Ultimate is the definitive Nintendo crossover fighting game on Nintendo Switch. It combines a massive roster of fighters, stages, music, Spirits, World of Light, Classic Mode, local multiplayer, local wireless, and online battles. The game is also backward compatible with Nintendo Switch 2, but Nintendo does not sell a native Switch 2 Edition, so this file correctly remains a Nintendo Switch entry.
+EOF
+story_chapter.1.title=Everyone is here
+story_chapter.1.text<<EOF
+Ultimate is built around the idea that every prior playable Smash fighter returns alongside newcomers and DLC additions.
+EOF
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/0a381c9a157deda7997e47a40ebedf5d6357daa54eadb8747c85535247b5966a
+story_chapter.2.title=World of Light begins
+story_chapter.2.text<<EOF
+A catastrophic event turns most fighters into captive puppet versions, leaving Kirby to begin the rescue.
+EOF
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/039c33416d22f81d72efa2f1646bb97627f2be0a0bfaea7f4a3638ce0ce73eba
+story_chapter.3.title=Recruit fighters and Spirits
+story_chapter.3.text<<EOF
+The campaign expands as players defeat themed Spirit challenges and restore fighters to the roster.
+EOF
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/4a0b002c60e6fd1cbbf3165fb666fde994decf73d60902957963f7d17113a3e5
+story_chapter.4.title=Master competitive systems
+story_chapter.4.text<<EOF
+Outside the campaign, players learn each fighter’s movement, recovery, kill options, defensive tools, and stage interactions.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/a1194f11c5397e5134cad94a723d9afb2c9ab274ee5d824aa80c6ea4d60f0dc7
+story_chapter.5.title=Build a lasting multiplayer game
+story_chapter.5.text<<EOF
+The enormous roster, custom rules, online arenas, tournaments, and DLC keep Ultimate relevant long after the story is completed.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/245420c78ce40337bdca7ce9c2dd819bd4ae33b022da9b922c0710b8420b59dd
+feature.1=Huge playable roster
+feature.2=Extensive local and online multiplayer
+feature.3=World of Light single-player campaign
+feature.4=Massive soundtrack and stage selection
+feature.5=Fighters Pass DLC adds additional characters and stages
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=60
+performance_hdr=false
+main_story_hours=12
+completion_main_story_hours=25
+completion_story_plus_dlc_hours=70
+faq.1.question=Is Super Smash Bros. Ultimate a native Nintendo Switch 2 game?
+faq.1.answer<<EOF
+No. Nintendo lists it as a Nintendo Switch game that is supported on Nintendo Switch 2 with behavior consistent with Nintendo Switch.
+EOF
+faq.2.question=How many players are supported?
+faq.2.answer<<EOF
+Nintendo lists up to 8 players on a single system, up to 8 by local wireless, and up to 4 online.
+EOF
+faq.3.question=Does it have DLC?
+faq.3.answer<<EOF
+Yes. Nintendo released multiple Challenger Packs and Fighters Pass volumes that add fighters, stages, music, and related content.
+EOF
+faq.4.question=Is it only for competitive players?
+faq.4.answer<<EOF
+No. It supports casual party rules, items, Spirits, solo modes, custom matches, and advanced competitive settings.
+EOF
+faq.5.question=Does it support Save Data Cloud?
+faq.5.answer<<EOF
+Yes, Nintendo Switch Online Save Data Cloud support is listed for the title.
+EOF
+verdict_score=8.5
+verdict_pro.1=Enormous content volume
+verdict_pro.2=Excellent roster variety
+verdict_pro.3=Strong local multiplayer value
+verdict_pro.4=Deep competitive mechanics
+verdict_pro.5=Long-term DLC and community support
+verdict_con.1=Online latency can vary
+verdict_con.2=Large roster can overwhelm new players
+verdict_con.3=Some DLC fighters create matchup knowledge demands
+verdict_con.4=World of Light can become repetitive
+verdict_con.5=No native Switch 2 edition
+review.1.source=Metacritic
+review.1.score=93
+review.1.url=https://www.metacritic.com/game/super-smash-bros-ultimate/
+review.2.source=OpenCritic
+review.2.score=92
+review.2.url=https://opencritic.com/
+timeline.1.date=2018-12-07
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=Bandai Namco Studios / Sora Ltd.
+studio_website=https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/super-smash-bros-ultimate/
+storage_download_size_gb=17.3
+storage_required_space_gb=17.3
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=true
+multiplayer_online=true
+multiplayer_cooperative=true
+multiplayer_competitive=true
+multiplayer_local_wireless=true
+multiplayer_split_screen=true
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1750
+type.1.cost=1750
+type.1.description=Regular / Offline; user-supplied store price 1,750 IQD; recorded cost 1,750 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=special
+type.2.name=Special
+type.2.option_id=offline_account
+type.2.price=3000
+type.2.cost=3000
+type.2.description=Special; user-supplied store price 3,000 IQD; recorded cost 3,000 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=standard_online
+type.3.name=Standard / Online
+type.3.option_id=online_account
+type.3.price=25000
+type.3.cost=1750
+type.3.description=Standard / Online; user-supplied store price 25,000 IQD; recorded cost 1,750 IQD.
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=deluxe
+type.4.name=Deluxe
+type.4.option_id=online_account
+type.4.price=38000
+type.4.cost=3000
+type.4.description=Deluxe; user-supplied store price 38,000 IQD; recorded cost 3,000 IQD.
+type.4.stock=9999
+type.4.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+Multiple Challenger Packs and Fighters Pass volumes add fighters, stages, music, and Spirits.
+EOF
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/245420c78ce40337bdca7ce9c2dd819bd4ae33b022da9b922c0710b8420b59dd
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/0a381c9a157deda7997e47a40ebedf5d6357daa54eadb8747c85535247b5966a
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/039c33416d22f81d72efa2f1646bb97627f2be0a0bfaea7f4a3638ce0ce73eba
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/4a0b002c60e6fd1cbbf3165fb666fde994decf73d60902957963f7d17113a3e5
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/a1194f11c5397e5134cad94a723d9afb2c9ab274ee5d824aa80c6ea4d60f0dc7
+gallery.1.description=Super Smash Bros. Ultimate official/promotional game-world media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/245420c78ce40337bdca7ce9c2dd819bd4ae33b022da9b922c0710b8420b59dd
+gallery.2.description=Super Smash Bros. Ultimate official/promotional game-world media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/0a381c9a157deda7997e47a40ebedf5d6357daa54eadb8747c85535247b5966a
+gallery.3.description=Super Smash Bros. Ultimate official/promotional game-world media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/039c33416d22f81d72efa2f1646bb97627f2be0a0bfaea7f4a3638ce0ce73eba
+gallery.4.description=Super Smash Bros. Ultimate official/promotional game-world media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/4a0b002c60e6fd1cbbf3165fb666fde994decf73d60902957963f7d17113a3e5
+gallery.5.description=Super Smash Bros. Ultimate official/promotional game-world media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000012332/a1194f11c5397e5134cad94a723d9afb2c9ab274ee5d824aa80c6ea4d60f0dc7
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Targets 60 fps; 720p handheld and 1080p docked are the established output profiles for the Switch release.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Targets 60 fps; 720p handheld and 1080p docked are the established output profiles for the Switch release.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Targets 60 fps; 720p handheld and 1080p docked are the established output profiles for the Switch release.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/
+device_performance.1.performance_notes<<EOF
+Targets 60 fps; 720p handheld and 1080p docked are the established output profiles for the Switch release.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+upgrade_price=0

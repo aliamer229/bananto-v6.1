@@ -1,0 +1,447 @@
+schema_version=24
+name=The Legend of Zelda: Breath of the Wild
+title=The Legend of Zelda: Breath of the Wild
+title_ar=أسطورة زيلدا: نَفَس البرية
+name_ar=أسطورة زيلدا: نَفَس البرية
+slug=the-legend-of-zelda-breath-of-the-wild-switch-1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard
+region=Global
+release_date=2017-03-03
+release_status=Released
+status=Active
+developer=Nintendo
+publisher=Nintendo
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Open World
+genres.3=Open World
+genre.4=RPG
+genres.4=RPG
+series_name=The Legend of Zelda
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E10+ / PEGI 12
+metacritic_score=97
+metacritic=97
+metacritic_url=https://www.metacritic.com/game/the-legend-of-zelda-breath-of-the-wild/
+opencritic_score=97
+opencritic=97
+user_score=8.9
+userscore=8.9
+user_rating=8.9
+game_size_gb=14.4
+size=14.4 GB
+size_gb=14.4
+price=23000
+price_iqd=23000
+price_usd=59.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=15000
+trade_value_iqd=15000
+store_offer_bonus=3000
+store_offer_bonus_iqd=3000
+official_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-breath-of-the-wild-switch/
+eshop_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-breath-of-the-wild-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+Wake up as Link and explore a vast Hyrule full of shrines, secrets, survival systems, and free-form adventure.
+EOF
+description_full<<EOF
+The Legend of Zelda: Breath of the Wild reimagines the Zelda formula as a vast open-air adventure. After awakening from a 100-year slumber, Link must recover his memories, survive the harsh wilderness, and challenge Calamity Ganon. The journey blends shrine puzzles, physics-driven experimentation, open exploration, cooking, weapon durability, and one of Nintendo's most acclaimed adventure worlds.
+EOF
+description<<EOF
+The Legend of Zelda: Breath of the Wild reimagines the Zelda formula as a vast open-air adventure. After awakening from a 100-year slumber, Link must recover his memories, survive the harsh wilderness, and challenge Calamity Ganon. The journey blends shrine puzzles, physics-driven experimentation, open exploration, cooking, weapon durability, and one of Nintendo's most acclaimed adventure worlds.
+EOF
+description_en<<EOF
+The Legend of Zelda: Breath of the Wild reimagines the Zelda formula as a vast open-air adventure. After awakening from a 100-year slumber, Link must recover his memories, survive the harsh wilderness, and challenge Calamity Ganon. The journey blends shrine puzzles, physics-driven experimentation, open exploration, cooking, weapon durability, and one of Nintendo's most acclaimed adventure worlds.
+EOF
+description_ar<<EOF
+تجربة مغامرة عالم مفتوح ضخمة تعيد تصور سلسلة زيلدا بالكامل، حيث يستيقظ لينك بعد سبات دام مئة عام ليستكشف هايرول، يستعيد ذكرياته، ويواجه Calamity Ganon عبر الألغاز والأضرحة والقتال والاستكشاف الحر.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+box_front_url=
+nintendo_card_image=
+square_game_image=
+main_image=
+image=
+image_url=
+cover_image=
+cover=
+cover_url=
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Japanese / British English / French / German / Italian / Spanish / Korean / Dutch / Simplified Chinese / Latin American Spanish / Canadian French / Traditional Chinese / American English
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish / Dutch
+text_language.3=Korean / Simplified Chinese / Traditional Chinese
+audio_language.1=Music / sound effects
+audio_language.2=Character vocalizations where applicable
+audio_language.3=No full language-selectable dub beyond the shipped release build information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+The official Nintendo product page confirms Nintendo Switch 2 backward compatibility, supported play modes, supported languages, file size, and the availability of the Expansion Pass.
+EOF
+edition.1.name=Offline Regular
+edition.1.cover_image=
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Offline account package
+edition.1.content.3.label=Recommended for single-player adventure access
+edition.2.name=Offline Special / Expansion Pass
+edition.2.cover_image=
+edition.2.content.1.label=Base game
+edition.2.content.2.label=Breath of the Wild Expansion Pass
+edition.2.content.3.label=Offline account package with DLC access
+edition.3.name=Online Standard
+edition.3.cover_image=
+edition.3.content.1.label=Base game
+edition.3.content.2.label=Online account package
+edition.3.content.3.label=Hidden by default until review
+edition.4.name=Online Deluxe / Expansion Pass
+edition.4.cover_image=
+edition.4.content.1.label=Base game
+edition.4.content.2.label=Expansion Pass included
+edition.4.content.3.label=Online account package with DLC access
+gameplay_pillar.1.title=Open-air exploration
+gameplay_pillar.1.description<<EOF
+Climb, glide, ride, and experiment across a huge version of Hyrule where the world rarely forces a fixed order.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Physics-driven problem solving
+gameplay_pillar.2.description<<EOF
+Fire, metal, wind, explosives, and environmental interactions create emergent solutions in both puzzles and combat.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Shrines and Divine Beasts
+gameplay_pillar.3.description<<EOF
+More than one hundred shrines and four Divine Beasts provide puzzle-driven progression and memorable dungeon-style goals.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Survival systems and cooking
+gameplay_pillar.4.description<<EOF
+Weather, stamina, food, elixirs, and gear preparation matter constantly, especially in tougher climates and battles.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Weapon variety and improvisation
+gameplay_pillar.5.description<<EOF
+Weapons break over time, encouraging experimentation with swords, spears, bows, shields, runes, and environmental tricks.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Hyrule is presented as a giant interconnected wilderness full of towers, shrines, villages, stables, enemy camps, and hidden landmarks that reward curiosity from the first hour to the final battle.
+EOF
+story_chapter.1.title=Awaken on the Great Plateau
+story_chapter.1.text<<EOF
+Link wakes after a century of sleep and begins learning the basics of survival and exploration while the mysterious voice of Zelda guides him.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Recover memories across Hyrule
+story_chapter.2.text<<EOF
+As Link explores, he uncovers the past through recovered memories and learns what happened before Calamity Ganon consumed Hyrule.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Free the Divine Beasts
+story_chapter.3.text<<EOF
+Link can aid the peoples of Hyrule and liberate the Divine Beasts from Ganon's control, weakening the final threat.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Prepare through shrines, gear, and allies
+story_chapter.4.text<<EOF
+The adventure supports many play styles: players can hunt for stronger gear, solve shrines, cook buffs, tame horses, and master combat systems.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Face Calamity Ganon
+story_chapter.5.text<<EOF
+Once ready, Link can storm Hyrule Castle and confront the source of the calamity in an ending shaped by the journey taken.
+EOF
+story_chapter.5.image=
+feature.1=A landmark open-world Zelda adventure
+feature.2=Massive freedom in exploration and progression order
+feature.3=Shrine puzzle content and physics-based experimentation
+feature.4=Expansion Pass adds new story and challenge content
+feature.5=One of Nintendo's most acclaimed single-player adventures
+performance_tv_resolution=900p
+performance_handheld_resolution=720p
+performance_fps=30
+performance_hdr=false
+main_story_hours=50
+completion_main_story_hours=100
+completion_story_plus_dlc_hours=190
+faq.1.question=Does Breath of the Wild support Nintendo Switch 2?
+faq.1.answer<<EOF
+Yes. Nintendo lists the original Nintendo Switch version as supported on Nintendo Switch 2, with behavior consistent with Nintendo Switch.
+EOF
+faq.2.question=What is included in the Expansion Pass?
+faq.2.answer<<EOF
+The Expansion Pass includes the Master Trials content and The Champion's Ballad story content, plus some bonus in-game treasure chests.
+EOF
+faq.3.question=Is the game multiplayer?
+faq.3.answer<<EOF
+No. Breath of the Wild is a single-player adventure with no competitive or cooperative gameplay modes.
+EOF
+faq.4.question=How open is the progression?
+faq.4.answer<<EOF
+Very open. After the opening area, players can choose where to explore, which shrines to tackle, and when to approach the main objective.
+EOF
+faq.5.question=Why is this game so highly regarded?
+faq.5.answer<<EOF
+Its sense of discovery, systemic design, environmental freedom, and cohesive open-world structure made it one of the most celebrated action-adventure games of its generation.
+EOF
+verdict_score=9.8
+verdict_pro.1=Outstanding open-world freedom
+verdict_pro.2=Systems-based exploration and combat feel fresh
+verdict_pro.3=Shrines and environmental puzzles are highly memorable
+verdict_pro.4=Expansion Pass meaningfully extends the adventure
+verdict_pro.5=Hyrule rewards curiosity at every scale
+verdict_con.1=Weapon durability remains divisive
+verdict_con.2=Traditional Zelda dungeons are lighter than in some older entries
+verdict_con.3=Performance is a 30 fps experience on the original Switch
+verdict_con.4=Story is more environmental than cinematic
+verdict_con.5=Inventory management can feel busy early on
+review.1.source=Metacritic
+review.1.score=97
+review.1.url=https://www.metacritic.com/game/the-legend-of-zelda-breath-of-the-wild/
+review.2.source=OpenCritic
+review.2.score=97
+review.2.url=https://opencritic.com/game/3579/the-legend-of-zelda-breath-of-the-wild
+review.3.source=IGN
+review.3.score=10/10
+review.3.url=https://www.ign.com/games/the-legend-of-zelda-breath-of-the-wild
+timeline.1.date=2017-03-03
+timeline.1.title=Released on Nintendo Switch
+timeline.2.date=2017-06-30
+timeline.2.title=The Master Trials DLC released
+timeline.3.date=2017-12-07
+timeline.3.title=The Champion's Ballad DLC released
+timeline.4.date=2025-06-05
+timeline.4.title=Original version listed as supported on Nintendo Switch 2
+update.1.version=Launch version
+update.1.date=2017-03-03
+update.2.version=Expansion Pass content complete
+update.2.date=2017-12-07
+update.3.version=Nintendo Switch 2 compatibility listing active
+update.3.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/the-legend-of-zelda-breath-of-the-wild-switch/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-breath-of-the-wild-switch/
+source.2.name=Nintendo official DLC page
+source.2.url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-breath-of-the-wild-expansion-pass-70070000000041-switch/
+source.3.name=Metacritic
+source.3.url=https://www.metacritic.com/game/the-legend-of-zelda-breath-of-the-wild/
+source.4.name=OpenCritic
+source.4.url=https://opencritic.com/game/3579/the-legend-of-zelda-breath-of-the-wild
+storage_download_size_gb=14.4
+storage_required_space_gb=14.4
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Nintendo lists the original Nintendo Switch version at approximately 14.4 GB, and also notes a Nintendo Switch 2 compatibility listing at approximately 14.5 GB.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=The Legend of Zelda: Tears of the Kingdom
+series_game.2=The Legend of Zelda: Echoes of Wisdom
+series_game.3=Immortals Fenyx Rising
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Offline — Regular
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Offline Regular version; supplier cost 1,500 IQD; selling price 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=offline_special_expansion_pass
+type.2.name=Offline — Special / Expansion Pass
+type.2.option_id=offline_account
+type.2.price=3000
+type.2.cost=3000
+type.2.description=Offline Special / Expansion Pass version; supplier cost 3,000 IQD; selling price 3,000 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=online_standard
+type.3.name=Online — Standard
+type.3.option_id=online_account
+type.3.price=23000
+type.3.cost=1500
+type.3.description=Online Standard version; supplier cost 1,500 IQD; selling price 23,000 IQD.
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=online_deluxe_expansion_pass
+type.4.name=Online — Deluxe / Expansion Pass
+type.4.option_id=online_account
+type.4.price=31500
+type.4.cost=3000
+type.4.description=Online Deluxe / Expansion Pass version; supplier cost 3,000 IQD; selling price 31,500 IQD.
+type.4.stock=9999
+type.4.is_infinite_stock=true
+dlc.1.title=The Master Trials / The Champion's Ballad Expansion Pass
+dlc.1.description<<EOF
+The paid Expansion Pass adds Trial of the Sword, Master Mode, additional gear, challenge content, and the story-focused Champion's Ballad content pack.
+EOF
+dlc.1.release_date=2017-06-30
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / verified
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=true
+device_performance.1.handheld.rendering_resolution=1280x720
+device_performance.1.handheld.output_resolution=1280x720
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=20
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Original Nintendo Switch release targets 30 fps, with a 720p handheld presentation and approximately 900p docked output. Dynamic behavior and scene complexity can affect the delivered frame rate.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=900p
+device_performance.1.tv.resolution_dynamic=true
+device_performance.1.tv.rendering_resolution=1600x900
+device_performance.1.tv.output_resolution=1600x900
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=20
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Original Nintendo Switch release targets 30 fps, with a 720p handheld presentation and approximately 900p docked output. Dynamic behavior and scene complexity can affect the delivered frame rate.
+EOF
+device_performance.1.mode.1.name=Primary documented mode
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=900p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Original Nintendo Switch release targets 30 fps, with a 720p handheld presentation and approximately 900p docked output. Dynamic behavior and scene complexity can affect the delivered frame rate.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no single universal loading time
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-breath-of-the-wild-switch/
+device_performance.1.performance_notes<<EOF
+Original Nintendo Switch release targets 30 fps, with a 720p handheld presentation and approximately 900p docked output. Dynamic behavior and scene complexity can affect the delivered frame rate.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / verified
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=1280x720
+device_performance.2.handheld.output_resolution=1280x720
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2 with game behavior consistent with Nintendo Switch. The extraction records a compatibility profile rather than a native enhanced edition profile.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=900p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1600x900
+device_performance.2.tv.output_resolution=1600x900
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2 with game behavior consistent with Nintendo Switch. The extraction records a compatibility profile rather than a native enhanced edition profile.
+EOF
+device_performance.2.mode.1.name=Primary documented mode
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=900p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2 with game behavior consistent with Nintendo Switch. The extraction records a compatibility profile rather than a native enhanced edition profile.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no single universal loading time
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo official product page / compatibility notice
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-breath-of-the-wild-switch/
+device_performance.2.performance_notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2 with game behavior consistent with Nintendo Switch. The extraction records a compatibility profile rather than a native enhanced edition profile.
+EOF

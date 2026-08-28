@@ -1,0 +1,74 @@
+# TEMPORARY — move embedded base64 media out of product documents into R2.
+#
+# Dry run by default. With apply, the only D1 statement it can write is a
+# single INSERT against one product's overlay row by immutable id, and it
+# writes that only after the R2 object is uploaded AND read back successfully.
+# The pre-change field value is uploaded as an artifact either way.
+name: Normalize embedded media
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the changes (leave unchecked for a dry run)"
+        type: boolean
+        default: false
+      products:
+        description: "Optional comma-separated product ids"
+        default: ""
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/normalize-media.yml
+      - scripts/normalize-embedded-media.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: normalize-media
+  cancel-in-progress: false
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+      - name: Normalize
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          APPLY: ${{ inputs.apply }}
+          PRODUCTS: ${{ inputs.products }}
+        run: |
+          args=""
+          [ "$APPLY" = "true" ] && args="$args --apply"
+          [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          node scripts/normalize-embedded-media.mjs $args
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: normalize-media
+          path: normalize-embedded-media.md
+          if-no-files-found: warn
+      # The original embedded value, kept off the database and out of git.
+      - name: Upload the pre-change media backup
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-backup
+          path: media-backup/
+          if-no-files-found: ignore
+          retention-days: 90

@@ -1,0 +1,386 @@
+schema_version=24
+name=Paper Mario: The Origami King
+title=Paper Mario: The Origami King
+title_ar=بيبر ماريو: ذا أوريغامي كينغ
+name_ar=بيبر ماريو: ذا أوريغامي كينغ
+slug=paper-mario-the-origami-king-switch-1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard
+region=Global
+release_date=2020-07-17
+release_status=Released
+status=Active
+developer=Intelligent Systems
+publisher=Nintendo
+genre.1=Adventure
+genre.2=Puzzle
+genre.3=Action
+series_name=Paper Mario
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E / PEGI 7
+metacritic_score=80
+metacritic=80
+user_score=8.0
+userscore=8.0
+user_rating=8.0
+game_size_gb=6.5
+size=6.5 GB
+size_gb=6.5
+price=20000
+price_iqd=20000
+price_usd=59.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=14000
+trade_value_iqd=14000
+store_offer_bonus=3500
+store_offer_bonus_iqd=3500
+official_url=https://www.nintendo.com/us/store/products/paper-mario-the-origami-king-switch/
+eshop_url=https://www.nintendo.com/us/store/products/paper-mario-the-origami-king-switch/
+gallery.1.description=Verified direct image URL 1
+gallery.2.description=Verified direct image URL 2
+gallery.3.description=Verified direct image URL 3
+gallery.4.description=Verified direct image URL 4
+gallery.5.description=Verified direct image URL 5
+trailer_url=https://www.youtube.com/watch?v=FX6DTLcWUdY
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+A paper-crafted adventure sends Mario and Olivia across a folded world of streamers, quirky allies, ring-based battles and visual creativity.
+EOF
+description_full<<EOF
+A paper-crafted adventure sends Mario and Olivia across a folded world of streamers, quirky allies, ring-based battles and visual creativity. Explore varied themed regions, rescue Toads, solve environmental puzzles and take on origami enemies and giant bosses as you try to stop King Olly.
+EOF
+description<<EOF
+A paper-crafted adventure sends Mario and Olivia across a folded world of streamers, quirky allies, ring-based battles and visual creativity. Explore varied themed regions, rescue Toads, solve environmental puzzles and take on origami enemies and giant bosses as you try to stop King Olly.
+EOF
+description_en<<EOF
+A paper-crafted adventure sends Mario and Olivia across a folded world of streamers, quirky allies, ring-based battles and visual creativity. Explore varied themed regions, rescue Toads, solve environmental puzzles and take on origami enemies and giant bosses as you try to stop King Olly.
+EOF
+description_ar<<EOF
+تنطلق مغامرة ورقية مع ماريو وأوليفيا عبر عالم مطوي مليء بالشرائط العملاقة والحلفاء الطريفين والمعارك الدائرية والإبداع البصري. استكشف مناطق متنوعة، وأنقذ Toads، وحل الألغاز البيئية، وواجه أعداء الأوريغامي والزعماء الكبار لإيقاف King Olly.
+EOF
+front_cover_image=https://images.launchbox-app.com/a89024a5-33ef-400c-939e-d15665b08632.jpg
+cartridge_image=https://images.launchbox-app.com/a89024a5-33ef-400c-939e-d15665b08632.jpg
+cartridge=https://images.launchbox-app.com/a89024a5-33ef-400c-939e-d15665b08632.jpg
+cartridge_url=https://images.launchbox-app.com/a89024a5-33ef-400c-939e-d15665b08632.jpg
+box_front_url=https://images.launchbox-app.com/a89024a5-33ef-400c-939e-d15665b08632.jpg
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+box_back_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/2a40327a93dcf9f68a65cdefaeac2f7d6ef2c15b1fd07c1c1b80533a6570f7e8
+edition.1.name=Standard Edition
+edition.1.cover_image=https://images.launchbox-app.com/a89024a5-33ef-400c-939e-d15665b08632.jpg
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Full story adventure
+edition.1.content.3.label=Ring-based battle system
+edition.2.name=Digital Edition
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+edition.2.content.1.label=Nintendo eShop release
+edition.2.content.2.label=6.5 GB download size
+edition.2.content.3.label=Save Data Cloud support
+edition.3.name=Current Store Package
+edition.3.cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/7f079a1e3927ea4752fb448ea7f2ccbd86933f5483ad9dd6de23ec96ed4df70b
+edition.3.content.1.label=Offline account option
+edition.3.content.2.label=Online account option
+edition.3.content.3.label=Hidden by default until review
+gameplay_pillar.1.title=Ring-based battles
+gameplay_pillar.1.description<<EOF
+Rearrange circles of enemies to line them up for stronger attacks and more efficient turns.
+EOF
+gameplay_pillar.2.title=Paper-crafted exploration
+gameplay_pillar.2.description<<EOF
+Travel through visually distinctive areas, rescue hidden Toads and solve environmental interactions using 1,000-Fold Arms.
+EOF
+gameplay_pillar.3.title=Memorable bosses and companions
+gameplay_pillar.3.description<<EOF
+Boss battles and traveling companions add variety, humor and structure throughout the adventure.
+EOF
+world_summary<<EOF
+King Olly’s origami takeover twists Princess Peach’s kingdom into a folded crisis. Mario and Olivia set out across varied regions to remove giant streamers, rescue allies and stop the transformation of the world into origami.
+EOF
+story_chapter.1.title=The origami threat begins
+story_chapter.1.text<<EOF
+Mario and Luigi arrive for a festival only to discover Princess Peach and the kingdom have been transformed by King Olly.
+EOF
+story_chapter.2.title=Travel the folded world
+story_chapter.2.text<<EOF
+Mario and Olivia journey through forests, deserts, seas and themed regions while removing magical streamers.
+EOF
+story_chapter.3.title=Confront King Olly
+story_chapter.3.text<<EOF
+The final stretch unites the game’s humor, emotion and puzzle-combat systems as Mario moves to stop the Origami King.
+EOF
+feature.1=Ring-based turn battles
+feature.2=Large paper-crafted world with secrets
+feature.3=Distinct companions, bosses and environmental puzzles
+performance_tv_resolution=Up to 1080p docked
+performance_handheld_resolution=Up to 720p handheld
+performance_fps=30
+performance_hdr=false
+faq.1.question=Is it a traditional RPG?
+faq.1.answer<<EOF
+It mixes action-adventure structure with puzzle-like ring battles rather than focusing on a classic stat-heavy RPG system.
+EOF
+faq.2.question=How many players can play?
+faq.2.answer<<EOF
+This is a single-player adventure.
+EOF
+faq.3.question=What stands out most?
+faq.3.answer<<EOF
+Its paper-crafted art direction, witty writing and strong world design are the most frequently praised elements.
+EOF
+verdict_score=8.4
+verdict_summary<<EOF
+Overall score: 8.4/10. Strengths include Excellent art direction and world variety; Charming humor and character writing; Strong environmental puzzle design. Main drawbacks include Battle system divides opinion; 30 fps presentation.
+EOF
+verdict_pro.1=Excellent art direction and world variety
+verdict_pro.2=Charming humor and character writing
+verdict_pro.3=Strong environmental puzzle design
+verdict_con.1=Battle system divides opinion
+verdict_con.2=30 fps presentation
+verdict_con.3=Progression systems are lighter than classic Paper Mario
+review.1.source=Nintendo
+review.1.score=Official
+review.1.quote<<EOF
+Nintendo describes an origami-twisted adventure with ring-based battles and a vibrant paper-crafted world.
+EOF
+review.1.url=https://www.nintendo.com/us/store/products/paper-mario-the-origami-king-switch/
+review.2.source=Metacritic
+review.2.score=80/100
+review.2.quote<<EOF
+Critical reaction was generally favorable, especially for presentation and writing.
+EOF
+review.2.url=https://www.metacritic.com/game/paper-mario-the-origami-king/
+review.3.source=Announcement Trailer
+review.3.score=Official Trailer
+review.3.quote<<EOF
+The announcement trailer introduced King Olly, Olivia and the folded world premise.
+EOF
+review.3.url=https://www.youtube.com/watch?v=FX6DTLcWUdY
+timeline.1.date=2020-05-14
+timeline.1.title=Announcement
+timeline.1.details<<EOF
+Nintendo revealed Paper Mario: The Origami King with a surprise trailer.
+EOF
+timeline.2.date=2020-07-17
+timeline.2.title=Worldwide release
+timeline.2.details<<EOF
+The game launched on Nintendo Switch.
+EOF
+timeline.3.date=2020-07-17
+timeline.3.title=Launch content complete
+timeline.3.details<<EOF
+The title shipped as a full single-player adventure without major DLC cadence.
+EOF
+update.1.version=Launch build
+update.1.date=2020-07
+update.1.changes<<EOF
+Base game release.
+EOF
+update.2.version=Post-launch patches
+update.2.date=2020
+update.2.changes<<EOF
+Minor fixes and stability updates.
+EOF
+update.3.version=Current build
+update.3.date=2026-08-27
+update.3.changes<<EOF
+Stable retail version with supported Nintendo Switch 2 compatibility behavior.
+EOF
+studio_name=Intelligent Systems
+studio_website=https://www.nintendo.com/
+studio_location=Kyoto, Japan
+studio_description<<EOF
+Intelligent Systems is credited as the developer of this Nintendo Switch release. Nintendo is credited as the publisher.
+EOF
+source.1.name=Nintendo Store
+source.1.url=https://www.nintendo.com/us/store/products/paper-mario-the-origami-king-switch/
+source.2.name=Announcement Trailer
+source.2.url=https://www.youtube.com/watch?v=FX6DTLcWUdY
+source.3.name=Metacritic
+source.3.url=https://www.metacritic.com/game/paper-mario-the-origami-king/
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=standard_offline
+type.1.name=Offline Account
+type.1.option_id=offline_account
+type.1.price=20000
+type.1.cost=1500
+type.1.description=Offline Account; supplier cost 1,500 IQD; selling price 20,000 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Online Account
+type.2.option_id=online_account
+type.2.price=30750
+type.2.cost=20750
+type.2.description=Online Account; supplier cost 20,750 IQD; selling price 30,750 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / Backward Compatible
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=1280x720
+device_performance.2.handheld.output_resolution=1920x1080 system output / backward-compatible rendering profile
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition is used; the original Switch 720p handheld / 1080p docked presentation and 30 fps cap are retained.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1920x1080
+device_performance.2.tv.output_resolution=1920x1080
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition is used; the original Switch 720p handheld / 1080p docked presentation and 30 fps cap are retained.
+EOF
+device_performance.2.mode.1.name=Backward Compatibility
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition is used; the original Switch 720p handheld / 1080p docked presentation and 30 fps cap are retained.
+EOF
+device_performance.2.upscaling=System output scaling only; no native Switch 2 edition assumed
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Generally faster system/storage access may occur; exact loading time varies by scene
+device_performance.2.loading_notes<<EOF
+Backward compatibility can reduce some loading bottlenecks, but no single universal loading-time value is used.
+EOF
+device_performance.2.game_version=Current Nintendo Switch retail build
+device_performance.2.patch_version=Current available Switch update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 backward compatibility + established Nintendo Switch performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/gaming-systems/switch-2/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.verification_status=Verified profile / Backward Compatible
+device_performance.2.unavailable_reason<<EOF
+No required Handheld or TV mode is marked unsupported.
+EOF
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch version. No native Switch 2 edition is used; the original Switch 720p handheld / 1080p docked presentation and 30 fps cap are retained.
+EOF
+upgrade_price=0
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/2a40327a93dcf9f68a65cdefaeac2f7d6ef2c15b1fd07c1c1b80533a6570f7e8
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/63e790d041c0db75ec2c5f4a5cadebbf7b99454b671e53842d59c648ddcf2f1c
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/3d03359a28c83765b444582eb5001748e6790dcae373846b7c99fac13e0931e2
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/e76b968799ccae115fc0bff9e5b51c8cad851c38eccaa4e1dbf3b171a58de7c7
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/2a40327a93dcf9f68a65cdefaeac2f7d6ef2c15b1fd07c1c1b80533a6570f7e8
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/63e790d041c0db75ec2c5f4a5cadebbf7b99454b671e53842d59c648ddcf2f1c
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/3d03359a28c83765b444582eb5001748e6790dcae373846b7c99fac13e0931e2
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/e76b968799ccae115fc0bff9e5b51c8cad851c38eccaa4e1dbf3b171a58de7c7
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/2a40327a93dcf9f68a65cdefaeac2f7d6ef2c15b1fd07c1c1b80533a6570f7e8
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/63e790d041c0db75ec2c5f4a5cadebbf7b99454b671e53842d59c648ddcf2f1c
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/3d03359a28c83765b444582eb5001748e6790dcae373846b7c99fac13e0931e2
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/2a40327a93dcf9f68a65cdefaeac2f7d6ef2c15b1fd07c1c1b80533a6570f7e8
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/63e790d041c0db75ec2c5f4a5cadebbf7b99454b671e53842d59c648ddcf2f1c
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/3d03359a28c83765b444582eb5001748e6790dcae373846b7c99fac13e0931e2
+nintendo_official_url=https://www.nintendo.com/us/store/products/paper-mario-the-origami-king-switch/
+official_store_url=https://www.nintendo.com/us/store/products/paper-mario-the-origami-king-switch/
+front_cover_hires_url=
+cover_texture_url=
+supports_arabic=false
+overview_tagline=A paper-crafted adventure sends Mario and Olivia across a folded world of streamers, quirky allies, ring-based battles and visual creativity.
+overview_suitable_for.1=Players looking for adventure, puzzle gameplay.
+overview_suitable_for.2=Players who want the game modes supported by the official player-count specification: Single system (1).
+overview_not_suitable_for.1=Players specifically seeking online multiplayer; this title does not list online multiplayer support.
+overview_not_suitable_for.2=Players specifically seeking local multiplayer; this title does not list local multiplayer support.
+setting_requirement.1=Nintendo Switch-compatible hardware for this release.
+setting_requirement.2=Internet connection is required for online features.
+dlc.1.title=No standalone DLC announced
+dlc.1.description<<EOF
+No standalone paid DLC expansion is included in this extraction. Free updates, when applicable, are listed in the Updates section instead.
+EOF
+guide.1.title=Official Nintendo game page
+guide.1.summary<<EOF
+Official Nintendo reference for game description, supported modes, player counts, languages, file size, and compatibility information.
+EOF
+guide.1.url=https://www.nintendo.com/us/store/products/paper-mario-the-origami-king-switch/
+
+# Expanded detail-page point rule: added more than 3 items where appropriate.
+gameplay_pillar.4.title=Ring-based battle puzzles
+gameplay_pillar.4.description<<EOF
+Regular battles ask players to rotate and slide ring layers so enemies line up efficiently before attacks, turning combat into a positioning puzzle.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/e76b968799ccae115fc0bff9e5b51c8cad851c38eccaa4e1dbf3b171a58de7c7
+gameplay_pillar.5.title=Exploration, secrets, and collectibles
+gameplay_pillar.5.description<<EOF
+Large themed regions hide Toad rescues, treasure, optional encounters, and environmental puzzles that reward curiosity beyond the main path.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/2a40327a93dcf9f68a65cdefaeac2f7d6ef2c15b1fd07c1c1b80533a6570f7e8
+story_chapter.4.title=Unfold the crisis across paper kingdoms
+story_chapter.4.text<<EOF
+Mario and Olivia travel through streamers wrapped around Peach's Castle, visiting varied paper-crafted regions to undo King Olly's plans.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/63e790d041c0db75ec2c5f4a5cadebbf7b99454b671e53842d59c648ddcf2f1c
+story_chapter.5.title=Rescue allies and confront King Olly
+story_chapter.5.text<<EOF
+The journey mixes humor, boss battles, puzzle solving, and emotional moments before culminating in the showdown against the folded threat.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000029726/3d03359a28c83765b444582eb5001748e6790dcae373846b7c99fac13e0931e2
+feature.4=Inventive ring battles distinguish it from prior entries
+feature.5=Large regions reward exploration and collectible hunting
+feature.6=Memorable boss battles remix the puzzle concept in clever ways
+faq.4.question=Is The Origami King a turn-based RPG?
+faq.4.answer<<EOF
+It has turn-based elements, but its regular battle system is heavily puzzle-based. Exploration, boss design, and story presentation are just as important as combat.
+EOF
+faq.5.question=Does the game have a large world to explore?
+faq.5.answer<<EOF
+Yes. While it is structured by major regions, each area includes side activities, hidden Toads, collectibles, and optional discoveries that reward exploration.
+EOF
+overview_suitable_for.3=Players who enjoy humor, exploration, and puzzle-flavored battles.
+overview_suitable_for.4=Fans of colorful Nintendo adventures with strong presentation and character charm.
+overview_not_suitable_for.3=Players looking for traditional deep party-building RPG systems.
+overview_not_suitable_for.4=Players who strongly dislike combat systems built around spatial puzzles.
+verdict_pro.4=Creative art direction gives every region a distinct identity
+verdict_pro.5=Boss encounters are especially memorable
+verdict_con.4=Regular battles may divide players who prefer classic RPG combat
+verdict_con.5=Some collectible cleanup can become repetitive late in the game

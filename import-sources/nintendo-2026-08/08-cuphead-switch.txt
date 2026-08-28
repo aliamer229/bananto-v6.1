@@ -1,0 +1,399 @@
+schema_version=24
+name=Cuphead
+title=Cuphead
+title_ar=كابهيد
+name_ar=كابهيد
+slug=cuphead-switch
+platform=switch1
+compatibility.1=Nintendo Switch 1
+compatibility.2=Nintendo Switch 2
+edition=Standard
+region=Global
+release_date=2019-04-18
+release_status=Released
+status=Active
+developer=Studio MDHR
+publisher=Studio MDHR
+players_count=Single system (1-2)
+players=Single system (1-2)
+player_count=Single system (1-2)
+age_rating=ESRB E10+ / PEGI 7
+metacritic_score=87
+metacritic=87
+metacritic_url=https://www.metacritic.com/game/cuphead/
+opencritic_score=88
+opencritic=88
+user_score=8.8
+userscore=8.8
+user_rating=8.8
+game_size_gb=6
+size=6 GB
+size_gb=6
+price=10000
+price_iqd=10000
+price_usd=19.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=8000
+trade_value_iqd=8000
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://cupheadgame.com/
+eshop_url=https://cupheadgame.com/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=A hand-animated action platformer famous for its difficult bosses and classic cartoon art.
+description_full<<EOF
+Cuphead is a stylish action platformer built around tough boss fights, run-and-gun stages, and a memorable 1930s cartoon presentation. It rewards pattern recognition, precision, and steady improvement. This file represents the Nintendo Switch 1 product entry with four store pricing tiers.
+EOF
+description<<EOF
+Cuphead is a stylish action platformer built around tough boss fights, run-and-gun stages, and a memorable 1930s cartoon presentation. It rewards pattern recognition, precision, and steady improvement. This file represents the Nintendo Switch 1 product entry with four store pricing tiers.
+EOF
+description_en<<EOF
+Cuphead is a stylish action platformer built around tough boss fights, run-and-gun stages, and a memorable 1930s cartoon presentation. It rewards pattern recognition, precision, and steady improvement. This file represents the Nintendo Switch 1 product entry with four store pricing tiers.
+EOF
+description_ar<<EOF
+لعبة أكشن ومنصات برسوم مستوحاة من كرتون الثلاثينيات، تشتهر بزعمائها الصعبين ورسوماتها الفريدة، ومجهزة هنا كملف Switch 1.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Cuphead+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Cuphead+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Platformer
+genres.2=Platformer
+genre.3=Shooter
+genres.3=Shooter
+nintendo_official_url=https://cupheadgame.com/
+official_store_url=https://cupheadgame.com/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as the Switch 1 product file with four pricing tiers.
+EOF
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Switch 2 compatible via original release
+switch2_features.1=Switch 2 compatible via original release
+switch2_feature.2=Hand-drawn art style
+switch2_features.2=Hand-drawn art style
+switch2_feature.3=Strong portable fit
+switch2_features.3=Strong portable fit
+overview_tagline=Classic cartoon style meets intense boss-rush action.
+overview_suitable_for.1=Players who enjoy challenge
+overview_suitable_for.2=Platformer fans
+overview_suitable_for.3=Co-op players
+overview_not_suitable_for.1=Players who dislike difficulty
+overview_not_suitable_for.2=Players wanting online multiplayer
+main_story_hours=10
+completionist_hours=22
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Cuphead
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Bonus / 特典版
+edition.2.cover_image=
+edition.2.content.1.label=Cuphead
+edition.2.content.2.label=Bonus / 特典版
+edition.2.content.3.label=Offline bonus package
+edition.3.name=Standard / 标准版
+edition.3.cover_image=
+edition.3.content.1.label=Cuphead
+edition.3.content.2.label=Standard / 标准版
+edition.3.content.3.label=Online account access
+edition.4.name=Deluxe / 豪华版
+edition.4.cover_image=
+edition.4.content.1.label=Cuphead
+edition.4.content.2.label=Deluxe / 豪华版
+edition.4.content.3.label=Online premium package
+gameplay_pillar.1.title=Hand-drawn cartoon presentation
+gameplay_pillar.1.description<<EOF
+Its visual identity is one of the game’s biggest strengths.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Difficult boss fights
+gameplay_pillar.2.description<<EOF
+Pattern learning and precision are central to progression.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Run-and-gun platforming
+gameplay_pillar.3.description<<EOF
+Action stages complement the boss-focused structure.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Weapon and charm variety
+gameplay_pillar.4.description<<EOF
+Different loadouts support different strategies.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Optional local co-op
+gameplay_pillar.5.description<<EOF
+A second player can join locally for the full adventure.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Inkwell Isle is a surreal cartoon world packed with eccentric bosses, energetic music, and exaggerated animation.
+EOF
+story_chapter.1.title=A dangerous debt is made
+story_chapter.1.text<<EOF
+Cuphead and Mugman find themselves forced into collecting soul contracts.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Travel across Inkwell Isle
+story_chapter.2.text<<EOF
+Each region introduces new bosses and mechanics.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Learn through repeated attempts
+story_chapter.3.text<<EOF
+Mastery comes from reading patterns and improving execution.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Expand your toolkit
+story_chapter.4.text<<EOF
+Weapons, supers, and charms give you more control over your style.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Confront the final challenge
+story_chapter.5.text<<EOF
+The contract-collecting journey ends in a dramatic last test.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Boss battle scene
+gallery.2.image=
+gallery.2.description=Run-and-gun stage
+gallery.3.image=
+gallery.3.description=Cuphead and Mugman scene
+gallery.4.image=
+gallery.4.description=Cartoon environment image
+gallery.5.image=
+gallery.5.description=Co-op action image
+feature.1=Outstanding art direction
+feature.2=Tough but rewarding bosses
+feature.3=Local co-op support
+feature.4=Great music and sound
+feature.5=Switch 1 product entry
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Recorded as a Switch 1 profile, with Switch 2 compatibility implied through backward compatibility.
+EOF
+device_performance.1.device=Nintendo Switch 1
+device_performance.1.device_slug=nintendo-switch-1
+device_performance.1.device_model=Nintendo Switch 1
+device_performance.1.hardware_id=nintendo-switch-1
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Recorded as a Switch 1 profile, with Switch 2 compatibility implied through backward compatibility.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Recorded as a Switch 1 profile, with Switch 2 compatibility implied through backward compatibility.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Recorded as a Switch 1 profile, with Switch 2 compatibility implied through backward compatibility.
+EOF
+device_performance.1.performance_notes<<EOF
+Recorded as a Switch 1 profile, with Switch 2 compatibility implied through backward compatibility.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV
+device_performance.2.tv.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.mode.1.name=Default
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.performance_notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+faq.1.question=Is Cuphead difficult?
+faq.1.answer<<EOF
+Yes. The game is known for demanding bosses and precise execution.
+EOF
+faq.2.question=Does it support co-op?
+faq.2.answer<<EOF
+Yes. Local co-op is supported.
+EOF
+faq.3.question=Why are there four variants?
+faq.3.answer<<EOF
+The requested pricing structure includes regular, bonus, standard, and deluxe tiers.
+EOF
+faq.4.question=Is there online co-op?
+faq.4.answer<<EOF
+This import focuses on local co-op and single-player play.
+EOF
+faq.5.question=Why is it popular?
+faq.5.answer<<EOF
+Its art style, music, and boss design made it a standout hit.
+EOF
+multiplayer_local=true
+multiplayer_online=false
+multiplayer_cooperative=true
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=true
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=bonus
+type.2.name=Bonus / 特典版
+type.2.option_id=offline_account
+type.2.price=2500
+type.2.cost=2500
+type.2.description=Offline bonus package
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=standard
+type.3.name=Standard / 标准版
+type.3.option_id=online_account
+type.3.price=10000
+type.3.cost=1250
+type.3.description=Online account access
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=deluxe
+type.4.name=Deluxe / 豪华版
+type.4.option_id=online_account
+type.4.price=16500
+type.4.cost=2500
+type.4.description=Online premium package
+type.4.stock=9999
+type.4.is_infinite_stock=true

@@ -1,0 +1,410 @@
+schema_version=24
+name=Hades II — Nintendo Switch 2 Edition
+title=Hades II — Nintendo Switch 2 Edition
+title_ar=هاديس 2 — إصدار نينتندو سويتش 2
+name_ar=هاديس 2 — إصدار نينتندو سويتش 2
+slug=hades-ii-nintendo-switch-2-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=A separate Nintendo Switch version and free/upgrade path also exist
+edition=Nintendo Switch 2 Edition
+region=Global
+release_date=2025-09-25
+release_status=Released
+status=Active
+developer=Supergiant Games
+publisher=Supergiant Games
+genre.1=Action
+genres.1=Action
+genre.2=Roguelike
+genres.2=Roguelike
+genre.3=RPG
+genres.3=RPG
+series_name=Hades II — Nintendo Switch 2 Edition
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB T — Alcohol Reference, Blood, Mild Language, Suggestive Themes, Violence
+metacritic_score=94
+metacritic=94
+metacritic_url=https://www.metacritic.com/game/hades-ii/
+opencritic_score=94
+opencritic=94
+user_score=9.0
+userscore=9.0
+user_rating=9.0
+game_size_gb=10.8
+size=10.8 GB
+size_gb=10.8
+price=1500
+price_iqd=1500
+price_usd=29.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=13750
+trade_value_iqd=13750
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.nintendo.com/us/store/products/hades-ii-nintendo-switch-2-edition-switch-2/
+eshop_url=https://www.nintendo.com/us/store/products/hades-ii-nintendo-switch-2-edition-switch-2/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+Battle beyond the Underworld as Melinoë in Supergiant’s roguelike sequel, with the Switch 2 Edition supporting 1080p at 120 fps in TV mode and 1080p at 60 fps handheld.
+EOF
+description_full<<EOF
+Hades II expands Supergiant Games’ action-roguelike formula with Melinoë, witchcraft, new Olympian powers, a larger mythic world, and a story that grows through repeated runs. Nintendo’s Switch 2 Edition specifically advertises 120 fps at 1080p in TV mode and 60 fps at 1080p in handheld mode, along with enhanced textures and visual effects.
+EOF
+description<<EOF
+Hades II expands Supergiant Games’ action-roguelike formula with Melinoë, witchcraft, new Olympian powers, a larger mythic world, and a story that grows through repeated runs. Nintendo’s Switch 2 Edition specifically advertises 120 fps at 1080p in TV mode and 60 fps at 1080p in handheld mode, along with enhanced textures and visual effects.
+EOF
+description_en<<EOF
+Hades II expands Supergiant Games’ action-roguelike formula with Melinoë, witchcraft, new Olympian powers, a larger mythic world, and a story that grows through repeated runs. Nintendo’s Switch 2 Edition specifically advertises 120 fps at 1080p in TV mode and 60 fps at 1080p in handheld mode, along with enhanced textures and visual effects.
+EOF
+description_ar<<EOF
+تكملة Hades من Supergiant مع البطلة Melinoë وسحر وقدرات جديدة وعالم أكبر. إصدار Switch 2 يدعم رسميًا 1080p/120fps في وضع التلفاز و1080p/60fps في المحمول مع تحسينات رسومية.
+EOF
+front_cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+cartridge_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+cartridge=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+cartridge_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+box_front_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/32608044933fa2a4bf912586ef78aced58ccf2c02c754a209394d6fb659a5ac7
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/32608044933fa2a4bf912586ef78aced58ccf2c02c754a209394d6fb659a5ac7
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/32608044933fa2a4bf912586ef78aced58ccf2c02c754a209394d6fb659a5ac7
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=true
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/4ea19bfcd0c389ee5d02bb0c9bbb562802c40b73eba39e1582ac057ea7f73ad4
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Fast roguelike combat
+gameplay_pillar.1.description<<EOF
+Melinoë combines weapons, cast mechanics, sprinting, Omega attacks, and divine boons in highly responsive runs.
+EOF
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/566a78ffa9706838e77a75698ad480f811c1d2bfba31b999e8dc9834ee693fd0
+gameplay_pillar.2.title=Witchcraft and Arcana progression
+gameplay_pillar.2.description<<EOF
+Permanent upgrades and Arcana cards let players shape long-term builds between attempts.
+EOF
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/f920391bdff344bdc9e63d06858704a054d11103c8f8b9e244bf9f6795b2c133
+gameplay_pillar.3.title=Olympian boon combinations
+gameplay_pillar.3.description<<EOF
+Randomized god powers produce many build combinations and encourage experimentation across repeated runs.
+EOF
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/e2058a5516c9016f9c09b312b65a1d14962c2861a27068a75cca3dfad9fe3680
+gameplay_pillar.4.title=Bigger mythic route structure
+gameplay_pillar.4.description<<EOF
+The sequel expands beyond the Underworld and supports multiple routes, bosses, resources, and story states.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/97ca83e1cd65da9fe9a5f849081523c61cc764e090246e12b274a39ad197b77d
+gameplay_pillar.5.title=Switch 2 high-frame-rate mode
+gameplay_pillar.5.description<<EOF
+Nintendo explicitly lists a 1080p 120 fps TV mode, making the Switch 2 Edition a strong portable/high-refresh version.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/50ecd22aee5319d239edbcce4681483c9d300981137a6754bb4857372edc1f58
+world_summary<<EOF
+Hades II expands Supergiant Games’ action-roguelike formula with Melinoë, witchcraft, new Olympian powers, a larger mythic world, and a story that grows through repeated runs. Nintendo’s Switch 2 Edition specifically advertises 120 fps at 1080p in TV mode and 60 fps at 1080p in handheld mode, along with enhanced textures and visual effects.
+EOF
+story_chapter.1.title=Melinoë challenges the Titan of Time
+story_chapter.1.text<<EOF
+The Princess of the Underworld begins a long campaign against Chronos and his forces.
+EOF
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/f920391bdff344bdc9e63d06858704a054d11103c8f8b9e244bf9f6795b2c133
+story_chapter.2.title=Train at the Crossroads
+story_chapter.2.text<<EOF
+Between runs, Melinoë speaks with allies, develops relationships, unlocks systems, and prepares new equipment.
+EOF
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/e2058a5516c9016f9c09b312b65a1d14962c2861a27068a75cca3dfad9fe3680
+story_chapter.3.title=Receive Olympian aid
+story_chapter.3.text<<EOF
+Gods and mythic figures grant powers and story developments that change from run to run.
+EOF
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/97ca83e1cd65da9fe9a5f849081523c61cc764e090246e12b274a39ad197b77d
+story_chapter.4.title=Push deeper through repeated attempts
+story_chapter.4.text<<EOF
+Failure is part of the narrative structure, with new dialogue and progression emerging after each return.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/50ecd22aee5319d239edbcce4681483c9d300981137a6754bb4857372edc1f58
+story_chapter.5.title=Uncover a continuously expanding myth
+story_chapter.5.text<<EOF
+Supergiant uses the roguelike loop to reveal more of the conflict, family relationships, and the wider mythological setting.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/566a78ffa9706838e77a75698ad480f811c1d2bfba31b999e8dc9834ee693fd0
+feature.1=1080p 120 fps TV mode on Switch 2
+feature.2=1080p 60 fps handheld mode
+feature.3=Enhanced textures and visual effects
+feature.4=Deep roguelike build variety
+feature.5=Cross-save support across versions
+performance_tv_resolution=1080p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+main_story_hours=30
+completion_main_story_hours=60
+completion_story_plus_dlc_hours=100
+faq.1.question=What performance does the Switch 2 Edition support?
+faq.1.answer<<EOF
+Nintendo officially lists 120 fps at 1080p in TV mode and 60 fps at 1080p in handheld mode.
+EOF
+faq.2.question=Is Hades II single-player?
+faq.2.answer<<EOF
+Yes. Nintendo lists one player on a single system.
+EOF
+faq.3.question=Does it support cross-save?
+faq.3.answer<<EOF
+Yes. Supergiant and Nintendo describe cross-save support between versions through the in-game system.
+EOF
+faq.4.question=Is there a Switch 1 version?
+faq.4.answer<<EOF
+Yes. A separate Nintendo Switch version exists, plus an upgrade path to the Switch 2 Edition.
+EOF
+faq.5.question=Does the game use random runs?
+faq.5.answer<<EOF
+Yes. It is a roguelike where environments, rewards, and build combinations vary across repeated attempts.
+EOF
+verdict_score=8.5
+verdict_pro.1=Excellent 120 fps TV mode
+verdict_pro.2=Strong visual upgrades on Switch 2
+verdict_pro.3=Deep combat and build systems
+verdict_pro.4=Outstanding writing and art direction
+verdict_pro.5=Very high replay value
+verdict_con.1=Roguelike repetition is intentional and not for everyone
+verdict_con.2=Difficulty can spike significantly
+verdict_con.3=Progression can require many failed runs
+verdict_con.4=Narrative unfolds slowly by design
+verdict_con.5=Build randomness can occasionally work against preferred strategies
+review.1.source=Metacritic
+review.1.score=94
+review.1.url=https://www.metacritic.com/game/hades-ii/
+review.2.source=OpenCritic
+review.2.score=94
+review.2.url=https://opencritic.com/
+timeline.1.date=2025-09-25
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=Supergiant Games
+studio_website=https://www.nintendo.com/us/store/products/hades-ii-nintendo-switch-2-edition-switch-2/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/hades-ii-nintendo-switch-2-edition-switch-2/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/hades-ii/
+storage_download_size_gb=10.8
+storage_required_space_gb=10.8
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Regular / Offline; user-supplied store price 1,500 IQD; recorded cost 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=25000
+type.2.cost=1500
+type.2.description=Standard / Online; user-supplied store price 25,000 IQD; recorded cost 1,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+No separate paid story expansion is required for the core Switch 2 Edition entry.
+EOF
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/566a78ffa9706838e77a75698ad480f811c1d2bfba31b999e8dc9834ee693fd0
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/f920391bdff344bdc9e63d06858704a054d11103c8f8b9e244bf9f6795b2c133
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/e2058a5516c9016f9c09b312b65a1d14962c2861a27068a75cca3dfad9fe3680
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/97ca83e1cd65da9fe9a5f849081523c61cc764e090246e12b274a39ad197b77d
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/50ecd22aee5319d239edbcce4681483c9d300981137a6754bb4857372edc1f58
+gallery.1.description=Hades II — Nintendo Switch 2 Edition official/promotional game-world media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/566a78ffa9706838e77a75698ad480f811c1d2bfba31b999e8dc9834ee693fd0
+gallery.2.description=Hades II — Nintendo Switch 2 Edition official/promotional game-world media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/f920391bdff344bdc9e63d06858704a054d11103c8f8b9e244bf9f6795b2c133
+gallery.3.description=Hades II — Nintendo Switch 2 Edition official/promotional game-world media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/e2058a5516c9016f9c09b312b65a1d14962c2861a27068a75cca3dfad9fe3680
+gallery.4.description=Hades II — Nintendo Switch 2 Edition official/promotional game-world media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/97ca83e1cd65da9fe9a5f849081523c61cc764e090246e12b274a39ad197b77d
+gallery.5.description=Hades II — Nintendo Switch 2 Edition official/promotional game-world media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000105526/50ecd22aee5319d239edbcce4681483c9d300981137a6754bb4857372edc1f58
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Handheld: 1080p at 60 fps. TV: 1080p at 120 fps; this file records the handheld baseline in the shared fps field and the TV-specific 120 fps in notes.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Handheld: 1080p at 60 fps. TV: 1080p at 120 fps; this file records the handheld baseline in the shared fps field and the TV-specific 120 fps in notes.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Handheld: 1080p at 60 fps. TV: 1080p at 120 fps; this file records the handheld baseline in the shared fps field and the TV-specific 120 fps in notes.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/hades-ii-nintendo-switch-2-edition-upgrade-pack-switch-2/
+device_performance.1.performance_notes<<EOF
+Handheld: 1080p at 60 fps. TV: 1080p at 120 fps; this file records the handheld baseline in the shared fps field and the TV-specific 120 fps in notes.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+This file is for the dedicated Nintendo Switch 2 Edition. A separate Switch 1 product exists and should be imported independently if needed.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+This file is for the dedicated Nintendo Switch 2 Edition. A separate Switch 1 product exists and should be imported independently if needed.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+This file is for the dedicated Nintendo Switch 2 Edition. A separate Switch 1 product exists and should be imported independently if needed.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/hades-ii-switch/
+device_performance.2.performance_notes<<EOF
+This file is for the dedicated Nintendo Switch 2 Edition. A separate Switch 1 product exists and should be imported independently if needed.
+EOF
+upgrade_price=0

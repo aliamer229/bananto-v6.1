@@ -1,0 +1,51 @@
+# TEMPORARY — read-only anatomy of one product document.
+name: Inspect product (read-only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      product:
+        description: "Product id or slug"
+        required: true
+        default: "street-fighter-6-switch-2"
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/inspect-product.yml
+      - scripts/inspect-product.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inspect-product
+  cancel-in-progress: true
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+      - name: Inspect
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PRODUCT: ${{ inputs.product }}
+        run: node scripts/inspect-product.mjs "${PRODUCT:-street-fighter-6-switch-2}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: inspect-product
+          path: inspect-product.md
+          if-no-files-found: warn

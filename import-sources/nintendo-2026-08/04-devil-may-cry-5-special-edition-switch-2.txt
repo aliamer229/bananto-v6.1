@@ -1,0 +1,333 @@
+schema_version=24
+name=Devil May Cry 5 Special Edition
+title=Devil May Cry 5 Special Edition
+title_ar=ديفل ماي كراي 5 النسخة الخاصة
+name_ar=ديفل ماي كراي 5 النسخة الخاصة
+slug=devil-may-cry-5-special-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Switch 1 product in this entry
+edition=Special Edition
+region=Global
+release_date=2020-11-10
+release_status=Released
+status=Active
+developer=Capcom
+publisher=Capcom
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB M / PEGI 18
+metacritic_score=89
+metacritic=89
+metacritic_url=https://www.metacritic.com/game/devil-may-cry-5-special-edition/
+opencritic_score=88
+opencritic=88
+user_score=8.6
+userscore=8.6
+user_rating=8.6
+game_size_gb=35
+size=35 GB
+size_gb=35
+price=14250
+price_iqd=14250
+price_usd=39.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=10000
+trade_value_iqd=10000
+store_offer_bonus=1500
+store_offer_bonus_iqd=1500
+official_url=https://www.capcom-games.com/dmc/5/
+eshop_url=https://www.capcom-games.com/dmc/5/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=High-speed stylish action with a premium Special Edition identity.
+description_full<<EOF
+Devil May Cry 5 Special Edition is a premium version of Capcom’s stylish action hit. It focuses on high-speed combat, expressive combos, multiple playable characters, and spectacular demon battles. This file prepares the game as a separate Nintendo Switch 2 store entry with two account-based pricing tiers.
+EOF
+description<<EOF
+Devil May Cry 5 Special Edition is a premium version of Capcom’s stylish action hit. It focuses on high-speed combat, expressive combos, multiple playable characters, and spectacular demon battles. This file prepares the game as a separate Nintendo Switch 2 store entry with two account-based pricing tiers.
+EOF
+description_en<<EOF
+Devil May Cry 5 Special Edition is a premium version of Capcom’s stylish action hit. It focuses on high-speed combat, expressive combos, multiple playable characters, and spectacular demon battles. This file prepares the game as a separate Nintendo Switch 2 store entry with two account-based pricing tiers.
+EOF
+description_ar<<EOF
+لعبة أكشن سريعة بأسلوب قتالي استعراضي من Capcom، مع نسخة Special Edition وملف منتج مخصص لـ Switch 2.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Devil+May+Cry+5+Special+Edition+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Devil+May+Cry+5+Special+Edition+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Hack and Slash
+genres.2=Hack and Slash
+nintendo_official_url=https://www.capcom-games.com/dmc/5/
+official_store_url=https://www.capcom-games.com/dmc/5/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as a Switch 2 product according to the requested platform and pricing.
+EOF
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Dedicated Switch 2 entry
+switch2_features.1=Dedicated Switch 2 entry
+switch2_feature.2=High-speed combat focus
+switch2_features.2=High-speed combat focus
+switch2_feature.3=Special Edition packaging
+switch2_features.3=Special Edition packaging
+overview_tagline=Stylish action pushed to the limit.
+overview_suitable_for.1=Action game fans
+overview_suitable_for.2=Players who enjoy combat mastery
+overview_suitable_for.3=Capcom fans
+overview_not_suitable_for.1=Players who dislike score-chasing combat
+overview_not_suitable_for.2=Young children
+main_story_hours=11
+completionist_hours=24
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Devil May Cry 5 Special Edition
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / 标准版
+edition.2.cover_image=
+edition.2.content.1.label=Devil May Cry 5 Special Edition
+edition.2.content.2.label=Standard / 标准版
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Stylish combat system
+gameplay_pillar.1.description<<EOF
+Every move is designed to build style, variety, and expression.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Multiple playable characters
+gameplay_pillar.2.description<<EOF
+Dante, Nero, and other characters shift the flow of combat.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Mission-based progression
+gameplay_pillar.3.description<<EOF
+Short focused stages feed into boss fights and cinematic story beats.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=High replay value
+gameplay_pillar.4.description<<EOF
+Mastery, rankings, and combos reward repeated play.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Special Edition identity
+gameplay_pillar.5.description<<EOF
+This import treats the Special Edition as the premium package.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+A demon-invaded city becomes the stage for flashy battles, powerful bosses, and nonstop stylish action.
+EOF
+story_chapter.1.title=A demonic crisis begins
+story_chapter.1.text<<EOF
+Powerful enemies throw the world into chaos.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Fight through urban battlegrounds
+story_chapter.2.text<<EOF
+Each mission escalates the spectacle and difficulty.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Switch combat styles
+story_chapter.3.text<<EOF
+Character variety keeps the action fresh.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Push skill higher
+story_chapter.4.text<<EOF
+Player improvement unlocks the full joy of the combat system.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Close the family conflict
+story_chapter.5.text<<EOF
+The story culminates in a dramatic confrontation.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Combat combo showcase
+gallery.2.image=
+gallery.2.description=Boss encounter scene
+gallery.3.image=
+gallery.3.description=Character action scene
+gallery.4.image=
+gallery.4.description=Stylish mission scene
+gallery.5.image=
+gallery.5.description=Demonic environment
+feature.1=Excellent stylish action combat
+feature.2=Strong replay value
+feature.3=Multiple playable characters
+feature.4=Special Edition store entry
+feature.5=Dedicated Switch 2 product
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Prepared as a Switch 2 performance profile for the requested platform entry.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Prepared as a Switch 2 performance profile for the requested platform entry.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Prepared as a Switch 2 performance profile for the requested platform entry.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Prepared as a Switch 2 performance profile for the requested platform entry.
+EOF
+device_performance.1.performance_notes<<EOF
+Prepared as a Switch 2 performance profile for the requested platform entry.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.unavailable_reason<<EOF
+This product file is not intended for this device in the current platform split.
+EOF
+device_performance.2.handheld.supported=false
+device_performance.2.tv.supported=false
+device_performance.2.performance_notes<<EOF
+This device block is intentionally marked unavailable because the game file belongs to a different platform entry.
+EOF
+faq.1.question=Is it single-player?
+faq.1.answer<<EOF
+Yes. It is mainly a single-player stylish action game.
+EOF
+faq.2.question=Why only two variants?
+faq.2.answer<<EOF
+Only Regular / Offline and Standard / Online were provided.
+EOF
+faq.3.question=What does Special Edition mean here?
+faq.3.answer<<EOF
+It marks the premium package identity used for this product file.
+EOF
+faq.4.question=Why is it on Switch 2?
+faq.4.answer<<EOF
+The user explicitly requested a Switch 2 version.
+EOF
+faq.5.question=What kind of game is it?
+faq.5.answer<<EOF
+It is a fast-paced action / hack and slash title.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard
+type.2.name=Standard / 标准版
+type.2.option_id=online_account
+type.2.price=14250
+type.2.cost=1500
+type.2.description=Online account access
+type.2.stock=9999
+type.2.is_infinite_stock=true

@@ -1,0 +1,55 @@
+# TEMPORARY — product data recovery audit.
+#
+# Read-only: the script refuses any SQL statement that is not a single SELECT,
+# and touches R2 only through read/list commands. It deploys nothing.
+#
+# Delete this file once the recovery is closed.
+name: Recovery audit (read-only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/recovery-audit.yml
+      - scripts/recovery-audit.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: incident-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: |
+          echo "::add-mask::$ACCOUNT_ID"
+          echo "::add-mask::$DATABASE_ID"
+      - name: Audit
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_R2_BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
+        run: node scripts/recovery-audit.mjs
+      - name: Upload the audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovery-audit
+          path: recovery-audit.md
+          if-no-files-found: warn

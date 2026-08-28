@@ -1,0 +1,341 @@
+schema_version=24
+name=Stray
+title=Stray
+title_ar=ستراي
+name_ar=ستراي
+slug=stray-switch-1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: supported or separately represented where applicable
+edition=Standard
+region=Global
+release_date=2024-11-19
+release_status=Released
+status=Active
+developer=BlueTwelve Studio
+publisher=Annapurna Interactive
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Puzzle
+genres.3=Puzzle
+genre.4=Stealth
+genres.4=Stealth
+series_name=Stray
+players_count=Single system (1)
+players=Single system (1)
+age_rating=ESRB T / PEGI 12
+metacritic_score=83
+metacritic=83
+opencritic_score=84
+opencritic=84
+user_score=8.4
+game_size_gb=5.7
+size_gb=5.7
+size=5.7 GB
+price=1250
+price_iqd=1250
+cost=1250
+cost_iqd=1250
+upgrade_price=0
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=9500
+trade_value_iqd=9500
+store_offer_bonus=1250
+store_offer_bonus_iqd=1250
+official_url=https://www.nintendo.com/us/store/products/stray-switch/
+eshop_url=https://www.nintendo.com/us/store/products/stray-switch/
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=A third-person cat adventure through a neon cybercity filled with droids, secrets, and dangerous creatures.
+description_full<<EOF
+Stray follows a lost cat trying to escape a decaying cybercity. Explore rooftops and alleys, interact with droids, solve environmental puzzles, avoid hostile creatures, and work with the small drone B-12. Nintendo lists the Switch version as compatible with Switch 2, while a separate native Switch 2 version also exists.
+EOF
+description<<EOF
+Stray follows a lost cat trying to escape a decaying cybercity. Explore rooftops and alleys, interact with droids, solve environmental puzzles, avoid hostile creatures, and work with the small drone B-12. Nintendo lists the Switch version as compatible with Switch 2, while a separate native Switch 2 version also exists.
+EOF
+description_en<<EOF
+Stray follows a lost cat trying to escape a decaying cybercity. Explore rooftops and alleys, interact with droids, solve environmental puzzles, avoid hostile creatures, and work with the small drone B-12. Nintendo lists the Switch version as compatible with Switch 2, while a separate native Switch 2 version also exists.
+EOF
+description_ar<<EOF
+مغامرة من منظور قط ضائع داخل مدينة سايبربانك مضيئة، تعتمد على الاستكشاف والألغاز والتخفي والتفاعل مع الروبوتات بمساعدة الدرون B-12.
+EOF
+front_cover_image=
+cartridge_image=
+nintendo_card_image=
+square_game_image=
+main_image=
+cover_image=
+cover=
+cover_url=
+front_cover_hires_url=
+cover_texture_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+gallery.1.image=
+gallery.1.description=Stray world/gameplay media 1
+banner_image.2=
+gallery.2.image=
+gallery.2.description=Stray world/gameplay media 2
+banner_image.3=
+gallery.3.image=
+gallery.3.description=Stray world/gameplay media 3
+banner_image.4=
+gallery.4.image=
+gallery.4.description=Stray world/gameplay media 4
+banner_image.5=
+gallery.5.image=
+gallery.5.description=Stray world/gameplay media 5
+banner_image.6=
+gallery.6.image=
+gallery.6.description=Stray world/gameplay media 6
+trailer_url=https://www.nintendo.com/us/store/products/stray-switch/
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform and package information verified against the official product/source page for Stray.
+EOF
+overview_tagline=See a forgotten cybercity through the eyes of a cat.
+overview_suitable_for.1=Fans of the listed genres
+overview_suitable_for.2=Players who value the game’s core mechanics
+overview_suitable_for.3=Players looking for this platform version
+overview_suitable_for.4=Collectors or storefront users comparing platform editions
+overview_not_suitable_for.1=Players who dislike the listed genre
+overview_not_suitable_for.2=Players seeking a different platform entry
+overview_not_suitable_for.3=Players who require unsupported multiplayer modes
+overview_not_suitable_for.4=Players expecting a different edition package
+main_story_hours=5
+completionist_hours=10
+gameplay_pillar.1.title=Cat movement and interaction
+gameplay_pillar.1.description<<EOF
+Jump, squeeze, scratch, and interact with the world in playful ways.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Cybercity exploration
+gameplay_pillar.2.description<<EOF
+Neon alleys and decaying districts form a memorable environment.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Puzzle solving
+gameplay_pillar.3.description<<EOF
+Environmental puzzles support exploration and progression.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Stealth and danger
+gameplay_pillar.4.description<<EOF
+Some encounters require avoiding hostile creatures.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=B-12 companionship
+gameplay_pillar.5.description<<EOF
+The drone B-12 helps translate, interact, and advance the story.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Stray follows a lost cat trying to escape a decaying cybercity. Explore rooftops and alleys, interact with droids, solve environmental puzzles, avoid hostile creatures, and work with the small drone B-12. Nintendo lists the Switch version as compatible with Switch 2, while a separate native Switch 2 version also exists.
+EOF
+story_chapter.1.title=Become separated from the colony
+story_chapter.1.text<<EOF
+The cat falls into a hidden cybercity.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Meet B-12
+story_chapter.2.text<<EOF
+A small drone becomes the cat’s guide and companion.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Learn the city’s history
+story_chapter.3.text<<EOF
+Droids and environmental clues reveal what happened.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Escape dangerous districts
+story_chapter.4.text<<EOF
+Stealth and puzzle-solving help the cat move upward.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Find a way out
+story_chapter.5.text<<EOF
+The final objective is to reconnect with the outside world.
+EOF
+story_chapter.5.image=
+feature.1=Cat-centered traversal
+feature.2=Cyberpunk world
+feature.3=Puzzle and stealth elements
+feature.4=Single-player adventure
+feature.5=Native Switch 2 version also available separately
+performance_handheld_resolution=720p
+performance_tv_resolution=1080p
+performance_fps=30
+performance_hdr=false
+performance_notes<<EOF
+Original Switch profile; Nintendo lists behavior as compatible with Switch 2.
+EOF
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Original Switch profile; Nintendo lists behavior as compatible with Switch 2.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Original Switch profile; Nintendo lists behavior as compatible with Switch 2.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Original Switch profile; Nintendo lists behavior as compatible with Switch 2.
+EOF
+device_performance.1.performance_notes<<EOF
+Original Switch profile; Nintendo lists behavior as compatible with Switch 2.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+device_performance.2.mode.1.name=Default
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+device_performance.2.performance_notes<<EOF
+Compatibility profile for validator; dedicated Switch 2 product is separate where one exists.
+EOF
+faq.1.question=When did the Switch version release?
+faq.1.answer<<EOF
+Nintendo lists November 19, 2024.
+EOF
+faq.2.question=Does it work on Switch 2?
+faq.2.answer<<EOF
+Yes. Nintendo lists compatibility, and a separate native Switch 2 version also exists.
+EOF
+faq.3.question=What is the file size?
+faq.3.answer<<EOF
+Nintendo lists 5.7 GB on Switch.
+EOF
+faq.4.question=Is it multiplayer?
+faq.4.answer<<EOF
+No. It is a single-player adventure.
+EOF
+faq.5.question=Why are Switch 1 and Switch 2 separate files?
+faq.5.answer<<EOF
+The supplier provided independent prices for each platform, and Nintendo now offers distinct versions.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Regular / Offline; supplier cost 1,250 IQD; selling price 1,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard-online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=16500
+type.2.cost=1250
+type.2.description=Standard / Online; supplier cost 1,250 IQD; selling price 16,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+source.1.name=Official product / publisher page
+source.1.url=https://www.nintendo.com/us/store/products/stray-switch/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/search/stray/

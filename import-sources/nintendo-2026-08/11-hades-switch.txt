@@ -1,0 +1,373 @@
+schema_version=24
+name=Hades
+title=Hades
+title_ar=هادِس
+name_ar=هادِس
+slug=hades-switch
+platform=switch1
+compatibility.1=Nintendo Switch 1
+compatibility.2=Nintendo Switch 2
+edition=Standard
+region=Global
+release_date=2020-09-17
+release_status=Released
+status=Active
+developer=Supergiant Games
+publisher=Supergiant Games
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB T / PEGI 12
+metacritic_score=93
+metacritic=93
+metacritic_url=https://www.metacritic.com/game/hades/
+opencritic_score=94
+opencritic=94
+user_score=8.9
+userscore=8.9
+user_rating=8.9
+game_size_gb=7
+size=7 GB
+size_gb=7
+price=12250
+price_iqd=12250
+price_usd=24.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=8500
+trade_value_iqd=8500
+store_offer_bonus=1250
+store_offer_bonus_iqd=1250
+official_url=https://www.supergiantgames.com/games/hades/
+eshop_url=https://www.supergiantgames.com/games/hades/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=A fast-paced action roguelike about escaping the Underworld.
+description_full<<EOF
+Hades is an action roguelike from Supergiant Games in which Zagreus fights through the Underworld using different weapons, divine boons, and persistent upgrades. It combines highly responsive combat with strong writing, memorable characters, and a structure that makes repeated play rewarding. This file represents the Nintendo Switch 1 product entry.
+EOF
+description<<EOF
+Hades is an action roguelike from Supergiant Games in which Zagreus fights through the Underworld using different weapons, divine boons, and persistent upgrades. It combines highly responsive combat with strong writing, memorable characters, and a structure that makes repeated play rewarding. This file represents the Nintendo Switch 1 product entry.
+EOF
+description_en<<EOF
+Hades is an action roguelike from Supergiant Games in which Zagreus fights through the Underworld using different weapons, divine boons, and persistent upgrades. It combines highly responsive combat with strong writing, memorable characters, and a structure that makes repeated play rewarding. This file represents the Nintendo Switch 1 product entry.
+EOF
+description_ar<<EOF
+لعبة أكشن روغلايك سريعة من Supergiant Games، تحاول فيها الهروب من العالم السفلي عبر جولات متكررة مليئة بالأسلحة والـ boons والتطويرات، ومجهزة هنا كملف Switch 1.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Hades+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Hades+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Roguelike
+genres.2=Roguelike
+genre.3=RPG
+genres.3=RPG
+nintendo_official_url=https://www.supergiantgames.com/games/hades/
+official_store_url=https://www.supergiantgames.com/games/hades/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as the Switch 1 product file with Switch 2 compatibility reference.
+EOF
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Playable on Switch 2 through compatibility
+switch2_features.1=Playable on Switch 2 through compatibility
+switch2_feature.2=Excellent portable action runs
+switch2_features.2=Excellent portable action runs
+switch2_feature.3=Highly replayable structure
+switch2_features.3=Highly replayable structure
+overview_tagline=Fight out of the Underworld, one run at a time.
+overview_suitable_for.1=Roguelike fans
+overview_suitable_for.2=Action game fans
+overview_suitable_for.3=Players who enjoy short repeatable sessions
+overview_not_suitable_for.1=Players who dislike repetition
+overview_not_suitable_for.2=Players seeking multiplayer
+main_story_hours=22
+completionist_hours=80
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Hades
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / 标准版
+edition.2.cover_image=
+edition.2.content.1.label=Hades
+edition.2.content.2.label=Standard / 标准版
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Repeatable escape runs
+gameplay_pillar.1.description<<EOF
+Every run through the Underworld offers new decisions and builds.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Fast action combat
+gameplay_pillar.2.description<<EOF
+Weapons, dashes, and boons create highly responsive combat.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Build variety
+gameplay_pillar.3.description<<EOF
+Godly blessings and upgrades lead to many play styles.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Narrative through repetition
+gameplay_pillar.4.description<<EOF
+Characters and story progress across repeated attempts.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Long-term mastery
+gameplay_pillar.5.description<<EOF
+Failure still contributes to progress and eventual improvement.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+The Greek Underworld is divided into themed regions filled with enemies, gods, allies, and escalating dangers.
+EOF
+story_chapter.1.title=Begin the escape
+story_chapter.1.text<<EOF
+Zagreus repeatedly tries to leave the Underworld.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Meet the Olympians
+story_chapter.2.text<<EOF
+Godly boons change each run and shape combat.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Strengthen through attempts
+story_chapter.3.text<<EOF
+Upgrades and practice slowly open stronger possibilities.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Build relationships
+story_chapter.4.text<<EOF
+Conversations and gifts deepen the cast over time.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Reach the truth
+story_chapter.5.text<<EOF
+The repeated structure gradually reveals the heart of the story.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Combat run scene
+gallery.2.image=
+gallery.2.description=Olympian boon moment
+gallery.3.image=
+gallery.3.description=Underworld environment
+gallery.4.image=
+gallery.4.description=Boss encounter
+gallery.5.image=
+gallery.5.description=Character dialogue scene
+feature.1=One of the best modern roguelikes
+feature.2=Excellent combat feel
+feature.3=Great writing and characters
+feature.4=Very high replay value
+feature.5=Switch 1 product entry
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Recorded as a Switch 1 profile with a Switch 2 compatibility reference.
+EOF
+device_performance.1.device=Nintendo Switch 1
+device_performance.1.device_slug=nintendo-switch-1
+device_performance.1.device_model=Nintendo Switch 1
+device_performance.1.hardware_id=nintendo-switch-1
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Recorded as a Switch 1 profile with a Switch 2 compatibility reference.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Recorded as a Switch 1 profile with a Switch 2 compatibility reference.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Recorded as a Switch 1 profile with a Switch 2 compatibility reference.
+EOF
+device_performance.1.performance_notes<<EOF
+Recorded as a Switch 1 profile with a Switch 2 compatibility reference.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV
+device_performance.2.tv.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.mode.1.name=Default
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.performance_notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+faq.1.question=Is Hades a roguelike?
+faq.1.answer<<EOF
+Yes. Repeated runs, randomized upgrades, and persistent progression define the experience.
+EOF
+faq.2.question=Does the story advance after failure?
+faq.2.answer<<EOF
+Yes. The narrative continues to unfold across repeated attempts.
+EOF
+faq.3.question=Why is it so replayable?
+faq.3.answer<<EOF
+Weapon choice, boon combinations, and evolving story beats keep runs fresh.
+EOF
+faq.4.question=Is there multiplayer?
+faq.4.answer<<EOF
+No. Hades is a single-player action roguelike.
+EOF
+faq.5.question=Why only two variants?
+faq.5.answer<<EOF
+Only Regular / Offline and Standard / Online were provided.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard
+type.2.name=Standard / 标准版
+type.2.option_id=online_account
+type.2.price=12250
+type.2.cost=1250
+type.2.description=Online account access
+type.2.stock=9999
+type.2.is_infinite_stock=true

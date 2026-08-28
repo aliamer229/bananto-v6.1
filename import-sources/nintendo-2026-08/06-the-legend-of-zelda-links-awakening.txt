@@ -1,0 +1,412 @@
+schema_version=24
+name=The Legend of Zelda: Link's Awakening
+title=The Legend of Zelda: Link's Awakening
+title_ar=أسطورة زيلدا: صحوة لينك
+name_ar=أسطورة زيلدا: صحوة لينك
+slug=the-legend-of-zelda-links-awakening-switch
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard
+region=Global
+release_date=2019-09-20
+release_status=Released
+status=Active
+developer=Nintendo
+publisher=Nintendo
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Puzzle
+genres.3=Puzzle
+series_name=The Legend of Zelda
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E / PEGI 7
+metacritic_score=87
+metacritic=87
+metacritic_url=https://www.metacritic.com/game/the-legend-of-zelda-links-awakening/
+opencritic_score=87
+opencritic=87
+user_score=8.0
+userscore=8.0
+user_rating=8.0
+game_size_gb=5.8
+size=5.8 GB
+size_gb=5.8
+price=14250
+price_iqd=14250
+price_usd=59.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=8500
+trade_value_iqd=8500
+store_offer_bonus=1500
+store_offer_bonus_iqd=1500
+official_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-links-awakening-switch/
+eshop_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-links-awakening-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+A charming remake of the Game Boy classic where Link washes ashore on Koholint Island and seeks a way home.
+EOF
+description_full<<EOF
+The Legend of Zelda: Link's Awakening is a full Nintendo Switch remake of the beloved portable classic. Stranded on mysterious Koholint Island, Link must explore dungeons, gather the Instruments of the Sirens, and unravel the island's dreamlike secrets. The remake updates the game with a toy-like visual style, modernized controls, quality-of-life improvements, and a dungeon-building side mode.
+EOF
+description<<EOF
+The Legend of Zelda: Link's Awakening is a full Nintendo Switch remake of the beloved portable classic. Stranded on mysterious Koholint Island, Link must explore dungeons, gather the Instruments of the Sirens, and unravel the island's dreamlike secrets. The remake updates the game with a toy-like visual style, modernized controls, quality-of-life improvements, and a dungeon-building side mode.
+EOF
+description_en<<EOF
+The Legend of Zelda: Link's Awakening is a full Nintendo Switch remake of the beloved portable classic. Stranded on mysterious Koholint Island, Link must explore dungeons, gather the Instruments of the Sirens, and unravel the island's dreamlike secrets. The remake updates the game with a toy-like visual style, modernized controls, quality-of-life improvements, and a dungeon-building side mode.
+EOF
+description_ar<<EOF
+إعادة صنع كاملة للعبة الكلاسيكية على Game Boy، حيث يجد لينك نفسه على جزيرة Koholint الغامضة ويجمع الآلات الموسيقية ليفك لغز الجزيرة ويجد طريق العودة.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+box_front_url=
+nintendo_card_image=
+square_game_image=
+main_image=
+image=
+image_url=
+cover_image=
+cover=
+cover_url=
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Japanese / British English / French / German / Italian / Spanish / Korean / Dutch / Simplified Chinese / Latin American Spanish / Canadian French / Traditional Chinese / American English
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish / Dutch
+text_language.3=Korean / Simplified Chinese / Traditional Chinese
+audio_language.1=Music / sound effects
+audio_language.2=Character vocalizations where applicable
+audio_language.3=No full language-selectable dub beyond the shipped release build information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Nintendo presents Link's Awakening as a fully remade version of the Game Boy adventure, with a distinct art style and modernized presentation.
+EOF
+edition.1.name=Offline Regular
+edition.1.cover_image=
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Offline account package
+edition.1.content.3.label=Full Switch remake of the portable classic
+edition.2.name=Online Standard
+edition.2.cover_image=
+edition.2.content.1.label=Base game
+edition.2.content.2.label=Online account package
+edition.2.content.3.label=Single-player Zelda adventure
+gameplay_pillar.1.title=Classic top-down Zelda structure
+gameplay_pillar.1.description<<EOF
+The game focuses on exploration, keys, tools, and dungeons in a style closer to traditional 2D Zelda adventures.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Koholint Island mystery
+gameplay_pillar.2.description<<EOF
+The island itself becomes part of the story, with strange characters and dreamlike narrative turns setting the tone apart from Hyrule-based entries.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Distinct remake presentation
+gameplay_pillar.3.description<<EOF
+The toy-like art direction gives the remake a memorable visual identity while keeping the original map structure recognizable.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Dungeon puzzle progression
+gameplay_pillar.4.description<<EOF
+Each dungeon emphasizes item usage, combat timing, and room-by-room problem solving.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Portable-friendly pacing
+gameplay_pillar.5.description<<EOF
+The game's structure works especially well in shorter play sessions, making it a strong handheld fit.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Koholint Island is compact but dense, full of hidden secrets, memorable NPCs, trading-sequence moments, caves, dungeons, and a dreamlike mood that makes the adventure stand out in the Zelda series.
+EOF
+story_chapter.1.title=Wash ashore on Koholint Island
+story_chapter.1.text<<EOF
+After a storm, Link awakens on a mysterious island far from Hyrule and begins searching for a way home.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Gather the Instruments of the Sirens
+story_chapter.2.text<<EOF
+The central quest sends Link across the island's varied regions and dungeons to collect the items needed to awaken the Wind Fish.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Meet the island's strange residents
+story_chapter.3.text<<EOF
+The cast includes memorable characters whose humor and mystery help define the game's personality.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Complete dungeons and trading quests
+story_chapter.4.text<<EOF
+Progress requires both dungeon mastery and side content, including item exchanges that open new paths.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Uncover the island's truth
+story_chapter.5.text<<EOF
+The story builds toward one of the series' most memorable endings as the nature of Koholint is finally revealed.
+EOF
+story_chapter.5.image=
+feature.1=Faithful remake of a beloved 2D Zelda game
+feature.2=Charming art direction and cleaner controls
+feature.3=Compact structure with strong dungeon design
+feature.4=Memorable story tone and emotional ending
+feature.5=Excellent fit for short or portable sessions
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=60
+performance_hdr=false
+main_story_hours=15
+completion_main_story_hours=20
+completion_story_plus_dlc_hours=22
+faq.1.question=Is Link's Awakening a remake?
+faq.1.answer<<EOF
+Yes. It is a full Nintendo Switch remake of the original Game Boy title.
+EOF
+faq.2.question=Is the game multiplayer?
+faq.2.answer<<EOF
+No. It is a single-player adventure.
+EOF
+faq.3.question=How long is the game?
+faq.3.answer<<EOF
+The main story is relatively compact compared with larger Zelda titles, but optional secrets and collectibles extend playtime.
+EOF
+faq.4.question=What style of Zelda is it?
+faq.4.answer<<EOF
+It is a top-down, classic Zelda structure built around dungeons, tools, key items, and map exploration.
+EOF
+faq.5.question=Why do players like it so much?
+faq.5.answer<<EOF
+Its compact design, memorable island setting, and emotional story twist make it one of the most beloved classic Zelda adventures.
+EOF
+verdict_score=8.8
+verdict_pro.1=Excellent remake presentation
+verdict_pro.2=Strong classic Zelda dungeon flow
+verdict_pro.3=Memorable island setting and ending
+verdict_pro.4=Portable-friendly pacing
+verdict_pro.5=Great entry point for 2D Zelda fans
+verdict_con.1=Shorter than modern flagship Zelda releases
+verdict_con.2=Performance dips are occasionally noticeable on original Switch
+verdict_con.3=Limited replay value compared with huge open-world entries
+verdict_con.4=Dungeon Builder is lighter than a full extra campaign
+verdict_con.5=Less mechanical complexity than larger modern games
+review.1.source=Metacritic
+review.1.score=87
+review.1.url=https://www.metacritic.com/game/the-legend-of-zelda-links-awakening/
+review.2.source=OpenCritic
+review.2.score=87
+review.2.url=https://opencritic.com/game/8298/the-legend-of-zelda-links-awakening
+review.3.source=IGN
+review.3.score=9.4/10
+review.3.url=https://www.ign.com/games/the-legend-of-zelda-links-awakening-switch
+timeline.1.date=1993-06-06
+timeline.1.title=Original Game Boy release launched
+timeline.2.date=2019-09-20
+timeline.2.title=Nintendo Switch remake released
+timeline.3.date=2025-06-05
+timeline.3.title=Backward compatible on Nintendo Switch 2 ecosystem
+update.1.version=Nintendo Switch remake launch version
+update.1.date=2019-09-20
+update.2.version=Current retail build
+update.2.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/the-legend-of-zelda-links-awakening-switch/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-links-awakening-switch/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/the-legend-of-zelda-links-awakening/
+source.3.name=OpenCritic
+source.3.url=https://opencritic.com/game/8298/the-legend-of-zelda-links-awakening
+storage_download_size_gb=5.8
+storage_required_space_gb=5.8
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Nintendo lists Link's Awakening at approximately 5.8 GB.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=The Legend of Zelda: Echoes of Wisdom
+series_game.2=The Legend of Zelda: Skyward Sword HD
+series_game.3=The Legend of Zelda: Breath of the Wild
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Offline — Regular
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline Regular version; supplier cost 1,250 IQD; selling price 1,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=online_standard
+type.2.name=Online — Standard
+type.2.option_id=online_account
+type.2.price=14250
+type.2.cost=1250
+type.2.description=Online Standard version; supplier cost 1,250 IQD; selling price 14,250 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=No standalone DLC has been announced
+dlc.1.description<<EOF
+Link's Awakening does not have a separate expansion pass or standalone DLC package.
+EOF
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / verified
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1280x720
+device_performance.1.handheld.output_resolution=1280x720
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Link's Awakening presents a 720p handheld / 1080p TV profile with a 60 fps target, though some areas are known for occasional dips.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1920x1080
+device_performance.1.tv.output_resolution=1920x1080
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Link's Awakening presents a 720p handheld / 1080p TV profile with a 60 fps target, though some areas are known for occasional dips.
+EOF
+device_performance.1.mode.1.name=Primary documented mode
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Link's Awakening presents a 720p handheld / 1080p TV profile with a 60 fps target, though some areas are known for occasional dips.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no single universal loading time
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-links-awakening-switch/
+device_performance.1.performance_notes<<EOF
+Link's Awakening presents a 720p handheld / 1080p TV profile with a 60 fps target, though some areas are known for occasional dips.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / verified
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=1280x720
+device_performance.2.handheld.output_resolution=1280x720
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2. This extraction records a compatibility profile consistent with the original release.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1920x1080
+device_performance.2.tv.output_resolution=1920x1080
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2. This extraction records a compatibility profile consistent with the original release.
+EOF
+device_performance.2.mode.1.name=Primary documented mode
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2. This extraction records a compatibility profile consistent with the original release.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no single universal loading time
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo official product page / compatibility context
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-links-awakening-switch/
+device_performance.2.performance_notes<<EOF
+Nintendo lists the original game as supported on Nintendo Switch 2. This extraction records a compatibility profile consistent with the original release.
+EOF

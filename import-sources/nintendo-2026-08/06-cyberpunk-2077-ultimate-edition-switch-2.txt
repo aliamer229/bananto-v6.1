@@ -1,0 +1,407 @@
+schema_version=24
+name=Cyberpunk 2077: Ultimate Edition
+title=Cyberpunk 2077: Ultimate Edition
+title_ar=سايبر بانك 2077: ألتيميت إديشن
+name_ar=سايبر بانك 2077: ألتيميت إديشن
+slug=cyberpunk-2077-ultimate-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=Not supported on Nintendo Switch 1
+edition=Standard / Store Variants
+region=Global
+release_date=2025-06-05
+release_status=Released
+status=Active
+developer=CD PROJEKT RED
+publisher=CD PROJEKT RED
+genre.1=RPG
+genres.1=RPG
+genre.2=Action
+genres.2=Action
+genre.3=Open World
+genres.3=Open World
+series_name=Cyberpunk 2077
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=PEGI 18 / ESRB M
+metacritic_score=90
+metacritic=90
+metacritic_url=https://www.metacritic.com/game/cyberpunk-2077-ultimate-edition/
+opencritic_score=90
+opencritic=90
+user_score=8.5
+userscore=8.5
+user_rating=8.5
+game_size_gb=60.6
+size=60.6 GB
+size_gb=60.6
+price=2250
+price_iqd=2250
+price_usd=69.99
+cost=2250
+cost_iqd=2250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=14750
+trade_value_iqd=14750
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Cyberpunk-2077-Ultimate-Edition-2791954.html
+eshop_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Cyberpunk-2077-Ultimate-Edition-2791954.html
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+The complete Night City RPG arrives on Nintendo Switch 2 with the base game, Phantom Liberty expansion, and platform-specific control options.
+EOF
+description_full<<EOF
+The complete Night City RPG arrives on Nintendo Switch 2 with the base game, Phantom Liberty expansion, and platform-specific control options. A mercenary career in Night City quickly becomes entangled with experimental technology and a digital personality. The main story and expansion offer multiple possible outcomes shaped by alliances and decisions.
+EOF
+description<<EOF
+The complete Night City RPG arrives on Nintendo Switch 2 with the base game, Phantom Liberty expansion, and platform-specific control options. A mercenary career in Night City quickly becomes entangled with experimental technology and a digital personality. The main story and expansion offer multiple possible outcomes shaped by alliances and decisions.
+EOF
+description_en<<EOF
+The complete Night City RPG arrives on Nintendo Switch 2 with the base game, Phantom Liberty expansion, and platform-specific control options. A mercenary career in Night City quickly becomes entangled with experimental technology and a digital personality. The main story and expansion offer multiple possible outcomes shaped by alliances and decisions.
+EOF
+description_ar<<EOF
+سايبر بانك 2077: ألتيميت إديشن — The complete Night City RPG arrives on Nintendo Switch 2 with the base game, Phantom Liberty expansion, and platform-specific control options.
+EOF
+front_cover_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+cartridge_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+cartridge=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+cartridge_url=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+box_front_url=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+nintendo_card_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+square_game_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+main_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+image_url=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+cover_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+cover=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+cover_url=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Open-world Night City
+gameplay_pillar.1.description<<EOF
+Explore dense districts, gigs, story missions, cyberware vendors, gangs, and optional encounters across Night City.
+EOF
+gameplay_pillar.2.title=Flexible RPG builds
+gameplay_pillar.2.description<<EOF
+Attributes, perks, cyberware, weapons, quickhacks, and stealth options support many combat styles.
+EOF
+gameplay_pillar.3.title=Phantom Liberty included
+gameplay_pillar.3.description<<EOF
+Ultimate Edition includes the major Phantom Liberty expansion and Dogtown story arc.
+EOF
+gameplay_pillar.4.title=Switch 2 input features
+gameplay_pillar.4.description<<EOF
+Nintendo and CD PROJEKT describe gyro aiming, motion features, touch interactions, and Joy-Con 2 mouse-style support.
+EOF
+gameplay_pillar.5.title=Story and character choices
+gameplay_pillar.5.description<<EOF
+V’s relationships and key decisions shape quest outcomes and the path toward multiple endings.
+EOF
+world_summary<<EOF
+The complete Night City RPG arrives on Nintendo Switch 2 with the base game, Phantom Liberty expansion, and platform-specific control options. A mercenary career in Night City quickly becomes entangled with experimental technology and a digital personality. The main story and expansion offer multiple possible outcomes shaped by alliances and decisions.
+EOF
+story_chapter.1.title=Become V
+story_chapter.1.text<<EOF
+A mercenary career in Night City quickly becomes entangled with experimental technology and a digital personality.
+EOF
+story_chapter.2.title=Work with Johnny Silverhand
+story_chapter.2.text<<EOF
+V’s relationship with Johnny becomes central to the story, creating conflict and major character decisions.
+EOF
+story_chapter.3.title=Build street reputation
+story_chapter.3.text<<EOF
+Side jobs, fixer contracts, and district exploration expand both the world and character build options.
+EOF
+story_chapter.4.title=Enter Dogtown
+story_chapter.4.text<<EOF
+Phantom Liberty adds a spy-thriller campaign with new characters, locations, and high-level missions.
+EOF
+story_chapter.5.title=Choose an ending
+story_chapter.5.text<<EOF
+The main story and expansion offer multiple possible outcomes shaped by alliances and decisions.
+EOF
+feature.1=Base game plus Phantom Liberty
+feature.2=Huge open-world RPG
+feature.3=Deep cyberware and build customization
+feature.4=Switch 2-specific control features
+feature.5=Complete Ultimate Edition package
+performance_tv_resolution=1080p
+performance_handheld_resolution=1080p
+performance_fps=30
+performance_hdr=false
+main_story_hours=25
+completion_main_story_hours=55
+completion_story_plus_dlc_hours=90
+faq.1.question=What is included in Ultimate Edition?
+faq.1.answer<<EOF
+The base Cyberpunk 2077 game and Phantom Liberty expansion are included.
+EOF
+faq.2.question=Is this a native Switch 2 release?
+faq.2.answer<<EOF
+Yes. Cyberpunk 2077: Ultimate Edition launched for Nintendo Switch 2 on June 5, 2025.
+EOF
+faq.3.question=How large is the download?
+faq.3.answer<<EOF
+Nintendo UK lists approximately 60.6 GB.
+EOF
+faq.4.question=Is it multiplayer?
+faq.4.answer<<EOF
+No. The Switch 2 release is a single-player RPG.
+EOF
+faq.5.question=Does it use Switch 2 controls?
+faq.5.answer<<EOF
+Yes. Publisher/Nintendo materials describe gyro, touch, motion, and Joy-Con 2 mouse-style input features.
+EOF
+verdict_score=8.5
+verdict_pro.1=Huge amount of content
+verdict_pro.2=Phantom Liberty is included
+verdict_pro.3=Strong build variety
+verdict_pro.4=Impressive portable open-world scope
+verdict_pro.5=Useful Switch 2 control options
+verdict_con.1=Large storage requirement
+verdict_con.2=Mature content
+verdict_con.3=Complex systems can overwhelm newcomers
+verdict_con.4=Battery use can be heavy in a demanding open-world game
+verdict_con.5=Visual compromises compared with high-end PC remain expected
+review.1.source=Metacritic
+review.1.score=90
+review.1.url=https://www.metacritic.com/game/cyberpunk-2077-ultimate-edition/
+review.2.source=OpenCritic
+review.2.score=90
+review.2.url=https://opencritic.com/
+timeline.1.date=2025-06-05
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=CD PROJEKT RED
+studio_website=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Cyberpunk-2077-Ultimate-Edition-2791954.html
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Cyberpunk-2077-Ultimate-Edition-2791954.html
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/cyberpunk-2077-ultimate-edition/
+storage_download_size_gb=60.6
+storage_required_space_gb=60.6
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=2250
+type.1.cost=2250
+type.1.description=Regular / Offline; user-supplied store price 2,250 IQD; recorded cost 2,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=27250
+type.2.cost=2250
+type.2.description=Standard / Online; user-supplied store price 27,250 IQD; recorded cost 2,250 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+Phantom Liberty is included in Ultimate Edition rather than treated as a separate store product here.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Official store materials emphasize a full native Switch 2 release; exact dynamic resolution values vary by performance/quality behavior and are recorded conservatively here.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Official store materials emphasize a full native Switch 2 release; exact dynamic resolution values vary by performance/quality behavior and are recorded conservatively here.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Official store materials emphasize a full native Switch 2 release; exact dynamic resolution values vary by performance/quality behavior and are recorded conservatively here.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Cyberpunk-2077-Ultimate-Edition-2791954.html
+device_performance.1.performance_notes<<EOF
+Official store materials emphasize a full native Switch 2 release; exact dynamic resolution values vary by performance/quality behavior and are recorded conservatively here.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+No Nintendo Switch 1 version exists.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+No Nintendo Switch 1 version exists.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+No Nintendo Switch 1 version exists.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Cyberpunk-2077-Ultimate-Edition-2791954.html
+device_performance.2.performance_notes<<EOF
+No Nintendo Switch 1 version exists.
+EOF
+upgrade_price=0
+banner_image.1=https://imagenes.hobbyconsolas.com/files/image_1920_1080/uploads/imagenes/2025/06/06/69048c42c1b9c.jpeg
+banner_image.2=https://www.galaxus.it/Files/7/5/3/6/7/7/4/5/Cyberpunk%202077_20230921132219.jpg
+banner_image.3=https://gamingtrend.com/content/images/2025/06/dab5db74-eac9-48ff-83b2-dec41673851e.jpg
+banner_image.4=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+gallery.1.description=Verified game-world/promotional media 1
+gallery.1.image=https://imagenes.hobbyconsolas.com/files/image_1920_1080/uploads/imagenes/2025/06/06/69048c42c1b9c.jpeg
+gallery.2.description=Verified game-world/promotional media 2
+gallery.2.image=https://www.galaxus.it/Files/7/5/3/6/7/7/4/5/Cyberpunk%202077_20230921132219.jpg
+gallery.3.description=Verified game-world/promotional media 3
+gallery.3.image=https://gamingtrend.com/content/images/2025/06/dab5db74-eac9-48ff-83b2-dec41673851e.jpg
+gallery.4.description=Verified game-world/promotional media 4
+gallery.4.image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+gameplay_pillar.1.image=https://imagenes.hobbyconsolas.com/files/image_1920_1080/uploads/imagenes/2025/06/06/69048c42c1b9c.jpeg
+gameplay_pillar.2.image=https://www.galaxus.it/Files/7/5/3/6/7/7/4/5/Cyberpunk%202077_20230921132219.jpg
+gameplay_pillar.3.image=https://gamingtrend.com/content/images/2025/06/dab5db74-eac9-48ff-83b2-dec41673851e.jpg
+gameplay_pillar.4.image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+gameplay_pillar.5.image=https://imagenes.hobbyconsolas.com/files/image_1920_1080/uploads/imagenes/2025/06/06/69048c42c1b9c.jpeg
+story_chapter.1.image=https://www.galaxus.it/Files/7/5/3/6/7/7/4/5/Cyberpunk%202077_20230921132219.jpg
+story_chapter.2.image=https://gamingtrend.com/content/images/2025/06/dab5db74-eac9-48ff-83b2-dec41673851e.jpg
+story_chapter.3.image=https://images.rpgsite.net/image/da49c9a1/149036/original/Cyberpunk-2077-Ultimate-Edition_KeyArt_02.jpg
+story_chapter.4.image=https://imagenes.hobbyconsolas.com/files/image_1920_1080/uploads/imagenes/2025/06/06/69048c42c1b9c.jpeg
+story_chapter.5.image=https://www.galaxus.it/Files/7/5/3/6/7/7/4/5/Cyberpunk%202077_20230921132219.jpg
