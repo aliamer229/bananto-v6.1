@@ -20,6 +20,12 @@ on:
       products:
         description: "Optional comma-separated product ids to limit the run to"
         default: ""
+      limit:
+        description: "How many products this run covers"
+        default: "25"
+      offset:
+        description: "Where in the catalogue this run starts"
+        default: "0"
   push:
     branches: [claude/nintendo-product-template-schema-6dtvza]
     paths:
@@ -31,7 +37,7 @@ permissions:
 
 concurrency:
   group: incident-audit
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   repair:
@@ -60,11 +66,15 @@ jobs:
           APPLY: ${{ inputs.apply }}
           BATCH: ${{ inputs.batch }}
           PRODUCTS: ${{ inputs.products }}
+          LIMIT: ${{ inputs.limit }}
+          OFFSET: ${{ inputs.offset }}
         run: |
           args=""
           [ "$APPLY" = "true" ] && args="$args --apply"
           [ -n "$BATCH" ] && args="$args --batch=$BATCH"
           [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          [ -n "$LIMIT" ] && args="$args --limit=$LIMIT"
+          [ -n "$OFFSET" ] && args="$args --offset=$OFFSET"
           node scripts/repair-images.mjs $args
       - name: Upload the plan
         if: always()

@@ -33,6 +33,16 @@ const BATCH_SIZE = Number(
   (process.argv.find((a) => a.startsWith("--batch=")) ?? "--batch=5").split("=")[1],
 );
 const ONLY = (process.argv.find((a) => a.startsWith("--products=")) ?? "").split("=")[1];
+const arg = (name, fallback) =>
+  Number((process.argv.find((a) => a.startsWith(`--${name}=`)) ?? `--${name}=${fallback}`).split("=")[1]);
+/*
+  A present object answers in about two seconds; a miss costs the full probe
+  timeout, and a miss is the common case here. Planning all ninety products in
+  one run needs several hundred probes and cannot finish inside a job, so a run
+  covers a slice and the offset walks the catalogue.
+*/
+const LIMIT = arg("limit", 25);
+const OFFSET = arg("offset", 0);
 
 /* ------------------------------------------------------------------ safety */
 
@@ -167,17 +177,16 @@ function existsInR2(url) {
   if (!key) return false;
   if (probeCache.has(key)) return probeCache.get(key);
   probes++;
-  let found = false;
-  for (const bucket of [PRIVATE_BUCKET, PUBLIC_BUCKET]) {
-    const got = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--remote", "--pipe"], {
-      allowFail: true,
-      timeoutMs: 15_000,
-    });
-    if (got && got.length > 0) {
-      found = true;
-      break;
-    }
-  }
+  /*
+    Product media lives in the private bucket — the public one holds 72 objects
+    against 1,622 there — so one probe answers the question. Eight seconds is
+    generous for a hit and caps what a miss costs.
+  */
+  const got = wrangler(["r2", "object", "get", `${PRIVATE_BUCKET}/${key}`, "--remote", "--pipe"], {
+    allowFail: true,
+    timeoutMs: 8_000,
+  });
+  const found = Boolean(got && got.length > 0);
   probeCache.set(key, found);
   return found;
 }
@@ -227,7 +236,12 @@ for (const row of d1("SELECT game_id, kind, url FROM game_images")) {
 say(`- Products with \`game_images\` rows: **${byProduct.size}**`);
 say();
 
-const targets = ONLY ? ONLY.split(",").map((s) => s.trim()) : [...live.keys()];
+const allIds = [...live.keys()].sort();
+const targets = ONLY
+  ? ONLY.split(",").map((s) => s.trim())
+  : allIds.slice(OFFSET, OFFSET + LIMIT);
+say(`- This run covers products **${OFFSET + 1}–${Math.min(OFFSET + LIMIT, allIds.length)}** of ${allIds.length}${OFFSET + LIMIT < allIds.length ? ` — re-run with \`--offset=${OFFSET + LIMIT}\` for the next slice` : ""}`);
+say();
 const plans = [];
 
 for (const id of targets) {
