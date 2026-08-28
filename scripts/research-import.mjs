@@ -581,3 +581,10 @@ if (!APPLY) say(`**Dry run — nothing written.** Re-run with \`--apply\`.`);
 
 writeFileSync("research-import.md", lines.join("\n") + "\n");
 writeFileSync(path.join(WORK_DIR, "run.json"), JSON.stringify({ totals, perProduct, unresolved }, null, 1));
+
+/*
+  The report is written; the work is done. Node otherwise sat for six and a half
+  minutes after the last line of the first batch, waiting on keep-alive sockets
+  from a few hundred image downloads to time out on their own.
+*/
+process.exit(0);
