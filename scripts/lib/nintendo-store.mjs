@@ -286,33 +286,58 @@ const bareTitle = (title) =>
 
 /* --------------------------------------------------------------- resolution */
 
-/** Url keys Nintendo might be using for this title, most likely first. */
+/**
+ * Url keys Nintendo might be using for this title, most likely first.
+ *
+ * Several bases are tried rather than one, because no single rule survives the
+ * catalogue. Stripping the console words out of the title is what finds
+ * "Breath of the Wild – Nintendo Switch 2 Edition", and is exactly wrong for
+ * "Nintendo Switch Sports" and "Everybody 1-2-Switch!", where those words are
+ * the game's name. Both spellings are offered and the first that answers wins.
+ */
 export function candidateKeys(doc) {
+  const title = String(doc.title ?? doc.name ?? "");
+  const two = isSwitch2(`${doc.platform ?? ""} ${title} ${doc.slug ?? ""}`);
+
   const stored = [doc.nintendoEshopUrl, doc.eshopUrl, doc.officialUrl]
     .map((u) => String(u ?? "").match(/nintendo\.com\/[^\s"']*\/store\/products\/([^/?#]+)/i)?.[1])
     .filter(Boolean);
 
-  const base = slugifyTitle(
-    String(doc.title ?? doc.name ?? "")
-      .replace(/[-–—:]\s*nintendo\s*switch\s*2\s*edition.*$/i, " nintendo switch 2 edition")
+  const bases = [];
+  const addBase = (text) => {
+    const slug = slugifyTitle(text);
+    if (slug && !bases.includes(slug)) bases.push(slug);
+  };
+
+  // The edition suffix is dropped: it comes back as its own key shape below.
+  const withoutEdition = title.replace(/[-–—:]?\s*\bnintendo\s*switch\s*2\s*edition\b.*$/i, "");
+  addBase(withoutEdition);
+  // Console words removed, for the titles where they are packaging, not a name.
+  addBase(
+    withoutEdition
       .replace(/\bnintendo\s*switch\s*2\b/gi, "")
-      .replace(/\bnintendo\s*switch\b/gi, ""),
+      .replace(/\bnintendo\s*switch\b/gi, "")
+      .replace(/\bswitch\s*2\b/gi, ""),
   );
-  const two = isSwitch2(`${doc.platform ?? ""} ${doc.title ?? ""} ${doc.slug ?? ""}`);
-  const guesses = two
-    ? [`${base}-switch-2`, `${base}-nintendo-switch-2-edition-switch-2`, `${base}-switch`]
-    : [`${base}-switch`, `${base}-switch-2`];
-
-  // "+" is spelled out in Nintendo's keys, but not always; try it both ways.
-  const bare = base.replace(/-plus-/g, "-");
-  if (bare !== base) guesses.push(two ? `${bare}-switch-2` : `${bare}-switch`);
-
   const fromSlug = String(doc.slug ?? "").replace(/-switch(-2)?$/, "");
-  if (fromSlug && fromSlug !== base) {
-    guesses.push(two ? `${fromSlug}-switch-2` : `${fromSlug}-switch`);
-    if (two) guesses.push(`${fromSlug}-nintendo-switch-2-edition-switch-2`);
+  if (fromSlug) addBase(fromSlug);
+
+  const keys = [...stored];
+  for (const base of bases) {
+    const shapes = two
+      ? [`${base}-switch-2`, `${base}-nintendo-switch-2-edition-switch-2`, `${base}-switch`]
+      : [`${base}-switch`, `${base}-switch-2`];
+    for (const k of shapes) if (!keys.includes(k)) keys.push(k);
+    // "+" is spelled out in Nintendo's keys, but not always.
+    const bare = base.replace(/-plus-/g, "-");
+    if (bare !== base) {
+      const k = two ? `${bare}-switch-2` : `${bare}-switch`;
+      if (!keys.includes(k)) keys.push(k);
+    }
   }
-  return [...new Set([...stored, ...guesses])].filter(Boolean);
+  // Enough shapes to find the page; not so many that a missing game costs a
+  // dozen requests before it is reported.
+  return keys.filter(Boolean).slice(0, 10);
 }
 
 export function apolloProducts(html) {

@@ -42,6 +42,35 @@ describe("candidateKeys", () => {
     expect(keys).toContain("metroid-prime-4-beyond-nintendo-switch-2-edition-switch-2");
   });
 
+  it("keeps the console words when they are part of the game's name", () => {
+    expect(candidateKeys({ title: "Nintendo Switch Sports", platform: "Nintendo Switch" })).toContain(
+      "nintendo-switch-sports-switch",
+    );
+    expect(candidateKeys({ title: "Everybody 1-2-Switch!", platform: "Nintendo Switch" })).toContain(
+      "everybody-1-2-switch-switch",
+    );
+  });
+
+  it("drops the edition suffix rather than folding it into the name", () => {
+    const keys = candidateKeys({
+      title: "The Legend of Zelda: Breath of the Wild – Nintendo Switch 2 Edition",
+      platform: "Nintendo Switch 2",
+    });
+    expect(keys).toContain(
+      "the-legend-of-zelda-breath-of-the-wild-nintendo-switch-2-edition-switch-2",
+    );
+    expect(keys.some((k) => k.includes("wild-edition"))).toBe(false);
+  });
+
+  it("stops before turning one missing game into a dozen requests", () => {
+    const keys = candidateKeys({
+      title: "Mario + Rabbids Sparks of Hope – Nintendo Switch 2 Edition",
+      platform: "Nintendo Switch 2",
+      slug: "mario-rabbids-sparks-of-hope-switch-2",
+    });
+    expect(keys.length).toBeLessThanOrEqual(10);
+  });
+
   it("tries the plus both spelled out and dropped", () => {
     const keys = candidateKeys({ title: "Mario + Rabbids Sparks of Hope", platform: "Nintendo Switch" });
     expect(keys).toContain("mario-plus-rabbids-sparks-of-hope-switch");
