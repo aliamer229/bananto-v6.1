@@ -1,0 +1,73 @@
+# TEMPORARY — give a product the slug its own title implies, keeping the old URL.
+#
+# Inspects by default. The old slug becomes an alias before the rename, so an
+# existing link never 404s.
+name: Slug correction
+
+on:
+  workflow_dispatch:
+    inputs:
+      product:
+        description: "Product slug or id to correct"
+        type: string
+        required: true
+      slug:
+        description: "New slug (blank = derived from the title)"
+        type: string
+        default: ""
+      apply:
+        description: "Write the change (leave unchecked to inspect only)"
+        type: boolean
+        default: false
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/reslug.yml
+      - scripts/reslug-product.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reslug
+  cancel-in-progress: false
+
+jobs:
+  reslug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: |
+          echo "::add-mask::$ACCOUNT_ID"
+          echo "::add-mask::$DATABASE_ID"
+      - name: Correct
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          PRODUCT: ${{ inputs.product }}
+          SLUG: ${{ inputs.slug }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          [ -z "$PRODUCT" ] && { echo "no product given — nothing to do"; exit 0; }
+          args="--product=$PRODUCT"
+          [ -n "$SLUG" ] && args="$args --slug=$SLUG"
+          [ "$APPLY" = "true" ] && args="$args --apply"
+          node scripts/reslug-product.mjs $args
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reslug
+          path: reslug.md
+          if-no-files-found: warn
