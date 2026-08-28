@@ -23,6 +23,8 @@
  */
 
 import { build } from "esbuild";
+import { buildMedia } from "./lib/media-pipeline.mjs";
+import { createR2 } from "./lib/r2-store.mjs";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -58,6 +60,9 @@ const say = (t = "") => {
 /* ---------------------------------------------- the application's own code */
 
 mkdirSync(WORK_DIR, { recursive: true });
+const r2 = createR2("bananto-private", { tmpDir: WORK_DIR, log: (t) => process.stderr.write(`${t}\n`) });
+const sharp = (await import("sharp")).default;
+
 const outfile = path.resolve(".zip-import-bundle.mjs");
 await build({
   entryPoints: ["scripts/lib/import-entry.ts"],
@@ -393,6 +398,9 @@ const totals = {
   updated: 0,
   created: 0,
   pricingRejected: 0,
+  mediaStored: 0,
+  mediaFailed: 0,
+  mediaUnresolved: 0,
   separateEditions: 0,
   droppedValues: 0,
   skippedByFilter: 0,
@@ -457,6 +465,31 @@ if (PREVIEW) {
     say(`| ${app.customerTypeName(t.account, t.content)} | ${t.price.toLocaleString()} | ${t.cost.toLocaleString()} | ${t.margin.toLocaleString()} | ${t.reason} |`);
   }
   say();
+  const media = await buildMedia(
+    {
+      id: priced.payload.id,
+      title: parsed.data.title || parsed.data.name,
+      platform: parsed.data.platform,
+      slug,
+      nsuid: parsed.data.nsuid,
+    },
+    { sharp, r2, apply: APPLY, log: (t) => say(`- ${t}`) },
+  );
+  say(`### Media`);
+  say();
+  say(`| role | verdict | geometry | source |`);
+  say(`| --- | --- | --- | --- |`);
+  for (const r of media.report) {
+    say(
+      `| \`${r.role}\` | ${r.ok ? (r.verified ? "**VALID — in R2**" : "**VALID**") : "rejected"} | ` +
+        `${r.ok ? `${r.width}×${r.height}, ${(r.bytes / 1024).toFixed(0)} KB` : r.reason} | ${String(r.source ?? "").slice(0, 70)} |`,
+    );
+  }
+  for (const role of media.unresolved) say(`| \`${role}\` | **NEEDS_RESEARCH** | no candidate fits this role | — |`);
+  say();
+  say(`- objects stored in R2 and read back: **${media.stored}** · rejected: **${media.failed}**`);
+  say();
+
   say(`### Base product`);
   say();
   say(`- \`product.price\` = **${priced.payload.price?.toLocaleString()}** (customer)`);
@@ -592,7 +625,41 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
       rows.push({ file, title, action: "FAILED", reason: "unprofitable option" });
       continue;
     }
-    const payload = { ...priced.payload, isHidden: true, createdAt: nowIso(), updatedAt: nowIso() };
+    /*
+      Media last, and only what survived being fetched, shape-checked, converted
+      and read back out of R2. A role with nothing that fits stays empty and is
+      reported; it is never filled from a neighbouring role.
+    */
+    const media = await buildMedia(
+      {
+        id: priced.payload.id,
+        title: parsed.data.title || parsed.data.name,
+        platform: parsed.data.platform,
+        slug: String(parsed.data.slug ?? ""),
+        nsuid: parsed.data.nsuid,
+      },
+      { sharp, r2, apply: APPLY, log: (t) => say(`  - ${t}`) },
+    );
+    totals.mediaStored += media.stored;
+    totals.mediaFailed += media.failed;
+    if (media.note) say(`  - media: ${media.note}`);
+    for (const r of media.report.filter((x) => !x.ok)) say(`  - media ${r.role}: rejected — ${r.reason}`);
+    if (media.unresolved.length) {
+      totals.mediaUnresolved += media.unresolved.length;
+      say(`  - media NEEDS_RESEARCH: ${media.unresolved.join(", ")}`);
+    }
+    const accepted = media.report.filter((x) => x.ok);
+    if (accepted.length) {
+      say(`  - media accepted: ${accepted.map((r) => `${r.role} ${r.width}×${r.height}`).join(", ")}`);
+    }
+
+    const payload = {
+      ...priced.payload,
+      ...media.patch,
+      isHidden: true,
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+    };
     if (live.has(String(payload.id))) {
       // A generated id that already exists would overwrite a real product.
       totals.writeFailed++;
@@ -646,6 +713,9 @@ say(`| Placeholder values the parser refused, dropped | ${totals.droppedValues} 
 say(`| Skipped by the action filter | ${totals.skippedByFilter} |`);
 say(`| Rejected by the parser | ${totals.parseFailed} |`);
 say(`| Refused: an option would sell at or below cost | ${totals.pricingRejected} |`);
+say(`| Media objects stored in R2 and read back | ${totals.mediaStored} |`);
+say(`| Media candidates rejected | ${totals.mediaFailed} |`);
+say(`| Media roles left for research | ${totals.mediaUnresolved} |`);
 say(`| Fields added to existing products | ${totals.fieldsAdded} |`);
 say(`| Values the guard refused | ${totals.blocked} |`);
 say(`| Write or verification failures | ${totals.writeFailed} |`);
