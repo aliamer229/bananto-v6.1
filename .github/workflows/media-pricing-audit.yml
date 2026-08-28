@@ -1,0 +1,61 @@
+# TEMPORARY — read-only. Reports what every image role actually contains and
+# how price relates to cost across the live catalogue. Writes nothing: the
+# script has no apply flag and its only D1 statements are SELECTs.
+name: Media and pricing audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      products:
+        description: "Optional comma-separated product ids or slugs"
+        default: ""
+      limit:
+        description: "Audit at most this many products (0 = all)"
+        default: "0"
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/media-pricing-audit.yml
+      - scripts/media-pricing-audit.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: media-pricing-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+      - name: Audit
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          PRODUCTS: ${{ inputs.products }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          args="--limit=${LIMIT:-0}"
+          [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          node scripts/media-pricing-audit.mjs $args
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-pricing-audit
+          path: media-pricing-audit.md
+          if-no-files-found: warn
