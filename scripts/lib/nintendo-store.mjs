@@ -342,8 +342,15 @@ export function apolloProducts(html) {
  * and the two are genuinely separate editions in this catalogue.
  */
 export function identityMatch(doc, node) {
-  const storedNsuid = String(doc.nsuid ?? "").trim();
-  const nodeNsuid = String(node.nsuid ?? "").trim();
+  /*
+    Two products store "See regional Nintendo eShop listing" in `nsuid`. That is
+    a note to a reader, not an identifier, and treating it as one would report a
+    conflict with every page and block the real id from ever being filled in. An
+    nsuid is a number.
+  */
+  const asNsuid = (v) => (/^\d{6,}$/.test(String(v ?? "").trim()) ? String(v).trim() : "");
+  const storedNsuid = asNsuid(doc.nsuid);
+  const nodeNsuid = asNsuid(node.nsuid);
   if (storedNsuid && nodeNsuid && storedNsuid === nodeNsuid) {
     return { ok: true, confidence: "nsuid", reason: "nsuid matches" };
   }

@@ -66,6 +66,15 @@ describe("candidateKeys", () => {
     expect(verdict.ok).toBe(false);
   });
 
+  it("treats a note stored in the nsuid field as no nsuid at all", () => {
+    const verdict = identityMatch(
+      { title: "Mario Tennis Fever", platform: "Nintendo Switch 2", nsuid: "See regional Nintendo eShop listing" },
+      { platform: { label: "Nintendo Switch 2" }, name: "Mario Tennis™ Fever", nsuid: "70010000105869" },
+    );
+    expect(verdict.ok).toBe(true);
+    expect(verdict.nsuidConflict).toBeUndefined();
+  });
+
   it("matches a title whose trademark mark sits inside the platform words", () => {
     const verdict = identityMatch(
       { title: "Nintendo Switch 2 Welcome Tour", platform: "Nintendo Switch 2" },
