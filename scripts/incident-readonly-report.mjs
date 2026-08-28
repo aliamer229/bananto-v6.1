@@ -81,13 +81,22 @@ const WRANGLER_ENV = {
 /** Fail loudly after this rather than silently occupying the runner. */
 const COMMAND_TIMEOUT_MS = 120_000;
 
-function wrangler(args, { allowFail = false } = {}) {
+/*
+  A *present* object comes back in about two seconds. A missing one sends
+  wrangler into its retry ladder, and at the 120s ceiling a few dozen misses
+  are enough to consume the whole job — which is what happened when the
+  document URLs (mostly older, mostly absent) were first probed. A miss is
+  exactly the answer being looked for here, so it has to be cheap.
+*/
+const R2_PROBE_TIMEOUT_MS = 15_000;
+
+function wrangler(args, { allowFail = false, timeoutMs = COMMAND_TIMEOUT_MS } = {}) {
   try {
     return execFileSync(WRANGLER, [...args], {
       encoding: "utf8",
       maxBuffer: 512 * 1024 * 1024,
       stdio: ["ignore", "pipe", "pipe"],
-      timeout: COMMAND_TIMEOUT_MS,
+      timeout: timeoutMs,
       killSignal: "SIGKILL",
       env: WRANGLER_ENV,
     });
@@ -717,22 +726,20 @@ const docChecked = [];
 for (const id of sample) {
   const entry = live.get(id);
   if (!entry) continue;
-  const urls = [...collectAssetUrls(entry.doc)].slice(0, 6);
+  const urls = [...collectAssetUrls(entry.doc)].slice(0, 4);
   for (const url of urls) {
-    const candidates = [...new Set([assetKey(url), String(url).replace(/^\/+/, "")])];
+    const key = assetKey(url);
     let found = "";
     for (const bucket of [PUBLIC_BUCKET, PRIVATE_BUCKET]) {
-      for (const key of candidates) {
-        if (!key) continue;
-        const got = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--remote", "--pipe"], {
-          allowFail: true,
-        });
-        if (got && got.length > 0) {
-          found = bucket;
-          break;
-        }
+      if (!key) break;
+      const got = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--remote", "--pipe"], {
+        allowFail: true,
+        timeoutMs: R2_PROBE_TIMEOUT_MS,
+      });
+      if (got && got.length > 0) {
+        found = bucket;
+        break;
       }
-      if (found) break;
     }
     const shown = assetKey(url);
     docChecked.push({
@@ -751,7 +758,7 @@ say();
 say("### Do the assets `game_images` recorded still exist?");
 say();
 const checked = [];
-for (const { id, kind, url } of sampleUrls.slice(0, 12)) {
+for (const { id, kind, url } of sampleUrls.slice(0, 8)) {
   let key = "";
   try {
     const path = url.startsWith("http") ? new URL(url).pathname : url;
@@ -769,6 +776,7 @@ for (const { id, kind, url } of sampleUrls.slice(0, 12)) {
   for (const bucket of [PUBLIC_BUCKET, PRIVATE_BUCKET]) {
     const got = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--remote", "--pipe"], {
       allowFail: true,
+      timeoutMs: R2_PROBE_TIMEOUT_MS,
     });
     if (got && got.length > 0) found.push(bucket);
   }
