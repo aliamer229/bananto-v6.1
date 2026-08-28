@@ -158,6 +158,7 @@ async function referencingColumns() {
 const REFS = await referencingColumns();
 
 /** Tables whose JSON body can name a product without a column saying so. */
+const DOC_ALIAS = "body";
 const DOC_TABLES = [
   { table: "orders", column: "doc" },
   { table: "cart_items", column: "doc" },
@@ -191,18 +192,28 @@ async function countRefsFor(ids) {
       /* a table the deployment does not have */
     }
   }
+  /*
+    One scan per table, not one per id.
+
+    `LIKE '%prd_…%'` cannot use an index, so each of these reads the whole
+    table; asking six times over is six full scans of the orders table before
+    anything is reported, and that was most of the run. One predicate that
+    matches any of the ids brings back the rows once, and which id each row
+    names is decided here.
+  */
   for (const { table, column } of DOC_TABLES) {
-    for (const id of ids) {
-      try {
-        const r = await app.d1All(
-          `SELECT count(*) AS n FROM ${table} WHERE ${column} LIKE ?`,
-          `%${id}%`,
-        );
-        const n = Number(r?.[0]?.n ?? 0);
+    const anyOf = ids.map(() => `${column} LIKE ?`).join(" OR ");
+    try {
+      const rows = await app.d1All(
+        `SELECT ${column} AS ${DOC_ALIAS} FROM ${table} WHERE ${anyOf}`,
+        ...ids.map((id) => `%${id}%`),
+      );
+      for (const id of ids) {
+        const n = rows.filter((r) => String(r?.[DOC_ALIAS] ?? "").includes(id)).length;
         if (n) byId.get(id).push({ table, column: `${column} (json)`, n });
-      } catch {
-        /* likewise */
       }
+    } catch {
+      /* a table the deployment does not have */
     }
   }
   return byId;
