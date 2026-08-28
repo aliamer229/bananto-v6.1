@@ -173,6 +173,32 @@ describe("identityMatch", () => {
     expect(verdict.ok).toBe(true);
   });
 
+  it("refuses a predecessor whose name its sequel contains", () => {
+    const verdict = identityMatch(
+      { title: "Xenoblade Chronicles 2", platform: "Nintendo Switch", nsuid: "70010000000707" },
+      { ...switch1, name: "Xenoblade Chronicles™: Definitive Edition", nsuid: "70010000029711" },
+    );
+    expect(verdict.ok).toBe(false);
+  });
+
+  it("refuses a sequel when the product is the original", () => {
+    expect(
+      identityMatch({ title: "Pikmin", platform: "Nintendo Switch" }, { ...switch1, name: "Pikmin™ 4" }).ok,
+    ).toBe(false);
+    expect(
+      identityMatch({ title: "Persona 5", platform: "Nintendo Switch" }, { ...switch1, name: "Persona 5 Royal" }).ok,
+    ).toBe(false);
+  });
+
+  it("still matches the same game written with different decoration", () => {
+    expect(
+      identityMatch(
+        { title: "Dragon Ball: Sparking! ZERO [Switch 2]", platform: "Nintendo Switch 2" },
+        { platform: { label: "Nintendo Switch 2" }, name: "DRAGON BALL: Sparking! ZERO" },
+      ).ok,
+    ).toBe(true);
+  });
+
   it("refuses a different game with a similar name", () => {
     expect(
       identityMatch({ title: "Pikmin 4", platform: "Nintendo Switch" }, { ...switch1, name: "Pikmin™ 3 Deluxe" }).ok,

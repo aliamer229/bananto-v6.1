@@ -413,8 +413,21 @@ export function identityMatch(doc, node) {
   const want = bareTitle(doc.title ?? doc.name);
   const got = bareTitle(node.name);
   if (!want || !got) return { ok: false, reason: "no comparable title" };
-  const titleOk = want === got || want.includes(got) || got.includes(want);
-  if (!titleOk) return { ok: false, reason: `title "${node.name}" is not "${doc.title}"` };
+  /*
+    Equality, not containment.
+
+    Containment read "Xenoblade Chronicles 2" as a match for "Xenoblade
+    Chronicles: Definitive Edition" — the edition words come off, leaving
+    "xenobladechronicles", which "xenobladechronicles2" contains. The two are
+    different games, and that write put one game's screenshots, download size
+    and release date on the other. Every sequel in the catalogue is one
+    substring away from its predecessor: Pikmin 4 and Pikmin, Persona 5 Royal
+    and Persona 5, Mario Kart World and Mario Kart.
+
+    A title that does not match exactly is reported and left alone. Missing a
+    page costs a report line; taking the wrong one corrupts a product.
+  */
+  if (want !== got) return { ok: false, reason: `title "${node.name}" is not "${doc.title}"` };
 
   const wantTwo = isSwitch2(`${doc.platform ?? ""} ${doc.title ?? ""} ${doc.slug ?? ""}`);
   const gotTwo = isSwitch2(`${node.platform?.label ?? node.platform?.code ?? ""} ${node.name ?? ""}`);
