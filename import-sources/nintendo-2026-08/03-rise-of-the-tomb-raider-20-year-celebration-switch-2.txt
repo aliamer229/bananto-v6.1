@@ -1,0 +1,335 @@
+schema_version=24
+name=Rise of the Tomb Raider: 20 Year Celebration
+title=Rise of the Tomb Raider: 20 Year Celebration
+title_ar=رايز أوف ذا تومب رايدر: احتفالية 20 سنة
+name_ar=رايز أوف ذا تومب رايدر: احتفالية 20 سنة
+slug=rise-of-the-tomb-raider-20-year-celebration-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Switch 1 product in this entry
+edition=20 Year Celebration
+region=Global
+release_date=2016-10-11
+release_status=Released
+status=Active
+developer=Crystal Dynamics
+publisher=Crystal Dynamics / Feral Interactive
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB M / PEGI 18
+metacritic_score=86
+metacritic=86
+metacritic_url=https://www.metacritic.com/game/rise-of-the-tomb-raider-20-year-celebration/
+opencritic_score=86
+opencritic=86
+user_score=8.2
+userscore=8.2
+user_rating=8.2
+game_size_gb=22
+size=22 GB
+size_gb=22
+price=18500
+price_iqd=18500
+price_usd=29.99
+cost=3500
+cost_iqd=3500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=11000
+trade_value_iqd=11000
+store_offer_bonus=3500
+store_offer_bonus_iqd=3500
+official_url=https://tombraider.com/
+eshop_url=https://tombraider.com/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=Lara Croft’s sequel adventure with exploration, combat, and tomb puzzles.
+description_full<<EOF
+Rise of the Tomb Raider: 20 Year Celebration is a cinematic action-adventure that follows Lara Croft through hostile wilderness, ancient ruins, and increasingly dangerous confrontations. It mixes traversal, combat, optional puzzle tombs, and a premium package identity. This import prepares it as a dedicated Nintendo Switch 2 storefront entry.
+EOF
+description<<EOF
+Rise of the Tomb Raider: 20 Year Celebration is a cinematic action-adventure that follows Lara Croft through hostile wilderness, ancient ruins, and increasingly dangerous confrontations. It mixes traversal, combat, optional puzzle tombs, and a premium package identity. This import prepares it as a dedicated Nintendo Switch 2 storefront entry.
+EOF
+description_en<<EOF
+Rise of the Tomb Raider: 20 Year Celebration is a cinematic action-adventure that follows Lara Croft through hostile wilderness, ancient ruins, and increasingly dangerous confrontations. It mixes traversal, combat, optional puzzle tombs, and a premium package identity. This import prepares it as a dedicated Nintendo Switch 2 storefront entry.
+EOF
+description_ar<<EOF
+مغامرة أكشن سينمائية مع لارا كروفت تجمع بين الاستكشاف، القتال، وحل ألغاز القبور، ومجهزة هنا كملف منتج خاص بـ Switch 2.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Rise+of+the+Tomb+Raider+20+Year+Celebration+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Rise+of+the+Tomb+Raider+20+Year+Celebration+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Shooter
+genres.3=Shooter
+nintendo_official_url=https://tombraider.com/
+official_store_url=https://tombraider.com/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as a Switch 2 product according to the user-provided platform and pricing.
+EOF
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Separate Switch 2 product entry
+switch2_features.1=Separate Switch 2 product entry
+switch2_feature.2=Story expansion-friendly package
+switch2_features.2=Story expansion-friendly package
+switch2_feature.3=Single-player action adventure
+switch2_features.3=Single-player action adventure
+overview_tagline=Lara Croft returns for a colder, deadlier expedition.
+overview_suitable_for.1=Action-adventure fans
+overview_suitable_for.2=Lara Croft fans
+overview_suitable_for.3=Players who enjoy exploration and tomb puzzles
+overview_not_suitable_for.1=Players wanting local multiplayer
+overview_not_suitable_for.2=Children sensitive to violent action
+main_story_hours=13
+completionist_hours=28
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Rise of the Tomb Raider: 20 Year Celebration
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / 标准版
+edition.2.cover_image=
+edition.2.content.1.label=Rise of the Tomb Raider: 20 Year Celebration
+edition.2.content.2.label=Standard / 标准版
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Cinematic exploration
+gameplay_pillar.1.description<<EOF
+Traversal, climbing, and environmental spectacle define the flow.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Action and stealth combat
+gameplay_pillar.2.description<<EOF
+Players alternate between direct firefights and stealthy infiltration.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Optional tombs and puzzles
+gameplay_pillar.3.description<<EOF
+Extra tombs add more deliberate puzzle-solving to the adventure.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Survival-flavored progression
+gameplay_pillar.4.description<<EOF
+Crafting, hunting, and upgrades support Lara’s journey.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Celebration package identity
+gameplay_pillar.5.description<<EOF
+The 20 Year Celebration edition adds a premium package identity.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Remote wilderness, ancient ruins, and hostile compounds combine into a globe-spanning Lara Croft adventure.
+EOF
+story_chapter.1.title=Begin the Siberian journey
+story_chapter.1.text<<EOF
+Lara pursues a hidden secret tied to myth and legacy.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Explore tombs and ruins
+story_chapter.2.text<<EOF
+Ancient spaces hide both answers and danger.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Survive armed opposition
+story_chapter.3.text<<EOF
+Enemy factions stand between Lara and the truth.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Push through harsh environments
+story_chapter.4.text<<EOF
+Snow, cliffs, and remote ruins reinforce the survival tone.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Resolve the expedition
+story_chapter.5.text<<EOF
+The finale ties together myth, history, and Lara’s determination.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Lara exploration scene
+gallery.2.image=
+gallery.2.description=Mountain traversal scene
+gallery.3.image=
+gallery.3.description=Action combat scene
+gallery.4.image=
+gallery.4.description=Ancient tomb environment
+gallery.5.image=
+gallery.5.description=Cinematic story moment
+feature.1=Strong third-person adventure design
+feature.2=Good mix of action and puzzles
+feature.3=Premium edition identity
+feature.4=Single-player campaign focus
+feature.5=Separate Switch 2 storefront entry
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Configured as a Switch 2 storefront profile for the requested platform split.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Configured as a Switch 2 storefront profile for the requested platform split.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Configured as a Switch 2 storefront profile for the requested platform split.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Configured as a Switch 2 storefront profile for the requested platform split.
+EOF
+device_performance.1.performance_notes<<EOF
+Configured as a Switch 2 storefront profile for the requested platform split.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.unavailable_reason<<EOF
+This product file is not intended for this device in the current platform split.
+EOF
+device_performance.2.handheld.supported=false
+device_performance.2.tv.supported=false
+device_performance.2.performance_notes<<EOF
+This device block is intentionally marked unavailable because the game file belongs to a different platform entry.
+EOF
+faq.1.question=What is 20 Year Celebration?
+faq.1.answer<<EOF
+It is a premium package edition of Rise of the Tomb Raider.
+EOF
+faq.2.question=Is it the same as Tomb Raider Definitive Edition?
+faq.2.answer<<EOF
+No. That is the earlier game, while Rise is the sequel.
+EOF
+faq.3.question=Why only two variants?
+faq.3.answer<<EOF
+Only Regular / Offline and Standard / Online were provided.
+EOF
+faq.4.question=Is it single-player?
+faq.4.answer<<EOF
+Yes. It is a single-player action adventure.
+EOF
+faq.5.question=Why is this a Switch 2 file?
+faq.5.answer<<EOF
+The batch explicitly requested a Switch 2 version.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=3500
+type.1.cost=3500
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard
+type.2.name=Standard / 标准版
+type.2.option_id=online_account
+type.2.price=18500
+type.2.cost=3500
+type.2.description=Online account access
+type.2.stock=9999
+type.2.is_infinite_stock=true

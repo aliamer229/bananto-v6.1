@@ -1,0 +1,361 @@
+schema_version=24
+name=Hogwarts Legacy
+title=Hogwarts Legacy
+title_ar=هوغوورتس ليغاسي
+name_ar=هوغوورتس ليغاسي
+slug=hogwarts-legacy-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Switch 1 product in this entry
+edition=Standard
+region=Global
+release_date=2026-01-01
+release_status=Coming Soon
+status=Active
+developer=Avalanche Software
+publisher=Warner Bros. Games
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB T / PEGI 12
+metacritic_score=84
+metacritic=84
+metacritic_url=https://www.metacritic.com/game/hogwarts-legacy/
+opencritic_score=84
+opencritic=84
+user_score=8.2
+userscore=8.2
+user_rating=8.2
+game_size_gb=28
+size=28 GB
+size_gb=28
+price=12250
+price_iqd=12250
+price_usd=59.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=9500
+trade_value_iqd=9500
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.hogwartslegacy.com/
+eshop_url=https://www.hogwartslegacy.com/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=An open-world action RPG set in Hogwarts and the wider Wizarding World.
+description_full<<EOF
+Hogwarts Legacy is an action RPG built around magical exploration, spell-based combat, and student fantasy immersion. Players learn spells, explore Hogwarts and nearby regions, and pursue a larger mystery within the Wizarding World. This file prepares it as a Nintendo Switch 2 product with four account-based store tiers.
+EOF
+description<<EOF
+Hogwarts Legacy is an action RPG built around magical exploration, spell-based combat, and student fantasy immersion. Players learn spells, explore Hogwarts and nearby regions, and pursue a larger mystery within the Wizarding World. This file prepares it as a Nintendo Switch 2 product with four account-based store tiers.
+EOF
+description_en<<EOF
+Hogwarts Legacy is an action RPG built around magical exploration, spell-based combat, and student fantasy immersion. Players learn spells, explore Hogwarts and nearby regions, and pursue a larger mystery within the Wizarding World. This file prepares it as a Nintendo Switch 2 product with four account-based store tiers.
+EOF
+description_ar<<EOF
+لعبة أكشن RPG في عالم السحرة، تسمح لك باستكشاف هوغوورتس وما حولها، وتخوض القتال بالتعاويذ، ومجهزة هنا كملف Switch 2.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Hogwarts+Legacy+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Hogwarts+Legacy+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=RPG
+genres.2=RPG
+genre.3=Adventure
+genres.3=Adventure
+nintendo_official_url=https://www.hogwartslegacy.com/
+official_store_url=https://www.hogwartslegacy.com/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as a Switch 2 file according to the user-provided platform and pricing.
+EOF
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Dedicated Switch 2 product entry
+switch2_features.1=Dedicated Switch 2 product entry
+switch2_feature.2=Open-world magical exploration
+switch2_features.2=Open-world magical exploration
+switch2_feature.3=Four-tier store structure
+switch2_features.3=Four-tier store structure
+overview_tagline=Live the student fantasy in the Wizarding World.
+overview_suitable_for.1=Wizarding World fans
+overview_suitable_for.2=Action RPG players
+overview_suitable_for.3=Players who enjoy exploration
+overview_not_suitable_for.1=Players seeking multiplayer
+overview_not_suitable_for.2=Players uninterested in fantasy worlds
+main_story_hours=26
+completionist_hours=55
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Hogwarts Legacy
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Bonus / 特典版
+edition.2.cover_image=
+edition.2.content.1.label=Hogwarts Legacy
+edition.2.content.2.label=Bonus / 特典版
+edition.2.content.3.label=Offline bonus package
+edition.3.name=Standard / 标准版
+edition.3.cover_image=
+edition.3.content.1.label=Hogwarts Legacy
+edition.3.content.2.label=Standard / 标准版
+edition.3.content.3.label=Online account access
+edition.4.name=Deluxe / 豪华版
+edition.4.cover_image=
+edition.4.content.1.label=Hogwarts Legacy
+edition.4.content.2.label=Deluxe / 豪华版
+edition.4.content.3.label=Online premium package
+gameplay_pillar.1.title=Open-world magical exploration
+gameplay_pillar.1.description<<EOF
+Hogwarts, Hogsmeade, and surrounding areas form a broad explorable world.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Spell-based combat
+gameplay_pillar.2.description<<EOF
+Magic-driven battles rely on combinations, timing, and utility.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Student fantasy immersion
+gameplay_pillar.3.description<<EOF
+Classes, creatures, and the school setting drive the fantasy appeal.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Character progression
+gameplay_pillar.4.description<<EOF
+Gear, talents, and upgrades shape your play style.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Tiered store structure
+gameplay_pillar.5.description<<EOF
+This file includes regular, bonus, standard, and deluxe tiers.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Hogwarts and the surrounding magical countryside create a detailed fantasy setting packed with quests, secrets, and exploration.
+EOF
+story_chapter.1.title=Arrive as a special student
+story_chapter.1.text<<EOF
+The player enters Hogwarts with unusual magical potential.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Learn the basics of magic
+story_chapter.2.text<<EOF
+Spells, classes, and mentors gradually broaden your abilities.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Explore the wider magical world
+story_chapter.3.text<<EOF
+The adventure quickly expands beyond the school itself.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Confront hidden threats
+story_chapter.4.text<<EOF
+Combat and mystery intensify as darker forces appear.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Choose your path through the world
+story_chapter.5.text<<EOF
+Character growth and choices shape the tone of the journey.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Hogwarts exterior view
+gallery.2.image=
+gallery.2.description=Spell combat scene
+gallery.3.image=
+gallery.3.description=Exploration image
+gallery.4.image=
+gallery.4.description=Magical creatures moment
+gallery.5.image=
+gallery.5.description=Story cinematic scene
+feature.1=Rich Wizarding World setting
+feature.2=Open-world action RPG systems
+feature.3=Spell-based combat
+feature.4=Dedicated Switch 2 product file
+feature.5=Four pricing tiers
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Configured as a Switch 2 product performance profile for storefront use.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Configured as a Switch 2 product performance profile for storefront use.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Configured as a Switch 2 product performance profile for storefront use.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Configured as a Switch 2 product performance profile for storefront use.
+EOF
+device_performance.1.performance_notes<<EOF
+Configured as a Switch 2 product performance profile for storefront use.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.unavailable_reason<<EOF
+This product file is not intended for this device in the current platform split.
+EOF
+device_performance.2.handheld.supported=false
+device_performance.2.tv.supported=false
+device_performance.2.performance_notes<<EOF
+This device block is intentionally marked unavailable because the game file belongs to a different platform entry.
+EOF
+faq.1.question=Is Hogwarts Legacy open world?
+faq.1.answer<<EOF
+Yes. It is an action RPG with a broad explorable world.
+EOF
+faq.2.question=Why are there four variants?
+faq.2.answer<<EOF
+The user requested regular, bonus, standard, and deluxe tiers.
+EOF
+faq.3.question=Is it multiplayer?
+faq.3.answer<<EOF
+No. It is primarily a single-player action RPG.
+EOF
+faq.4.question=Why is it on Switch 2?
+faq.4.answer<<EOF
+The batch explicitly requested a Switch 2 product entry.
+EOF
+faq.5.question=What makes the deluxe tier special?
+faq.5.answer<<EOF
+In this store structure, it serves as the premium account package tier.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=bonus
+type.2.name=Bonus / 特典版
+type.2.option_id=offline_account
+type.2.price=2500
+type.2.cost=2500
+type.2.description=Offline bonus package
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=standard
+type.3.name=Standard / 标准版
+type.3.option_id=online_account
+type.3.price=12250
+type.3.cost=1250
+type.3.description=Online account access
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=deluxe
+type.4.name=Deluxe / 豪华版
+type.4.option_id=online_account
+type.4.price=20750
+type.4.cost=2500
+type.4.description=Online premium package
+type.4.stock=9999
+type.4.is_infinite_stock=true

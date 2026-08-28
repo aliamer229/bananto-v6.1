@@ -1,0 +1,446 @@
+schema_version=24
+name=Pikmin 1+2
+title=Pikmin 1+2
+title_ar=بيكمين 1+2
+name_ar=بيكمين 1+2
+slug=pikmin-1-2-switch
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2: backward compatible
+edition=Bundle
+region=Global
+release_date=2023-09-22
+release_status=Released
+status=Active
+developer=Nintendo
+publisher=Nintendo
+genre.1=Strategy
+genres.1=Strategy
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Puzzle
+genres.3=Puzzle
+series_name=Pikmin
+franchise=Pikmin
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E10+ / PEGI 7
+metacritic_score=80
+metacritic=80
+opencritic_score=80
+opencritic=80
+user_score=8.2
+user_score=8.2
+metacritic_url=https://www.metacritic.com/game/pikmin-1-plus-2/
+game_size_gb=5.0
+size_gb=5.0
+size=5.0 GB
+price=2000
+price_iqd=2000
+price_usd=49.99
+cost=2000
+cost_iqd=2000
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+display_order=0
+trade_value=12000
+trade_value_iqd=12000
+store_offer_bonus=2000
+store_offer_bonus_iqd=2000
+official_url=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+eshop_url=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+A two-game HD bundle bringing the first two Pikmin adventures to Nintendo Switch.
+EOF
+description_full<<EOF
+Pikmin 1+2 collects the first two mainline Pikmin adventures in updated HD form. In Pikmin 1, Captain Olimar races against time to recover the scattered parts of his crashed ship with the help of red, yellow, and blue Pikmin. Pikmin 2 expands the formula with caves, treasure hunting, a second captain, and a more flexible campaign structure.
+EOF
+description<<EOF
+Pikmin 1+2 collects the first two mainline Pikmin adventures in updated HD form. In Pikmin 1, Captain Olimar races against time to recover the scattered parts of his crashed ship with the help of red, yellow, and blue Pikmin. Pikmin 2 expands the formula with caves, treasure hunting, a second captain, and a more flexible campaign structure.
+EOF
+description_en<<EOF
+Pikmin 1+2 collects the first two mainline Pikmin adventures in updated HD form. In Pikmin 1, Captain Olimar races against time to recover the scattered parts of his crashed ship with the help of red, yellow, and blue Pikmin. Pikmin 2 expands the formula with caves, treasure hunting, a second captain, and a more flexible campaign structure.
+EOF
+description_ar<<EOF
+حزمة تضم Pikmin 1 وPikmin 2 بنسخ محسنة على Nintendo Switch، مع الاستكشاف وإدارة مجموعات البيكمين وحل الألغاز وجمع القطع والكنوز.
+EOF
+front_cover_image=https://images.launchbox-app.com//82dcce67-d232-4418-af11-056cac1d1077.jpg
+cartridge_image=https://images.launchbox-app.com//82dcce67-d232-4418-af11-056cac1d1077.jpg
+cartridge=https://images.launchbox-app.com//82dcce67-d232-4418-af11-056cac1d1077.jpg
+cartridge_url=https://images.launchbox-app.com//82dcce67-d232-4418-af11-056cac1d1077.jpg
+box_front_url=https://images.launchbox-app.com//82dcce67-d232-4418-af11-056cac1d1077.jpg
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+cover_image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+cover=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+cover_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118696/118696-pikmin-1-and-2-1200x675
+cover_texture_url=
+box_back_url=https://images.launchbox-app.com//cc3d0119-aebb-4dff-80dc-7baf63537456.jpg
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-1-1280x720
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-2-1280x720
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-3-1280x720
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-4-1280x720
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-5-1280x720
+banner_image.6=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-6-1280x720
+gallery.1.description=Pikmin 1+2 gameplay / world media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-1-1280x720
+gallery.2.description=Pikmin 1+2 gameplay / world media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-2-1280x720
+gallery.3.description=Pikmin 1+2 gameplay / world media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-3-1280x720
+gallery.4.description=Pikmin 1+2 gameplay / world media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-4-1280x720
+gallery.5.description=Pikmin 1+2 gameplay / world media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-5-1280x720
+gallery.6.description=Pikmin 1+2 gameplay / world media 6
+gallery.6.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-6-1280x720
+gallery.7.description=Pikmin 1+2 gameplay / world media 7
+gallery.7.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-7-1280x720
+trailer_url=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+supported_languages_raw=Japanese, English, French, German, Italian, Spanish, Korean, Dutch, Simplified Chinese, Traditional Chinese
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish
+text_language.3=Korean / Simplified Chinese / Traditional Chinese
+audio_language.1=Character vocalizations
+audio_language.2=Music and sound effects
+audio_language.3=No language-dependent full spoken dub required
+supported_play_mode.1=TV mode
+supported_play_mode.2=Tabletop mode
+supported_play_mode.3=Handheld mode
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+This physical/digital bundle contains both Pikmin 1 and Pikmin 2 for Nintendo Switch. It is a single Switch 1 product entry and is playable on Nintendo Switch 2 through compatibility.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://images.launchbox-app.com//82dcce67-d232-4418-af11-056cac1d1077.jpg
+edition.1.content.1.label=Pikmin 1
+edition.1.content.2.label=Pikmin 2
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / Online
+edition.2.cover_image=https://images.launchbox-app.com//82dcce67-d232-4418-af11-056cac1d1077.jpg
+edition.2.content.1.label=Pikmin 1
+edition.2.content.2.label=Pikmin 2
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Command tiny Pikmin squads
+gameplay_pillar.1.description<<EOF
+Grow and direct color-coded Pikmin, each with distinct strengths and environmental resistances.
+EOF
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-1-1280x720
+gameplay_pillar.2.title=Explore compact alien environments
+gameplay_pillar.2.description<<EOF
+Search strange natural environments for ship parts, treasure, enemies, and hidden routes.
+EOF
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-2-1280x720
+gameplay_pillar.3.title=Pikmin 1 time-pressure campaign
+gameplay_pillar.3.description<<EOF
+Olimar has a limited number of days to recover enough ship parts to escape the planet.
+EOF
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-3-1280x720
+gameplay_pillar.4.title=Pikmin 2 treasure and cave focus
+gameplay_pillar.4.description<<EOF
+The sequel removes the original strict countdown and emphasizes caves, treasure collection, and two-captain management.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-4-1280x720
+gameplay_pillar.5.title=Classic strategy in short sessions
+gameplay_pillar.5.description<<EOF
+The games combine real-time positioning, light puzzles, resource management, and charming exploration.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-5-1280x720
+world_summary<<EOF
+Pikmin 1+2 revisits the foundations of the series: miniature explorers in oversized natural environments where every object, creature, and hazard becomes a strategic puzzle.
+EOF
+story_chapter.1.title=Olimar crash-lands
+story_chapter.1.text<<EOF
+Captain Olimar crashes on an unknown planet and discovers the Pikmin while trying to rebuild his ship.
+EOF
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-1-1280x720
+story_chapter.2.title=Recover the Dolphin
+story_chapter.2.text<<EOF
+Pikmin 1 revolves around locating enough scattered ship parts before Olimar runs out of life support.
+EOF
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-2-1280x720
+story_chapter.3.title=Return to the planet
+story_chapter.3.text<<EOF
+Pikmin 2 sends Olimar back with Louie after valuable objects are discovered on the planet.
+EOF
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-3-1280x720
+story_chapter.4.title=Explore caves and collect treasure
+story_chapter.4.text<<EOF
+The sequel introduces deep caves, bosses, and treasure-hunting objectives that expand the original formula.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-4-1280x720
+story_chapter.5.title=Master both adventures
+story_chapter.5.text<<EOF
+Together the two games establish the key creatures, tactics, and exploration ideas that define the Pikmin series.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/My%20Nintendo%20Store/EN-US/Nintendo%20Switch%20Software/pikmin-1-2-118697/118696-118697-pikmin-1-and-2-ss-5-1280x720
+feature.1=Two complete classic Pikmin games in one bundle
+feature.2=HD presentation on Nintendo Switch
+feature.3=Distinct campaign structures across Pikmin 1 and Pikmin 2
+feature.4=Strategic real-time squad control and environmental puzzles
+feature.5=Strong historical value as the foundation of the Pikmin series
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=30
+performance_hdr=false
+main_story_hours=12
+completion_main_story_hours=25
+completion_story_plus_dlc_hours=35
+faq.1.question=Does Pikmin 1+2 include both games?
+faq.1.answer<<EOF
+Yes. The bundle contains Pikmin 1 and Pikmin 2 as Nintendo Switch versions.
+EOF
+faq.2.question=Is it Pikmin 3 or Pikmin 4 content?
+faq.2.answer<<EOF
+No. This bundle specifically covers the first two Pikmin games.
+EOF
+faq.3.question=Is the game multiplayer?
+faq.3.answer<<EOF
+The main campaigns are primarily single-player experiences; this import does not market the bundle as an online multiplayer product.
+EOF
+faq.4.question=Does it work on Nintendo Switch 2?
+faq.4.answer<<EOF
+Yes, as compatible Nintendo Switch software rather than a separate native Switch 2 edition.
+EOF
+faq.5.question=Which game is more relaxed?
+faq.5.answer<<EOF
+Pikmin 2 is less constrained by the strict day limit that defines Pikmin 1 and focuses more on treasure and caves.
+EOF
+verdict_score=8.4
+verdict_pro.1=Two influential strategy adventures in one package
+verdict_pro.2=Charming art and sound remain distinctive
+verdict_pro.3=Pikmin 2 adds substantial mechanical variety
+verdict_pro.4=Short missions work well in handheld play
+verdict_pro.5=Excellent introduction to the origins of the series
+verdict_con.1=Pikmin 1 can feel stressful because of its countdown
+verdict_con.2=Older design conventions remain visible
+verdict_con.3=Camera and unit handling are simpler than later entries
+verdict_con.4=Visual upgrade is clean rather than transformative
+verdict_con.5=Limited modern extras compared with full remakes
+review.1.source=Metacritic
+review.1.score=80
+review.1.url=https://www.metacritic.com/game/pikmin-1-plus-2/
+review.2.source=Nintendo
+review.2.score=Official bundle
+review.2.url=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+review.3.source=LaunchBox
+review.3.score=Nintendo Switch media
+review.3.url=https://gamesdb.launchbox-app.com/
+timeline.1.date=2001-10-26
+timeline.1.title=Original Pikmin era began on Nintendo GameCube
+timeline.2.date=2004-04-29
+timeline.2.title=Pikmin 2 originally released in Japan
+timeline.3.date=2023-06-21
+timeline.3.title=Digital Switch versions launched
+timeline.4.date=2023-09-22
+timeline.4.title=Physical Pikmin 1+2 bundle released
+update.1.version=Nintendo Switch HD release
+update.1.date=2023-06-21
+update.2.version=Physical bundle release
+update.2.date=2023-09-22
+update.3.version=Current compatible build
+update.3.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+source.2.name=Nintendo UK Pikmin 1+2 page
+source.2.url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Pikmin-1-2-2387819.html
+source.3.name=LaunchBox media
+source.3.url=https://gamesdb.launchbox-app.com/
+storage_download_size_gb=5.0
+storage_required_space_gb=5.0
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Storage covers the two HD ports in the bundle; exact installed size can vary slightly by region and update state.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=Pikmin 3 Deluxe
+series_game.2=Pikmin 4
+series_game.3=Hey! Pikmin
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=2000
+type.1.cost=2000
+type.1.description=Regular offline package; supplied price 2,000 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=online_standard
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=18500
+type.2.cost=2000
+type.2.description=Standard online package; selling price 18,500 IQD; base cost tracked from Regular tier.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=No separate paid DLC package required
+dlc.1.description<<EOF
+The product is a two-game bundle. No separate expansion-pass variant is required for this store entry.
+EOF
+dlc.1.release_date=Not separately dated
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / sourced
+device_performance.1.verification_status=Sourced / compatibility profile
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+The HD ports present cleanly on Switch; this profile records 720p handheld and 1080p docked targets at 30 fps.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+The HD ports present cleanly on Switch; this profile records 720p handheld and 1080p docked targets at 30 fps.
+EOF
+device_performance.1.mode.1.name=Primary documented / observed profile
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+The HD ports present cleanly on Switch; this profile records 720p handheld and 1080p docked targets at 30 fps.
+EOF
+device_performance.1.upscaling=Game / system scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no universal value
+device_performance.1.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page + established release performance profile
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+device_performance.1.verified_at=2026-08-27
+device_performance.1.performance_notes<<EOF
+The HD ports present cleanly on Switch; this profile records 720p handheld and 1080p docked targets at 30 fps.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / sourced
+device_performance.2.verification_status=Sourced / compatibility profile
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+device_performance.2.mode.1.name=Primary documented / observed profile
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+device_performance.2.upscaling=Game / system scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no universal value
+device_performance.2.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 compatibility + original game performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/pikmin-1-2-118696/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+upgrade_price=0

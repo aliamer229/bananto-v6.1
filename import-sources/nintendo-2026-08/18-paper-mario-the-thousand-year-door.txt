@@ -1,0 +1,508 @@
+schema_version=24
+name=Paper Mario: The Thousand-Year Door
+title=Paper Mario: The Thousand-Year Door
+title_ar=بيبر ماريو: الباب ذو الألف عام
+name_ar=بيبر ماريو: الباب ذو الألف عام
+slug=paper-mario-the-thousand-year-door-switch-1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard
+region=Global
+release_date=2024-05-23
+release_status=Released
+status=Active
+developer=Intelligent Systems
+publisher=Nintendo
+genre.1=Role Playing
+genres.1=Role Playing
+genre.2=Action
+genres.2=Action
+genre.3=Adventure
+genres.3=Adventure
+series_name=Paper Mario
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E10+ / PEGI 7
+metacritic_score=88
+metacritic=88
+metacritic_url=https://www.metacritic.com/game/paper-mario-the-thousand-year-door/
+opencritic_score=88
+opencritic=88
+user_score=8.8
+userscore=8.8
+user_rating=8.8
+game_size_gb=5.1
+size=5.1 GB
+size_gb=5.1
+price=14250
+price_iqd=14250
+price_usd=59.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=11500
+trade_value_iqd=11500
+store_offer_bonus=3000
+store_offer_bonus_iqd=3000
+official_url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+eshop_url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+gallery.1.description=Paper Mario: The Thousand-Year Door official promotional media 1
+gallery.2.description=Paper Mario: The Thousand-Year Door official promotional media 2
+gallery.3.description=Paper Mario: The Thousand-Year Door official promotional media 3
+trailer_url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+video.1.title=Official product page / trailer
+video.1.url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+video.2.title=Nintendo news
+video.2.url=https://www.nintendo.com/us/search/#q=Paper%20Mario%20The%20Thousand-Year%20Door&p=1&cat=news
+video.3.title=Metacritic review hub
+video.3.url=https://www.metacritic.com/game/paper-mario-the-thousand-year-door/
+music.1.title=Official game page
+music.1.url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+music.2.title=Nintendo news
+music.2.url=https://www.nintendo.com/us/search/#q=Paper%20Mario%20The%20Thousand-Year%20Door&p=1&cat=news
+music.3.title=Metacritic / reviews
+music.3.url=https://www.metacritic.com/game/paper-mario-the-thousand-year-door/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+Join Mario and friends on an epic paper adventure. Collect the Crystal Stars, explore Rogueport and beyond, and master timing-based combat in this Nintendo Switch remake.
+EOF
+description_full<<EOF
+A classic story unfolds on Nintendo Switch. With a map from Princess Peach and the help of a colorful cast of locals, Mario journeys across a paper-crafted world to collect the Crystal Stars before the X-Nauts and uncover the mystery behind the Thousand-Year Door.
+EOF
+description<<EOF
+A classic story unfolds on Nintendo Switch. With a map from Princess Peach and the help of a colorful cast of locals, Mario journeys across a paper-crafted world to collect the Crystal Stars before the X-Nauts and uncover the mystery behind the Thousand-Year Door.
+EOF
+description_en<<EOF
+A classic story unfolds on Nintendo Switch. With a map from Princess Peach and the help of a colorful cast of locals, Mario journeys across a paper-crafted world to collect the Crystal Stars before the X-Nauts and uncover the mystery behind the Thousand-Year Door.
+EOF
+description_ar<<EOF
+إعادة صنع للعبة Paper Mario الكلاسيكية، حيث ينطلق ماريو لجمع Crystal Stars قبل X-Nauts واستكشاف عالم ورقي مليء بالشخصيات والحوارات والطابع المسرحي والقتال بالتوقيت.
+EOF
+front_cover_image=https://images.launchbox-app.com/cf77184b-57df-4835-9300-a4813e8d8937.jpg
+cartridge_image=https://images.launchbox-app.com/cf77184b-57df-4835-9300-a4813e8d8937.jpg
+cartridge=https://images.launchbox-app.com/cf77184b-57df-4835-9300-a4813e8d8937.jpg
+cartridge_url=https://images.launchbox-app.com/cf77184b-57df-4835-9300-a4813e8d8937.jpg
+box_front_url=https://images.launchbox-app.com/cf77184b-57df-4835-9300-a4813e8d8937.jpg
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+box_back_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/a99700700483e5f8b14cbff4693843503c7d007c8332d574a4cc76a037aa4843
+supported_languages_raw=Japanese / British English / French / German / Italian / Spanish / Korean / Dutch / Simplified Chinese / Latin American Spanish / Canadian French / Traditional Chinese / American English
+audio_language.1=Character vocalizations
+audio_language.2=Music / sound effects
+audio_language.3=No full language-dependent dub confirmed
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish / Dutch
+text_language.3=Korean / Simplified Chinese / Traditional Chinese / additional regional English variants
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Official Nintendo store page confirms supported play modes, file size, supported languages, and Nintendo Switch 2 compatibility for Paper Mario: The Thousand-Year Door.
+EOF
+edition.1.name=Standard Edition
+edition.1.cover_image=https://images.launchbox-app.com/cf77184b-57df-4835-9300-a4813e8d8937.jpg
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Timing-based turn-based battles with badges and special moves
+edition.1.content.3.label=Paper abilities for traversal such as plane, tube, and boat forms
+edition.2.name=Digital Edition
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+edition.2.content.1.label=Nintendo eShop release
+edition.2.content.2.label=Revamped graphics, updated soundtrack, and quality-of-life additions
+edition.2.content.3.label=Save Data Cloud support
+edition.3.name=Current Store Package
+edition.3.cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/fdd5d8ca46d7ea4e45397ae560e807742de2d7d744570297ddbabf69d6d23f33
+edition.3.content.1.label=Offline account option
+edition.3.content.2.label=Online account option
+edition.3.content.3.label=Hidden by default until review
+gameplay_pillar.1.title=Action Commands and badges
+gameplay_pillar.1.description<<EOF
+Master timing-based attacks and defenses, then customize builds by equipping badges.
+EOF
+gameplay_pillar.2.title=Paper traversal abilities
+gameplay_pillar.2.description<<EOF
+Use paper transformations to glide, squeeze through gaps, and reach hidden areas.
+EOF
+gameplay_pillar.3.title=Storybook exploration
+gameplay_pillar.3.description<<EOF
+Travel from Rogueport to themed regions while collecting Crystal Stars and recruiting partners.
+EOF
+world_summary<<EOF
+Paper Mario: The Thousand-Year Door mixes theatrical turn-based combat, exploration, witty writing, and memorable partner characters inside a handcrafted paper world spanning towns, dungeons, arenas, and cursed abilities.
+EOF
+story_chapter.1.title=Search for the Crystal Stars
+story_chapter.1.text<<EOF
+Mario follows Peach’s map and races the X-Nauts to legendary treasure.
+EOF
+story_chapter.2.title=Meet a colorful cast
+story_chapter.2.text<<EOF
+Partners like Goombella, Koops, Flurrie, Yoshi, and others help Mario in and out of battle.
+EOF
+story_chapter.3.title=Uncover the Thousand-Year Door mystery
+story_chapter.3.text<<EOF
+As the story advances, the truth behind the ancient door and its treasure gradually unfolds.
+EOF
+feature.1=Timing-based turn-based battles with badges and special moves
+feature.2=Paper abilities for traversal such as plane, tube, and boat forms
+feature.3=Revamped graphics, updated soundtrack, and quality-of-life additions
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=30
+performance_hdr=false
+main_story_hours=28
+completion_main_story_hours=34
+completion_story_plus_dlc_hours=40
+faq.1.question=Is Paper Mario: The Thousand-Year Door single-player only?
+faq.1.answer<<EOF
+Yes. This remake is a single-player RPG adventure.
+EOF
+faq.2.question=Does it support Nintendo Switch 2?
+faq.2.answer<<EOF
+Yes. Nintendo lists it as Supported – game behavior is consistent with Nintendo Switch.
+EOF
+faq.3.question=What is new in the Nintendo Switch version?
+faq.3.answer<<EOF
+The remake features revamped graphics, an updated soundtrack, quick-travel improvements, and additions like the Partner Ring.
+EOF
+verdict_score=9.0
+verdict_pro.1=Outstanding humor and writing
+verdict_pro.2=Rewarding timing-based combat with strong customization
+verdict_pro.3=Beautiful remake presentation and music
+verdict_con.1=30 fps target may disappoint some players
+verdict_con.2=Backtracking remains part of the original structure
+verdict_con.3=Some chapter pacing can feel slower on replays
+review.1.source=Metacritic
+review.1.score=88
+review.1.url=https://www.metacritic.com/game/paper-mario-the-thousand-year-door/
+review.2.source=OpenCritic
+review.2.score=88
+review.2.url=https://opencritic.com/game/16769/paper-mario-the-thousand-year-door
+review.3.source=IGN
+review.3.score=9/10
+review.3.url=https://www.ign.com/games/paper-mario-the-thousand-year-door
+timeline.1.date=2023-09-14
+timeline.1.title=Announced for Nintendo Switch
+timeline.2.date=2024-05-23
+timeline.2.title=Released on Nintendo Switch
+timeline.3.date=2024-07-24
+timeline.3.title=Nintendo published gameplay tips coverage
+update.1.version=Launch version
+update.1.date=2024-05-23
+update.2.version=Current retail build
+update.2.date=2026-08-27
+update.3.version=Save Data Cloud support active
+update.3.date=2026-08-27
+studio_name=Intelligent Systems
+studio_website=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+source.2.name=Nintendo Support / Switch 2 compatibility
+source.2.url=https://support.nintendo.com/
+source.3.name=Metacritic
+source.3.url=https://www.metacritic.com/game/paper-mario-the-thousand-year-door/
+storage_download_size_gb=5.1
+storage_required_space_gb=5.1
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Nintendo lists approximately 5.1 GB of game file size for both Nintendo Switch and Nintendo Switch 2 compatibility listings.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=Paper Mario
+series_game.2=Paper Mario: The Origami King
+series_game.3=Super Mario RPG
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=standard_offline
+type.1.name=Offline Account
+type.1.option_id=offline_account
+type.1.price=14250
+type.1.cost=1500
+type.1.description=Offline Account; supplier cost 1,500 IQD; selling price 14,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Online Account
+type.2.option_id=online_account
+type.2.price=24250
+type.2.cost=14250
+type.2.description=Online Account; base price 14,250 IQD; selling price 24,250 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / verified
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1280x720
+device_performance.1.handheld.output_resolution=1280x720
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Original Nintendo Switch performance profile; the remake is commonly presented as a 30 fps title with 720p handheld and 1080p docked targets.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1920x1080
+device_performance.1.tv.output_resolution=1920x1080
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Original Nintendo Switch performance profile; the remake is commonly presented as a 30 fps title with 720p handheld and 1080p docked targets.
+EOF
+device_performance.1.mode.1.name=Primary documented mode
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Original Nintendo Switch performance profile; the remake is commonly presented as a 30 fps title with 720p handheld and 1080p docked targets.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no single universal loading time
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save progress, and storage state.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+device_performance.1.verified_at=2026-08-27
+device_performance.1.verification_status=Verified / sourced
+device_performance.1.unavailable_reason<<EOF
+No required Handheld or TV mode is marked unsupported.
+EOF
+device_performance.1.performance_notes<<EOF
+Original Nintendo Switch performance profile; the remake is commonly presented as a 30 fps title with 720p handheld and 1080p docked targets.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / Backward Compatible
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=1280x720
+device_performance.2.handheld.output_resolution=1920x1080 system output / backward-compatible rendering profile
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1920x1080
+device_performance.2.tv.output_resolution=1920x1080
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+device_performance.2.mode.1.name=Backward Compatibility
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+device_performance.2.upscaling=System output scaling only; no native Switch 2 edition assumed
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no single universal loading time
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save progress, and storage state.
+EOF
+device_performance.2.game_version=Current Nintendo Switch retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 compatibility + established Nintendo Switch performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/gaming-systems/switch-2/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.verification_status=Verified profile / Backward Compatible
+device_performance.2.unavailable_reason<<EOF
+No required Handheld or TV mode is marked unsupported.
+EOF
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+upgrade_price=0
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/a99700700483e5f8b14cbff4693843503c7d007c8332d574a4cc76a037aa4843
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/003a7c28435db6efe0a3fa83a900f36ce7b494e811b73844c6f5923aedf6cd98
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/1270d1fc2312cd1fdeeff4845cb812531ab9f3a06e0ae9f1f7cac26a58c706c0
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/60ac2e24dd6bb93adee264161f259d4ced43711ad6c365febd99d49451d54721
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/c24881011ba3bbb6f6c78a4bb1b7e04a457594b462cfaddcdc2faa85bacf0c36
+banner_image.6=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/9f5e069de49fa3644732f1c7073dea13a059a86e433da60e042d4f0f35b165bb
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/a99700700483e5f8b14cbff4693843503c7d007c8332d574a4cc76a037aa4843
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/003a7c28435db6efe0a3fa83a900f36ce7b494e811b73844c6f5923aedf6cd98
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/1270d1fc2312cd1fdeeff4845cb812531ab9f3a06e0ae9f1f7cac26a58c706c0
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/60ac2e24dd6bb93adee264161f259d4ced43711ad6c365febd99d49451d54721
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/c24881011ba3bbb6f6c78a4bb1b7e04a457594b462cfaddcdc2faa85bacf0c36
+gallery.6.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/9f5e069de49fa3644732f1c7073dea13a059a86e433da60e042d4f0f35b165bb
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/a99700700483e5f8b14cbff4693843503c7d007c8332d574a4cc76a037aa4843
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/003a7c28435db6efe0a3fa83a900f36ce7b494e811b73844c6f5923aedf6cd98
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/1270d1fc2312cd1fdeeff4845cb812531ab9f3a06e0ae9f1f7cac26a58c706c0
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/a99700700483e5f8b14cbff4693843503c7d007c8332d574a4cc76a037aa4843
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/003a7c28435db6efe0a3fa83a900f36ce7b494e811b73844c6f5923aedf6cd98
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/1270d1fc2312cd1fdeeff4845cb812531ab9f3a06e0ae9f1f7cac26a58c706c0
+nintendo_official_url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+official_store_url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+front_cover_hires_url=
+cover_texture_url=
+supports_arabic=false
+overview_tagline=Join Mario and friends on an epic paper adventure. Collect the Crystal Stars, explore Rogueport and beyond, and master timing-based combat in this Nintendo Switch remake.
+overview_suitable_for.1=Players looking for role playing, action gameplay.
+overview_suitable_for.2=Players who want the game modes supported by the official player-count specification: Single system (1).
+overview_not_suitable_for.1=Players specifically seeking online multiplayer; this title does not list online multiplayer support.
+overview_not_suitable_for.2=Players specifically seeking local multiplayer; this title does not list local multiplayer support.
+performance_notes<<EOF
+Original Nintendo Switch performance profile; the remake is commonly presented as a 30 fps title with 720p handheld and 1080p docked targets.
+EOF
+verdict_summary<<EOF
+Overall score: 9.0/10. Strengths include Outstanding humor and writing; Rewarding timing-based combat with strong customization; Beautiful remake presentation and music. Main drawbacks include 30 fps target may disappoint some players; Backtracking remains part of the original structure.
+EOF
+studio_description<<EOF
+Intelligent Systems is credited as the developer of this Nintendo Switch release. Nintendo is credited as the publisher.
+EOF
+setting_requirement.1=Nintendo Switch-compatible hardware for this release.
+setting_requirement.2=Online multiplayer is not required for the core single-player experience.
+timeline.1.details<<EOF
+Announced for Nintendo Switch — recorded milestone dated 2023-09-14.
+EOF
+update.1.changes<<EOF
+Update entry for Launch version, dated 2024-05-23. No additional change list was included in the prior verified extraction.
+EOF
+timeline.2.details<<EOF
+Released on Nintendo Switch — recorded milestone dated 2024-05-23.
+EOF
+update.2.changes<<EOF
+Update entry for Current retail build, dated 2026-08-27. No additional change list was included in the prior verified extraction.
+EOF
+timeline.3.details<<EOF
+Nintendo published gameplay tips coverage — recorded milestone dated 2024-07-24.
+EOF
+update.3.changes<<EOF
+Update entry for Save Data Cloud support active, dated 2026-08-27. No additional change list was included in the prior verified extraction.
+EOF
+dlc.1.title=No standalone DLC announced
+dlc.1.description<<EOF
+No standalone paid DLC expansion is included in this extraction. Free updates, when applicable, are listed in the Updates section instead.
+EOF
+guide.1.title=Official Nintendo game page
+guide.1.summary<<EOF
+Official Nintendo reference for game description, supported modes, player counts, languages, file size, and compatibility information.
+EOF
+guide.1.url=https://www.nintendo.com/us/store/products/paper-mario-the-thousand-year-door-switch/
+
+# Expanded detail-page point rule: added more than 3 items where appropriate.
+gameplay_pillar.4.title=Audience-based stage battles
+gameplay_pillar.4.description<<EOF
+Turn-based combat plays out on a stage, where timing, Stylish moves, partner abilities, and audience reactions add flair and mechanical depth.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/60ac2e24dd6bb93adee264161f259d4ced43711ad6c365febd99d49451d54721
+gameplay_pillar.5.title=Partners, badges, and build variety
+gameplay_pillar.5.description<<EOF
+Different partner skills and Badge combinations let players tune Mario's approach, creating more strategy than the series' papercraft visuals first suggest.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/c24881011ba3bbb6f6c78a4bb1b7e04a457594b462cfaddcdc2faa85bacf0c36
+story_chapter.4.title=Search for Crystal Stars across Rogueport's worlds
+story_chapter.4.text<<EOF
+Mario travels from Rogueport into varied chapters and themed locations while pursuing the Crystal Stars and unraveling a larger mystery.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/9f5e069de49fa3644732f1c7073dea13a059a86e433da60e042d4f0f35b165bb
+story_chapter.5.title=Partners and chapter twists drive the journey
+story_chapter.5.text<<EOF
+Each chapter introduces memorable characters, self-contained arcs, and tonal variety that make the adventure one of Nintendo's most beloved RPGs.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000072957/a99700700483e5f8b14cbff4693843503c7d007c8332d574a4cc76a037aa4843
+feature.4=Excellent chapter structure keeps the adventure memorable
+feature.5=Badge system allows flexible builds and experimentation
+feature.6=Partners remain central both in battle and in exploration
+faq.4.question=Does The Thousand-Year Door have deep RPG customization?
+faq.4.answer<<EOF
+Yes. The Badge system, partner abilities, and resource management give the game more build flexibility and mechanical depth than many lighter Mario spin-offs.
+EOF
+faq.5.question=Why is this game so highly regarded?
+faq.5.answer<<EOF
+It is widely praised for its writing, chapter design, combat depth, humor, and memorable cast, all of which help it stand out in Nintendo's RPG catalog.
+EOF
+overview_suitable_for.3=Players who want a story-rich Mario RPG with strong writing.
+overview_suitable_for.4=Players who enjoy turn-based systems that still feel expressive and varied.
+overview_not_suitable_for.3=Players seeking fast real-time action with minimal reading.
+overview_not_suitable_for.4=Players who dislike backtracking in older adventure structures.
+verdict_pro.4=Outstanding writing and chapter variety
+verdict_pro.5=Combat depth holds up extremely well
+verdict_con.4=Some segments involve noticeable backtracking
+verdict_con.5=Its slower text-heavy pacing will not suit every player

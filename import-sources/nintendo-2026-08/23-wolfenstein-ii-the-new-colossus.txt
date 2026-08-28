@@ -1,0 +1,393 @@
+schema_version=24
+name=Wolfenstein II: The New Colossus
+title=Wolfenstein II: The New Colossus
+title_ar=وولفنشتاين 2: ذا نيو كولوسس
+name_ar=وولفنشتاين 2: ذا نيو كولوسس
+slug=wolfenstein-ii-the-new-colossus
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 can run the Switch version through backward compatibility
+edition=Standard / Store Variants
+region=Global
+release_date=2018-06-29
+release_status=Released
+status=Active
+developer=MachineGames
+publisher=Bethesda Softworks
+genre.1=Action
+genres.1=Action
+genre.2=First-Person Shooter
+genres.2=First-Person Shooter
+series_name=Wolfenstein II
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB M / PEGI 18
+metacritic_score=79
+metacritic=79
+metacritic_url=https://www.metacritic.com/game/wolfenstein-ii-the-new-colossus/
+opencritic_score=80
+opencritic=80
+user_score=8.1
+userscore=8.1
+user_rating=8.1
+game_size_gb=22.0
+size=22.0 GB
+size_gb=22.0
+price=2750
+price_iqd=2750
+price_usd=59.99
+cost=2750
+cost_iqd=2750
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=9000
+trade_value_iqd=9000
+store_offer_bonus=1500
+store_offer_bonus_iqd=1500
+official_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Wolfenstein-II-The-New-Colossus-1276093.html
+eshop_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Wolfenstein-II-The-New-Colossus-1276093.html
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+A story-driven first-person shooter adapted to Nintendo Switch, featuring motion aiming, a full single-player campaign, and large-scale combat against a fictional fascist regime.
+EOF
+description_full<<EOF
+A story-driven first-person shooter adapted to Nintendo Switch, featuring motion aiming, a full single-player campaign, and large-scale combat against a fictional fascist regime. The protagonist continues the alternate-history conflict after the events of The New Order. The campaign’s final chapters build around resistance operations and high-intensity assaults.
+EOF
+description<<EOF
+A story-driven first-person shooter adapted to Nintendo Switch, featuring motion aiming, a full single-player campaign, and large-scale combat against a fictional fascist regime. The protagonist continues the alternate-history conflict after the events of The New Order. The campaign’s final chapters build around resistance operations and high-intensity assaults.
+EOF
+description_en<<EOF
+A story-driven first-person shooter adapted to Nintendo Switch, featuring motion aiming, a full single-player campaign, and large-scale combat against a fictional fascist regime. The protagonist continues the alternate-history conflict after the events of The New Order. The campaign’s final chapters build around resistance operations and high-intensity assaults.
+EOF
+description_ar<<EOF
+وولفنشتاين 2: ذا نيو كولوسس — A story-driven first-person shooter adapted to Nintendo Switch, featuring motion aiming, a full single-player campaign, and large-scale combat against a fictional fascist regime.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+box_front_url=
+nintendo_card_image=
+square_game_image=
+main_image=
+image=
+image_url=
+cover_image=
+cover=
+cover_url=
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Standard
+edition.1.cover_image=
+edition.1.content.1.label=Standard store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Deluxe
+edition.2.cover_image=
+edition.2.content.1.label=Deluxe store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Fast first-person gunplay
+gameplay_pillar.1.description<<EOF
+Dual wielding, heavy weapons, stealth, and aggressive movement support several combat approaches.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Story-focused campaign
+gameplay_pillar.2.description<<EOF
+The game follows BJ Blazkowicz through a heavily cinematic single-player campaign.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Weapon upgrades
+gameplay_pillar.3.description<<EOF
+Guns can be modified with upgrades that change handling, damage, and tactical use.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Stealth or assault choices
+gameplay_pillar.4.description<<EOF
+Many encounters can be approached quietly or through direct firefights.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Switch motion aiming
+gameplay_pillar.5.description<<EOF
+Nintendo highlights motion aiming support as a platform-specific control option.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+A story-driven first-person shooter adapted to Nintendo Switch, featuring motion aiming, a full single-player campaign, and large-scale combat against a fictional fascist regime. The protagonist continues the alternate-history conflict after the events of The New Order. The campaign’s final chapters build around resistance operations and high-intensity assaults.
+EOF
+story_chapter.1.title=Return as BJ Blazkowicz
+story_chapter.1.text<<EOF
+The protagonist continues the alternate-history conflict after the events of The New Order.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Reunite the resistance
+story_chapter.2.text<<EOF
+The story focuses on building and protecting a resistance movement across occupied America.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Travel through distinct regions
+story_chapter.3.text<<EOF
+Missions move through several visually different locations and set pieces.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Upgrade the arsenal
+story_chapter.4.text<<EOF
+Combat progression expands through weapons, perks, and tactical choices.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Push toward revolution
+story_chapter.5.text<<EOF
+The campaign’s final chapters build around resistance operations and high-intensity assaults.
+EOF
+story_chapter.5.image=
+feature.1=Full single-player campaign
+feature.2=Motion aiming support
+feature.3=Weapon upgrade system
+feature.4=Stealth and assault approaches
+feature.5=Portable Switch adaptation
+performance_tv_resolution=Dynamic resolution up to 720p
+performance_handheld_resolution=Dynamic resolution up to 720p
+performance_fps=30
+performance_hdr=false
+main_story_hours=11
+completion_main_story_hours=16
+completion_story_plus_dlc_hours=20
+faq.1.question=Is Wolfenstein II multiplayer?
+faq.1.answer<<EOF
+No. The main game is a single-player first-person shooter.
+EOF
+faq.2.question=Does the Switch version have motion aiming?
+faq.2.answer<<EOF
+Yes. Nintendo’s Switch materials highlight motion aiming support.
+EOF
+faq.3.question=How large is it?
+faq.3.answer<<EOF
+Nintendo UK lists a download around 22 GB, with some regional listings varying slightly.
+EOF
+faq.4.question=Does it have mature content?
+faq.4.answer<<EOF
+Yes. It carries an adults-only/mature age rating because of strong violence, language, and themes.
+EOF
+faq.5.question=Are Standard and Deluxe official Nintendo editions here?
+faq.5.answer<<EOF
+They are preserved as the user’s store package labels; this extraction does not assume they match Bethesda’s original retail edition naming.
+EOF
+verdict_score=8.5
+verdict_pro.1=Impressive portable conversion
+verdict_pro.2=Strong single-player shooting
+verdict_pro.3=Good motion aiming
+verdict_pro.4=Varied combat approaches
+verdict_pro.5=Memorable story presentation
+verdict_con.1=30 fps target on Switch
+verdict_con.2=Visual resolution is heavily dynamic
+verdict_con.3=Mature content limits audience
+verdict_con.4=Large download size
+verdict_con.5=No multiplayer
+review.1.source=Metacritic
+review.1.score=79
+review.1.url=https://www.metacritic.com/game/wolfenstein-ii-the-new-colossus/
+review.2.source=OpenCritic
+review.2.score=80
+review.2.url=https://opencritic.com/
+timeline.1.date=2018-06-29
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=MachineGames
+studio_website=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Wolfenstein-II-The-New-Colossus-1276093.html
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Wolfenstein-II-The-New-Colossus-1276093.html
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/wolfenstein-ii-the-new-colossus/
+storage_download_size_gb=22.0
+storage_required_space_gb=22.0
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=standard
+type.1.name=Standard
+type.1.option_id=offline_account
+type.1.price=2750
+type.1.cost=2750
+type.1.description=Standard; user-supplied store price 2,750 IQD; recorded cost 2,750 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=deluxe
+type.2.name=Deluxe
+type.2.option_id=online_account
+type.2.price=16750
+type.2.cost=2750
+type.2.description=Deluxe; user-supplied store price 16,750 IQD; recorded cost 2,750 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+No separate DLC variant is inferred from the supplied two store tiers.
+EOF
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=Dynamic resolution up to 720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=Dynamic resolution up to 720p
+device_performance.1.handheld.output_resolution=Dynamic resolution up to 720p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+The Switch conversion targets 30 fps with aggressive dynamic resolution scaling; exact internal resolution varies by scene.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Dynamic resolution up to 720p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=Dynamic resolution up to 720p
+device_performance.1.tv.output_resolution=Dynamic resolution up to 720p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+The Switch conversion targets 30 fps with aggressive dynamic resolution scaling; exact internal resolution varies by scene.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=Dynamic resolution up to 720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=Dynamic resolution up to 720p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+The Switch conversion targets 30 fps with aggressive dynamic resolution scaling; exact internal resolution varies by scene.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Wolfenstein-II-The-New-Colossus-1276093.html
+device_performance.1.performance_notes<<EOF
+The Switch conversion targets 30 fps with aggressive dynamic resolution scaling; exact internal resolution varies by scene.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=Dynamic up to 720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Dynamic up to 720p
+device_performance.2.handheld.output_resolution=Dynamic up to 720p
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=Dynamic up to 720p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Dynamic up to 720p
+device_performance.2.tv.output_resolution=Dynamic up to 720p
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Dynamic up to 720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=Dynamic up to 720p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Wolfenstein-II-The-New-Colossus-1276093.html
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+upgrade_price=0

@@ -1,0 +1,414 @@
+schema_version=24
+name=The Legend of Zelda: Tears of the Kingdom — Nintendo Switch 2 Edition
+title=The Legend of Zelda: Tears of the Kingdom — Nintendo Switch 2 Edition
+title_ar=أسطورة زيلدا: دموع المملكة — إصدار نينتندو سويتش 2
+name_ar=أسطورة زيلدا: دموع المملكة — إصدار نينتندو سويتش 2
+slug=the-legend-of-zelda-tears-of-the-kingdom-switch-2-edition
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=A separate original Nintendo Switch release also exists
+edition=Nintendo Switch 2 Edition
+region=Global
+release_date=2025-06-05
+release_status=Released
+status=Active
+developer=Nintendo
+publisher=Nintendo
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Open World
+genres.3=Open World
+genre.4=RPG
+genres.4=RPG
+series_name=The Legend of Zelda
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E10+ / PEGI 12
+metacritic_score=96
+metacritic=96
+metacritic_url=https://www.metacritic.com/game/the-legend-of-zelda-tears-of-the-kingdom/
+opencritic_score=96
+opencritic=96
+user_score=8.7
+userscore=8.7
+user_rating=8.7
+game_size_gb=16.4
+size=16.4 GB
+size_gb=16.4
+price=27250
+price_iqd=27250
+price_usd=79.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=18000
+trade_value_iqd=18000
+store_offer_bonus=4000
+store_offer_bonus_iqd=4000
+official_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-switch-2/
+eshop_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-switch-2/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+The Nintendo Switch 2 Edition of Tears of the Kingdom delivers the same massive adventure through Hyrule with a dedicated upgraded platform profile.
+EOF
+description_full<<EOF
+The Legend of Zelda: Tears of the Kingdom — Nintendo Switch 2 Edition is the dedicated Switch 2 version of Nintendo's acclaimed open-air sequel. It preserves the giant three-layer world, Ultrahand building, Fuse customization, and the broad freedom of exploration, while positioning the software as an upgraded edition for Nintendo Switch 2 hardware. It stands alongside an official upgrade path and the original Nintendo Switch release.
+EOF
+description<<EOF
+The Legend of Zelda: Tears of the Kingdom — Nintendo Switch 2 Edition is the dedicated Switch 2 version of Nintendo's acclaimed open-air sequel. It preserves the giant three-layer world, Ultrahand building, Fuse customization, and the broad freedom of exploration, while positioning the software as an upgraded edition for Nintendo Switch 2 hardware. It stands alongside an official upgrade path and the original Nintendo Switch release.
+EOF
+description_en<<EOF
+The Legend of Zelda: Tears of the Kingdom — Nintendo Switch 2 Edition is the dedicated Switch 2 version of Nintendo's acclaimed open-air sequel. It preserves the giant three-layer world, Ultrahand building, Fuse customization, and the broad freedom of exploration, while positioning the software as an upgraded edition for Nintendo Switch 2 hardware. It stands alongside an official upgrade path and the original Nintendo Switch release.
+EOF
+description_ar<<EOF
+الإصدار المخصص لجهاز Nintendo Switch 2 من Tears of the Kingdom، ويقدم نفس المغامرة الضخمة في هايرول لكن ضمن ملف منتج محسن ومخصص للمنصة الجديدة.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+box_front_url=
+nintendo_card_image=
+square_game_image=
+main_image=
+image=
+image_url=
+cover_image=
+cover=
+cover_url=
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Japanese / British English / French / German / Italian / Spanish / Korean / Dutch / Simplified Chinese / Latin American Spanish / Canadian French / Traditional Chinese / American English
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish / Dutch
+text_language.3=Korean / Simplified Chinese / Traditional Chinese
+audio_language.1=Music / sound effects
+audio_language.2=Character vocalizations where applicable
+audio_language.3=No full language-selectable dub beyond the shipped release build information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Nintendo provides a separate Nintendo Switch 2 Edition and also an Upgrade Pack listing. This file tracks the Switch 2 Edition itself as an independent import entry.
+EOF
+edition.1.name=Offline Regular
+edition.1.cover_image=
+edition.1.content.1.label=Base Switch 2 Edition game
+edition.1.content.2.label=Offline account package
+edition.1.content.3.label=Dedicated Nintendo Switch 2 product
+edition.2.name=Online Standard
+edition.2.cover_image=
+edition.2.content.1.label=Base Switch 2 Edition game
+edition.2.content.2.label=Online account package
+edition.2.content.3.label=Dedicated Nintendo Switch 2 product
+gameplay_pillar.1.title=Dedicated Switch 2 edition profile
+gameplay_pillar.1.description<<EOF
+The game is represented as a native Nintendo Switch 2 software entry rather than only the original release.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=All invention systems preserved
+gameplay_pillar.2.description<<EOF
+Ultrahand, Fuse, Ascend, and Recall remain the core systems that define the sequel's creativity.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Enhanced presentation expectations
+gameplay_pillar.3.description<<EOF
+The Switch 2 Edition is positioned as the improved way to play the game on newer Nintendo hardware.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Large-scale exploration structure
+gameplay_pillar.4.description<<EOF
+Surface Hyrule, sky islands, and the Depths still combine into one of Nintendo's richest exploration spaces.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Store-friendly clean edition split
+gameplay_pillar.5.description<<EOF
+Keeping the Switch 2 Edition separate from the original release improves platform clarity inside the storefront.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+This edition preserves the full scale of Tears of the Kingdom while representing it cleanly as a Switch 2 product with its own performance and product-identity profile.
+EOF
+story_chapter.1.title=Investigate the disaster beneath Hyrule
+story_chapter.1.text<<EOF
+The journey begins with a mysterious upheaval that reshapes the kingdom and separates Link from Zelda.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Use new powers to survive and create
+story_chapter.2.text<<EOF
+Each of Link's major new abilities changes how traversal, combat, and puzzles work across the entire map.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Help the regions of Hyrule
+story_chapter.3.text<<EOF
+Regional stories and temples reintroduce a stronger arc structure while keeping broad freedom intact.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Uncover the sky and the Depths
+story_chapter.4.text<<EOF
+The adventure grows richer by stacking new areas above and below the original world.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Reach the climactic finale
+story_chapter.5.text<<EOF
+The late game brings story revelations, harder encounters, and one of the series' more ambitious endings.
+EOF
+story_chapter.5.image=
+feature.1=Dedicated Nintendo Switch 2 edition entry
+feature.2=One of Nintendo's highest-rated open-world adventures
+feature.3=Creative construction and weapon-fusion systems
+feature.4=Huge three-layer world full of secrets and puzzles
+feature.5=Clean split from the original release for import accuracy
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=true
+main_story_hours=60
+completion_main_story_hours=120
+completion_story_plus_dlc_hours=200
+faq.1.question=Is this the same as the original Switch release?
+faq.1.answer<<EOF
+No. This file is specifically for the Nintendo Switch 2 Edition of Tears of the Kingdom.
+EOF
+faq.2.question=Does the Switch 2 Edition have separate pricing in the store?
+faq.2.answer<<EOF
+Yes. This extraction keeps it as a separate product with its own pricing and platform identity.
+EOF
+faq.3.question=Is there DLC for Tears of the Kingdom?
+faq.3.answer<<EOF
+No official standalone DLC has been announced, so only the base game variants are included here.
+EOF
+faq.4.question=What is the main reason to keep this as a separate import entry?
+faq.4.answer<<EOF
+The dedicated platform identity prevents confusion between the original Switch release, the upgrade pack, and the enhanced Switch 2 Edition.
+EOF
+faq.5.question=Does it still include the same story and world?
+faq.5.answer<<EOF
+Yes. The core adventure content remains the same major sequel to Breath of the Wild.
+EOF
+verdict_score=9.7
+verdict_pro.1=Clean platform-specific storefront entry
+verdict_pro.2=Massive world and creativity systems remain exceptional
+verdict_pro.3=Enhanced profile suits newer hardware
+verdict_pro.4=Clearer than mixing the edition into the original listing
+verdict_pro.5=Still among Nintendo's best modern adventures
+verdict_con.1=Core content is familiar if you finished the original release
+verdict_con.2=Final technical behavior depends on official patches
+verdict_con.3=Some shoppers may confuse it with the upgrade pack
+verdict_con.4=No DLC structure to add extra variant diversity
+verdict_con.5=Huge scope can overwhelm casual players
+review.1.source=Metacritic
+review.1.score=96
+review.1.url=https://www.metacritic.com/game/the-legend-of-zelda-tears-of-the-kingdom/
+review.2.source=OpenCritic
+review.2.score=96
+review.2.url=https://opencritic.com/game/14346/the-legend-of-zelda-tears-of-the-kingdom
+review.3.source=Nintendo Official Site
+review.3.score=Nintendo Switch 2 Edition listing
+review.3.url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-switch-2/
+timeline.1.date=2023-05-12
+timeline.1.title=Original game released on Nintendo Switch
+timeline.2.date=2025-06-05
+timeline.2.title=Nintendo Switch 2 Edition released
+timeline.3.date=2025-06-05
+timeline.3.title=Upgrade Pack listed by Nintendo
+update.1.version=Nintendo Switch 2 Edition launch version
+update.1.date=2025-06-05
+update.2.version=Current retail build
+update.2.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-switch-2/
+studio_location=Japan
+source.1.name=Nintendo Switch 2 Edition official page
+source.1.url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-switch-2/
+source.2.name=Upgrade Pack page
+source.2.url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-upgrade-pack-switch-2/
+source.3.name=Metacritic
+source.3.url=https://www.metacritic.com/game/the-legend-of-zelda-tears-of-the-kingdom/
+storage_download_size_gb=16.4
+storage_required_space_gb=16.4
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+The Switch 2 Edition store entry is treated as a dedicated software product, so this file records a slightly updated storage profile for the enhanced release.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=The Legend of Zelda: Tears of the Kingdom
+series_game.2=The Legend of Zelda: Breath of the Wild — Nintendo Switch 2 Edition
+series_game.3=The Legend of Zelda: Echoes of Wisdom
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Offline — Regular
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Offline Regular version; supplier cost 1,500 IQD; selling price 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=online_standard
+type.2.name=Online — Standard
+type.2.option_id=online_account
+type.2.price=27250
+type.2.cost=1500
+type.2.description=Online Standard version; supplier cost 1,500 IQD; selling price 27,250 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=No standalone DLC has been announced
+dlc.1.description<<EOF
+Nintendo has not announced separate paid DLC for Tears of the Kingdom, including the Switch 2 Edition.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available / verified
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=true
+device_performance.1.handheld.rendering_resolution=1920x1080
+device_performance.1.handheld.output_resolution=1920x1080
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=40
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=true
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+The Switch 2 Edition is positioned as the enhanced dedicated version, and this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support in the upgraded feature set.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=true
+device_performance.1.tv.rendering_resolution=2560x1440
+device_performance.1.tv.output_resolution=2560x1440
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=40
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=true
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+The Switch 2 Edition is positioned as the enhanced dedicated version, and this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support in the upgraded feature set.
+EOF
+device_performance.1.mode.1.name=Primary documented mode
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=true
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+The Switch 2 Edition is positioned as the enhanced dedicated version, and this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support in the upgraded feature set.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no single universal loading time
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-switch-2/
+device_performance.1.performance_notes<<EOF
+The Switch 2 Edition is positioned as the enhanced dedicated version, and this extraction records a 1080p handheld / 1440p TV target profile at up to 60 fps with HDR support in the upgraded feature set.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Available / verified
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+This file tracks the dedicated Nintendo Switch 2 Edition rather than the original Nintendo Switch release.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+This file tracks the dedicated Nintendo Switch 2 Edition rather than the original Nintendo Switch release.
+EOF
+device_performance.2.mode.1.name=Primary documented mode
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+This file tracks the dedicated Nintendo Switch 2 Edition rather than the original Nintendo Switch release.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no single universal loading time
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save progress, storage state, and whether the software is running in its standard build or an enhanced edition.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo official product page
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition-switch-2/
+device_performance.2.performance_notes<<EOF
+This file tracks the dedicated Nintendo Switch 2 Edition rather than the original Nintendo Switch release.
+EOF

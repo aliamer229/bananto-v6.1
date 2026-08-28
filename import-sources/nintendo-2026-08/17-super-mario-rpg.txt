@@ -1,0 +1,508 @@
+schema_version=24
+name=Super Mario RPG
+title=Super Mario RPG
+title_ar=سوبر ماريو آر بي جي
+name_ar=سوبر ماريو آر بي جي
+slug=super-mario-rpg-switch-1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard
+region=Global
+release_date=2023-11-17
+release_status=Released
+status=Active
+developer=Nintendo
+publisher=Nintendo
+genre.1=Role Playing
+genres.1=Role Playing
+genre.2=Action
+genres.2=Action
+genre.3=Adventure
+genres.3=Adventure
+series_name=Mario RPG
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E10+ / PEGI 7
+metacritic_score=84
+metacritic=84
+metacritic_url=https://www.metacritic.com/game/super-mario-rpg/
+opencritic_score=84
+opencritic=84
+user_score=8.6
+userscore=8.6
+user_rating=8.6
+game_size_gb=6.5
+size=6.5 GB
+size_gb=6.5
+price=20750
+price_iqd=20750
+price_usd=59.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=16000
+trade_value_iqd=16000
+store_offer_bonus=3000
+store_offer_bonus_iqd=3000
+official_url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+eshop_url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+gallery.1.description=Super Mario RPG official promotional media 1
+gallery.2.description=Super Mario RPG official promotional media 2
+gallery.3.description=Super Mario RPG official promotional media 3
+trailer_url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+video.1.title=Official product page / trailer
+video.1.url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+video.2.title=Nintendo news
+video.2.url=https://www.nintendo.com/us/search/#q=Super%20Mario%20RPG&p=1&cat=news
+video.3.title=Metacritic review hub
+video.3.url=https://www.metacritic.com/game/super-mario-rpg/
+music.1.title=Official game page
+music.1.url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+music.2.title=Nintendo news
+music.2.url=https://www.nintendo.com/us/search/#q=Super%20Mario%20RPG&p=1&cat=news
+music.3.title=Metacritic / reviews
+music.3.url=https://www.metacritic.com/game/super-mario-rpg/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+Set out on a classic Mario adventure. Repair Star Road, battle the Smithy Gang, and team up with oddball allies in a story-rich RPG remade for Nintendo Switch.
+EOF
+description_full<<EOF
+Enter—or revisit—a world of whimsy with Mario on a quest to repair Star Road and defeat the troublemaking Smithy Gang. Team up with a party of unlikely allies, including Bowser, Peach, Mallow, and Geno, in a story-rich RPG packed with laughs, remastered music, refreshed graphics, and new battle refinements.
+EOF
+description<<EOF
+Enter—or revisit—a world of whimsy with Mario on a quest to repair Star Road and defeat the troublemaking Smithy Gang. Team up with a party of unlikely allies, including Bowser, Peach, Mallow, and Geno, in a story-rich RPG packed with laughs, remastered music, refreshed graphics, and new battle refinements.
+EOF
+description_en<<EOF
+Enter—or revisit—a world of whimsy with Mario on a quest to repair Star Road and defeat the troublemaking Smithy Gang. Team up with a party of unlikely allies, including Bowser, Peach, Mallow, and Geno, in a story-rich RPG packed with laughs, remastered music, refreshed graphics, and new battle refinements.
+EOF
+description_ar<<EOF
+إعادة صنع للعبة RPG الكلاسيكية حيث ينطلق ماريو لإصلاح Star Road وإيقاف عصابة Smithy Gang، مع حلفاء مثل Bowser وPeach وMallow وGeno، ورسوم محسنة وموسيقى مجددة وتطويرات على القتال.
+EOF
+front_cover_image=https://images.launchbox-app.com/0be66a78-ae3b-4280-aa4e-8d6005373f15.jpg
+cartridge_image=https://images.launchbox-app.com/0be66a78-ae3b-4280-aa4e-8d6005373f15.jpg
+cartridge=https://images.launchbox-app.com/0be66a78-ae3b-4280-aa4e-8d6005373f15.jpg
+cartridge_url=https://images.launchbox-app.com/0be66a78-ae3b-4280-aa4e-8d6005373f15.jpg
+box_front_url=https://images.launchbox-app.com/0be66a78-ae3b-4280-aa4e-8d6005373f15.jpg
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+box_back_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/dad2dfa044f3b1809bfb65e0145f824e25d2a363e446a142b5d46b27766463ea
+supported_languages_raw=Japanese / British English / French / German / Italian / Spanish / Korean / Dutch / Simplified Chinese / Latin American Spanish / Canadian French / Traditional Chinese / American English
+audio_language.1=Character vocalizations
+audio_language.2=Music / sound effects
+audio_language.3=No full language-dependent dub confirmed
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish / Dutch
+text_language.3=Korean / Simplified Chinese / Traditional Chinese / additional regional English variants
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Official Nintendo store page confirms supported play modes, file size, supported languages, and Nintendo Switch 2 compatibility for Super Mario RPG.
+EOF
+edition.1.name=Standard Edition
+edition.1.cover_image=https://images.launchbox-app.com/0be66a78-ae3b-4280-aa4e-8d6005373f15.jpg
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Story-rich turn-based RPG adventure
+edition.1.content.3.label=Breezy difficulty mode for easier progression
+edition.2.name=Digital Edition
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+edition.2.content.1.label=Nintendo eShop release
+edition.2.content.2.label=Remastered soundtrack plus Classic SNES soundtrack option
+edition.2.content.3.label=Save Data Cloud support
+edition.3.name=Current Store Package
+edition.3.cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/fe4afe940b0e707798332e86f0af56cdbde48da59dc37cdfb8d59febb88ac72a
+edition.3.content.1.label=Offline account option
+edition.3.content.2.label=Online account option
+edition.3.content.3.label=Hidden by default until review
+gameplay_pillar.1.title=Action Commands
+gameplay_pillar.1.description<<EOF
+Time button presses to deal extra damage or guard effectively in battle.
+EOF
+gameplay_pillar.2.title=Chain and Triple Moves
+gameplay_pillar.2.description<<EOF
+Use Action Commands to build gauge and unleash powerful Chain and Triple Moves.
+EOF
+gameplay_pillar.3.title=Exploration and boss battles
+gameplay_pillar.3.description<<EOF
+Explore colorful areas, complete mini-games, and take on memorable bosses across the world.
+EOF
+world_summary<<EOF
+Super Mario RPG delivers a whimsical quest through a colorful world full of towns, dungeons, mini-games, expressive characters, and classic turn-based battles with modern presentation upgrades.
+EOF
+story_chapter.1.title=Repair Star Road
+story_chapter.1.text<<EOF
+Mario sets out to restore wishes after Star Road is disrupted.
+EOF
+story_chapter.2.title=Gather unlikely allies
+story_chapter.2.text<<EOF
+Peach, Bowser, Mallow, and Geno each bring distinct abilities and personalities to the party.
+EOF
+story_chapter.3.title=Defeat the Smithy Gang
+story_chapter.3.text<<EOF
+The adventure culminates in battles against the Smithy Gang and its leaders.
+EOF
+feature.1=Story-rich turn-based RPG adventure
+feature.2=Breezy difficulty mode for easier progression
+feature.3=Remastered soundtrack plus Classic SNES soundtrack option
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=60
+performance_hdr=false
+main_story_hours=11
+completion_main_story_hours=16
+completion_story_plus_dlc_hours=20
+faq.1.question=Is Super Mario RPG multiplayer?
+faq.1.answer<<EOF
+No. This remake is a single-player RPG.
+EOF
+faq.2.question=Does it support Nintendo Switch 2?
+faq.2.answer<<EOF
+Yes. Nintendo lists it as Supported – game behavior is consistent with Nintendo Switch.
+EOF
+faq.3.question=What is new in the remake?
+faq.3.answer<<EOF
+The Switch version adds remastered visuals, new CGI cutscenes, the Chain and Triple Move battle systems, Breezy mode, and the option to use a remastered or classic soundtrack.
+EOF
+verdict_score=8.8
+verdict_pro.1=Charming remake of a beloved classic
+verdict_pro.2=Excellent pacing and approachable RPG mechanics
+verdict_pro.3=Great music options and polished presentation
+verdict_con.1=Relatively short for an RPG
+verdict_con.2=Low challenge for genre veterans outside selected encounters
+verdict_con.3=Limited postgame compared with larger modern RPGs
+review.1.source=Metacritic
+review.1.score=84
+review.1.url=https://www.metacritic.com/game/super-mario-rpg/
+review.2.source=OpenCritic
+review.2.score=84
+review.2.url=https://opencritic.com/game/15689/super-mario-rpg
+review.3.source=IGN
+review.3.score=8/10
+review.3.url=https://www.ign.com/games/super-mario-rpg
+timeline.1.date=2023-06-21
+timeline.1.title=Announced during Nintendo Direct
+timeline.2.date=2023-11-17
+timeline.2.title=Released on Nintendo Switch
+timeline.3.date=2024-01-22
+timeline.3.title=Nintendo published follow-up tips / secrets coverage
+update.1.version=Launch version
+update.1.date=2023-11-17
+update.2.version=Current retail build
+update.2.date=2026-08-27
+update.3.version=Save Data Cloud support active
+update.3.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+source.2.name=Nintendo Support / Switch 2 compatibility
+source.2.url=https://support.nintendo.com/
+source.3.name=Metacritic
+source.3.url=https://www.metacritic.com/game/super-mario-rpg/
+storage_download_size_gb=6.5
+storage_required_space_gb=6.5
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Nintendo lists approximately 6.5 GB of game file size for both Nintendo Switch and Nintendo Switch 2 compatibility listings.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=Paper Mario: The Thousand-Year Door
+series_game.2=Mario & Luigi: Brothership
+series_game.3=Bug Fables: The Everlasting Sapling
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=standard_offline
+type.1.name=Offline Account
+type.1.option_id=offline_account
+type.1.price=20750
+type.1.cost=1250
+type.1.description=Offline Account; supplier cost 1,250 IQD; selling price 20,750 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Online Account
+type.2.option_id=online_account
+type.2.price=30750
+type.2.cost=20750
+type.2.description=Online Account; base price 20,750 IQD; selling price 30,750 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / verified
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1280x720
+device_performance.1.handheld.output_resolution=1280x720
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Original Nintendo Switch performance profile for the remake; turn-based gameplay and exploration target a smooth 60 fps presentation.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1920x1080
+device_performance.1.tv.output_resolution=1920x1080
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Original Nintendo Switch performance profile for the remake; turn-based gameplay and exploration target a smooth 60 fps presentation.
+EOF
+device_performance.1.mode.1.name=Primary documented mode
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Original Nintendo Switch performance profile for the remake; turn-based gameplay and exploration target a smooth 60 fps presentation.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no single universal loading time
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save progress, and storage state.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+device_performance.1.verified_at=2026-08-27
+device_performance.1.verification_status=Verified / sourced
+device_performance.1.unavailable_reason<<EOF
+No required Handheld or TV mode is marked unsupported.
+EOF
+device_performance.1.performance_notes<<EOF
+Original Nintendo Switch performance profile for the remake; turn-based gameplay and exploration target a smooth 60 fps presentation.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / Backward Compatible
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=1280x720
+device_performance.2.handheld.output_resolution=1920x1080 system output / backward-compatible rendering profile
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1920x1080
+device_performance.2.tv.output_resolution=1920x1080
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+device_performance.2.mode.1.name=Backward Compatibility
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+device_performance.2.upscaling=System output scaling only; no native Switch 2 edition assumed
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no single universal loading time
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save progress, and storage state.
+EOF
+device_performance.2.game_version=Current Nintendo Switch retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 compatibility + established Nintendo Switch performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/gaming-systems/switch-2/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.verification_status=Verified profile / Backward Compatible
+device_performance.2.unavailable_reason<<EOF
+No required Handheld or TV mode is marked unsupported.
+EOF
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch version on Nintendo Switch 2. Nintendo lists game behavior as consistent with Nintendo Switch.
+EOF
+upgrade_price=0
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/dad2dfa044f3b1809bfb65e0145f824e25d2a363e446a142b5d46b27766463ea
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/4c7e8dd48d4502fe6e055a4123edb756884df4c3b9e38b6e0b2e6467f0e3f156
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/6f1e4ece77f40f695a7589fb098bc07c26ea34dcb740f31ad65f5b6fe157d006
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/9e65faa68da4e6401bec610a841c4767843058906b4dbca5b809a9fe7eb7bc81
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/163e4c00b087ebce4aba847ea045c6447847f8441799cff4742ca0b96e16fbb5
+banner_image.6=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/b6ddbc898fcb6c78c6d186d914c9cbdf446652b930d16eabb30b169fbf9b94c1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/dad2dfa044f3b1809bfb65e0145f824e25d2a363e446a142b5d46b27766463ea
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/4c7e8dd48d4502fe6e055a4123edb756884df4c3b9e38b6e0b2e6467f0e3f156
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/6f1e4ece77f40f695a7589fb098bc07c26ea34dcb740f31ad65f5b6fe157d006
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/9e65faa68da4e6401bec610a841c4767843058906b4dbca5b809a9fe7eb7bc81
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/163e4c00b087ebce4aba847ea045c6447847f8441799cff4742ca0b96e16fbb5
+gallery.6.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/b6ddbc898fcb6c78c6d186d914c9cbdf446652b930d16eabb30b169fbf9b94c1
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/dad2dfa044f3b1809bfb65e0145f824e25d2a363e446a142b5d46b27766463ea
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/4c7e8dd48d4502fe6e055a4123edb756884df4c3b9e38b6e0b2e6467f0e3f156
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/6f1e4ece77f40f695a7589fb098bc07c26ea34dcb740f31ad65f5b6fe157d006
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/dad2dfa044f3b1809bfb65e0145f824e25d2a363e446a142b5d46b27766463ea
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/4c7e8dd48d4502fe6e055a4123edb756884df4c3b9e38b6e0b2e6467f0e3f156
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/6f1e4ece77f40f695a7589fb098bc07c26ea34dcb740f31ad65f5b6fe157d006
+nintendo_official_url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+official_store_url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+front_cover_hires_url=
+cover_texture_url=
+supports_arabic=false
+overview_tagline=Set out on a classic Mario adventure. Repair Star Road, battle the Smithy Gang, and team up with oddball allies in a story-rich RPG remade for Nintendo Switch.
+overview_suitable_for.1=Players looking for role playing, action gameplay.
+overview_suitable_for.2=Players who want the game modes supported by the official player-count specification: Single system (1).
+overview_not_suitable_for.1=Players specifically seeking online multiplayer; this title does not list online multiplayer support.
+overview_not_suitable_for.2=Players specifically seeking local multiplayer; this title does not list local multiplayer support.
+performance_notes<<EOF
+Original Nintendo Switch performance profile for the remake; turn-based gameplay and exploration target a smooth 60 fps presentation.
+EOF
+verdict_summary<<EOF
+Overall score: 8.8/10. Strengths include Charming remake of a beloved classic; Excellent pacing and approachable RPG mechanics; Great music options and polished presentation. Main drawbacks include Relatively short for an RPG; Low challenge for genre veterans outside selected encounters.
+EOF
+studio_description<<EOF
+Nintendo is credited as the developer of this Nintendo Switch release. Nintendo is credited as the publisher.
+EOF
+setting_requirement.1=Nintendo Switch-compatible hardware for this release.
+setting_requirement.2=Online multiplayer is not required for the core single-player experience.
+timeline.1.details<<EOF
+Announced during Nintendo Direct — recorded milestone dated 2023-06-21.
+EOF
+update.1.changes<<EOF
+Update entry for Launch version, dated 2023-11-17. No additional change list was included in the prior verified extraction.
+EOF
+timeline.2.details<<EOF
+Released on Nintendo Switch — recorded milestone dated 2023-11-17.
+EOF
+update.2.changes<<EOF
+Update entry for Current retail build, dated 2026-08-27. No additional change list was included in the prior verified extraction.
+EOF
+timeline.3.details<<EOF
+Nintendo published follow-up tips / secrets coverage — recorded milestone dated 2024-01-22.
+EOF
+update.3.changes<<EOF
+Update entry for Save Data Cloud support active, dated 2026-08-27. No additional change list was included in the prior verified extraction.
+EOF
+dlc.1.title=No standalone DLC announced
+dlc.1.description<<EOF
+No standalone paid DLC expansion is included in this extraction. Free updates, when applicable, are listed in the Updates section instead.
+EOF
+guide.1.title=Official Nintendo game page
+guide.1.summary<<EOF
+Official Nintendo reference for game description, supported modes, player counts, languages, file size, and compatibility information.
+EOF
+guide.1.url=https://www.nintendo.com/us/store/products/super-mario-rpg-switch/
+
+# Expanded detail-page point rule: added more than 3 items where appropriate.
+gameplay_pillar.4.title=Timed defense and party rhythm
+gameplay_pillar.4.description<<EOF
+Action Commands are used on offense and defense, keeping battles active and rewarding good timing rather than purely menu-based play.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/9e65faa68da4e6401bec610a841c4767843058906b4dbca5b809a9fe7eb7bc81
+gameplay_pillar.5.title=Secrets, minigames, and side content
+gameplay_pillar.5.description<<EOF
+The adventure includes hidden chests, optional bosses, minigames, and post-story challenges that add more to do beyond the critical path.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/163e4c00b087ebce4aba847ea045c6447847f8441799cff4742ca0b96e16fbb5
+story_chapter.4.title=Meet Geno, Mallow, and unexpected allies
+story_chapter.4.text<<EOF
+Mario gradually builds a memorable party whose personalities, abilities, and interactions carry much of the game's charm and humor.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/b6ddbc898fcb6c78c6d186d914c9cbdf446652b930d16eabb30b169fbf9b94c1
+story_chapter.5.title=Optional challenges after the finale
+story_chapter.5.text<<EOF
+Even after the main story, players can tackle stronger rematch content, finish side objectives, and hunt down missed treasures and secrets.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000068683/dad2dfa044f3b1809bfb65e0145f824e25d2a363e446a142b5d46b27766463ea
+feature.4=Action Commands keep turn-based battles lively
+feature.5=Short pacing makes it easy to finish without filler
+feature.6=Optional postgame content adds extra challenge beyond the story
+faq.4.question=How long is Super Mario RPG?
+faq.4.answer<<EOF
+The main story is relatively approachable in length, while side content, optional bosses, and completion goals extend the overall playtime meaningfully.
+EOF
+faq.5.question=Is the remake faithful to the original?
+faq.5.answer<<EOF
+Yes. It preserves the core structure, characters, and battle flow of the SNES classic while updating visuals, audio, accessibility, and battle conveniences.
+EOF
+overview_suitable_for.3=Players curious about turn-based RPGs but wanting an easy starting point.
+overview_suitable_for.4=Nintendo fans who value charm, humor, and brisk pacing over huge scale.
+overview_not_suitable_for.3=Players wanting a very long, system-heavy RPG.
+overview_not_suitable_for.4=Players who prefer fully real-time combat over command-based encounters.
+verdict_pro.4=Action Command timing keeps battles engaging
+verdict_pro.5=Optional secrets give the short adventure extra replay value
+verdict_con.4=Veteran RPG players may outgrow its simple systems quickly
+verdict_con.5=The compact runtime may leave some players wanting a bigger adventure

@@ -1,0 +1,469 @@
+schema_version=24
+name=Xenoblade Chronicles 2
+title=Xenoblade Chronicles 2
+title_ar=زينوبليد كرونيكلز 2
+name_ar=زينوبليد كرونيكلز 2
+slug=xenoblade-chronicles-2-switch
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2: backward compatible; a separate Nintendo Switch 2 Edition exists but is not represented by this file
+edition=Standard
+region=Global
+release_date=2017-12-01
+release_status=Released
+status=Active
+developer=Monolith Soft
+publisher=Nintendo
+genre.1=Role-Playing
+genres.1=Role-Playing
+genre.2=Action
+genres.2=Action
+genre.3=Adventure
+genres.3=Adventure
+series_name=Xenoblade Chronicles
+franchise=Xenoblade
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB T / PEGI 12
+metacritic_score=83
+metacritic=83
+opencritic_score=83
+opencritic=83
+user_score=8.6
+user_score=8.6
+metacritic_url=https://www.metacritic.com/game/xenoblade-chronicles-2/
+game_size_gb=13.2
+size_gb=13.2
+size=13.2 GB
+price=3500
+price_iqd=3500
+price_usd=59.99
+cost=3500
+cost_iqd=3500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+display_order=0
+trade_value=30000
+trade_value_iqd=30000
+store_offer_bonus=5000
+store_offer_bonus_iqd=5000
+official_url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+eshop_url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+A huge story-driven JRPG following Rex and Pyra across the living Titans of Alrest, with real-time party combat and a deep Blade system.
+EOF
+description_full<<EOF
+Xenoblade Chronicles 2 is a large-scale action JRPG from Monolith Soft. Salvager Rex meets Pyra, a mysterious Blade who asks him to take her to Elysium. Their journey crosses the living Titans of Alrest and draws them into conflict with powerful Drivers, Blades, nations, and the organization Torna. Combat blends auto-attacks, Arts, elemental Blade combinations, positioning, party roles, and long-form progression.
+EOF
+description<<EOF
+Xenoblade Chronicles 2 is a large-scale action JRPG from Monolith Soft. Salvager Rex meets Pyra, a mysterious Blade who asks him to take her to Elysium. Their journey crosses the living Titans of Alrest and draws them into conflict with powerful Drivers, Blades, nations, and the organization Torna. Combat blends auto-attacks, Arts, elemental Blade combinations, positioning, party roles, and long-form progression.
+EOF
+description_en<<EOF
+Xenoblade Chronicles 2 is a large-scale action JRPG from Monolith Soft. Salvager Rex meets Pyra, a mysterious Blade who asks him to take her to Elysium. Their journey crosses the living Titans of Alrest and draws them into conflict with powerful Drivers, Blades, nations, and the organization Torna. Combat blends auto-attacks, Arts, elemental Blade combinations, positioning, party roles, and long-form progression.
+EOF
+description_ar<<EOF
+لعبة JRPG ضخمة من Monolith Soft تتبع Rex وPyra عبر عالم Alrest فوق الـTitans، مع قصة طويلة ونظام Drivers وBlades وقتال فوري عميق ومحتوى Expansion Pass.
+EOF
+front_cover_image=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+cartridge_image=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+cartridge=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+cartridge_url=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+box_front_url=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+nintendo_card_image=https://images.launchbox-app.com/5cb80d84-e81a-4de2-aca6-cf740e5d4f65.jpg
+square_game_image=https://images.launchbox-app.com/5cb80d84-e81a-4de2-aca6-cf740e5d4f65.jpg
+main_image=https://images.launchbox-app.com/5cb80d84-e81a-4de2-aca6-cf740e5d4f65.jpg
+image=https://images.launchbox-app.com/5cb80d84-e81a-4de2-aca6-cf740e5d4f65.jpg
+image_url=https://images.launchbox-app.com/5cb80d84-e81a-4de2-aca6-cf740e5d4f65.jpg
+cover_image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/4cd12c9f2233dc671d0ac2bc208f8551d1d0b62c956d6d477585bb42c1ef09ea
+cover=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/4cd12c9f2233dc671d0ac2bc208f8551d1d0b62c956d6d477585bb42c1ef09ea
+cover_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/4cd12c9f2233dc671d0ac2bc208f8551d1d0b62c956d6d477585bb42c1ef09ea
+cover_texture_url=
+box_back_url=
+banner_image.1=https://images.launchbox-app.com/80df32ce-9800-404c-9786-fb0628ec4abc.jpg
+banner_image.2=https://images.launchbox-app.com/37ea62e5-9b95-4a18-aa5b-e6dd2bc9fc27.jpg
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/d7a521b4566a0f252070976f2e72df9994a770df896e625ae2728c61c4b04153
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/e94cf7b5e50297aaaf224be3d215d5b524e35d40ed8338065dae4d58fb3742da
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/070d1f7be9a836c7064e1b9d33fc6388191f8bdfbefe0b5d9c284c1b471c163f
+banner_image.6=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/85883546315ee943d54f8d29686705fb9ba9828099f876e3e27ee82e6fd40f5e
+banner_image.7=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/e6680b0381aa7c47b0d4a251de4b40a840b9746021aab9a48cc05121d73059d5
+gallery.1.description=Xenoblade Chronicles 2 gameplay / world media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/d7a521b4566a0f252070976f2e72df9994a770df896e625ae2728c61c4b04153
+gallery.2.description=Xenoblade Chronicles 2 gameplay / world media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/e94cf7b5e50297aaaf224be3d215d5b524e35d40ed8338065dae4d58fb3742da
+gallery.3.description=Xenoblade Chronicles 2 gameplay / world media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/070d1f7be9a836c7064e1b9d33fc6388191f8bdfbefe0b5d9c284c1b471c163f
+gallery.4.description=Xenoblade Chronicles 2 gameplay / world media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/85883546315ee943d54f8d29686705fb9ba9828099f876e3e27ee82e6fd40f5e
+gallery.5.description=Xenoblade Chronicles 2 gameplay / world media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/e6680b0381aa7c47b0d4a251de4b40a840b9746021aab9a48cc05121d73059d5
+gallery.6.description=Xenoblade Chronicles 2 gameplay / world media 6
+gallery.6.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/3bdd5ab14edb0b72d215460b0a4fcef337fb8c7ec9d56ae2023d411f810fa51f
+trailer_url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+supported_languages_raw=Japanese, English, French, German, Italian, Spanish, Korean, Chinese regional text support
+text_language.1=English / Japanese
+text_language.2=French / German / Italian / Spanish
+text_language.3=Korean / Chinese regional options
+audio_language.1=English voice
+audio_language.2=Japanese voice
+audio_language.3=Music and fully voiced story scenes
+supported_play_mode.1=TV mode
+supported_play_mode.2=Tabletop mode
+supported_play_mode.3=Handheld mode
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+This file is for the original Nintendo Switch version only. Nintendo now has a separate Xenoblade Chronicles 2 Nintendo Switch 2 Edition, which should be imported as a different platform file if requested.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+edition.1.content.1.label=Base game
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Original Nintendo Switch version
+edition.2.name=Bonus / Special Edition / Offline
+edition.2.cover_image=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+edition.2.content.1.label=Base game
+edition.2.content.2.label=Supplier Special tier
+edition.2.content.3.label=Offline account access
+edition.3.name=Standard / Online
+edition.3.cover_image=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+edition.3.content.1.label=Base game
+edition.3.content.2.label=Online account access
+edition.3.content.3.label=Original Nintendo Switch version
+edition.4.name=Deluxe Edition / Online
+edition.4.cover_image=https://images.launchbox-app.com/08652ae7-93e9-4b2a-b300-fb41ffb43528.jpg
+edition.4.content.1.label=Base game
+edition.4.content.2.label=Supplier Deluxe tier
+edition.4.content.3.label=Online account access
+gameplay_pillar.1.title=Driver and Blade combat
+gameplay_pillar.1.description<<EOF
+Characters fight as Drivers linked to Blades, combining Arts, positioning, specials, and elemental routes.
+EOF
+gameplay_pillar.1.image=https://images.launchbox-app.com/80df32ce-9800-404c-9786-fb0628ec4abc.jpg
+gameplay_pillar.2.title=Huge Titan-based world
+gameplay_pillar.2.description<<EOF
+Each major region is built on or around a living Titan with its own ecosystems, cities, and exploration layers.
+EOF
+gameplay_pillar.2.image=https://images.launchbox-app.com/37ea62e5-9b95-4a18-aa5b-e6dd2bc9fc27.jpg
+gameplay_pillar.3.title=Long-form JRPG story
+gameplay_pillar.3.description<<EOF
+The campaign spends dozens of hours developing Rex, Pyra, Mythra, and a large supporting cast.
+EOF
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/d7a521b4566a0f252070976f2e72df9994a770df896e625ae2728c61c4b04153
+gameplay_pillar.4.title=Blade collection and builds
+gameplay_pillar.4.description<<EOF
+Core Crystals, Blade roles, affinity charts, equipment, and party composition create extensive build variety.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/e94cf7b5e50297aaaf224be3d215d5b524e35d40ed8338065dae4d58fb3742da
+gameplay_pillar.5.title=Expansion Pass depth
+gameplay_pillar.5.description<<EOF
+The official Expansion Pass adds quests, items, Challenge Battle content, and Torna – The Golden Country.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/070d1f7be9a836c7064e1b9d33fc6388191f8bdfbefe0b5d9c284c1b471c163f
+world_summary<<EOF
+Alrest is a sea of clouds where civilizations live on colossal Titans. Each Titan has a distinct landscape, culture, weather pattern, enemy ecology, and political role in the story.
+EOF
+story_chapter.1.title=Rex becomes a Driver
+story_chapter.1.text<<EOF
+Young salvager Rex accepts a dangerous job and becomes linked to Pyra after a catastrophic betrayal.
+EOF
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/d7a521b4566a0f252070976f2e72df9994a770df896e625ae2728c61c4b04153
+story_chapter.2.title=Journey toward Elysium
+story_chapter.2.text<<EOF
+Pyra asks Rex to reach Elysium, setting the party on a journey across Alrest.
+EOF
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/e94cf7b5e50297aaaf224be3d215d5b524e35d40ed8338065dae4d58fb3742da
+story_chapter.3.title=Meet allies and rivals
+story_chapter.3.text<<EOF
+Nia, Tora, Morag, Zeke, and others join the journey while Torna pursues its own goals.
+EOF
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/070d1f7be9a836c7064e1b9d33fc6388191f8bdfbefe0b5d9c284c1b471c163f
+story_chapter.4.title=Uncover the truth of Blades and Titans
+story_chapter.4.text<<EOF
+Later chapters reveal the nature of Alrest, its history, and the relationship between Drivers, Blades, and the Architect.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/85883546315ee943d54f8d29686705fb9ba9828099f876e3e27ee82e6fd40f5e
+story_chapter.5.title=Reach the World Tree
+story_chapter.5.text<<EOF
+The journey eventually converges on the World Tree and the truth behind Elysium and Alrest’s future.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000000707/e6680b0381aa7c47b0d4a251de4b40a840b9746021aab9a48cc05121d73059d5
+feature.1=Large story campaign with extensive voiced scenes
+feature.2=Deep Driver/Blade battle system
+feature.3=Huge soundtrack and varied Titan environments
+feature.4=Expansion Pass includes Torna – The Golden Country
+feature.5=One of Nintendo Switch’s major exclusive JRPGs
+performance_tv_resolution=Dynamic up to ~720p
+performance_handheld_resolution=Dynamic ~540p
+performance_fps=30
+performance_hdr=false
+main_story_hours=65
+completion_main_story_hours=110
+completion_story_plus_dlc_hours=160
+faq.1.question=Is Xenoblade Chronicles 2 turn-based?
+faq.1.answer<<EOF
+No. Combat occurs in real time with auto-attacks, timed Arts, Blade switching, combos, and party management.
+EOF
+faq.2.question=Does the Expansion Pass include Torna?
+faq.2.answer<<EOF
+Yes. The official Expansion Pass includes Torna – The Golden Country along with quests, items, and challenge content.
+EOF
+faq.3.question=Is this the Switch 2 Edition?
+faq.3.answer<<EOF
+No. This file is specifically for the original Nintendo Switch release.
+EOF
+faq.4.question=Does it work on Switch 2?
+faq.4.answer<<EOF
+Yes, the original release is compatible, but a separate Switch 2 Edition also exists and should not be confused with this file.
+EOF
+faq.5.question=How long is it?
+faq.5.answer<<EOF
+The main story is very long, and side quests, Blade affinity charts, postgame bosses, and expansion content can greatly extend playtime.
+EOF
+verdict_score=9.0
+verdict_pro.1=Memorable characters and soundtrack
+verdict_pro.2=Deep combat becomes highly rewarding
+verdict_pro.3=Large and distinctive world design
+verdict_pro.4=Expansion Pass adds major value
+verdict_pro.5=Excellent long-form JRPG progression
+verdict_con.1=Combat tutorials can be overwhelming
+verdict_con.2=Early pacing is slower than later chapters
+verdict_con.3=Handheld image quality can be soft on original Switch
+verdict_con.4=Randomized Blade acquisition is divisive
+verdict_con.5=Large time commitment
+review.1.source=Metacritic
+review.1.score=83
+review.1.url=https://www.metacritic.com/game/xenoblade-chronicles-2/
+review.2.source=Nintendo
+review.2.score=Official product page
+review.2.url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+review.3.source=LaunchBox
+review.3.score=Media database
+review.3.url=https://gamesdb.launchbox-app.com/
+timeline.1.date=2017-12-01
+timeline.1.title=Released on Nintendo Switch
+timeline.2.date=2018-09-14
+timeline.2.title=Torna – The Golden Country expansion launched
+timeline.3.date=2026
+timeline.3.title=Separate Nintendo Switch 2 Edition available / announced in Nintendo ecosystem
+update.1.version=Launch version
+update.1.date=2017-12-01
+update.2.version=Expansion Pass complete
+update.2.date=2018-09-14
+update.3.version=Current original Switch build
+update.3.date=2026-08-27
+studio_name=Monolith Soft
+studio_website=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+source.2.name=Nintendo Expansion Pass
+source.2.url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-expansion-pass-70070000000644-switch/
+source.3.name=Metacritic
+source.3.url=https://www.metacritic.com/game/xenoblade-chronicles-2/
+storage_download_size_gb=13.2
+storage_required_space_gb=13.2
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Nintendo lists approximately 13.2 GB for the original Switch release, with the Switch 2 compatibility listing around the same class. Expansion content requires additional storage.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=Xenoblade Chronicles: Definitive Edition
+series_game.2=Xenoblade Chronicles 3
+series_game.3=Xenoblade Chronicles 2: Torna – The Golden Country
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=3500
+type.1.cost=3500
+type.1.description=Regular offline package; supplied price 3,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=offline_special
+type.2.name=Bonus / Special Edition / Offline
+type.2.option_id=offline_account
+type.2.price=4500
+type.2.cost=4500
+type.2.description=Bonus/Special offline supplier tier; supplied price 4,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=online_standard
+type.3.name=Standard / Online
+type.3.option_id=online_account
+type.3.price=48750
+type.3.cost=3500
+type.3.description=Standard online package; selling price 48,750 IQD; base cost tracked from Regular tier.
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=online_deluxe
+type.4.name=Deluxe Edition / Online
+type.4.option_id=online_account
+type.4.price=57500
+type.4.cost=4500
+type.4.description=Deluxe online package; selling price 57,500 IQD; cost tracked from Special tier.
+type.4.stock=9999
+type.4.is_infinite_stock=true
+dlc.1.title=Xenoblade Chronicles 2 Expansion Pass
+dlc.1.description<<EOF
+Adds support items, quests, Challenge Battle Mode, and Torna – The Golden Country story expansion.
+EOF
+dlc.1.release_date=2017-12-01
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / sourced
+device_performance.1.verification_status=Sourced / compatibility profile
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=Dynamic ~540p
+device_performance.1.handheld.resolution_dynamic=true
+device_performance.1.handheld.rendering_resolution=Dynamic ~540p
+device_performance.1.handheld.output_resolution=Dynamic ~540p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=20
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Xenoblade Chronicles 2 uses aggressive dynamic resolution on original Switch, especially in handheld mode, while targeting 30 fps.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Dynamic up to ~720p
+device_performance.1.tv.resolution_dynamic=true
+device_performance.1.tv.rendering_resolution=Dynamic up to ~720p
+device_performance.1.tv.output_resolution=Dynamic up to ~720p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=20
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Xenoblade Chronicles 2 uses aggressive dynamic resolution on original Switch, especially in handheld mode, while targeting 30 fps.
+EOF
+device_performance.1.mode.1.name=Primary documented / observed profile
+device_performance.1.mode.1.handheld_resolution=Dynamic ~540p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=Dynamic up to ~720p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Xenoblade Chronicles 2 uses aggressive dynamic resolution on original Switch, especially in handheld mode, while targeting 30 fps.
+EOF
+device_performance.1.upscaling=Game / system scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no universal value
+device_performance.1.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page + established release performance profile
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+device_performance.1.verified_at=2026-08-27
+device_performance.1.performance_notes<<EOF
+Xenoblade Chronicles 2 uses aggressive dynamic resolution on original Switch, especially in handheld mode, while targeting 30 fps.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / sourced
+device_performance.2.verification_status=Sourced / compatibility profile
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=Dynamic ~540p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Dynamic ~540p
+device_performance.2.handheld.output_resolution=Dynamic ~540p
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Original Switch version through compatibility. A dedicated Switch 2 Edition exists separately and is not represented here.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=Dynamic up to ~720p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Dynamic up to ~720p
+device_performance.2.tv.output_resolution=Dynamic up to ~720p
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Original Switch version through compatibility. A dedicated Switch 2 Edition exists separately and is not represented here.
+EOF
+device_performance.2.mode.1.name=Primary documented / observed profile
+device_performance.2.mode.1.handheld_resolution=Dynamic ~540p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=Dynamic up to ~720p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Original Switch version through compatibility. A dedicated Switch 2 Edition exists separately and is not represented here.
+EOF
+device_performance.2.upscaling=Game / system scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no universal value
+device_performance.2.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 compatibility + original game performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/xenoblade-chronicles-2-switch/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.performance_notes<<EOF
+Original Switch version through compatibility. A dedicated Switch 2 Edition exists separately and is not represented here.
+EOF
+upgrade_price=0

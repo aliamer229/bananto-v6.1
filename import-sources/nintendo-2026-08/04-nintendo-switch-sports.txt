@@ -1,0 +1,407 @@
+schema_version=24
+name=Nintendo Switch Sports
+title=Nintendo Switch Sports
+title_ar=نينتندو سويتش سبورتس
+name_ar=نينتندو سويتش سبورتس
+slug=nintendo-switch-sports
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported – game behavior is consistent with Nintendo Switch
+edition=Standard / Store Variants
+region=Global
+release_date=2022-04-29
+release_status=Released
+status=Active
+developer=Nintendo
+publisher=Nintendo
+genre.1=Sports
+genres.1=Sports
+genre.2=Party
+genres.2=Party
+genre.3=Action
+genres.3=Action
+series_name=Nintendo Switch Sports
+players_count=Single system (1-4) / Online (1-2)
+players=Single system (1-4) / Online (1-2)
+player_count=Single system (1-4) / Online (1-2)
+age_rating=ESRB E10+ — Mild Violence, Users Interact, In-Game Purchases
+metacritic_score=72
+metacritic=72
+metacritic_url=https://www.metacritic.com/game/nintendo-switch-sports/
+opencritic_score=74
+opencritic=74
+user_score=6.9
+userscore=6.9
+user_rating=6.9
+game_size_gb=3.2
+size=3.2 GB
+size_gb=3.2
+price=1500
+price_iqd=1500
+price_usd=39.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=7750
+trade_value_iqd=7750
+store_offer_bonus=1250
+store_offer_bonus_iqd=1250
+official_url=https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/
+eshop_url=https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+A motion-controlled sports collection featuring Basketball, Golf, Soccer, Volleyball, Bowling, Tennis, Badminton, and Chambara for local and online play.
+EOF
+description_full<<EOF
+Nintendo Switch Sports brings motion-controlled sports to Switch with intuitive Joy-Con actions, local party play, online matchmaking, cosmetic rewards, and free post-launch sport additions. Nintendo lists TV and Tabletop modes, but not Handheld mode, because the game relies on detached Joy-Con motion input.
+EOF
+description<<EOF
+Nintendo Switch Sports brings motion-controlled sports to Switch with intuitive Joy-Con actions, local party play, online matchmaking, cosmetic rewards, and free post-launch sport additions. Nintendo lists TV and Tabletop modes, but not Handheld mode, because the game relies on detached Joy-Con motion input.
+EOF
+description_en<<EOF
+Nintendo Switch Sports brings motion-controlled sports to Switch with intuitive Joy-Con actions, local party play, online matchmaking, cosmetic rewards, and free post-launch sport additions. Nintendo lists TV and Tabletop modes, but not Handheld mode, because the game relies on detached Joy-Con motion input.
+EOF
+description_ar<<EOF
+مجموعة رياضات بالحركة تشمل كرة السلة والغولف وكرة القدم والطائرة والبولينغ والتنس والبادمنتون وChambara مع لعب محلي وأونلاين. لا يدعم وضع Handheld رسميًا.
+EOF
+front_cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+cartridge_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+cartridge=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+cartridge_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+box_front_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/ee756f617f2e59e7cb4e09fccda40dfebfed6aaa94f1164f4fed8f6d38253f28
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/ee756f617f2e59e7cb4e09fccda40dfebfed6aaa94f1164f4fed8f6d38253f28
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/ee756f617f2e59e7cb4e09fccda40dfebfed6aaa94f1164f4fed8f6d38253f28
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=false
+nintendo_play_modes=TV / Tabletop
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/282ce6a96d5855d8b46aa9316314969f731a26ef9c7b2bc1e5aebe62dcf2ece2
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Motion-controlled sports
+gameplay_pillar.1.description<<EOF
+Joy-Con motion maps real-world swings, kicks, and throws into sports actions.
+EOF
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/08357e380f643e3f73773aef78ab8aa364fff62cc3794e6a3082d7ec48b38aa5
+gameplay_pillar.2.title=Eight supported sports
+gameplay_pillar.2.description<<EOF
+Basketball, Golf, Soccer, Volleyball, Bowling, Tennis, Badminton, and Chambara provide varied rule sets.
+EOF
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/d008f8312312fff3dcb3cf726ded0195f91b5d8b3946ba32d7ef0ac16c515fb3
+gameplay_pillar.3.title=Local party play
+gameplay_pillar.3.description<<EOF
+Several sports support multiple players on one system for family and party sessions.
+EOF
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/42d806ffe805de9673f9dc4496e2180832e7a5636fb555faa5279101978fcb2b
+gameplay_pillar.4.title=Online matchmaking
+gameplay_pillar.4.description<<EOF
+Players can compete online for ranks and cosmetic rewards through Nintendo Switch Online features.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/a8af665a4e14030240458b5b2fa1c9ac490f7fc4956bc429fd693babe0cfaf9d
+gameplay_pillar.5.title=Leg Strap support
+gameplay_pillar.5.description<<EOF
+Some Soccer activities can use the Leg Strap accessory to translate real kicking motions.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/08357e380f643e3f73773aef78ab8aa364fff62cc3794e6a3082d7ec48b38aa5
+world_summary<<EOF
+Nintendo Switch Sports brings motion-controlled sports to Switch with intuitive Joy-Con actions, local party play, online matchmaking, cosmetic rewards, and free post-launch sport additions. Nintendo lists TV and Tabletop modes, but not Handheld mode, because the game relies on detached Joy-Con motion input.
+EOF
+story_chapter.1.title=Choose a Sportmate or Mii
+story_chapter.1.text<<EOF
+Players begin by choosing and customizing an avatar for Spocco Square.
+EOF
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/d008f8312312fff3dcb3cf726ded0195f91b5d8b3946ba32d7ef0ac16c515fb3
+story_chapter.2.title=Learn individual sports
+story_chapter.2.text<<EOF
+Each sport uses its own motion gestures, timing systems, scoring rules, and team structure.
+EOF
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/42d806ffe805de9673f9dc4496e2180832e7a5636fb555faa5279101978fcb2b
+story_chapter.3.title=Play locally with family
+story_chapter.3.text<<EOF
+The game is designed around quick shared sessions using multiple Joy-Con controllers.
+EOF
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/a8af665a4e14030240458b5b2fa1c9ac490f7fc4956bc429fd693babe0cfaf9d
+story_chapter.4.title=Compete online
+story_chapter.4.text<<EOF
+Online play unlocks broader matchmaking and reward progression.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/08357e380f643e3f73773aef78ab8aa364fff62cc3794e6a3082d7ec48b38aa5
+story_chapter.5.title=Return for updated sports
+story_chapter.5.text<<EOF
+Free updates expanded the game with Golf and later Basketball, increasing its long-term variety.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/d008f8312312fff3dcb3cf726ded0195f91b5d8b3946ba32d7ef0ac16c515fb3
+feature.1=Eight sports
+feature.2=Motion controls
+feature.3=Local multiplayer
+feature.4=Online matchmaking and Pro League
+feature.5=Mii and Sportsmate customization
+performance_tv_resolution=1080p
+performance_handheld_resolution=Not Supported
+performance_fps=60
+performance_hdr=false
+main_story_hours=0
+completion_main_story_hours=0
+completion_story_plus_dlc_hours=0
+faq.1.question=Does Nintendo Switch Sports support Handheld mode?
+faq.1.answer<<EOF
+No. Nintendo lists TV mode and Tabletop mode, not Handheld mode.
+EOF
+faq.2.question=How many local players are supported?
+faq.2.answer<<EOF
+Nintendo lists up to four players on one system, depending on the sport.
+EOF
+faq.3.question=Does it support online play?
+faq.3.answer<<EOF
+Yes. Online Play and Save Data Cloud are listed through Nintendo Switch Online.
+EOF
+faq.4.question=Which sports are included now?
+faq.4.answer<<EOF
+Basketball, Golf, Soccer, Volleyball, Bowling, Tennis, Badminton, and Chambara.
+EOF
+faq.5.question=Is a Leg Strap required?
+faq.5.answer<<EOF
+A Leg Strap is used for specific Soccer functionality; some physical packages include one.
+EOF
+verdict_score=8.5
+verdict_pro.1=Very accessible motion controls
+verdict_pro.2=Strong family and party appeal
+verdict_pro.3=Online play extends replay value
+verdict_pro.4=Free sports updates expanded content
+verdict_pro.5=Simple presentation works well for casual players
+verdict_con.1=Handheld mode is not supported
+verdict_con.2=Depth varies significantly between sports
+verdict_con.3=Requires space for safe motion play
+verdict_con.4=Some online rewards rotate over time
+verdict_con.5=Not designed as a realistic sports simulator
+review.1.source=Metacritic
+review.1.score=72
+review.1.url=https://www.metacritic.com/game/nintendo-switch-sports/
+review.2.source=OpenCritic
+review.2.score=74
+review.2.url=https://opencritic.com/
+timeline.1.date=2022-04-29
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=Nintendo
+studio_website=https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/nintendo-switch-sports/
+storage_download_size_gb=3.2
+storage_required_space_gb=3.2
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=true
+multiplayer_online=true
+multiplayer_cooperative=true
+multiplayer_competitive=true
+multiplayer_local_wireless=false
+multiplayer_split_screen=true
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Regular / Offline; user-supplied store price 1,500 IQD; recorded cost 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=14250
+type.2.cost=1500
+type.2.description=Standard / Online; user-supplied store price 14,250 IQD; recorded cost 1,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+No paid expansion pass is required; major sports additions were delivered through free software updates.
+EOF
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/08357e380f643e3f73773aef78ab8aa364fff62cc3794e6a3082d7ec48b38aa5
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/d008f8312312fff3dcb3cf726ded0195f91b5d8b3946ba32d7ef0ac16c515fb3
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/42d806ffe805de9673f9dc4496e2180832e7a5636fb555faa5279101978fcb2b
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/a8af665a4e14030240458b5b2fa1c9ac490f7fc4956bc429fd693babe0cfaf9d
+gallery.1.description=Nintendo Switch Sports official/promotional game-world media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/08357e380f643e3f73773aef78ab8aa364fff62cc3794e6a3082d7ec48b38aa5
+gallery.2.description=Nintendo Switch Sports official/promotional game-world media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/d008f8312312fff3dcb3cf726ded0195f91b5d8b3946ba32d7ef0ac16c515fb3
+gallery.3.description=Nintendo Switch Sports official/promotional game-world media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/42d806ffe805de9673f9dc4496e2180832e7a5636fb555faa5279101978fcb2b
+gallery.4.description=Nintendo Switch Sports official/promotional game-world media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000049931/a8af665a4e14030240458b5b2fa1c9ac490f7fc4956bc429fd693babe0cfaf9d
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=false
+device_performance.1.handheld.resolution=Not Supported
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=Not Supported
+device_performance.1.handheld.output_resolution=Not Supported
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Handheld mode is not supported. TV/Tabletop gameplay targets a smooth 60 fps presentation.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Handheld mode is not supported. TV/Tabletop gameplay targets a smooth 60 fps presentation.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=Not Supported
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Handheld mode is not supported. TV/Tabletop gameplay targets a smooth 60 fps presentation.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/
+device_performance.1.performance_notes<<EOF
+Handheld mode is not supported. TV/Tabletop gameplay targets a smooth 60 fps presentation.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch software. Handheld mode remains unsupported because the original title requires detached Joy-Con use.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch software. Handheld mode remains unsupported because the original title requires detached Joy-Con use.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch software. Handheld mode remains unsupported because the original title requires detached Joy-Con use.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch software. Handheld mode remains unsupported because the original title requires detached Joy-Con use.
+EOF
+upgrade_price=0

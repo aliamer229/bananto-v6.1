@@ -1,0 +1,308 @@
+schema_version=24
+name=HITMAN World of Assassination – Signature Edition
+title=HITMAN World of Assassination – Signature Edition
+title_ar=هيتمان وورلد أوف أساسينيشن – سيغنتشر إديشن
+name_ar=هيتمان وورلد أوف أساسينيشن – سيغنتشر إديشن
+slug=hitman-world-of-assassination-signature-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=Separate Nintendo Switch product may exist
+edition=Standard
+region=Global
+release_date=2025-06-05
+release_status=Released
+status=Active
+developer=IO Interactive
+publisher=IO Interactive
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Stealth
+genres.3=Stealth
+series_name=HITMAN World of Assassination – Signature Edition
+players_count=Single system (1)
+players=Single system (1)
+age_rating=PEGI 18 / ESRB M
+metacritic_score=87
+metacritic=87
+opencritic_score=87
+opencritic=87
+user_score=8.5
+game_size_gb=54.5
+size_gb=54.5
+size=54.5 GB
+price=1500
+price_iqd=1500
+cost=1500
+cost_iqd=1500
+upgrade_price=0
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=14000
+trade_value_iqd=14000
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/HITMAN-World-of-Assassination-Signature-Edition-2792849.html
+eshop_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/HITMAN-World-of-Assassination-Signature-Edition-2792849.html
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=The complete World of Assassination package on Nintendo Switch 2, combining the modern HITMAN trilogy with premium content.
+description_full<<EOF
+HITMAN World of Assassination – Signature Edition brings together HITMAN, HITMAN 2, and HITMAN 3 content in a single Nintendo Switch 2 package. Play as Agent 47 across more than 20 locations, using disguises, stealth, gadgets, environmental opportunities, and creative assassination routes. The Signature Edition also includes major expansion and deluxe content.
+EOF
+description<<EOF
+HITMAN World of Assassination – Signature Edition brings together HITMAN, HITMAN 2, and HITMAN 3 content in a single Nintendo Switch 2 package. Play as Agent 47 across more than 20 locations, using disguises, stealth, gadgets, environmental opportunities, and creative assassination routes. The Signature Edition also includes major expansion and deluxe content.
+EOF
+description_en<<EOF
+HITMAN World of Assassination – Signature Edition brings together HITMAN, HITMAN 2, and HITMAN 3 content in a single Nintendo Switch 2 package. Play as Agent 47 across more than 20 locations, using disguises, stealth, gadgets, environmental opportunities, and creative assassination routes. The Signature Edition also includes major expansion and deluxe content.
+EOF
+description_ar<<EOF
+حزمة HITMAN الكاملة على Nintendo Switch 2، تجمع ألعاب HITMAN الحديثة في منتج واحد مع أكثر من 20 موقعًا وحرية كبيرة في التخفي والتنكر وتنفيذ الاغتيالات بطرق مبتكرة.
+EOF
+front_cover_image=
+cartridge_image=
+nintendo_card_image=
+square_game_image=
+main_image=
+cover_image=
+cover=
+cover_url=
+front_cover_hires_url=
+cover_texture_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+gallery.1.image=
+gallery.1.description=HITMAN World of Assassination – Signature Edition world/gameplay media 1
+banner_image.2=
+gallery.2.image=
+gallery.2.description=HITMAN World of Assassination – Signature Edition world/gameplay media 2
+banner_image.3=
+gallery.3.image=
+gallery.3.description=HITMAN World of Assassination – Signature Edition world/gameplay media 3
+banner_image.4=
+gallery.4.image=
+gallery.4.description=HITMAN World of Assassination – Signature Edition world/gameplay media 4
+banner_image.5=
+gallery.5.image=
+gallery.5.description=HITMAN World of Assassination – Signature Edition world/gameplay media 5
+banner_image.6=
+gallery.6.image=
+gallery.6.description=HITMAN World of Assassination – Signature Edition world/gameplay media 6
+trailer_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/HITMAN-World-of-Assassination-Signature-Edition-2792849.html
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=true
+nintendo_notes<<EOF
+Platform and package information verified against the official product/source page for HITMAN World of Assassination – Signature Edition.
+EOF
+overview_tagline=Become Agent 47 and turn every mission into your own plan.
+overview_suitable_for.1=Fans of the listed genres
+overview_suitable_for.2=Players who value the game’s core mechanics
+overview_suitable_for.3=Players looking for this platform version
+overview_suitable_for.4=Collectors or storefront users comparing platform editions
+overview_not_suitable_for.1=Players who dislike the listed genre
+overview_not_suitable_for.2=Players seeking a different platform entry
+overview_not_suitable_for.3=Players who require unsupported multiplayer modes
+overview_not_suitable_for.4=Players expecting a different edition package
+main_story_hours=35
+completionist_hours=120
+gameplay_pillar.1.title=Freedom of approach
+gameplay_pillar.1.description<<EOF
+Disguises, tools, accidents, and mission stories let players solve targets in many different ways.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=More than 20 locations
+gameplay_pillar.2.description<<EOF
+The package spans a wide range of dense sandbox locations built for replay.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Freelancer and live modes
+gameplay_pillar.3.description<<EOF
+Beyond the campaign, extra modes extend long-term progression and experimentation.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Stealth and social infiltration
+gameplay_pillar.4.description<<EOF
+Observation, timing, and blending in are as important as direct action.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Signature Edition content
+gameplay_pillar.5.description<<EOF
+This edition includes expansion and deluxe content on top of the full campaign set.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+HITMAN World of Assassination – Signature Edition brings together HITMAN, HITMAN 2, and HITMAN 3 content in a single Nintendo Switch 2 package. Play as Agent 47 across more than 20 locations, using disguises, stealth, gadgets, environmental opportunities, and creative assassination routes. The Signature Edition also includes major expansion and deluxe content.
+EOF
+story_chapter.1.title=Enter the World of Assassination
+story_chapter.1.text<<EOF
+Agent 47 takes on a series of interconnected contracts across a global spy-thriller campaign.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Master disguises and access
+story_chapter.2.text<<EOF
+Every location rewards careful observation and social stealth.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Turn environments into weapons
+story_chapter.3.text<<EOF
+Creative opportunities allow targets to be eliminated in ways that look accidental or impossible.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Replay with new goals
+story_chapter.4.text<<EOF
+Challenges, mastery tracks, escalations, and alternate routes deepen every location.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Expand into Freelancer
+story_chapter.5.text<<EOF
+Freelancer adds a more persistent and risk-driven assassination structure.
+EOF
+story_chapter.5.image=
+feature.1=Full modern HITMAN trilogy package
+feature.2=More than 20 sandbox locations
+feature.3=Freelancer mode
+feature.4=Expansion and Deluxe Pack content
+feature.5=Strong replayability
+performance_handheld_resolution=1080p
+performance_tv_resolution=1440p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Switch 2 storefront performance profile; actual output may vary by location and patch.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Switch 2 storefront performance profile; actual output may vary by location and patch.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Switch 2 storefront performance profile; actual output may vary by location and patch.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Switch 2 storefront performance profile; actual output may vary by location and patch.
+EOF
+device_performance.1.performance_notes<<EOF
+Switch 2 storefront performance profile; actual output may vary by location and patch.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.unavailable_reason<<EOF
+This product file belongs to a different Nintendo platform entry.
+EOF
+device_performance.2.performance_notes<<EOF
+Not supported for this product entry.
+EOF
+faq.1.question=What is included in Signature Edition?
+faq.1.answer<<EOF
+It combines the main campaign content of HITMAN, HITMAN 2, and HITMAN 3 plus HITMAN 2 Expansion Pack and HITMAN 3 Deluxe Pack content.
+EOF
+faq.2.question=Is this a Nintendo Switch 2 game?
+faq.2.answer<<EOF
+Yes. Nintendo lists the Signature Edition as a Nintendo Switch 2 title released on June 5, 2025.
+EOF
+faq.3.question=Is it single-player?
+faq.3.answer<<EOF
+The core assassination campaign is single-player.
+EOF
+faq.4.question=Why only two store variants?
+faq.4.answer<<EOF
+The supplied pricing contains only Regular / Offline and Standard / Online.
+EOF
+faq.5.question=What is the main appeal?
+faq.5.answer<<EOF
+Highly replayable stealth sandboxes that reward creativity and experimentation.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Regular / Offline; supplier cost 1,500 IQD; selling price 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard-online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=20750
+type.2.cost=1500
+type.2.description=Standard / Online; supplier cost 1,500 IQD; selling price 20,750 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+source.1.name=Official product / publisher page
+source.1.url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/HITMAN-World-of-Assassination-Signature-Edition-2792849.html
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/search/hitman-world-of-assassination-signature-edition/

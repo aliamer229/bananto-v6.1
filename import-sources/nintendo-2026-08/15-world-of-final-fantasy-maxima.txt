@@ -1,0 +1,411 @@
+schema_version=24
+name=WORLD OF FINAL FANTASY MAXIMA
+title=WORLD OF FINAL FANTASY MAXIMA
+title_ar=وورلد أوف فاينل فانتسي ماكسيما
+name_ar=وورلد أوف فاينل فانتسي ماكسيما
+slug=world-of-final-fantasy-maxima
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported
+edition=Standard / Store Variants
+region=Global
+release_date=2018-11-06
+release_status=Released
+status=Active
+developer=SQUARE ENIX
+publisher=SQUARE ENIX
+genre.1=RPG
+genres.1=RPG
+genre.2=Adventure
+genres.2=Adventure
+series_name=WORLD OF FINAL FANTASY MAXIMA
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB E10+ / PEGI 12
+metacritic_score=79
+metacritic=79
+metacritic_url=https://www.metacritic.com/game/world-of-final-fantasy-maxima/
+opencritic_score=79
+opencritic=79
+user_score=8.0
+userscore=8.0
+user_rating=8.0
+game_size_gb=10.8
+size=10.8 GB
+size_gb=10.8
+price=1500
+price_iqd=1500
+price_usd=39.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=2500
+trade_value_iqd=2500
+store_offer_bonus=1000
+store_offer_bonus_iqd=1000
+official_url=https://www.nintendo.com/us/store/products/world-of-final-fantasy-maxima-switch/
+eshop_url=https://www.nintendo.com/us/store/products/world-of-final-fantasy-maxima-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+A colorful FINAL FANTASY crossover RPG where Lann and Reynn capture Mirages, build stacked battle formations, and meet familiar series characters in a storybook world.
+EOF
+description_full<<EOF
+A colorful FINAL FANTASY crossover RPG where Lann and Reynn capture Mirages, build stacked battle formations, and meet familiar series characters in a storybook world. The twins travel into a miniature-styled world filled with familiar FINAL FANTASY creatures and characters. Additional champion transformations and systems expand the late-game options beyond the original release.
+EOF
+description<<EOF
+A colorful FINAL FANTASY crossover RPG where Lann and Reynn capture Mirages, build stacked battle formations, and meet familiar series characters in a storybook world. The twins travel into a miniature-styled world filled with familiar FINAL FANTASY creatures and characters. Additional champion transformations and systems expand the late-game options beyond the original release.
+EOF
+description_en<<EOF
+A colorful FINAL FANTASY crossover RPG where Lann and Reynn capture Mirages, build stacked battle formations, and meet familiar series characters in a storybook world. The twins travel into a miniature-styled world filled with familiar FINAL FANTASY creatures and characters. Additional champion transformations and systems expand the late-game options beyond the original release.
+EOF
+description_ar<<EOF
+وورلد أوف فاينل فانتسي ماكسيما — A colorful FINAL FANTASY crossover RPG where Lann and Reynn capture Mirages, build stacked battle formations, and meet familiar series characters in a storybook world.
+EOF
+front_cover_image=https://images.launchbox-app.com/f990b014-4e8d-479f-b68d-7eb17980d076.jpg
+cartridge_image=https://images.launchbox-app.com/f990b014-4e8d-479f-b68d-7eb17980d076.jpg
+cartridge=https://images.launchbox-app.com/f990b014-4e8d-479f-b68d-7eb17980d076.jpg
+cartridge_url=https://images.launchbox-app.com/f990b014-4e8d-479f-b68d-7eb17980d076.jpg
+box_front_url=https://images.launchbox-app.com/f990b014-4e8d-479f-b68d-7eb17980d076.jpg
+nintendo_card_image=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+square_game_image=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+main_image=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+image=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+image_url=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+cover_image=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+cover=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+cover_url=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://images.launchbox-app.com/f990b014-4e8d-479f-b68d-7eb17980d076.jpg
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online — Out of stock
+edition.2.cover_image=https://images.launchbox-app.com/deacd374-3a74-42c3-aa56-042985c2fab9.jpg
+edition.2.content.1.label=Standard / Online — Out of stock store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Out of stock
+gameplay_pillar.1.title=Mirage collection
+gameplay_pillar.1.description<<EOF
+Players capture creatures called Mirages and develop them through transformations and abilities.
+EOF
+gameplay_pillar.2.title=Stack battle system
+gameplay_pillar.2.description<<EOF
+Small, medium, and large units can be stacked together, combining statistics and abilities into strategic formations.
+EOF
+gameplay_pillar.3.title=FINAL FANTASY crossover cast
+gameplay_pillar.3.description<<EOF
+Famous heroes and creatures from across the series appear in stylized roles.
+EOF
+gameplay_pillar.4.title=Maxima additions
+gameplay_pillar.4.description<<EOF
+The Maxima version adds Avatar Change and additional champions, Mirages, and features.
+EOF
+gameplay_pillar.5.title=Classic command combat
+gameplay_pillar.5.description<<EOF
+Turn-based battles reward elemental weaknesses, status effects, and party composition.
+EOF
+world_summary<<EOF
+A colorful FINAL FANTASY crossover RPG where Lann and Reynn capture Mirages, build stacked battle formations, and meet familiar series characters in a storybook world. The twins travel into a miniature-styled world filled with familiar FINAL FANTASY creatures and characters. Additional champion transformations and systems expand the late-game options beyond the original release.
+EOF
+story_chapter.1.title=Lann and Reynn enter Grymoire
+story_chapter.1.text<<EOF
+The twins travel into a miniature-styled world filled with familiar FINAL FANTASY creatures and characters.
+EOF
+story_chapter.2.title=Collect Mirages
+story_chapter.2.text<<EOF
+Progression revolves around capturing and developing monsters with different sizes and abilities.
+EOF
+story_chapter.3.title=Meet champions
+story_chapter.3.text<<EOF
+Iconic FINAL FANTASY characters appear throughout the adventure and can influence combat.
+EOF
+story_chapter.4.title=Uncover the twins’ past
+story_chapter.4.text<<EOF
+The story gradually reveals hidden memories and the larger conflict surrounding Grymoire.
+EOF
+story_chapter.5.title=Use Maxima content
+story_chapter.5.text<<EOF
+Additional champion transformations and systems expand the late-game options beyond the original release.
+EOF
+feature.1=Mirage collection system
+feature.2=Stack-based party building
+feature.3=FINAL FANTASY crossover characters
+feature.4=Maxima additional content
+feature.5=Traditional turn-based combat
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=30
+performance_hdr=false
+main_story_hours=35
+completion_main_story_hours=55
+completion_story_plus_dlc_hours=90
+faq.1.question=What does Maxima add?
+faq.1.answer<<EOF
+It adds Avatar Change, more champions, additional Mirages, and other expanded content.
+EOF
+faq.2.question=Is the online variant available?
+faq.2.answer<<EOF
+The supplied store data says Standard / Online is out of stock, so that variant is stored with stock 0.
+EOF
+faq.3.question=Does it support Switch 2?
+faq.3.answer<<EOF
+Nintendo lists the Switch version as compatible with Switch 2.
+EOF
+faq.4.question=Is it multiplayer?
+faq.4.answer<<EOF
+The main game is a single-player RPG.
+EOF
+faq.5.question=What is a Mirage?
+faq.5.answer<<EOF
+A collectible monster that can be developed and combined into stacked party formations.
+EOF
+verdict_score=8.5
+verdict_pro.1=Charming crossover fan service
+verdict_pro.2=Deep creature collection
+verdict_pro.3=Interesting stack mechanics
+verdict_pro.4=Maxima includes more content
+verdict_pro.5=Good portable JRPG
+verdict_con.1=Very cute tone will not suit everyone
+verdict_con.2=Story can be dialogue-heavy
+verdict_con.3=Some grinding is expected
+verdict_con.4=Online variant currently unavailable in supplied store data
+verdict_con.5=No native Switch 2 edition
+review.1.source=Metacritic
+review.1.score=79
+review.1.url=https://www.metacritic.com/game/world-of-final-fantasy-maxima/
+review.2.source=OpenCritic
+review.2.score=79
+review.2.url=https://opencritic.com/
+timeline.1.date=2018-11-06
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=SQUARE ENIX
+studio_website=https://www.nintendo.com/us/store/products/world-of-final-fantasy-maxima-switch/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/world-of-final-fantasy-maxima-switch/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/world-of-final-fantasy-maxima/
+storage_download_size_gb=10.8
+storage_required_space_gb=10.8
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Regular / Offline; user-supplied store price 1,500 IQD; recorded cost 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online_out_of_stock
+type.2.name=Standard / Online — Out of stock
+type.2.option_id=online_account
+type.2.price=0
+type.2.cost=1500
+type.2.description=Standard / Online — Out of stock; user-supplied store price 0 IQD; recorded cost 1,500 IQD.
+type.2.stock=0
+type.2.is_infinite_stock=false
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+MAXIMA already incorporates its major expanded feature set; no separate expansion pass is required.
+EOF
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Recorded at the established Switch 30 fps presentation profile.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Recorded at the established Switch 30 fps presentation profile.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Recorded at the established Switch 30 fps presentation profile.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/world-of-final-fantasy-maxima-switch/
+device_performance.1.performance_notes<<EOF
+Recorded at the established Switch 30 fps presentation profile.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/world-of-final-fantasy-maxima-switch/
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+upgrade_price=0
+banner_image.1=https://images.launchbox-app.com/48a5e5f0-e1dc-4446-9a0e-245e98076dc1.jpg
+banner_image.2=https://images.launchbox-app.com/eccf9dba-5d3d-4ee2-a231-6ab57d707906.jpg
+banner_image.3=https://images.launchbox-app.com/d8f35444-9aff-4e96-957b-9ff29fb08f43.jpg
+banner_image.4=https://images.launchbox-app.com/c51ead44-9805-4bbf-80bb-7b6bbfb47e08.jpg
+banner_image.5=https://images.launchbox-app.com/716c3026-9736-4f31-bd1b-f6019b255753.jpg
+banner_image.6=https://images.launchbox-app.com/be81c063-8dc2-4b1f-ba64-b597e749dcdc.jpg
+gallery.1.description=Verified game-world/promotional media 1
+gallery.1.image=https://images.launchbox-app.com/48a5e5f0-e1dc-4446-9a0e-245e98076dc1.jpg
+gallery.2.description=Verified game-world/promotional media 2
+gallery.2.image=https://images.launchbox-app.com/eccf9dba-5d3d-4ee2-a231-6ab57d707906.jpg
+gallery.3.description=Verified game-world/promotional media 3
+gallery.3.image=https://images.launchbox-app.com/d8f35444-9aff-4e96-957b-9ff29fb08f43.jpg
+gallery.4.description=Verified game-world/promotional media 4
+gallery.4.image=https://images.launchbox-app.com/c51ead44-9805-4bbf-80bb-7b6bbfb47e08.jpg
+gallery.5.description=Verified game-world/promotional media 5
+gallery.5.image=https://images.launchbox-app.com/716c3026-9736-4f31-bd1b-f6019b255753.jpg
+gallery.6.description=Verified game-world/promotional media 6
+gallery.6.image=https://images.launchbox-app.com/be81c063-8dc2-4b1f-ba64-b597e749dcdc.jpg
+gameplay_pillar.1.image=https://images.launchbox-app.com/48a5e5f0-e1dc-4446-9a0e-245e98076dc1.jpg
+gameplay_pillar.2.image=https://images.launchbox-app.com/eccf9dba-5d3d-4ee2-a231-6ab57d707906.jpg
+gameplay_pillar.3.image=https://images.launchbox-app.com/d8f35444-9aff-4e96-957b-9ff29fb08f43.jpg
+gameplay_pillar.4.image=https://images.launchbox-app.com/c51ead44-9805-4bbf-80bb-7b6bbfb47e08.jpg
+gameplay_pillar.5.image=https://images.launchbox-app.com/716c3026-9736-4f31-bd1b-f6019b255753.jpg
+story_chapter.1.image=https://images.launchbox-app.com/eccf9dba-5d3d-4ee2-a231-6ab57d707906.jpg
+story_chapter.2.image=https://images.launchbox-app.com/d8f35444-9aff-4e96-957b-9ff29fb08f43.jpg
+story_chapter.3.image=https://images.launchbox-app.com/c51ead44-9805-4bbf-80bb-7b6bbfb47e08.jpg
+story_chapter.4.image=https://images.launchbox-app.com/716c3026-9736-4f31-bd1b-f6019b255753.jpg
+story_chapter.5.image=https://images.launchbox-app.com/be81c063-8dc2-4b1f-ba64-b597e749dcdc.jpg

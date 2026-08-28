@@ -1,0 +1,373 @@
+schema_version=24
+name=Metroid Dread
+title=Metroid Dread
+title_ar=ميترويد دريد
+name_ar=ميترويد دريد
+slug=metroid-dread-switch
+platform=switch1
+compatibility.1=Nintendo Switch 1
+compatibility.2=Nintendo Switch 2
+edition=Standard
+region=Global
+release_date=2021-10-08
+release_status=Released
+status=Active
+developer=MercurySteam / Nintendo
+publisher=Nintendo
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB T / PEGI 12
+metacritic_score=88
+metacritic=88
+metacritic_url=https://www.metacritic.com/game/metroid-dread/
+opencritic_score=89
+opencritic=89
+user_score=8.7
+userscore=8.7
+user_rating=8.7
+game_size_gb=4.5
+size=4.5 GB
+size_gb=4.5
+price=10000
+price_iqd=10000
+price_usd=59.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=9500
+trade_value_iqd=9500
+store_offer_bonus=1250
+store_offer_bonus_iqd=1250
+official_url=https://www.nintendo.com/us/store/products/metroid-dread-switch/
+eshop_url=https://www.nintendo.com/us/store/products/metroid-dread-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short=A fast and tense 2D action adventure starring Samus Aran.
+description_full<<EOF
+Metroid Dread is a modern 2D action-adventure starring Samus Aran. It emphasizes fast movement, interconnected exploration, upgrades, boss battles, and E.M.M.I. chase sections that give the game its signature tension. This file represents the Nintendo Switch 1 product entry with a Switch 2 compatibility reference.
+EOF
+description<<EOF
+Metroid Dread is a modern 2D action-adventure starring Samus Aran. It emphasizes fast movement, interconnected exploration, upgrades, boss battles, and E.M.M.I. chase sections that give the game its signature tension. This file represents the Nintendo Switch 1 product entry with a Switch 2 compatibility reference.
+EOF
+description_en<<EOF
+Metroid Dread is a modern 2D action-adventure starring Samus Aran. It emphasizes fast movement, interconnected exploration, upgrades, boss battles, and E.M.M.I. chase sections that give the game its signature tension. This file represents the Nintendo Switch 1 product entry with a Switch 2 compatibility reference.
+EOF
+description_ar<<EOF
+لعبة أكشن ومغامرة ثنائية الأبعاد سريعة ومتوترة، تعيد ساموس آران إلى مغامرة استكشاف وقتال ومطاردات E.M.M.I.، ومجهزة هنا كملف Switch 1.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=Metroid+Dread+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=Metroid+Dread+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Action
+genres.1=Action
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Metroidvania
+genres.3=Metroidvania
+nintendo_official_url=https://www.nintendo.com/us/store/products/metroid-dread-switch/
+official_store_url=https://www.nintendo.com/us/store/products/metroid-dread-switch/
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as the Switch 1 product file with Switch 2 compatibility reference.
+EOF
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Playable on Switch 2 through compatibility
+switch2_features.1=Playable on Switch 2 through compatibility
+switch2_feature.2=Fast 2D action
+switch2_features.2=Fast 2D action
+switch2_feature.3=Strong Nintendo identity
+switch2_features.3=Strong Nintendo identity
+overview_tagline=Samus Aran faces fear, speed, and survival on ZDR.
+overview_suitable_for.1=Action-adventure fans
+overview_suitable_for.2=Metroidvania players
+overview_suitable_for.3=Nintendo fans
+overview_not_suitable_for.1=Players wanting multiplayer
+overview_not_suitable_for.2=Players who dislike tense chase sequences
+main_story_hours=10
+completionist_hours=18
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Metroid Dread
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / 标准版
+edition.2.cover_image=
+edition.2.content.1.label=Metroid Dread
+edition.2.content.2.label=Standard / 标准版
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Fast 2D action
+gameplay_pillar.1.description<<EOF
+Movement and combat feel exceptionally sharp and responsive.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Interconnected exploration
+gameplay_pillar.2.description<<EOF
+Abilities unlock new paths across a layered map.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=E.M.M.I. tension
+gameplay_pillar.3.description<<EOF
+Pursuit sections create unique stress and urgency.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Boss encounters and upgrades
+gameplay_pillar.4.description<<EOF
+Memorable fights and ability growth drive the campaign.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Modern Metroid design
+gameplay_pillar.5.description<<EOF
+It preserves the exploration spirit of the series in a polished modern form.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+The planet ZDR is a dense science-fiction labyrinth of labs, ruins, and dangerous biomes tied together through classic Metroid progression.
+EOF
+story_chapter.1.title=Investigate the crisis
+story_chapter.1.text<<EOF
+Samus arrives on ZDR to uncover what happened.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Explore a hostile world
+story_chapter.2.text<<EOF
+Each new region adds new hazards and secrets.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Evade the E.M.M.I. units
+story_chapter.3.text<<EOF
+Chase sections sharply raise the tension.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Recover key powers
+story_chapter.4.text<<EOF
+New movement and weapon abilities expand what is possible.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Reveal the truth
+story_chapter.5.text<<EOF
+The late-game story connects the danger to larger Metroid lore.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Samus action scene
+gallery.2.image=
+gallery.2.description=E.M.M.I. pursuit scene
+gallery.3.image=
+gallery.3.description=Alien world environment
+gallery.4.image=
+gallery.4.description=Boss battle image
+gallery.5.image=
+gallery.5.description=Exploration moment
+feature.1=Excellent 2D action design
+feature.2=Strong tension and pacing
+feature.3=Great boss fights
+feature.4=High-quality Nintendo production
+feature.5=Switch 1 product entry
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Recorded as a Switch 1 profile with a secondary Switch 2 compatibility reference.
+EOF
+device_performance.1.device=Nintendo Switch 1
+device_performance.1.device_slug=nintendo-switch-1
+device_performance.1.device_model=Nintendo Switch 1
+device_performance.1.hardware_id=nintendo-switch-1
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Recorded as a Switch 1 profile with a secondary Switch 2 compatibility reference.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Recorded as a Switch 1 profile with a secondary Switch 2 compatibility reference.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Recorded as a Switch 1 profile with a secondary Switch 2 compatibility reference.
+EOF
+device_performance.1.performance_notes<<EOF
+Recorded as a Switch 1 profile with a secondary Switch 2 compatibility reference.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV
+device_performance.2.tv.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.mode.1.name=Default
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+device_performance.2.performance_notes<<EOF
+Compatibility or alternate-platform reference only.
+EOF
+faq.1.question=Is Metroid Dread difficult?
+faq.1.answer<<EOF
+It can be challenging, especially in boss fights and chase sections.
+EOF
+faq.2.question=Is it a metroidvania?
+faq.2.answer<<EOF
+Yes. Exploration and ability-gated progression are central to the design.
+EOF
+faq.3.question=Is there multiplayer?
+faq.3.answer<<EOF
+No. It is a single-player action adventure.
+EOF
+faq.4.question=Why only two variants?
+faq.4.answer<<EOF
+Only Regular / Offline and Standard / Online were provided.
+EOF
+faq.5.question=Why is it praised?
+faq.5.answer<<EOF
+Its controls, pacing, and modernized series design earned strong critical reception.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard
+type.2.name=Standard / 标准版
+type.2.option_id=online_account
+type.2.price=10000
+type.2.cost=1250
+type.2.description=Online account access
+type.2.stock=9999
+type.2.is_infinite_stock=true

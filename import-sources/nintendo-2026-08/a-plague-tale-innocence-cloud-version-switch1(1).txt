@@ -1,0 +1,939 @@
+# Nintendo Switch game import - researched 2026-08-28
+# A Plague Tale: Innocence - Cloud Version | Nintendo Switch 1
+# Based on the supplied nintendo-switch-game-template 26.txt; field names unchanged.
+# Repeated-field counts are evidence-driven, not limited to the printed examples.
+# Canonical fields are used; legacy aliases and unused repeated rows are omitted.
+# Confirmed supplier costs: Offline Account 2750 IQD / Online Account 37250 IQD.
+# Selling prices are PROPOSALS: Offline 7500 IQD / Online 45000 IQD.
+# Online proposal needs approval as an exception to the general Switch 1 sale band.
+# Keep product hidden until approval and verification of account region/entitlement.
+# Language-lock status, unavailable physical media and unpublished measurements are
+# deliberately not fabricated. Explanations appear in reader-facing text sections.
+# No hands-on Switch benchmark, Iraq connection test or live-store import was performed.
+# Image URLs were fetched and decoded; repeated scenes were manually excluded.
+# Four banners are distinct official promotional screenshots, not four new key-art designs.
+# Historical review summaries are original paraphrases, not invented quotations.
+# All costs are private administrative information, not public review evidence.
+
+# The supplied template does not declare a schema version. Filename 26 is not assumed to be schema_version=26.
+schema_version=
+name=A Plague Tale: Innocence - Cloud Version
+# Arabic editorial translation, not a verified official localized product title.
+title_ar=حكاية الطاعون: البراءة — النسخة السحابية
+slug=a-plague-tale-innocence-cloud-version-switch1
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch Lite
+compatibility.3=Nintendo Switch - OLED Model
+compatibility.4=Nintendo Switch 2
+edition=Standard - Cloud Version
+# Supplier account region was not supplied. Do not assume Global, USA, EUR or JPN. Nintendo Europe is the reference edition for metadata.
+region=
+release_date=2021-07-06
+release_status=active
+status=active
+developer=Asobo Studio
+publisher=Focus Entertainment
+players_count=1
+age_rating=PEGI 18 / ESRB Mature 17+
+# No independently verified, separately scoped Switch Cloud score is assigned. See verdict_summary and the review records; other-platform scores are not substituted.
+metacritic_score=
+# No independently verified, separately scoped Switch Cloud score is assigned. See verdict_summary and the review records; other-platform scores are not substituted.
+metacritic_url=
+# No independently verified, separately scoped Switch Cloud score is assigned. See verdict_summary and the review records; other-platform scores are not substituted.
+opencritic_score=
+# No independently verified, separately scoped Switch Cloud score is assigned. See verdict_summary and the review records; other-platform scores are not substituted.
+user_score=
+game_size_gb=0.087
+# Proposed OFFLINE ACCOUNT selling price, not supplier cost. Subject to merchant approval.
+price=7500
+price_iqd=7500
+# No store USD conversion rate was supplied. The official eShop retail USD price is not substituted for this account price.
+price_usd=
+# Confirmed supplier purchase cost supplied directly in IQD; no additional currency conversion or rounding.
+cost=2750
+cost_iqd=2750
+# Counter is unused while is_infinite_stock=true; zero is not a claim that this unlimited-stock listing is sold out.
+stock=0
+is_infinite_stock=true
+# Keep hidden until the merchant approves the online-price exception and verifies supplier account region, access entitlement and local cloud-service quality.
+is_hidden=true
+# No physical cartridge exists for this cloud release. Zero means no trade-in offer configured, not an appraisal of a cartridge or an invented digital-account buyback policy.
+trade_value=0
+trade_value_iqd=0
+# No promotional bonus was supplied; none is invented.
+store_offer_bonus=0
+store_offer_bonus_iqd=0
+official_url=https://www.focus-entmt.com/en/games/a-plague-tale-innocence
+eshop_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/A-Plague-Tale-Innocence-Cloud-Version-2002534.html
+display_order=0
+kind=account
+# The site database category ID was not supplied; select the Nintendo games category during import.
+category=
+game_is_offline=false
+# Internet/cloud-play requirement; this does NOT mean online multiplayer.
+game_is_online=true
+# Unknown for the supplied account because its region/version was not provided; no claim of a Chinese-only lock is made.
+game_language_locked=
+description_short=A single-player stealth adventure following Amicia and Hugo through plague-stricken medieval France. Cloud streaming and continuous internet are required, including with the Offline Account option.
+description_full<<EOF
+Protect a younger brother while crossing a frightening, fictionalized fourteenth-century France. Amicia and Hugo face soldiers, ruined settlements and unnatural rat swarms in a linear adventure built around stealth, observation and environmental puzzles.
+
+Amicia uses a sling, distractions and crafted alchemical ammunition. Light creates routes through the rats; darkness can turn an apparently safe passage into danger. Companions help with obstacles, while scavenged materials improve equipment. Optional gifts, curiosities and flowers reward exploration. The campaign contains 16 main chapters and an epilogue, rather than an open-world map.
+
+This product is the Nintendo Switch CLOUD VERSION. The game runs on remote servers, not as a complete local installation. The Offline Account and Online Account labels describe the supplied account options; neither removes the internet requirement. Try the free launcher/demo using the intended connection and location before purchasing. The full game requires the appropriate paid access entitlement.
+
+There is no physical Switch cartridge or genuine Switch retail box to include with this listing. This file leaves retail-front, back-cover and 3D-wrap fields empty deliberately; it uses real digital artwork and sourced imagery in their appropriate roles.
+
+Nintendo lists multiple languages for its European release. The supplier account region and language restrictions still require confirmation. No Arabic localization is listed. Performance depends on the streaming service and connection; the reviews below are attributed historical reports, not a new hands-on benchmark.
+EOF
+
+description_ar<<EOF
+رافق أميسيا وأخيها الصغير هوغو في رحلة نجاة داخل فرنسا في القرن الرابع عشر، وسط الجنود والقرى المدمرة وأسراب الجرذان. تعتمد التجربة على التسلل، حل الألغاز البيئية، استخدام المقلاع والخيمياء، والتحكم بالضوء لتأمين الطريق. تجمع القصة الخطية بين التوتر والعلاقة الإنسانية بين الأخوين، مع مقتنيات ومواد لتطوير المعدات.
+
+مهم: هذه نسخة سحابية وليست لعبة كاملة تعمل محليًا على الجهاز. يتطلب خيار «حساب أوفلاين» أيضًا اتصال إنترنت مستمرًا ومستقرًا؛ اسم الخيار يصف طريقة استخدام الحساب فقط. جرّب الديمو من موقعك وعلى اتصالك قبل الشراء، لأن توفر الخدمة وجودة البث قد يختلفان، ولم يُختبر تشغيلها من العراق ضمن هذا البحث.
+
+اللعبة فردية ولا تدعم اللعب الجماعي، ولا يلزم اشتراك Nintendo Switch Online للبث نفسه. لا توجد خرطوشة سويتش فعلية أو غلاف علبة حقيقي لهذا الإصدار. العربية غير مدرجة ضمن اللغات الرسمية التي تم التحقق منها، ولم تُحدد منطقة حساب المورد بعد، لذلك لا يوجد تأكيد لقفل لغته أو غيابه.
+
+تنبيه للمحتوى: اللعبة موجهة للبالغين، وتتضمن عنفًا شديدًا ومشاهد موت ومعاناة وجرذان ومحتوى قد يكون مزعجًا. مراجعة الأداء في الصفحة تشرح قيود البث وملاحظات المراجعين دون نسب أرقام 4K أو 60FPS الخاصة بمنصات أخرى إلى نسخة Switch.
+EOF
+
+# Not applicable: this digital cloud release has no verified genuine Nintendo Switch retail box/front/back/full wrap. Never substitute a PC/PS/Xbox box or a fabricated wrap.
+front_cover_image=
+# Not applicable: this digital cloud release has no verified genuine Nintendo Switch retail box/front/back/full wrap. Never substitute a PC/PS/Xbox box or a fabricated wrap.
+front_cover_hires_url=
+# Not applicable: this digital cloud release has no verified genuine Nintendo Switch retail box/front/back/full wrap. Never substitute a PC/PS/Xbox box or a fabricated wrap.
+cover_texture_url=
+# Not applicable: this digital cloud release has no verified genuine Nintendo Switch retail box/front/back/full wrap. Never substitute a PC/PS/Xbox box or a fabricated wrap.
+box_front_url=
+# Not applicable: this digital cloud release has no verified genuine Nintendo Switch retail box/front/back/full wrap. Never substitute a PC/PS/Xbox box or a fabricated wrap.
+box_back_url=
+nintendo_card_image=https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_download_software/SQ_NSwitchDS_APlagueTaleInnocenceCloudVersion_image500w.jpg
+cover_image=https://www.asobostudio.com/files/games/top/plague-tale-top.jpg
+# Four distinct wide official promotional scenes from Asobo/publisher Steam media, not four crops of the same key art. They illustrate the game, not measured Switch output.
+banner_image.1=https://www.asobostudio.com/files/games/gallery/aplaguetale-innocence-17logo.jpg
+banner_image.2=https://www.asobostudio.com/files/games/gallery/aplaguetale-innocence-08logo.jpg
+banner_image.3=https://www.asobostudio.com/files/games/gallery/aplaguetale-innocence-15logo.jpg
+banner_image.4=https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/752590/ss_b3eee5fa907fe897c650f4720629931db65b4dbb.1920x1080.jpg?t=1784712345
+trailer_url=https://www.youtube.com/watch?v=Evv-ECAk35g
+video.1.title=Official 2021 announcement: Switch Cloud release; 4K/60 claims apply to PS5/Xbox, not Switch
+video.1.url=https://www.youtube.com/watch?v=Evv-ECAk35g
+video.2.title=Official original-game launch trailer - story and atmosphere
+video.2.url=https://www.youtube.com/watch?v=gjIb9dQgUF0
+video.3.title=Official accolades trailer - original-game reception, not Switch-only scores
+video.3.url=https://www.youtube.com/watch?v=C0DUQD7vQ3M
+video.4.title=The Little Boy Lost - official promotional film with Sean Bean
+video.4.url=https://www.youtube.com/watch?v=LtPclEoODrc
+video.5.title=SwitchUp - Nintendo Switch performance review (external historical review)
+video.5.url=https://www.youtube.com/watch?v=HbuH2hZWs7w
+video.6.title=Nintendo Switch Cloud gameplay - external gameplay capture
+video.6.url=https://www.youtube.com/watch?v=bGcpEv5hq_w
+# European full-product NSUID read from Nintendo page metadata; not the demo NSUID and not confirmation of the supplied account region.
+nsuid=70010000041419
+# A 16-digit Switch Title ID was not verified. NSUID and gameCode are not substituted.
+title_id=
+# Exact productCode from Nintendo Europe page metadata; not evidence of a physical cartridge.
+product_code=HACPA4QRA
+genre.1=Action
+genre.2=Adventure
+genre.3=Stealth
+genre.4=Puzzle
+genre.5=Dark Fantasy
+nintendo_official_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/A-Plague-Tale-Innocence-Cloud-Version-2002534.html
+nintendo_requires_switch_online=false
+# Nintendo Switch Online Save Data Cloud is explicitly unsupported. This is separate from the cloud service running the game.
+nintendo_cloud_save=false
+nintendo_game_key_card=false
+# There is no physical release. The false value must not be read as a claim that a cartridge contains the full game.
+nintendo_physical_requires_download=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV, Tabletop, Handheld
+nintendo_notes<<EOF
+REFERENCE EDITION: Nintendo Europe; supplier account region is unconfirmed. European metadata lists English, French, German, Italian, Spanish, Portuguese, Russian, Japanese, Korean and Chinese. It does not split every listed language into voice and text categories. English, French and German audio are documented for the original PC game; the exact voice menu on the supplied Switch cloud account has not been inspected. Do not promise a specific voice pack or absence of account-specific language restrictions without checking.
+
+CLOUD ACCESS: Use the account carrying the paid access entitlement. A free launcher alone is not a purchase of the full game. Internet is mandatory; there is no multiplayer mode. Nintendo Switch Online membership is not needed for streaming, and its Save Data Cloud backup feature is not supported here.
+
+SWITCH 2: Nintendo Europe currently lists backward compatibility as Supported, with no issues found. This is still a Switch 1 Cloud release, not a Nintendo Switch 2 Edition. No separate measured Switch 2 performance dataset was verified; hardware specifications are not game benchmarks.
+
+MEDIA: The square image is official Switch Cloud artwork. Banners are distinct official promotional scenes. The gallery uses Nintendo's Switch product screenshots. Gameplay/world illustrations also include clearly credited community captures published by PlayStation Blog; these are not represented as Switch output. No genuine physical Switch box exists, so its front/back/3D fields are intentionally inapplicable.
+
+TRADE-IN: There is no physical cartridge for trade-in. The numerical trade value of zero means no offer configured; no digital-account buyback commitment is promised.
+
+All research was checked on 2026-08-28. Cloud service availability in Iraq, the supplied account entitlement and its region were not tested.
+EOF
+
+# No separately announced Nintendo Switch 2 enhancement is established for this listing.
+switch2_enhanced=false
+switch_2_exclusive=false
+# No separately verified Nintendo Switch 2 upgrade product or upgrade fee applies to this Switch Cloud listing.
+upgrade_price=
+switch2_feature.1=Backward compatibility is listed as supported by Nintendo; this is not a Switch 2 Edition.
+switch2_feature.2=Cloud streaming still requires internet on a compatible newer console; no native-performance uplift is promised.
+overview_tagline=Two siblings, a hostile world, and a fragile path through the darkness.
+overview_suitable_for.1=Players who enjoy linear, story-led adventures.
+overview_suitable_for.2=Fans of stealth, environmental puzzles and careful observation.
+overview_suitable_for.3=Adults comfortable with bleak themes and graphic violence.
+overview_suitable_for.4=Players interested in sibling relationships and character-driven storytelling.
+overview_suitable_for.5=Players with a successfully tested, stable cloud connection.
+overview_suitable_for.6=Collectors who enjoy optional objects and environmental details.
+overview_not_suitable_for.1=Anyone needing play without an internet connection.
+overview_not_suitable_for.2=Players expecting local or online multiplayer.
+overview_not_suitable_for.3=Players seeking a physical Switch cartridge.
+overview_not_suitable_for.4=Anyone particularly sensitive to rats, blood, death or child endangerment.
+overview_not_suitable_for.5=Players seeking a large open world or deep action-combat sandbox.
+overview_not_suitable_for.6=Players unable to test regional cloud access before paying.
+overview_not_suitable_for.7=Customers requiring a confirmed Arabic localization.
+# Approximate editorial planning value within Rapid Reviews UK's 12-15-hour Switch campaign estimate; not an official duration.
+main_story_hours=13
+# Approximate planning value, not a fixed Switch benchmark. PowerPyx gives 12-15 hours for a guided original-game completion/trophy route; cloud waits and exploration can increase this.
+completionist_hours=15
+edition.1.name=Standard - Nintendo Switch Cloud Version
+edition.1.cover_image=https://ubitus.ai/wp-content/uploads/2021/07/Ubitus_A_Plague_Tale.jpg
+edition.1.content.1.label=Full single-player Innocence campaign via a paid cloud access entitlement.
+edition.1.content.2.label=Nintendo Switch launcher and ongoing internet connection are required.
+edition.1.content.3.label=Offline Account and Online Account are merchant access options for the same game, not different story editions.
+edition.1.content.4.label=No physical cartridge, retail case or native offline installation.
+edition.1.content.5.label=No separately verified paid DLC entitlement is included in the supplier offer.
+edition.1.content.6.label=A Plague Tale: Requiem is a separate sequel, not included here.
+gameplay_pillar.1.title=Observe before moving
+gameplay_pillar.1.description<<EOF
+Watch routes, cover and sightlines before crossing exposed ground. Direct confrontation is not the default solution; a carefully timed distraction can make a safer opening.
+EOF
+
+gameplay_pillar.1.image=https://www.asobostudio.com/files/games/gallery/aplaguetale-innocence-14logo.jpg
+gameplay_pillar.2.title=Protect Hugo
+gameplay_pillar.2.description<<EOF
+The journey links movement and decisions to the safety of Amicia's younger brother. Staying together and using companion assistance are part of progressing through obstacles.
+EOF
+
+gameplay_pillar.2.image=https://www.asobostudio.com/files/games/gallery/aplaguetale-innocence-06logo.jpg
+gameplay_pillar.3.title=Light against the swarm
+gameplay_pillar.3.description<<EOF
+Torches, braziers and other light sources establish safe space around the rats. Read the environment before committing to a route that may leave the children exposed.
+EOF
+
+gameplay_pillar.3.image=https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/752590/ss_ba6b32d1aa79e4d45b8fdc81b99bbfe30cf2b848.1920x1080.jpg?t=1784712345
+gameplay_pillar.4.title=The sling as a tool
+gameplay_pillar.4.description<<EOF
+Amicia's sling supports both combat and environmental interaction. Different situations ask for precise timing and ammunition choices rather than indiscriminate shooting.
+EOF
+
+gameplay_pillar.4.image=https://www.asobostudio.com/files/games/gallery/aplaguetale-innocence-05logo.jpg
+gameplay_pillar.5.title=Alchemy changes the route
+gameplay_pillar.5.description<<EOF
+Crafted ammunition can ignite or extinguish fires, distract threats or open opportunities. Unlocks broaden the available solutions as the story advances. Illustration: kuanpunchman, featured by PlayStation Blog (2021); not a Switch performance capture.
+EOF
+
+gameplay_pillar.5.image=https://live.staticflickr.com/65535/51343847898_eae79752b8_b.jpg
+gameplay_pillar.6.title=Companions and traversal
+gameplay_pillar.6.description<<EOF
+Allies contribute to obstacles and puzzles. Ruins, mechanisms and narrow routes interrupt the journey with tasks that require more than simply following a waypoint.
+EOF
+
+gameplay_pillar.6.image=https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/752590/ss_1a943974c938d370f33f1c0727b77d75f66168bb.1920x1080.jpg?t=1784712345
+gameplay_pillar.7.title=Scavenge and upgrade
+gameplay_pillar.7.description<<EOF
+Look for materials and workbenches to improve the sling, carrying capacity and crafting. Spending everything on consumables can delay useful equipment improvements.
+EOF
+
+gameplay_pillar.7.image=https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/752590/ss_dc1d4b2aef9ee44b300229f47fff802dd075ffc9.1920x1080.jpg?t=1784712345
+gameplay_pillar.8.title=Optional discoveries
+gameplay_pillar.8.description<<EOF
+Gifts, curiosities and Hugo's flowers add context beyond the main path. Chapter selection helps revisit missed discoveries; exploration remains within authored levels.
+EOF
+
+gameplay_pillar.8.image=https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/752590/ss_bc6e26af8421956951d735902fe4d79e9e4c81d8.1920x1080.jpg?t=1784712345
+world_summary<<EOF
+The setting is a fictionalized France in 1348, shaped by war, plague and a supernatural mystery. Amicia and Hugo are children trying to survive these forces, not soldiers conquering a map. Their bond provides continuity as the route moves through villages, fields, churches, battlefields and ruined architecture.
+
+The panels below explore characters and world themes without retelling the ending; they are editorial story sections, not a replacement for the game's chapter names. The complete chapter guide is linked separately. This is historical fantasy, not a documentary account of medieval events.
+EOF
+
+story_chapter.1.title=Amicia: learning to protect
+story_chapter.1.text<<EOF
+Amicia becomes responsible for a vulnerable younger brother while confronting dangers far beyond her previous life. The story follows the emotional cost of that responsibility. Illustration: AloyUltra, featured in PlayStation Blog, 7 June 2019; a game-world image, not a Switch graphics benchmark.
+EOF
+
+story_chapter.1.image=https://live.staticflickr.com/65535/48016283682_35bd315514_b.jpg
+story_chapter.2.title=The bond between siblings
+story_chapter.2.text<<EOF
+Hugo and Amicia must learn how to rely on one another. Moments of trust and reassurance matter alongside escape sequences and threats. Illustration: tantfuriosa, featured in PlayStation Blog, 7 June 2019; a game-world image, not a Switch graphics benchmark.
+EOF
+
+story_chapter.2.image=https://live.staticflickr.com/65535/48016208738_41843a805e_b.jpg
+story_chapter.3.title=Searching for shelter
+story_chapter.3.text<<EOF
+An imposing castle can suggest safety, but the journey repeatedly asks what it takes to make a hostile place habitable. Refuge is a continuing need rather than a permanent guarantee. Illustration: IceWolfWarFare, featured in PlayStation Blog, 7 June 2019; a game-world image, not a Switch graphics benchmark.
+EOF
+
+story_chapter.3.image=https://live.staticflickr.com/65535/48016283567_92d131b062_b.jpg
+story_chapter.4.title=The plague made visible
+story_chapter.4.text<<EOF
+The rats are a supernatural threat as well as the central visual symbol of devastation. Their swarms turn architecture and darkness into immediate obstacles. Illustration: hokkai.do_ga, featured in PlayStation Blog, 7 June 2019; a game-world image, not a Switch graphics benchmark.
+EOF
+
+story_chapter.4.image=https://live.staticflickr.com/65535/48016197421_217568916e_b.jpg
+story_chapter.5.title=Violence beyond the rats
+story_chapter.5.text<<EOF
+Human pursuers and the traces of war make the setting threatening even where the swarm is absent. The children navigate a society destabilized by fear. Illustration: tinymarsh_gamer, featured in PlayStation Blog, 7 June 2019; a game-world image, not a Switch graphics benchmark.
+EOF
+
+story_chapter.5.image=https://live.staticflickr.com/65535/48016283447_bf762a2cc0_b.jpg
+story_chapter.6.title=A fragile circle of light
+story_chapter.6.text<<EOF
+Light offers temporary protection in a world where darkness may conceal danger. This recurring visual idea also underpins the environmental puzzles. Illustration: torqueman_captures, featured in PlayStation Blog, 7 June 2019; a game-world image, not a Switch graphics benchmark.
+EOF
+
+story_chapter.6.image=https://live.staticflickr.com/65535/48016197221_7886db1086_b.jpg
+gallery.1.image=https://www.nintendo.com/eu/media/images/06_screenshots/games_5/nintendo_switch_download_software_2/nswitchds_aplaguetaleinnocencecloudversion/NSwitchDS_APlagueTaleInnocenceCloudVersion_01.jpg
+gallery.1.description=Amicia and Hugo cross a village with stone buildings and a waterwheel. Official Nintendo Switch product-page promotional screenshot; actual cloud image quality depends on the stream.
+gallery.2.image=https://www.nintendo.com/eu/media/images/06_screenshots/games_5/nintendo_switch_download_software_2/nswitchds_aplaguetaleinnocencecloudversion/NSwitchDS_APlagueTaleInnocenceCloudVersion_02.jpg
+gallery.2.description=Amicia holds Hugo in a close character moment. Official Nintendo Switch product-page promotional screenshot; actual cloud image quality depends on the stream.
+gallery.3.image=https://www.nintendo.com/eu/media/images/06_screenshots/games_5/nintendo_switch_download_software_2/nswitchds_aplaguetaleinnocencecloudversion/NSwitchDS_APlagueTaleInnocenceCloudVersion_03.jpg
+gallery.3.description=The children cross a devastated battlefield with a torch. Official Nintendo Switch product-page promotional screenshot; actual cloud image quality depends on the stream.
+gallery.4.image=https://www.nintendo.com/eu/media/images/06_screenshots/games_5/nintendo_switch_download_software_2/nswitchds_aplaguetaleinnocencecloudversion/NSwitchDS_APlagueTaleInnocenceCloudVersion_04.jpg
+gallery.4.description=An armored pursuer and a guarded interior emphasize the human threat. Official Nintendo Switch product-page promotional screenshot; actual cloud image quality depends on the stream.
+gallery.5.image=https://www.nintendo.com/eu/media/images/06_screenshots/games_5/nintendo_switch_download_software_2/nswitchds_aplaguetaleinnocencecloudversion/NSwitchDS_APlagueTaleInnocenceCloudVersion_05.jpg
+gallery.5.description=Fire and the windmill dominate a tense nighttime scene. Official Nintendo Switch product-page promotional screenshot; actual cloud image quality depends on the stream.
+feature.1=Single-player narrative adventure.
+feature.2=Third-person stealth and observation.
+feature.3=Environmental puzzles built around light and rats.
+feature.4=Sling-based interactions and combat.
+feature.5=Craftable alchemical ammunition.
+feature.6=Equipment upgrades using scavenged materials.
+feature.7=Companion assistance during traversal.
+feature.8=Optional gifts, curiosities and flowers.
+feature.9=Sixteen main chapters plus an epilogue.
+feature.10=Original score by Olivier Deriviere.
+feature.11=Free cloud trial/launcher for connection testing.
+feature.12=TV, tabletop and handheld play with internet.
+performance_tv_resolution=Cloud-streamed; exact TV stream/rendering resolution was not verified.
+performance_handheld_resolution=Cloud-streamed; exact handheld stream/rendering resolution was not verified.
+# No reliable mode-specific Switch frame-rate measurement was established. Do not copy 60 FPS from the PS5/Xbox announcement.
+performance_fps=
+# Nintendo Switch 1 output does not provide HDR; this does not describe other platforms.
+performance_hdr=false
+performance_notes<<EOF
+PERFORMANCE REVIEW - NINTENDO SWITCH CLOUD VERSION
+
+Architecture: Ubitus streams a remotely rendered game to the console. The launcher size is not the full game size. Stream quality, response and stability must be evaluated on the connection actually used. Neither the console's display resolution nor an uploaded video's resolution proves the game's rendering resolution. Sources: https://ubitus.ai/ubitus-assisted-with-focus-home-interactive-to-release-a-plague-tale-innocence-cloud-version-on-nintendo-switch-for-major-market-worldwide/ and https://www.nintendo.com/en-gb/Support/Purchases-Subscriptions/Games-Using-Cloud-Streaming-Technology-FAQ-1864576.html
+
+Image clarity and startup: Nintendo World Report's review, published 12 August 2021, described a soft, muddy image, difficult small text and approximately two-and-a-half minutes from the HOME screen to gameplay. It also reported reloads after breaks, visible pop-in and occasional missing-ground glitches. These were that reviewer's observations, not guaranteed behavior today. Source: https://www.nintendoworldreport.com/review/58068/a-plague-tale-innocence-cloud-edition-switch-review
+
+Connection variation: Rapid Reviews UK, published 22 August 2021, reported a generally successful streaming experience with occasional visual-quality drops when the connection weakened. Pure Nintendo, published 24 August 2021, reported slow loads and inactivity timeouts, including during waits, while still enjoying the game. These differing reports support testing rather than promising uniform results. Sources: https://www.rapidreviewsuk.com/a-plague-tale-innocence-making-the-switch-cloud-version/ and https://purenintendo.com/review-a-plague-tale-innocence-cloud-version-nintendo-switch/
+
+Handheld and TV: both modes are supported, but neither mode removes network dependence. No defensible current per-mode FPS range, exact stream resolution, bitrate, latency measurement, dynamic-resolution behavior or server graphics preset was verified. Those numeric/boolean fields remain unset where necessary. The published PS5/Xbox 4K and 60 FPS upgrade claims are not Switch Cloud measurements.
+
+Practical recommendation: use the free demo at the intended location, check responsiveness and dark-scene clarity, and test a longer session before paying. Do not rely on sleep mode as if the remote session were a locally suspended game. A successful test does not guarantee future connection quality. Iraq service availability and the supplied account were not tested.
+
+Evidence reviewed on 2026-08-28. No original hands-on performance test was conducted for this file. No unverified Switch patch number is assigned.
+EOF
+
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch family
+# The original review does not establish an exact tested hardware revision.
+device_performance.1.hardware_id=
+device_performance.1.information_status=partial
+device_performance.1.unavailable_reason<<EOF
+Supported play modes and historical qualitative cloud reviews are documented. Exact current per-mode resolution, FPS, network latency, server preset and tested hardware revision are not independently established.
+EOF
+
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=Cloud stream; exact delivered resolution not verified.
+device_performance.1.handheld.resolution_dynamic=
+device_performance.1.handheld.rendering_resolution=
+device_performance.1.handheld.output_resolution=
+device_performance.1.handheld.fps=
+device_performance.1.handheld.fps_min=
+device_performance.1.handheld.fps_max=
+device_performance.1.handheld.refresh_rate=
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Cloud streaming
+device_performance.1.handheld.notes<<EOF
+Supported by Nintendo. Not a native local render; no measured resolution/FPS pair is claimed. Nintendo Switch 1 does not output HDR or VRR. Internet remains mandatory in this mode.
+EOF
+
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Cloud stream; exact delivered resolution not verified.
+device_performance.1.tv.resolution_dynamic=
+device_performance.1.tv.rendering_resolution=
+device_performance.1.tv.output_resolution=
+device_performance.1.tv.fps=
+device_performance.1.tv.fps_min=
+device_performance.1.tv.fps_max=
+device_performance.1.tv.refresh_rate=
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=Cloud streaming
+device_performance.1.tv.notes<<EOF
+Supported by Nintendo. Not a native local render; no measured resolution/FPS pair is claimed. Nintendo Switch 1 does not output HDR or VRR. Internet remains mandatory in this mode.
+EOF
+
+device_performance.1.mode.1.name=Cloud streaming
+device_performance.1.mode.1.handheld_resolution=
+device_performance.1.mode.1.handheld_fps=
+device_performance.1.mode.1.tv_resolution=
+device_performance.1.mode.1.tv_fps=
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+No separately verified performance/quality selection or per-mode benchmark is asserted for this cloud launcher.
+EOF
+
+device_performance.1.upscaling=The server upscaling implementation has not been verified for this Switch stream.
+device_performance.1.ray_tracing=
+device_performance.1.ray_tracing_mode=No ray-tracing mode has been verified for this Switch Cloud release.
+device_performance.1.loading_time=Approximately 150 seconds in a historical review
+device_performance.1.loading_notes<<EOF
+Nintendo World Report reported roughly 2.5 minutes from the HOME screen to gameplay in its review published 2021-08-12. This includes cloud connection/startup; it is not a controlled local-storage benchmark or a present-day guarantee.
+EOF
+
+# Review publication date is not misrepresented as the actual test date; the exact game build was not disclosed.
+device_performance.1.game_version=
+# Review publication date is not misrepresented as the actual test date; the exact game build was not disclosed.
+device_performance.1.patch_version=
+# Review publication date is not misrepresented as the actual test date; the exact game build was not disclosed.
+device_performance.1.tested_date=
+device_performance.1.source_name=Nintendo product/support pages; Ubitus; Nintendo World Report; Rapid Reviews UK; Pure Nintendo
+device_performance.1.source_url=https://www.nintendoworldreport.com/review/58068/a-plague-tale-innocence-cloud-edition-switch-review
+device_performance.1.verified_at=2026-08-28
+device_performance.1.verification_status=partial
+device_performance.1.performance_notes<<EOF
+See the full Performance Review above for attributed reports and evidence limitations. The separate Nintendo Switch 2 record documents compatibility and explicitly identifies unverified cloud-stream measurements; it is not a new benchmark.
+EOF
+
+storage_download_size_gb=0.087
+# Only the 87.0 MB launcher download is published in the checked Nintendo Europe listing. Additional installation/update overhead is not quantified.
+storage_required_space_gb=
+# A microSD card is not specifically recommended for this small launcher; available internal storage must still be checked.
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Nintendo Europe lists an 87.0 MB launcher download (0.087 GB using decimal units), checked 2026-08-28. The main game is streamed, so PC/PS/Xbox installation sizes must not be imported here. Ubitus mentioned approximately 50 MB at the 2021 launch; the current Nintendo listing takes precedence. Allow spare space for the launcher and updates. No full offline installation is provided.
+EOF
+
+# English voice acting is directly evidenced in Switch reviews/gameplay. Other original-game voice packs are documented in Nintendo Notes but not promised for an uninspected supplier account.
+audio_language.1=English
+text_language.1=English
+text_language.2=French
+text_language.3=German
+text_language.4=Italian
+text_language.5=Spanish
+text_language.6=Portuguese
+text_language.7=Russian
+text_language.8=Japanese
+text_language.9=Korean
+text_language.10=Chinese
+supported_languages_raw=Nintendo Europe lists: Japanese, English, Spanish, French, German, Italian, Portuguese, Russian, Korean, Chinese. No Arabic is listed. Nintendo does not give a complete voice/text split here. The original PC release documents English/French/German voices, but the supplied Switch account region and voice menu remain unverified.
+supports_arabic=false
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_split_screen=false
+multiplayer_local_wireless=false
+dlc.1.title=Switch Cloud DLC availability
+dlc.1.description<<EOF
+No separately purchasable Switch Cloud DLC or DLC entitlement in the supplied offer was verified. Coats of Arms is a real cosmetic add-on on other platforms, offering alternative outfits; that does not establish inclusion or separate availability for this account. No DLC account types are created. Requiem is a separate game, not a story expansion for Innocence.
+EOF
+
+# No image is assigned to an unverified Switch DLC product.
+dlc.1.image=
+guide.1.title=Full campaign chapter index
+guide.1.summary<<EOF
+Walkthrough links for all 16 chapters and the epilogue. Contains spoilers; useful when stuck rather than required reading before playing.
+EOF
+
+guide.1.url=https://www.powerpyx.com/a-plague-tale-innocence-full-walkthrough-all-chapters/
+guide.2.title=Gifts, curiosities, flowers and alchemist carts
+guide.2.summary<<EOF
+Locations for the optional collectibles. There are 50 codex collectibles plus five alchemist carts; these are separate categories, not 55 flowers.
+EOF
+
+guide.2.url=https://www.powerpyx.com/a-plague-tale-innocence-all-collectible-locations-herbariums-curiosities-gifts-carts/
+guide.3.title=Completion planning and equipment upgrades
+guide.3.summary<<EOF
+A guide to a thorough original-game completion route. Trophy instructions are PlayStation-specific; do not promise a Nintendo trophy system. Core collectible and upgrade guidance remains useful.
+EOF
+
+guide.3.url=https://www.powerpyx.com/a-plague-tale-innocence-trophy-guide-roadmap/
+guide.4.title=Chapter 7: companion and light puzzles
+guide.4.summary<<EOF
+Guidance for the watermill, companion controls, aqueduct and moving-light puzzles. Includes story spoilers and platform-specific button notation.
+EOF
+
+guide.4.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-7-the-path-before-us-walkthrough/
+guide.5.title=Chapter 9: entering the town
+guide.5.summary<<EOF
+Stealth and environmental guidance for In the Shadow of Ramparts. Read only once you reach that chapter.
+EOF
+
+guide.5.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-9-in-the-shadow-of-ramparts-walkthrough/
+guide.6.title=Chapter 10: the university
+guide.6.summary<<EOF
+A route through The Way of Roses, with collectible guidance. Spoilers are present.
+EOF
+
+guide.6.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-10-the-way-of-roses-walkthrough/
+guide.7.title=Chapter 8: exploring the refuge
+guide.7.summary<<EOF
+Guidance for Our Home and its optional discoveries. The guide describes the original game; control labels may differ on Switch.
+EOF
+
+guide.7.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-8-our-home-walkthrough/
+guide.8.title=Nintendo cloud access and connection guide
+guide.8.summary<<EOF
+Explains the free trial, paid access, account requirements and why stable internet is necessary.
+EOF
+
+guide.8.url=https://www.nintendo.com/en-gb/Support/Purchases-Subscriptions/Games-Using-Cloud-Streaming-Technology-FAQ-1864576.html
+completion_main_story_hours=13
+# No separately verified Switch story DLC exists to add to the campaign estimate.
+completion_story_plus_dlc_hours=
+completion_100_percent_hours=15
+faq.1.question=Can I play the Offline Account option without internet?
+faq.1.answer<<EOF
+No. Offline Account is the merchant's account-use label. This Cloud Version still needs a stable, continuous internet connection.
+EOF
+
+faq.2.question=Is this a native Nintendo Switch port?
+faq.2.answer<<EOF
+No. A small launcher connects to a remotely running game. The full game is not installed locally.
+EOF
+
+faq.3.question=Is the free download the complete purchased game?
+faq.3.answer<<EOF
+No. The launcher/trial checks the service; full play requires the appropriate paid access entitlement.
+EOF
+
+faq.4.question=Should I test it before purchase?
+faq.4.answer<<EOF
+Yes. Try the free demo from your intended location and connection. Cloud availability and quality in Iraq were not verified in this research.
+EOF
+
+faq.5.question=Does Nintendo Switch Online membership replace the access pass?
+faq.5.answer<<EOF
+No. Streaming itself does not require Nintendo Switch Online, and that membership does not buy this game's access entitlement.
+EOF
+
+faq.6.question=Does internet access mean this is a multiplayer game?
+faq.6.answer<<EOF
+No. It is a one-player adventure. There is no co-op, competitive, split-screen or local-wireless mode.
+EOF
+
+faq.7.question=Is the game locked to Chinese?
+faq.7.answer<<EOF
+No Chinese-only restriction is established by the evidence. Nintendo Europe lists several languages. The supplied account's region and restrictions remain unconfirmed, so an unrestricted-language guarantee is not made.
+EOF
+
+faq.8.question=Is Arabic supported?
+faq.8.answer<<EOF
+Arabic is not listed among the checked official languages.
+EOF
+
+faq.9.question=Which voice languages are guaranteed for this account?
+faq.9.answer<<EOF
+The supplier account voice menu has not been inspected. English speech is evidenced in Switch material. The original PC game lists English, French and German voices, but that list should not be assumed to confirm every Switch account.
+EOF
+
+faq.10.question=Can I play in handheld or TV mode?
+faq.10.answer<<EOF
+Yes. Nintendo lists handheld, tabletop and TV modes; all continue to require cloud connectivity.
+EOF
+
+faq.11.question=Will it work on Nintendo Switch 2?
+faq.11.answer<<EOF
+Nintendo lists backward compatibility as supported. This does not make the product a Switch 2 Edition or establish improved frame rate/resolution.
+EOF
+
+faq.12.question=Does it support 4K and 60 FPS on Switch?
+faq.12.answer<<EOF
+Those claims in the 2021 announcement concern PS5/Xbox enhancements. No verified per-mode Switch resolution/FPS pair is assigned here.
+EOF
+
+faq.13.question=What happens when I pause or use sleep mode?
+faq.13.answer<<EOF
+Historical Switch reviews report server timeouts and reconnect/loading delays after breaks. Do not treat the remote session as guaranteed local suspend/resume.
+EOF
+
+faq.14.question=Is Nintendo Switch Online Save Data Cloud supported?
+faq.14.answer<<EOF
+Nintendo explicitly lists that backup feature as unsupported for this software; server-run gameplay is a different use of cloud technology.
+EOF
+
+faq.15.question=How much storage is needed?
+faq.15.answer<<EOF
+The checked Nintendo Europe page lists an 87.0 MB launcher download. A separate exact required-free-space figure was not published there.
+EOF
+
+faq.16.question=How long is the campaign?
+faq.16.answer<<EOF
+Plan roughly 12-15 hours for a first campaign according to Rapid Reviews UK. Completion time varies with exploration, replay and cloud loading; the numeric 13/15-hour values are planning estimates.
+EOF
+
+faq.17.question=Are the score fields based on the Switch edition?
+faq.17.answer<<EOF
+The four selected reviews cover the Switch Cloud release. Their normalized arithmetic mean is 8.1/10. No unverified Switch-specific Metacritic, OpenCritic or user aggregate is substituted.
+EOF
+
+faq.18.question=Does this offer include DLC or Requiem?
+faq.18.answer<<EOF
+Neither a separate Switch DLC entitlement nor Requiem is confirmed in the supplied offer. Only the base Innocence cloud game is listed.
+EOF
+
+faq.19.question=Can I receive or trade a physical Switch cartridge?
+faq.19.answer<<EOF
+No physical cartridge is part of this cloud product. No trade-in offer is configured; the zero value is not a used-cartridge valuation.
+EOF
+
+faq.20.question=Is it appropriate for young children?
+faq.20.answer<<EOF
+The checked ratings are PEGI 18 and ESRB Mature. Expect intense violence, death, distressing situations, strong language and frightening rat swarms.
+EOF
+
+faq.21.question=Can I return later for missed collectibles?
+faq.21.answer<<EOF
+The game has chapter selection. Collection guides can help revisit discoveries; equipment-upgrade planning may still require replaying material-gathering sections.
+EOF
+
+# Transparent roundup calculation: (7 + 9 + 9 + 7.4) / 4 = 8.1. This is not a new hands-on review, Metacritic score or measured performance score.
+verdict_score=8.1
+verdict_summary<<EOF
+Review roundup: 8.1/10 is the arithmetic mean of four identified Switch Cloud reviews, with Rapid Reviews UK's 4.5/5 normalized to 9/10. This is a sourced editorial summary, not a new test.
+
+The attraction is a focused story, memorable atmosphere and the interaction between stealth, light and the rat swarms. The trade-off is reliance on a live cloud service: reviewers differ on clarity and smoothness, and several mention loading or timeout friction. For this edition, a successful local demo test matters more than an attractive specification borrowed from another console.
+
+No separately verified Switch-specific Metacritic, OpenCritic or user aggregate is assigned. The original PC game's Metacritic listing and the broader OpenCritic page do not establish a Cloud Version score. All performance observations in this file retain their source and historical context.
+EOF
+
+verdict_pro.1=An emotionally engaging sibling-centered story.
+verdict_pro.2=Strong atmosphere and carefully staged environments.
+verdict_pro.3=Light and rat swarms give environmental puzzles a distinct identity.
+verdict_pro.4=Voice performances and music support the dramatic tone.
+verdict_pro.5=Stealth, crafting and exploration complement the narrative.
+verdict_pro.6=A free trial allows checking cloud suitability before purchase.
+verdict_con.1=Continuous internet and live service access are mandatory.
+verdict_con.2=Visual clarity can deteriorate with the stream.
+verdict_con.3=Historical reviews report slow startup and reloads.
+verdict_con.4=Idle timeouts can interrupt the pace.
+verdict_con.5=Portability depends on a suitable connection, not only battery life.
+verdict_con.6=No local offline installation or physical Switch cartridge.
+verdict_con.7=No verified per-mode Switch performance measurements are supplied.
+review.1.source=Nintendo World Report - Alex Orona - Switch Cloud - 2021-08-12
+review.1.score=7/10
+review.1.quote<<EOF
+Summary, not a verbatim quote: admired the narrative and performances, but found the streamed image soft and the startup/reconnect process inconvenient.
+EOF
+
+review.1.url=https://www.nintendoworldreport.com/review/58068/a-plague-tale-innocence-cloud-edition-switch-review
+review.2.source=Pure Nintendo - Kirstie Summers - Switch Cloud - 2021-08-24
+review.2.score=9/10
+review.2.quote<<EOF
+Summary, not a verbatim quote: strongly praised the story and design while acknowledging lengthy loads and inactivity timeouts.
+EOF
+
+review.2.url=https://purenintendo.com/review-a-plague-tale-innocence-cloud-version-nintendo-switch/
+review.3.source=Rapid Reviews UK - Toby Mortaro - Switch Cloud - 2021-08-22
+review.3.score=4.5/5
+review.3.quote<<EOF
+Summary, not a verbatim quote: reported an enjoyable, generally stable experience on the tested connection, with occasional visual drops and praise for the score.
+EOF
+
+review.3.url=https://www.rapidreviewsuk.com/a-plague-tale-innocence-making-the-switch-cloud-version/
+review.4.source=Nindie Spotlight - Justin Nation - Switch Cloud - 2021-07-06
+review.4.score=7.4/10
+review.4.quote<<EOF
+Summary, not a verbatim quote: highlighted engrossing storytelling, voice work and the combination of tense stealth and puzzles.
+EOF
+
+review.4.url=https://www.nindiespotlight.com/game_profile.cfm?game=a-plague-tale-innocence-cloud-version-switch
+timeline.1.date=2018-12-06
+timeline.1.title=Official environment showcase
+timeline.1.details<<EOF
+Focus presented the game's castles, villages, catacombs, battlefields and forests ahead of the original release.
+EOF
+
+timeline.2.date=2019-05-07
+timeline.2.title=Original soundtrack album
+timeline.2.details<<EOF
+Olivier Deriviere's Bandcamp album lists this release date; the Deluxe soundtrack includes bonus music, not a Switch game edition.
+EOF
+
+timeline.3.date=2019-05-09
+timeline.3.title=Asobo explains the rat technology
+timeline.3.details<<EOF
+The developer published a technical article on PlayStation Blog about the swarm simulation; it is original-game background, not a Switch benchmark.
+EOF
+
+timeline.4.date=2019-05-14
+timeline.4.title=Original game release
+timeline.4.details<<EOF
+Innocence first launched on PC, PlayStation 4 and Xbox One. This is not its Switch release date.
+EOF
+
+timeline.5.date=2021-06-17
+timeline.5.title=Nintendo Switch Cloud release announced
+timeline.5.details<<EOF
+Focus announced the Switch cloud version alongside separate enhancements for PS5 and Xbox Series consoles.
+EOF
+
+timeline.6.date=2021-07-06
+timeline.6.title=Nintendo Switch Cloud Version released
+timeline.6.details<<EOF
+The Switch edition launched as a streamed game with a launcher and paid access.
+EOF
+
+timeline.7.date=2021-07-07
+timeline.7.title=Ubitus describes the cloud service
+timeline.7.details<<EOF
+The cloud provider published its release announcement and explained the remote-rendering approach.
+EOF
+
+timeline.8.date=2021-08-12
+timeline.8.title=Nintendo World Report review
+timeline.8.details<<EOF
+A Switch Cloud review documented both narrative strengths and streaming limitations.
+EOF
+
+timeline.9.date=2021-08-22
+timeline.9.title=Rapid Reviews UK review
+timeline.9.details<<EOF
+A separate Switch review described a more positive connection experience.
+EOF
+
+timeline.10.date=2021-08-24
+timeline.10.title=Pure Nintendo review
+timeline.10.details<<EOF
+Another Switch review praised the adventure while noting loading and timeout issues.
+EOF
+
+# Descriptive status label, not an invented patch version.
+update.1.version=Switch Cloud maintenance information
+# No exact Switch patch release date was verified; research date is not used as an update date.
+update.1.date=
+update.1.changes<<EOF
+No reliable public numbered Switch Cloud changelog was verified as of 2026-08-28. The launcher and remote service can have different maintenance paths. Do not copy Steam build numbers or the PlayStation cross-generation save patch into this listing. Follow Nintendo and the publisher for service notices; this statement does not claim that the service has never been updated.
+EOF
+
+# All 38 track links are from the composer's official Bandcamp album. These link to listening pages; no copyrighted music files are bundled.
+music.1.title=A Plague Tale
+music.1.url=https://olivierderiviere.bandcamp.com/track/a-plague-tale
+music.2.title=Father
+music.2.url=https://olivierderiviere.bandcamp.com/track/father
+music.3.title=Grieving
+music.3.url=https://olivierderiviere.bandcamp.com/track/grieving
+music.4.title=In Shock
+music.4.url=https://olivierderiviere.bandcamp.com/track/in-shock
+music.5.title=The Inquisition
+music.5.url=https://olivierderiviere.bandcamp.com/track/the-inquisition
+music.6.title=Orphans
+music.6.url=https://olivierderiviere.bandcamp.com/track/orphans
+music.7.title=Strangers
+music.7.url=https://olivierderiviere.bandcamp.com/track/strangers
+music.8.title=Escape
+music.8.url=https://olivierderiviere.bandcamp.com/track/escape
+music.9.title=Big Sister
+music.9.url=https://olivierderiviere.bandcamp.com/track/big-sister
+music.10.title=The Killing
+music.10.url=https://olivierderiviere.bandcamp.com/track/the-killing
+music.11.title=Adulthood
+music.11.url=https://olivierderiviere.bandcamp.com/track/adulthood
+music.12.title=Together Forever
+music.12.url=https://olivierderiviere.bandcamp.com/track/together-forever
+music.13.title=The Rats
+music.13.url=https://olivierderiviere.bandcamp.com/track/the-rats
+music.14.title=Little Brother
+music.14.url=https://olivierderiviere.bandcamp.com/track/little-brother
+music.15.title=By The River
+music.15.url=https://olivierderiviere.bandcamp.com/track/by-the-river
+music.16.title=Massacre
+music.16.url=https://olivierderiviere.bandcamp.com/track/massacre
+music.17.title=Prisoners
+music.17.url=https://olivierderiviere.bandcamp.com/track/prisoners
+music.18.title=Mystical Castle
+music.18.url=https://olivierderiviere.bandcamp.com/track/mystical-castle
+music.19.title=The Shelter
+music.19.url=https://olivierderiviere.bandcamp.com/track/the-shelter
+music.20.title=Exodus
+music.20.url=https://olivierderiviere.bandcamp.com/track/exodus
+music.21.title=The son of a Blacksmith
+music.21.url=https://olivierderiviere.bandcamp.com/track/the-son-of-a-blacksmith
+music.22.title=She Is Alive
+music.22.url=https://olivierderiviere.bandcamp.com/track/she-is-alive
+music.23.title=Beyond The Horizon
+music.23.url=https://olivierderiviere.bandcamp.com/track/beyond-the-horizon
+music.24.title=Reunited
+music.24.url=https://olivierderiviere.bandcamp.com/track/reunited
+music.25.title=I'm Sorry
+music.25.url=https://olivierderiviere.bandcamp.com/track/im-sorry
+music.26.title=The Wrath
+music.26.url=https://olivierderiviere.bandcamp.com/track/the-wrath
+music.27.title=Bedtime Story (Bandcamp Exclusive)
+music.27.url=https://olivierderiviere.bandcamp.com/track/bedtime-story-bandcamp-exclusive
+music.28.title=Deceiving Appearences (Bandcamp Exclusive)
+music.28.url=https://olivierderiviere.bandcamp.com/track/deceiving-appearences-bandcamp-exclusive
+music.29.title=No Turning Back (Bandcamp Exclusive)
+music.29.url=https://olivierderiviere.bandcamp.com/track/no-turning-back-bandcamp-exclusive
+music.30.title=Sacrifice (Bandcamp Exclusive)
+music.30.url=https://olivierderiviere.bandcamp.com/track/sacrifice-bandcamp-exclusive
+music.31.title=Sister's love (Bandcamp Exclusive)
+music.31.url=https://olivierderiviere.bandcamp.com/track/sisters-love-bandcamp-exclusive
+music.32.title=The Alchemy (Bandcamp Exclusive)
+music.32.url=https://olivierderiviere.bandcamp.com/track/the-alchemy-bandcamp-exclusive
+music.33.title=The Call (Bandcamp Exclusive)
+music.33.url=https://olivierderiviere.bandcamp.com/track/the-call-bandcamp-exclusive
+music.34.title=The Plague (Bandcamp Exclusive)
+music.34.url=https://olivierderiviere.bandcamp.com/track/the-plague-bandcamp-exclusive
+music.35.title=The Night Before Leaving (Bandcamp Exclusive)
+music.35.url=https://olivierderiviere.bandcamp.com/track/the-night-before-leaving-bandcamp-exclusive
+music.36.title=They Don't Know (Bandcamp Exclusive)
+music.36.url=https://olivierderiviere.bandcamp.com/track/they-dont-know-bandcamp-exclusive
+music.37.title=Freedom (Bandcamp Exclusive)
+music.37.url=https://olivierderiviere.bandcamp.com/track/freedom-bandcamp-exclusive
+music.38.title=The Bound (Bandcamp Exclusive)
+music.38.url=https://olivierderiviere.bandcamp.com/track/the-bound-bandcamp-exclusive
+series_name=A Plague Tale
+series_game.1=A Plague Tale: Requiem
+series_game.2=Resonance: A Plague Tale Legacy
+studio_name=Asobo Studio
+studio_website=https://www.asobostudio.com/
+studio_location=Bordeaux, France
+studio_description<<EOF
+Asobo Studio is a French development studio founded in 2002. Its work includes A Plague Tale and Microsoft Flight Simulator. Asobo developed Innocence, Focus published it, and Ubitus supplied the Switch cloud-streaming solution. These are separate roles; Ubitus is not substituted as the original game developer.
+EOF
+
+setting_requirement.1=A compatible Nintendo Switch-family console with an up-to-date system.
+setting_requirement.2=A Nintendo Account with the appropriate paid cloud-game entitlement.
+setting_requirement.3=Download and use the cloud launcher; a free trial is not full-game ownership.
+setting_requirement.4=A stable, continuous internet connection throughout play.
+setting_requirement.5=A successful local demo test before purchase.
+setting_requirement.6=Enough free storage for the small launcher and subsequent updates.
+setting_requirement.7=Suitable controls for the selected TV, tabletop or handheld mode.
+setting_requirement.8=No Nintendo Switch Online subscription is required for the streaming itself.
+setting_requirement.9=Use the licensed account as required by the service; do not assume another profile inherits cloud access.
+setting_requirement.10=Offline Account does not mean offline gameplay for this title.
+source.1.name=Nintendo Europe - Switch release, languages, modes, launcher size, NSUID/product metadata and Switch 2 compatibility
+source.1.url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/A-Plague-Tale-Innocence-Cloud-Version-2002534.html
+source.2.name=Nintendo Support - cloud access, account entitlement and internet/NSO requirements
+source.2.url=https://www.nintendo.com/en-gb/Support/Purchases-Subscriptions/Games-Using-Cloud-Streaming-Technology-FAQ-1864576.html
+source.3.name=Asobo Studio - original game, setting, official media and trailers
+source.3.url=https://www.asobostudio.com/games/plague-tale-innocence
+source.4.name=Focus Entertainment - original game overview
+source.4.url=https://www.focus-entmt.com/en/games/a-plague-tale-innocence
+source.5.name=Focus - Switch Cloud announcement, 17 June 2021
+source.5.url=https://www.focus-entmt.com/en/news/a-plague-tale-innocence-comes-in-4k-uhd-to-xbox-series-x-playstation-5-and-as-a-cloud-version-to-nintendo-switch-on-july-6
+source.6.name=Focus - Switch Cloud launch, 6 July 2021
+source.6.url=https://www.focus-entmt.com/en/news/a-plague-tale-innocence-now-available-on-xbox-series-xs-and-playstation-5-up-to-4k-uhd-and-as-a-cloud-version-on-nintendo-switch
+source.7.name=Ubitus - Switch Cloud technology and launch
+source.7.url=https://ubitus.ai/ubitus-assisted-with-focus-home-interactive-to-release-a-plague-tale-innocence-cloud-version-on-nintendo-switch-for-major-market-worldwide/
+source.8.name=Nintendo World Report - original Switch Cloud review
+source.8.url=https://www.nintendoworldreport.com/review/58068/a-plague-tale-innocence-cloud-edition-switch-review
+source.9.name=Pure Nintendo - original Switch Cloud review
+source.9.url=https://purenintendo.com/review-a-plague-tale-innocence-cloud-version-nintendo-switch/
+source.10.name=Rapid Reviews UK - original Switch Cloud review and campaign duration
+source.10.url=https://www.rapidreviewsuk.com/a-plague-tale-innocence-making-the-switch-cloud-version/
+source.11.name=Nindie Spotlight - original Switch Cloud review
+source.11.url=https://www.nindiespotlight.com/game_profile.cfm?game=a-plague-tale-innocence-cloud-version-switch
+source.12.name=Switch Scores - cross-check of four Switch Cloud review scores
+source.12.url=https://www.switchscores.com/games/6172/a-plague-tale-innocence-cloud-version
+source.13.name=Olivier Deriviere - official 38-track soundtrack album
+source.13.url=https://olivierderiviere.bandcamp.com/album/a-plague-tale-innocence-deluxe-edition
+source.14.name=PowerPyx - complete chapter index
+source.14.url=https://www.powerpyx.com/a-plague-tale-innocence-full-walkthrough-all-chapters/
+source.15.name=PowerPyx - collectible categories and locations
+source.15.url=https://www.powerpyx.com/a-plague-tale-innocence-all-collectible-locations-herbariums-curiosities-gifts-carts/
+source.16.name=PowerPyx - original-game completion and upgrade planning; trophy platform caveat
+source.16.url=https://www.powerpyx.com/a-plague-tale-innocence-trophy-guide-roadmap/
+source.17.name=PowerPyx - Chapter 7 mechanics and puzzles
+source.17.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-7-the-path-before-us-walkthrough/
+source.18.name=PowerPyx - Chapter 9 walkthrough
+source.18.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-9-in-the-shadow-of-ramparts-walkthrough/
+source.19.name=PowerPyx - Chapter 10 walkthrough
+source.19.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-10-the-way-of-roses-walkthrough/
+source.20.name=PowerPyx - Chapter 8 walkthrough
+source.20.url=https://www.powerpyx.com/a-plague-tale-innocence-chapter-8-our-home-walkthrough/
+source.21.name=Publisher Steam listing - promotional screenshots and original PC voice data; not Switch performance
+source.21.url=https://store.steampowered.com/app/752590/A_Plague_Tale_Innocence/
+source.22.name=Publisher Steam DLC list - Coats of Arms exists on PC, not proof of Switch inclusion
+source.22.url=https://store.steampowered.com/dlc/752590/A_Plague_Tale_Innocence/
+source.23.name=Publisher Epic listing - original PC language split and broader OpenCritic context
+source.23.url=https://store.epicgames.com/p/a-plague-tale-innocence?lang=en-US
+source.24.name=PlayStation Blog - Asobo explains the original rat simulation
+source.24.url=https://blog.playstation.com/2019/05/09/creating-a-sea-of-rats-in-a-plague-tale-innocence-out-may-14-on-ps4/
+source.25.name=PlayStation Blog - credited community world illustrations, 7 June 2019
+source.25.url=https://blog.playstation.com/2019/06/07/share-of-the-week-a-plague-tale-innocence/
+source.26.name=PlayStation Blog - credited light/puzzle illustration, 30 July 2021
+source.26.url=https://blog.playstation.com/2021/07/30/share-of-the-week-a-plague-tale-innocence-2/
+source.27.name=Focus - environment showcase, 6 December 2018
+source.27.url=https://www.focus-entmt.com/en/news/beautiful-screenshots-for-a-plague-tale-innocence-highlight-new-environments
+source.28.name=Asobo Studio - founding and studio background
+source.28.url=https://www.asobostudio.com/about-us
+source.29.name=Asobo Studio - series cross-check
+source.29.url=https://www.asobostudio.com/games
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=A stable, continuous internet connection is required because this is the Cloud Version. The account-option name does not mean the game can run without internet.
+option.1.internal_note=User-confirmed supplier cost: 2750 IQD. Offline is the supplier's account-use method, not native offline play. Requires internet throughout gameplay. Verify account region, paid access and demo performance before fulfillment.
+option.1.stock=0
+option.1.is_infinite_stock=true
+type.1.id=standard_offline
+type.1.name=Standard - Offline Account
+type.1.option_id=offline_account
+type.1.price=7500
+type.1.cost=2750
+type.1.description=Base-game cloud access through this account option. Continuous stable internet is required; no separately verified DLC entitlement is included.
+type.1.internal_note=Supplier cost confirmed by the user; no re-conversion. Proposed sale price 7,500 IQD. Do not promise offline gameplay, a specific unverified account region or entitlement sharing.
+type.1.stock=0
+type.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=A stable, continuous internet connection is required because this is the Cloud Version. The account-option name does not mean the game can run without internet.
+option.2.internal_note=User-confirmed supplier cost: 37250 IQD. Requires internet throughout gameplay. Verify account region, paid access and demo performance before fulfillment. Proposed 45,000 IQD online selling price exceeds the general Switch 1 band and requires merchant approval; do not publish automatically.
+option.2.stock=0
+option.2.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard - Online Account
+type.2.option_id=online_account
+type.2.price=45000
+type.2.cost=37250
+type.2.description=Base-game cloud access through this account option. Continuous stable internet is required; no separately verified DLC entitlement is included.
+type.2.internal_note=Supplier cost confirmed by the user; no re-conversion. Proposed sale price 45,000 IQD; outside default Switch 1 band, requires merchant approval. Do not promise offline gameplay, a specific unverified account region or entitlement sharing.
+type.2.stock=0
+type.2.is_infinite_stock=true
+
+# Nintendo Switch 2 compatibility record required by the importer.
+# Text values describe missing measurements honestly; they are not numerical benchmarks.
+# If the importer requires numeric FPS, its validation must permit undocumented cloud performance.
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.information_status=partial
+device_performance.2.unavailable_reason<<EOF
+Nintendo's product metadata lists Nintendo Switch 2 compatibility as supported with no issues found. This confirms compatibility, not measured resolution or frame rate. No independently verified Nintendo Switch 2 handheld or TV cloud-stream resolution/FPS measurement was established. The game remains a Nintendo Switch Cloud release, not a native Switch 2 edition.
+EOF
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=Cloud streaming; exact Nintendo Switch 2 handheld resolution has not been verified.
+device_performance.2.handheld.fps=Cloud streaming; Nintendo Switch 2 handheld FPS has not been independently measured.
+device_performance.2.handheld.resolution_dynamic=
+device_performance.2.handheld.mode=Cloud streaming via backward compatibility
+device_performance.2.handheld.notes<<EOF
+The handheld display's maximum resolution and refresh rate do not establish the resolution or FPS delivered by this game. Continuous internet is required. No 1080p, 60 FPS or 120 FPS performance guarantee is made.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=Cloud streaming; exact Nintendo Switch 2 TV-mode resolution has not been verified.
+device_performance.2.tv.fps=Cloud streaming; Nintendo Switch 2 TV-mode FPS has not been independently measured.
+device_performance.2.tv.resolution_dynamic=
+device_performance.2.tv.mode=Cloud streaming via backward compatibility
+device_performance.2.tv.notes<<EOF
+TV mode does not turn this cloud release into the enhanced PS5/Xbox version. No 4K or 60 FPS guarantee is made. Actual stream quality depends on the service and connection; test the demo at the intended location.
+EOF
+device_performance.2.source_name=Nintendo Europe - product compatibility metadata and cloud requirements
+device_performance.2.source_url=https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/A-Plague-Tale-Innocence-Cloud-Version-2002534.html
+device_performance.2.verified_at=2026-08-28
+device_performance.2.verification_status=partial
+device_performance.2.performance_notes<<EOF
+Compatibility evidence is separate from performance evidence. This record was added because the importer requires Nintendo Switch 2 information. It does not claim a hands-on test, a native Switch 2 upgrade or unsupported handheld/TV modes. Use the complete Performance Review for historical Switch 1 reports, which must not be relabeled as Switch 2 measurements.
+EOF

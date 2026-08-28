@@ -1,0 +1,444 @@
+schema_version=24
+name=Minecraft
+title=Minecraft
+title_ar=ماينكرافت
+name_ar=ماينكرافت
+slug=minecraft-switch
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2: backward compatible
+edition=Bedrock Edition
+region=Global
+release_date=2018-06-21
+release_status=Released
+status=Active
+developer=Mojang Studios
+publisher=Microsoft / Mojang
+genre.1=Sandbox
+genres.1=Sandbox
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Simulation
+genres.3=Simulation
+genre.4=Survival
+genres.4=Survival
+series_name=Minecraft
+franchise=Minecraft
+players_count=Single system (1-4) / Local wireless (2-8) / Online (2-8)
+players=Single system (1-4) / Local wireless (2-8) / Online (2-8)
+player_count=Single system (1-4) / Local wireless (2-8) / Online (2-8)
+age_rating=ESRB E10+ / PEGI 7
+metacritic_score=86
+metacritic=86
+opencritic_score=86
+opencritic=86
+user_score=8.1
+user_score=8.1
+metacritic_url=https://www.metacritic.com/game/minecraft/
+game_size_gb=1.3
+size_gb=1.3
+size=1.3 GB
+price=1500
+price_iqd=1500
+price_usd=29.99
+cost=1500
+cost_iqd=1500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+display_order=0
+trade_value=12000
+trade_value_iqd=12000
+store_offer_bonus=2000
+store_offer_bonus_iqd=2000
+official_url=https://www.nintendo.com/us/store/products/minecraft-106679/
+eshop_url=https://www.nintendo.com/us/store/products/minecraft-106679/
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+The Bedrock version of Minecraft on Nintendo Switch with survival, creative building, local multiplayer, online play, cross-platform compatibility, and the Super Mario Mash-Up Pack.
+EOF
+description_full<<EOF
+Minecraft on Nintendo Switch is the modern Bedrock Edition, replacing the older 2017 Nintendo Switch Edition. Players can survive, mine, craft, explore procedurally generated worlds, build in Creative mode, play locally with up to four players, connect through local wireless, or join online and cross-platform Bedrock sessions. The Switch release also includes Nintendo-themed Super Mario Mash-Up Pack content.
+EOF
+description<<EOF
+Minecraft on Nintendo Switch is the modern Bedrock Edition, replacing the older 2017 Nintendo Switch Edition. Players can survive, mine, craft, explore procedurally generated worlds, build in Creative mode, play locally with up to four players, connect through local wireless, or join online and cross-platform Bedrock sessions. The Switch release also includes Nintendo-themed Super Mario Mash-Up Pack content.
+EOF
+description_en<<EOF
+Minecraft on Nintendo Switch is the modern Bedrock Edition, replacing the older 2017 Nintendo Switch Edition. Players can survive, mine, craft, explore procedurally generated worlds, build in Creative mode, play locally with up to four players, connect through local wireless, or join online and cross-platform Bedrock sessions. The Switch release also includes Nintendo-themed Super Mario Mash-Up Pack content.
+EOF
+description_ar<<EOF
+نسخة Bedrock الحديثة من Minecraft على Nintendo Switch، مع البقاء والبناء والاستكشاف واللعب المحلي حتى 4 لاعبين واللعب الشبكي وCross-Platform، إضافة إلى Super Mario Mash-Up Pack.
+EOF
+front_cover_image=https://images.launchbox-app.com/a27d92be-197d-4fea-a656-05ae4fb1ae06.jpg
+cartridge_image=https://images.launchbox-app.com/a27d92be-197d-4fea-a656-05ae4fb1ae06.jpg
+cartridge=https://images.launchbox-app.com/a27d92be-197d-4fea-a656-05ae4fb1ae06.jpg
+cartridge_url=https://images.launchbox-app.com/a27d92be-197d-4fea-a656-05ae4fb1ae06.jpg
+box_front_url=https://images.launchbox-app.com/a27d92be-197d-4fea-a656-05ae4fb1ae06.jpg
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+cover_image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+cover=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+cover_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/products/games/switch/minecraft/106679-switch-minecraft-1200x675
+cover_texture_url=
+box_back_url=
+banner_image.1=https://images.launchbox-app.com/8c21a1aa-1158-460e-80ce-258f5d3ca7b4.jpg
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot01
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot02
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot03
+banner_image.5=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot04
+banner_image.6=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot05
+gallery.1.description=Minecraft gameplay / world media 1
+gallery.1.image=https://images.launchbox-app.com/d210026a-0444-4ab3-8f08-a37610964e52.jpg
+gallery.2.description=Minecraft gameplay / world media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot01
+gallery.3.description=Minecraft gameplay / world media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot02
+gallery.4.description=Minecraft gameplay / world media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot03
+gallery.5.description=Minecraft gameplay / world media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot04
+gallery.6.description=Minecraft gameplay / world media 6
+gallery.6.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot05
+gallery.7.description=Minecraft gameplay / world media 7
+gallery.7.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot06
+trailer_url=https://www.nintendo.com/us/store/products/minecraft-106679/
+supported_languages_raw=English, Japanese, French, German, Italian, Spanish, Portuguese, Russian, Korean, Chinese and many additional Bedrock interface languages
+text_language.1=English / Japanese / major European languages
+text_language.2=Portuguese / Russian / Korean
+text_language.3=Simplified Chinese / Traditional Chinese and other Bedrock languages
+audio_language.1=Ambient and creature sounds
+audio_language.2=Music and sound effects
+audio_language.3=Minimal language-dependent spoken dialogue
+supported_play_mode.1=TV mode
+supported_play_mode.2=Tabletop mode
+supported_play_mode.3=Handheld mode
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+This file is for the current Minecraft Bedrock product introduced on Switch in June 2018, not the discontinued 2017 “Minecraft: Nintendo Switch Edition” product. It supports cross-platform Bedrock multiplayer.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://images.launchbox-app.com/a27d92be-197d-4fea-a656-05ae4fb1ae06.jpg
+edition.1.content.1.label=Minecraft Bedrock base game
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Super Mario Mash-Up Pack on Switch
+edition.2.name=Standard / Online
+edition.2.cover_image=https://images.launchbox-app.com/a27d92be-197d-4fea-a656-05ae4fb1ae06.jpg
+edition.2.content.1.label=Minecraft Bedrock base game
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Cross-platform / server features where supported
+gameplay_pillar.1.title=Survival sandbox
+gameplay_pillar.1.description<<EOF
+Gather resources, craft tools, build shelter, manage hunger, and explore increasingly dangerous environments.
+EOF
+gameplay_pillar.1.image=https://images.launchbox-app.com/8c21a1aa-1158-460e-80ce-258f5d3ca7b4.jpg
+gameplay_pillar.2.title=Creative building
+gameplay_pillar.2.description<<EOF
+Creative mode gives unlimited blocks and flight for large-scale construction and experimentation.
+EOF
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot01
+gameplay_pillar.3.title=Procedural exploration
+gameplay_pillar.3.description<<EOF
+Worlds generate varied biomes, caves, structures, mobs, and resources that make each seed different.
+EOF
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot02
+gameplay_pillar.4.title=Local and online multiplayer
+gameplay_pillar.4.description<<EOF
+Play with up to four on one Switch, use local wireless, or connect to online Bedrock players and supported servers.
+EOF
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot03
+gameplay_pillar.5.title=Continuous Bedrock updates
+gameplay_pillar.5.description<<EOF
+Minecraft receives long-term feature updates, biome changes, mobs, blocks, and ecosystem improvements.
+EOF
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot04
+world_summary<<EOF
+Minecraft worlds are procedurally generated sandboxes that can contain forests, oceans, deserts, mountains, villages, caves, Nether dimensions, the End, structures, and player-created settlements.
+EOF
+story_chapter.1.title=Spawn into a new world
+story_chapter.1.text<<EOF
+Players begin with very little and decide whether to explore, gather resources, or immediately start building.
+EOF
+story_chapter.1.image=https://images.launchbox-app.com/d210026a-0444-4ab3-8f08-a37610964e52.jpg
+story_chapter.2.title=Progress through materials
+story_chapter.2.text<<EOF
+Wood, stone, iron, diamonds, enchantments, and specialized resources gradually expand what can be crafted.
+EOF
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot01
+story_chapter.3.title=Explore dangerous dimensions
+story_chapter.3.text<<EOF
+The Nether introduces new resources and threats, while the End contains the Ender Dragon and endgame exploration.
+EOF
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot02
+story_chapter.4.title=Build your own goals
+story_chapter.4.text<<EOF
+Minecraft deliberately allows self-directed objectives ranging from farms and cities to Redstone machines and multiplayer projects.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot03
+story_chapter.5.title=Continue through updates and worlds
+story_chapter.5.text<<EOF
+The game has no fixed final endpoint; players can maintain worlds for years and add new projects as updates arrive.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/en_US/games/switch/m/minecraft-switch/screenshot-gallery/screenshot04
+feature.1=Survival and Creative modes
+feature.2=Up to four-player couch multiplayer
+feature.3=Online and local-wireless multiplayer
+feature.4=Cross-platform Bedrock ecosystem
+feature.5=Super Mario Mash-Up Pack included on Nintendo Switch
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=60
+performance_hdr=false
+main_story_hours=Infinite
+completion_main_story_hours=Infinite
+completion_story_plus_dlc_hours=Infinite
+faq.1.question=Is this the old Nintendo Switch Edition?
+faq.1.answer<<EOF
+No. This is the current Bedrock Minecraft product that replaced the older 2017 Switch Edition in June 2018.
+EOF
+faq.2.question=Does it support cross-play?
+faq.2.answer<<EOF
+Yes. Bedrock Edition supports cross-platform play with compatible Bedrock platforms and Microsoft accounts.
+EOF
+faq.3.question=How many players can play on one Switch?
+faq.3.answer<<EOF
+Up to four players can play locally on a single system in supported modes.
+EOF
+faq.4.question=Is Nintendo Switch Online required?
+faq.4.answer<<EOF
+Nintendo Switch Online is required for Nintendo-operated online multiplayer functionality, but offline and local play do not require it.
+EOF
+faq.5.question=Does the Switch version include Mario content?
+faq.5.answer<<EOF
+Yes. Nintendo’s Minecraft package includes the Super Mario Mash-Up Pack.
+EOF
+verdict_score=9.2
+verdict_pro.1=Nearly unlimited replay value
+verdict_pro.2=Excellent local and cross-platform multiplayer
+verdict_pro.3=Creative mode supports almost any building idea
+verdict_pro.4=Continuous long-term updates
+verdict_pro.5=Strong portable fit
+verdict_con.1=Large worlds can stress Switch performance
+verdict_con.2=Online ecosystem can be complex for younger users
+verdict_con.3=Marketplace content introduces optional purchases
+verdict_con.4=Advanced Redstone / large farms can reduce performance
+verdict_con.5=Visual distance and settings are lower than high-end PC versions
+review.1.source=Metacritic
+review.1.score=86
+review.1.url=https://www.metacritic.com/game/minecraft/
+review.2.source=Nintendo
+review.2.score=Official Minecraft product page
+review.2.url=https://www.nintendo.com/us/store/products/minecraft-106679/
+review.3.source=Mojang
+review.3.score=Official Minecraft site
+review.3.url=https://www.minecraft.net/
+timeline.1.date=2017-05-11
+timeline.1.title=Original Minecraft: Nintendo Switch Edition released
+timeline.2.date=2018-06-21
+timeline.2.title=Current Bedrock Minecraft release replaced the old Switch Edition
+timeline.3.date=2026-08-27
+timeline.3.title=Current Bedrock product remains active
+update.1.version=Bedrock Switch launch
+update.1.date=2018-06-21
+update.2.version=Continuous Bedrock updates
+update.2.date=2026-08-27
+studio_name=Mojang Studios
+studio_website=https://www.nintendo.com/us/store/products/minecraft-106679/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/minecraft-106679/
+source.2.name=Minecraft official website
+source.2.url=https://www.minecraft.net/
+source.3.name=LaunchBox media
+source.3.url=https://gamesdb.launchbox-app.com/
+storage_download_size_gb=1.3
+storage_required_space_gb=1.3
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Base download size is relatively small compared with many retail games, but saved worlds, resource packs, Marketplace content, and updates can increase storage substantially.
+EOF
+multiplayer_local=true
+multiplayer_online=true
+multiplayer_cooperative=true
+multiplayer_competitive=true
+multiplayer_local_wireless=true
+multiplayer_split_screen=true
+series_game.1=Minecraft Dungeons
+series_game.2=Dragon Quest Builders 2
+series_game.3=Terraria
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1500
+type.1.cost=1500
+type.1.description=Regular offline package; supplied price 1,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=online_standard
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=18500
+type.2.cost=1500
+type.2.description=Standard online package; selling price 18,500 IQD; base cost tracked from Regular tier.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Marketplace / add-on ecosystem
+dlc.1.description<<EOF
+Minecraft uses a broad add-on and Marketplace ecosystem rather than one required expansion pass. The base Switch product is complete without a mandatory DLC tier.
+EOF
+dlc.1.release_date=Not separately dated
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / sourced
+device_performance.1.verification_status=Sourced / compatibility profile
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=true
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Minecraft targets up to 60 fps on Switch with a 720p handheld and 1080p-class docked output profile, though heavy worlds, high entity counts, and complex Redstone can reduce performance.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=true
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Minecraft targets up to 60 fps on Switch with a 720p handheld and 1080p-class docked output profile, though heavy worlds, high entity counts, and complex Redstone can reduce performance.
+EOF
+device_performance.1.mode.1.name=Primary documented / observed profile
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Minecraft targets up to 60 fps on Switch with a 720p handheld and 1080p-class docked output profile, though heavy worlds, high entity counts, and complex Redstone can reduce performance.
+EOF
+device_performance.1.upscaling=Game / system scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no universal value
+device_performance.1.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page + established release performance profile
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/minecraft-106679/
+device_performance.1.verified_at=2026-08-27
+device_performance.1.performance_notes<<EOF
+Minecraft targets up to 60 fps on Switch with a 720p handheld and 1080p-class docked output profile, though heavy worlds, high entity counts, and complex Redstone can reduce performance.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / sourced
+device_performance.2.verification_status=Sourced / compatibility profile
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=60
+device_performance.2.handheld.fps_min=60
+device_performance.2.handheld.fps_max=60
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Bedrock Switch software on Switch 2; actual world performance still depends heavily on simulation complexity.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=60
+device_performance.2.tv.fps_min=60
+device_performance.2.tv.fps_max=60
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Backward-compatible Bedrock Switch software on Switch 2; actual world performance still depends heavily on simulation complexity.
+EOF
+device_performance.2.mode.1.name=Primary documented / observed profile
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=60
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=60
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Bedrock Switch software on Switch 2; actual world performance still depends heavily on simulation complexity.
+EOF
+device_performance.2.upscaling=Game / system scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no universal value
+device_performance.2.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 compatibility + original game performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/minecraft-106679/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.performance_notes<<EOF
+Backward-compatible Bedrock Switch software on Switch 2; actual world performance still depends heavily on simulation complexity.
+EOF
+upgrade_price=0

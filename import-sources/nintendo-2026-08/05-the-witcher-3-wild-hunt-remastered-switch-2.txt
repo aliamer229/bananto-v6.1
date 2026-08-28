@@ -1,0 +1,465 @@
+schema_version=24
+name=The Witcher 3: Wild Hunt — Remastered
+title=The Witcher 3: Wild Hunt — Remastered
+title_ar=ذا ويتشر 3: وايلد هانت — ريماسترد
+name_ar=ذا ويتشر 3: وايلد هانت — ريماسترد
+slug=the-witcher-3-wild-hunt-remastered-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2 native release
+compatibility.2=Nintendo Switch 1 has a separate Complete Edition; this Remastered file is not the Switch 1 product
+edition=Remastered
+region=Global
+release_date=2026-09-29
+release_status=Upcoming
+status=Coming Soon
+developer=CD PROJEKT RED / Yigsoft
+publisher=CD PROJEKT RED
+genre.1=Action
+genres.1=Action
+genre.2=Role-Playing
+genres.2=Role-Playing
+genre.3=Open World
+genres.3=Open World
+genre.4=Adventure
+genres.4=Adventure
+series_name=The Witcher
+franchise=The Witcher
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=Mature / PEGI 18 expected from existing title content
+game_size_gb=31.5
+size_gb=31.5
+size=31.5 GB
+price=1250
+price_iqd=1250
+price_usd=Not Announced
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+display_order=0
+trade_value=8500
+trade_value_iqd=8500
+store_offer_bonus=1500
+store_offer_bonus_iqd=1500
+official_url=https://press.cdprojektred.com/en/news/1839/the-witcher-3-wild-hunt-remastered-announced-songs-of-the-past-gets-first-look
+eshop_url=https://press.cdprojektred.com/en/news/1839/the-witcher-3-wild-hunt-remastered-announced-songs-of-the-past-gets-first-look
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+A native Nintendo Switch 2 Remastered edition of The Witcher 3 launching September 29, 2026 with upgraded visuals, performance, gameplay systems, and the classic expansions.
+EOF
+description_full<<EOF
+The Witcher 3: Wild Hunt — Remastered modernizes Geralt’s acclaimed open-world RPG with upgraded visuals and performance, enhanced combat, improved traversal and movement, new Witcher Sign effects, revamped mount handling, enhanced monster behaviors, a redesigned skill tree, transmogrification, expanded photo mode, new finishers, and more. CD PROJEKT RED has confirmed a native Nintendo Switch 2 version launching September 29, 2026.
+EOF
+description<<EOF
+The Witcher 3: Wild Hunt — Remastered modernizes Geralt’s acclaimed open-world RPG with upgraded visuals and performance, enhanced combat, improved traversal and movement, new Witcher Sign effects, revamped mount handling, enhanced monster behaviors, a redesigned skill tree, transmogrification, expanded photo mode, new finishers, and more. CD PROJEKT RED has confirmed a native Nintendo Switch 2 version launching September 29, 2026.
+EOF
+description_en<<EOF
+The Witcher 3: Wild Hunt — Remastered modernizes Geralt’s acclaimed open-world RPG with upgraded visuals and performance, enhanced combat, improved traversal and movement, new Witcher Sign effects, revamped mount handling, enhanced monster behaviors, a redesigned skill tree, transmogrification, expanded photo mode, new finishers, and more. CD PROJEKT RED has confirmed a native Nintendo Switch 2 version launching September 29, 2026.
+EOF
+description_ar<<EOF
+نسخة Remastered أصلية لجهاز Nintendo Switch 2 تصدر في 29 سبتمبر 2026، مع تحسينات للرسوم والأداء والقتال والحركة وشجرة المهارات وميزات إضافية، مع بقاء مغامرة Geralt الأساسية.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+box_front_url=
+nintendo_card_image=https://press.cdn.cdpr.app/news/a7e2b0508c8adb834142294880b79e10_q90_900x900.png
+square_game_image=https://press.cdn.cdpr.app/news/a7e2b0508c8adb834142294880b79e10_q90_900x900.png
+main_image=https://press.cdn.cdpr.app/news/a7e2b0508c8adb834142294880b79e10_q90_900x900.png
+image=https://press.cdn.cdpr.app/news/a7e2b0508c8adb834142294880b79e10_q90_900x900.png
+image_url=https://press.cdn.cdpr.app/news/a7e2b0508c8adb834142294880b79e10_q90_900x900.png
+cover_image=https://press.cdn.cdpr.app/news/33a063fc417f1a4ccd362849de934bb1_q90_1024x576.png
+cover=https://press.cdn.cdpr.app/news/33a063fc417f1a4ccd362849de934bb1_q90_1024x576.png
+cover_url=https://press.cdn.cdpr.app/news/33a063fc417f1a4ccd362849de934bb1_q90_1024x576.png
+cover_texture_url=
+box_back_url=
+banner_image.1=https://press.cdn.cdpr.app/news/33a063fc417f1a4ccd362849de934bb1_q90_1024x576.png
+banner_image.2=https://images.launchbox-app.com//f64cbe3a-4863-4841-b85e-dd070f7641a8.jpg
+banner_image.3=https://images.launchbox-app.com//b24b4879-113e-4eb2-8fdf-954fd7746a80.jpg
+banner_image.4=https://images.launchbox-app.com//415d2cab-1eb1-40e5-9f81-c85fac1512a1.jpg
+banner_image.5=https://images.launchbox-app.com//3e559872-c878-4e5b-832b-5f0777fa3355.jpg
+banner_image.6=https://images.launchbox-app.com//b468458f-f075-4720-8ebd-1e017df627cb.jpg
+gallery.1.description=The Witcher 3: Wild Hunt — Remastered gameplay / world media 1
+gallery.1.image=https://images.launchbox-app.com//b24b4879-113e-4eb2-8fdf-954fd7746a80.jpg
+gallery.2.description=The Witcher 3: Wild Hunt — Remastered gameplay / world media 2
+gallery.2.image=https://images.launchbox-app.com//415d2cab-1eb1-40e5-9f81-c85fac1512a1.jpg
+gallery.3.description=The Witcher 3: Wild Hunt — Remastered gameplay / world media 3
+gallery.3.image=https://images.launchbox-app.com//3e559872-c878-4e5b-832b-5f0777fa3355.jpg
+gallery.4.description=The Witcher 3: Wild Hunt — Remastered gameplay / world media 4
+gallery.4.image=https://images.launchbox-app.com//b468458f-f075-4720-8ebd-1e017df627cb.jpg
+gallery.5.description=The Witcher 3: Wild Hunt — Remastered gameplay / world media 5
+gallery.5.image=https://images.launchbox-app.com//ccd85bcc-ae01-4e5e-9064-24ff8c58aa4c.jpg
+gallery.6.description=The Witcher 3: Wild Hunt — Remastered gameplay / world media 6
+gallery.6.image=https://images.launchbox-app.com//eead0c78-0984-40fa-b98b-59fa28cf8462.jpg
+trailer_url=https://www.youtube.com/
+supported_languages_raw=Full language list not yet published for the Switch 2 Remastered SKU; expected to follow the broad multilingual support of current The Witcher 3 builds
+text_language.1=Official final Switch 2 language matrix not yet published
+text_language.2=The existing game supports multiple European and Asian languages
+text_language.3=Re-check Nintendo / CDPR listing at launch
+audio_language.1=Final Switch 2 audio-language matrix not yet published
+audio_language.2=Existing The Witcher 3 builds support multiple voice languages
+audio_language.3=Re-check launch listing before public storefront publication
+supported_play_mode.1=TV mode
+supported_play_mode.2=Tabletop mode
+supported_play_mode.3=Handheld mode
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=true
+nintendo_notes<<EOF
+Officially announced by CD PROJEKT RED on August 25, 2026. The native Nintendo Switch 2 version launches September 29, 2026. Exact Switch 2 resolution/FPS targets and physical box art were not published at extraction time, so those values are explicitly marked Not Announced rather than guessed. Songs of the Past is a separate paid expansion scheduled for 2027.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=Remastered base game tier
+edition.1.content.2.label=Offline account package
+edition.1.content.3.label=Native Nintendo Switch 2 release
+edition.2.name=Bonus Edition / Offline
+edition.2.cover_image=
+edition.2.content.1.label=Remastered supplier Bonus tier
+edition.2.content.2.label=Offline account package
+edition.2.content.3.label=Native Nintendo Switch 2 release
+edition.3.name=Standard / Online
+edition.3.cover_image=
+edition.3.content.1.label=Remastered base game tier
+edition.3.content.2.label=Online account package
+edition.3.content.3.label=Native Nintendo Switch 2 release
+edition.4.name=Deluxe Edition / Online
+edition.4.cover_image=
+edition.4.content.1.label=Remastered supplier Deluxe tier
+edition.4.content.2.label=Online account package
+edition.4.content.3.label=Native Nintendo Switch 2 release
+gameplay_pillar.1.title=Upgraded visuals and performance
+gameplay_pillar.1.description<<EOF
+CD PROJEKT RED describes broad visual and performance improvements across the Remastered release.
+EOF
+gameplay_pillar.1.image=https://press.cdn.cdpr.app/news/33a063fc417f1a4ccd362849de934bb1_q90_1024x576.png
+gameplay_pillar.2.title=Enhanced combat
+gameplay_pillar.2.description<<EOF
+Combat systems are being revised with improved feel, new finishers, and broader gameplay changes.
+EOF
+gameplay_pillar.2.image=https://images.launchbox-app.com//f64cbe3a-4863-4841-b85e-dd070f7641a8.jpg
+gameplay_pillar.3.title=Improved traversal and movement
+gameplay_pillar.3.description<<EOF
+Movement and world navigation receive modernization alongside revamped mount handling.
+EOF
+gameplay_pillar.3.image=https://images.launchbox-app.com//b24b4879-113e-4eb2-8fdf-954fd7746a80.jpg
+gameplay_pillar.4.title=Reworked progression
+gameplay_pillar.4.description<<EOF
+The skill tree is being revamped, with transmogrification and other quality-of-life systems added.
+EOF
+gameplay_pillar.4.image=https://images.launchbox-app.com//415d2cab-1eb1-40e5-9f81-c85fac1512a1.jpg
+gameplay_pillar.5.title=Expanded presentation tools
+gameplay_pillar.5.description<<EOF
+New Sign effects and an expanded photo mode are among the confirmed additions.
+EOF
+gameplay_pillar.5.image=https://images.launchbox-app.com//3e559872-c878-4e5b-832b-5f0777fa3355.jpg
+world_summary<<EOF
+The Remastered release revisits the same Northern Kingdoms, Skellige, and expansion regions but with a modernization pass intended to make the decade-old RPG feel more current on newer hardware.
+EOF
+story_chapter.1.title=Search for Ciri
+story_chapter.1.text<<EOF
+The main narrative remains Geralt’s pursuit of Ciri while the Wild Hunt closes in.
+EOF
+story_chapter.1.image=https://images.launchbox-app.com//b24b4879-113e-4eb2-8fdf-954fd7746a80.jpg
+story_chapter.2.title=Navigate the Northern Kingdoms
+story_chapter.2.text<<EOF
+Political conflict, monster contracts, and personal stories remain central to the open-world structure.
+EOF
+story_chapter.2.image=https://images.launchbox-app.com//415d2cab-1eb1-40e5-9f81-c85fac1512a1.jpg
+story_chapter.3.title=Face the Wild Hunt
+story_chapter.3.text<<EOF
+The base campaign culminates in choices and battles surrounding Ciri and the supernatural threat.
+EOF
+story_chapter.3.image=https://images.launchbox-app.com//3e559872-c878-4e5b-832b-5f0777fa3355.jpg
+story_chapter.4.title=Revisit the classic expansions
+story_chapter.4.text<<EOF
+Hearts of Stone and Blood and Wine remain part of the modernized Witcher 3 ecosystem.
+EOF
+story_chapter.4.image=https://images.launchbox-app.com//b468458f-f075-4720-8ebd-1e017df627cb.jpg
+story_chapter.5.title=Prepare for Songs of the Past
+story_chapter.5.text<<EOF
+A new paid expansion, Songs of the Past, is scheduled for 2027 on Switch 2 and other current platforms.
+EOF
+story_chapter.5.image=https://images.launchbox-app.com//ccd85bcc-ae01-4e5e-9064-24ff8c58aa4c.jpg
+feature.1=Native Nintendo Switch 2 release
+feature.2=Upgraded visuals and performance
+feature.3=Enhanced combat, traversal, and mount handling
+feature.4=Revamped skill tree, transmogrification, and expanded photo mode
+feature.5=Songs of the Past expansion planned for 2027
+performance_tv_resolution=Not Announced
+performance_handheld_resolution=Not Announced
+performance_fps=Not Announced
+performance_hdr=false
+main_story_hours=52
+completion_main_story_hours=105
+completion_story_plus_dlc_hours=180
+faq.1.question=When does the Switch 2 Remastered version release?
+faq.1.answer<<EOF
+September 29, 2026, according to CD PROJEKT RED’s official announcement.
+EOF
+faq.2.question=Is this just backward compatibility?
+faq.2.answer<<EOF
+No. CD PROJEKT RED explicitly announced a native Nintendo Switch 2 version of Remastered.
+EOF
+faq.3.question=Are exact resolution and FPS values confirmed?
+faq.3.answer<<EOF
+Not yet. They are intentionally marked Not Announced in this file rather than estimated.
+EOF
+faq.4.question=Does it include the classic expansions?
+faq.4.answer<<EOF
+CD PROJEKT RED’s Remastered ecosystem modernizes the base game and its first two expansions, and existing owners were granted access to Hearts of Stone and Blood and Wine.
+EOF
+faq.5.question=What is Songs of the Past?
+faq.5.answer<<EOF
+It is a newly announced paid expansion planned for 2027, featuring the new region of Letten.
+EOF
+verdict_score=Pending
+verdict_pro.1=Native Switch 2 release is officially confirmed
+verdict_pro.2=Large modernization pass goes beyond simple resolution scaling
+verdict_pro.3=Combat and progression revisions target long-standing rough edges
+verdict_pro.4=Full Witcher 3 content base remains enormous
+verdict_pro.5=New 2027 expansion extends the game further
+verdict_con.1=Not released yet
+verdict_con.2=Exact Switch 2 performance targets are not published
+verdict_con.3=Physical Switch 2 box art was not available at extraction time
+verdict_con.4=Final install size may change before launch
+verdict_con.5=Review scores for Remastered are not available yet
+review.1.source=CD PROJEKT RED
+review.1.score=Official announcement
+review.1.url=https://press.cdprojektred.com/en/news/1839/the-witcher-3-wild-hunt-remastered-announced-songs-of-the-past-gets-first-look
+timeline.1.date=2026-08-25
+timeline.1.title=Remastered officially announced
+timeline.2.date=2026-09-29
+timeline.2.title=Native Nintendo Switch 2 version scheduled to launch
+timeline.3.date=2027
+timeline.3.title=Songs of the Past paid expansion scheduled
+update.1.version=Pre-release announcement build
+update.1.date=2026-08-25
+update.2.version=Scheduled launch
+update.2.date=2026-09-29
+studio_name=CD PROJEKT RED / Yigsoft
+studio_website=https://press.cdprojektred.com/en/news/1839/the-witcher-3-wild-hunt-remastered-announced-songs-of-the-past-gets-first-look
+studio_location=Japan
+source.1.name=CD PROJEKT RED official press release
+source.1.url=https://press.cdprojektred.com/en/news/1839/the-witcher-3-wild-hunt-remastered-announced-songs-of-the-past-gets-first-look
+source.2.name=The Witcher official website
+source.2.url=https://www.thewitcher.com/
+source.3.name=LaunchBox original Switch entry
+source.3.url=https://gamesdb.launchbox-app.com/games/details/124619-the-witcher-iii-wild-hunt-complete-edition
+storage_download_size_gb=31.5
+storage_required_space_gb=31.5
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Final Nintendo Switch 2 install size has not yet been officially published. The numeric storage field is a conservative placeholder based on the existing complete package and should be refreshed at launch.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+series_game.1=The Witcher 3: Wild Hunt — Complete Edition
+series_game.2=Cyberpunk 2077: Ultimate Edition
+series_game.3=The Elder Scrolls V: Skyrim
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Regular offline package; supplied price 1,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=offline_bonus
+type.2.name=Bonus Edition / Offline
+type.2.option_id=offline_account
+type.2.price=2500
+type.2.cost=2500
+type.2.description=Bonus offline supplier tier; supplied price 2,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+type.3.id=online_standard
+type.3.name=Standard / Online
+type.3.option_id=online_account
+type.3.price=10000
+type.3.cost=1250
+type.3.description=Standard online package; selling price 10,000 IQD; base cost tracked from Regular tier.
+type.3.stock=9999
+type.3.is_infinite_stock=true
+type.4.id=online_deluxe
+type.4.name=Deluxe Edition / Online
+type.4.option_id=online_account
+type.4.price=12250
+type.4.cost=2500
+type.4.description=Deluxe online supplier tier; selling price 12,250 IQD; cost tracked from Bonus tier.
+type.4.stock=9999
+type.4.is_infinite_stock=true
+dlc.1.title=Hearts of Stone
+dlc.1.description<<EOF
+Classic story expansion being modernized as part of the Witcher 3 Remastered content ecosystem.
+EOF
+dlc.1.release_date=2015-10-13
+dlc.2.title=Blood and Wine
+dlc.2.description<<EOF
+Large Toussaint expansion included in the modernized Witcher 3 content ecosystem.
+EOF
+dlc.2.release_date=2016-05-31
+dlc.3.title=Songs of the Past
+dlc.3.description<<EOF
+New paid expansion set in Letten, scheduled for 2027 on Nintendo Switch 2 and other current platforms.
+EOF
+dlc.3.release_date=2027
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Upcoming / exact technical targets not published
+device_performance.1.verification_status=Officially announced; technical resolution/FPS pending
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=Not Announced
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=Not Announced
+device_performance.1.handheld.output_resolution=Not Announced
+device_performance.1.handheld.fps=Not Announced
+device_performance.1.handheld.fps_min=Not Announced
+device_performance.1.handheld.fps_max=Not Announced
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+CD PROJEKT RED has officially announced a native Nintendo Switch 2 Remastered release for September 29, 2026, but exact handheld/TV resolution and frame-rate targets have not yet been published.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Not Announced
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=Not Announced
+device_performance.1.tv.output_resolution=Not Announced
+device_performance.1.tv.fps=Not Announced
+device_performance.1.tv.fps_min=Not Announced
+device_performance.1.tv.fps_max=Not Announced
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+CD PROJEKT RED has officially announced a native Nintendo Switch 2 Remastered release for September 29, 2026, but exact handheld/TV resolution and frame-rate targets have not yet been published.
+EOF
+device_performance.1.mode.1.name=Primary documented / observed profile
+device_performance.1.mode.1.handheld_resolution=Not Announced
+device_performance.1.mode.1.handheld_fps=Not Announced
+device_performance.1.mode.1.tv_resolution=Not Announced
+device_performance.1.mode.1.tv_fps=Not Announced
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+CD PROJEKT RED has officially announced a native Nintendo Switch 2 Remastered release for September 29, 2026, but exact handheld/TV resolution and frame-rate targets have not yet been published.
+EOF
+device_performance.1.upscaling=Game / system scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no universal value
+device_performance.1.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.1.game_version=Upcoming Remastered build
+device_performance.1.patch_version=Pre-release / not yet launched
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=CD PROJEKT RED official press announcement
+device_performance.1.source_url=https://press.cdprojektred.com/en/news/1839/the-witcher-3-wild-hunt-remastered-announced-songs-of-the-past-gets-first-look
+device_performance.1.verified_at=2026-08-27
+device_performance.1.performance_notes<<EOF
+CD PROJEKT RED has officially announced a native Nintendo Switch 2 Remastered release for September 29, 2026, but exact handheld/TV resolution and frame-rate targets have not yet been published.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Not Supported for this native edition
+device_performance.2.verification_status=Separate original Switch release exists
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+This file represents the native Nintendo Switch 2 Remastered product. The original Nintendo Switch Complete Edition is a separate product file.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+This file represents the native Nintendo Switch 2 Remastered product. The original Nintendo Switch Complete Edition is a separate product file.
+EOF
+device_performance.2.mode.1.name=Primary documented / observed profile
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+This file represents the native Nintendo Switch 2 Remastered product. The original Nintendo Switch Complete Edition is a separate product file.
+EOF
+device_performance.2.upscaling=Game / system scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no universal value
+device_performance.2.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.2.game_version=Separate platform edition
+device_performance.2.patch_version=Not applicable
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=CD PROJEKT RED official press announcement
+device_performance.2.source_url=https://press.cdprojektred.com/en/news/1839/the-witcher-3-wild-hunt-remastered-announced-songs-of-the-past-gets-first-look
+device_performance.2.verified_at=2026-08-27
+device_performance.2.performance_notes<<EOF
+This file represents the native Nintendo Switch 2 Remastered product. The original Nintendo Switch Complete Edition is a separate product file.
+EOF
+upgrade_price=0

@@ -1,0 +1,441 @@
+schema_version=24
+name=Pikmin 3 Deluxe
+title=Pikmin 3 Deluxe
+title_ar=بيكمين 3 ديلوكس
+name_ar=بيكمين 3 ديلوكس
+slug=pikmin-3-deluxe-switch
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2: backward compatible
+edition=Deluxe
+region=Global
+release_date=2020-10-30
+release_status=Released
+status=Active
+developer=Nintendo EAD / Eighting
+publisher=Nintendo
+genre.1=Strategy
+genres.1=Strategy
+genre.2=Adventure
+genres.2=Adventure
+genre.3=Puzzle
+genres.3=Puzzle
+series_name=Pikmin
+franchise=Pikmin
+players_count=Single system (1-2)
+players=Single system (1-2)
+player_count=Single system (1-2)
+age_rating=ESRB E10+ / PEGI 7
+metacritic_score=85
+metacritic=85
+opencritic_score=85
+opencritic=85
+user_score=8.4
+user_score=8.4
+metacritic_url=https://www.metacritic.com/game/pikmin-3-deluxe/
+game_size_gb=6.5
+size_gb=6.5
+size=6.5 GB
+price=1250
+price_iqd=1250
+price_usd=59.99
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+display_order=0
+trade_value=13500
+trade_value_iqd=13500
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+eshop_url=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short<<EOF
+A polished deluxe edition of Pikmin 3 with co-op story play, extra missions, and all original DLC.
+EOF
+description_full<<EOF
+Pikmin 3 Deluxe follows three explorers from Koppai as they search planet PNF-404 for food that can save their homeworld. The Deluxe release adds full story co-op, new prologue and epilogue side stories featuring Olimar and Louie, difficulty options, quality-of-life changes, a bestiary-style Piklopedia, and the DLC content from the Wii U original.
+EOF
+description<<EOF
+Pikmin 3 Deluxe follows three explorers from Koppai as they search planet PNF-404 for food that can save their homeworld. The Deluxe release adds full story co-op, new prologue and epilogue side stories featuring Olimar and Louie, difficulty options, quality-of-life changes, a bestiary-style Piklopedia, and the DLC content from the Wii U original.
+EOF
+description_en<<EOF
+Pikmin 3 Deluxe follows three explorers from Koppai as they search planet PNF-404 for food that can save their homeworld. The Deluxe release adds full story co-op, new prologue and epilogue side stories featuring Olimar and Louie, difficulty options, quality-of-life changes, a bestiary-style Piklopedia, and the DLC content from the Wii U original.
+EOF
+description_ar<<EOF
+النسخة المحسنة من Pikmin 3 وتضم طور القصة التعاوني ومهام إضافية مع Olimar وLouie وكل محتوى DLC من نسخة Wii U الأصلية.
+EOF
+front_cover_image=https://images.launchbox-app.com/b2763256-07e4-4c18-b802-a1ac2efe96d0.jpg
+cartridge_image=https://images.launchbox-app.com/b2763256-07e4-4c18-b802-a1ac2efe96d0.jpg
+cartridge=https://images.launchbox-app.com/b2763256-07e4-4c18-b802-a1ac2efe96d0.jpg
+cartridge_url=https://images.launchbox-app.com/b2763256-07e4-4c18-b802-a1ac2efe96d0.jpg
+box_front_url=https://images.launchbox-app.com/b2763256-07e4-4c18-b802-a1ac2efe96d0.jpg
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+cover_image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+cover=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+cover_url=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a32f7ed0a032b291746ee878475521b685ef6c2b2de2caab3f8d40fec2d7ffce
+cover_texture_url=
+box_back_url=
+banner_image.1=https://images.launchbox-app.com/bac0ecd1-5b1d-4e07-a73b-cf66abf6a039.jpg
+banner_image.2=https://images.launchbox-app.com/64e9677f-d341-4d8c-b9d0-2227aeae6bce.jpg
+banner_image.3=https://images.launchbox-app.com/d8da686c-69d3-4ce5-b671-9a9e43d2c371.jpg
+banner_image.4=https://images.launchbox-app.com/c5b9f982-62d3-4f5c-951e-93228bc43b89.jpg
+banner_image.5=https://images.launchbox-app.com/7d4540a8-912f-431d-b493-f0c783024f5b.jpg
+banner_image.6=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/ac5801e1ed46672a3a05af2d4551a833a9fb603fb61d8583bd82fdbe972c8238
+banner_image.7=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/69b190c41a122756b4de98520742777fba47af0057120c6ca4547bdc923b2561
+gallery.1.description=Pikmin 3 Deluxe gameplay / world media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/ac5801e1ed46672a3a05af2d4551a833a9fb603fb61d8583bd82fdbe972c8238
+gallery.2.description=Pikmin 3 Deluxe gameplay / world media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/69b190c41a122756b4de98520742777fba47af0057120c6ca4547bdc923b2561
+gallery.3.description=Pikmin 3 Deluxe gameplay / world media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a6260af9456f2e4a87b5b3e186678cf2780a3f367ba968d790ac3918e5e4b636
+gallery.4.description=Pikmin 3 Deluxe gameplay / world media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/92bfb34ee38fb2c2ad966c648c16c86cdbcd1464a16d109345fe3d0201540ff2
+gallery.5.description=Pikmin 3 Deluxe gameplay / world media 5
+gallery.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/c06a7c551a35b4bb549d21a41ecc52225287cd7985f8cbb434a5fecf7197612b
+gallery.6.description=Pikmin 3 Deluxe gameplay / world media 6
+gallery.6.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/8e26b2b5fbaa785806044caf66f77a61e6cb991a641fc8a820bab5fa4759448d
+trailer_url=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+supported_languages_raw=Japanese, English, French, German, Italian, Spanish, Korean, Dutch, Simplified Chinese, Traditional Chinese
+text_language.1=Japanese / English
+text_language.2=French / German / Italian / Spanish
+text_language.3=Korean / Chinese language options by region
+audio_language.1=Character vocalizations
+audio_language.2=Music and sound effects
+audio_language.3=Language support follows regional Nintendo release data
+supported_play_mode.1=TV mode
+supported_play_mode.2=Tabletop mode
+supported_play_mode.3=Handheld mode
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Deluxe includes the full Pikmin 3 story plus new side stories, story-mode co-op, difficulty options, quality-of-life improvements, and all DLC from the original version.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://images.launchbox-app.com/b2763256-07e4-4c18-b802-a1ac2efe96d0.jpg
+edition.1.content.1.label=Pikmin 3 Deluxe base game
+edition.1.content.2.label=All built-in Deluxe content
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / Online
+edition.2.cover_image=https://images.launchbox-app.com/b2763256-07e4-4c18-b802-a1ac2efe96d0.jpg
+edition.2.content.1.label=Pikmin 3 Deluxe base game
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Nintendo Switch Online features where supported
+gameplay_pillar.1.title=Three-captain strategy
+gameplay_pillar.1.description<<EOF
+Switch between Alph, Brittany, and Charlie to divide tasks and manage the map efficiently.
+EOF
+gameplay_pillar.1.image=https://images.launchbox-app.com/bac0ecd1-5b1d-4e07-a73b-cf66abf6a039.jpg
+gameplay_pillar.2.title=Pikmin type specialization
+gameplay_pillar.2.description<<EOF
+Use Red, Yellow, Blue, Rock, and Winged Pikmin according to hazards, enemy armor, terrain, and puzzle design.
+EOF
+gameplay_pillar.2.image=https://images.launchbox-app.com/64e9677f-d341-4d8c-b9d0-2227aeae6bce.jpg
+gameplay_pillar.3.title=Food-gathering campaign
+gameplay_pillar.3.description<<EOF
+The core story is driven by collecting fruit and seeds to save the explorers’ home planet from famine.
+EOF
+gameplay_pillar.3.image=https://images.launchbox-app.com/d8da686c-69d3-4ce5-b671-9a9e43d2c371.jpg
+gameplay_pillar.4.title=Full story co-op
+gameplay_pillar.4.description<<EOF
+Deluxe adds cooperative story play so a second player can help divide exploration and battle duties.
+EOF
+gameplay_pillar.4.image=https://images.launchbox-app.com/c5b9f982-62d3-4f5c-951e-93228bc43b89.jpg
+gameplay_pillar.5.title=Side stories and challenge modes
+gameplay_pillar.5.description<<EOF
+Olimar and Louie side missions, Mission Mode, Bingo Battle, and extra challenges extend replay value.
+EOF
+gameplay_pillar.5.image=https://images.launchbox-app.com/7d4540a8-912f-431d-b493-f0c783024f5b.jpg
+world_summary<<EOF
+PNF-404 is presented at miniature scale, turning gardens, caves, rivers, debris, and wildlife into strategic environments where every route and object matters.
+EOF
+story_chapter.1.title=Crash on PNF-404
+story_chapter.1.text<<EOF
+Three Koppai explorers are separated after a failed landing on the planet.
+EOF
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/ac5801e1ed46672a3a05af2d4551a833a9fb603fb61d8583bd82fdbe972c8238
+story_chapter.2.title=Discover Pikmin allies
+story_chapter.2.text<<EOF
+The crew learns to command several Pikmin types with unique strengths.
+EOF
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/69b190c41a122756b4de98520742777fba47af0057120c6ca4547bdc923b2561
+story_chapter.3.title=Gather fruit to save Koppai
+story_chapter.3.text<<EOF
+Each expedition day centers on efficient exploration and returning food to the ship.
+EOF
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/a6260af9456f2e4a87b5b3e186678cf2780a3f367ba968d790ac3918e5e4b636
+story_chapter.4.title=Track Olimar’s clues
+story_chapter.4.text<<EOF
+The search for the Cosmic-drive Key intersects with clues left behind by Olimar and Louie.
+EOF
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/92bfb34ee38fb2c2ad966c648c16c86cdbcd1464a16d109345fe3d0201540ff2
+story_chapter.5.title=Escape with a solution
+story_chapter.5.text<<EOF
+The campaign builds toward recovery of the crew, the key, and enough food data to help Koppai.
+EOF
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch/70010000005302/c06a7c551a35b4bb549d21a41ecc52225287cd7985f8cbb434a5fecf7197612b
+feature.1=Story campaign playable in local co-op
+feature.2=All original DLC content included
+feature.3=New Olimar and Louie side stories
+feature.4=Multiple difficulty options and quality-of-life improvements
+feature.5=Mission Mode and Bingo Battle add replay value
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=30
+performance_hdr=false
+main_story_hours=13
+completion_main_story_hours=25
+completion_story_plus_dlc_hours=35
+faq.1.question=What does Deluxe add?
+faq.1.answer<<EOF
+It adds story co-op, new side stories, difficulty settings, quality-of-life improvements, and all DLC from the Wii U version.
+EOF
+faq.2.question=Can two players play the story?
+faq.2.answer<<EOF
+Yes. The Deluxe version supports local co-op in Story Mode.
+EOF
+faq.3.question=Does it work on Switch 2?
+faq.3.answer<<EOF
+Yes, as backward-compatible Nintendo Switch software.
+EOF
+faq.4.question=Is Nintendo Switch Online required for the main story?
+faq.4.answer<<EOF
+No. The main story and local co-op do not require Nintendo Switch Online.
+EOF
+faq.5.question=How is it different from Pikmin 4?
+faq.5.answer<<EOF
+Pikmin 3 Deluxe focuses on three captains and food collection, while Pikmin 4 introduces a different rescue-corp structure and Oatchi.
+EOF
+verdict_score=8.8
+verdict_pro.1=Excellent balance of strategy and exploration
+verdict_pro.2=Story co-op is a major improvement
+verdict_pro.3=Beautiful environments and animation
+verdict_pro.4=Deluxe content meaningfully expands the original
+verdict_pro.5=Strong challenge modes for replay
+verdict_con.1=Main campaign is shorter than Pikmin 4
+verdict_con.2=Bingo Battle is local rather than a major online mode
+verdict_con.3=Some multitasking systems take time to learn
+verdict_con.4=Difficulty can become light for series veterans
+verdict_con.5=Older Wii U design roots are still visible
+review.1.source=Metacritic
+review.1.score=85
+review.1.url=https://www.metacritic.com/game/pikmin-3-deluxe/
+review.2.source=Nintendo
+review.2.score=Official product page
+review.2.url=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+review.3.source=LaunchBox
+review.3.score=Media database
+review.3.url=https://gamesdb.launchbox-app.com/games/images/142940-pikmin-3-deluxe
+timeline.1.date=2013-07-13
+timeline.1.title=Original Pikmin 3 launched on Wii U
+timeline.2.date=2020-10-30
+timeline.2.title=Pikmin 3 Deluxe released on Nintendo Switch
+timeline.3.date=2025-06-05
+timeline.3.title=Playable in the Nintendo Switch 2 ecosystem through compatibility
+update.1.version=Deluxe launch build
+update.1.date=2020-10-30
+update.2.version=Current retail build
+update.2.date=2026-08-27
+studio_name=Nintendo EAD / Eighting
+studio_website=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+studio_location=Japan
+source.1.name=Nintendo official product page
+source.1.url=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+source.2.name=Nintendo Thailand Pikmin 3 Deluxe
+source.2.url=https://www.nintendo.com/th/switch/ampn/index.html
+source.3.name=LaunchBox images
+source.3.url=https://gamesdb.launchbox-app.com/games/images/142940-pikmin-3-deluxe
+storage_download_size_gb=6.5
+storage_required_space_gb=6.5
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Nintendo lists approximately 6.5 GB for Pikmin 3 Deluxe on both the Switch listing and Switch 2 compatibility context.
+EOF
+multiplayer_local=true
+multiplayer_online=true
+multiplayer_cooperative=true
+multiplayer_competitive=true
+multiplayer_local_wireless=false
+multiplayer_split_screen=true
+series_game.1=Pikmin 1+2
+series_game.2=Pikmin 4
+series_game.3=Pikmin 3
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=offline_regular
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Regular offline package; supplied price 1,250 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=online_standard
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=20750
+type.2.cost=1250
+type.2.description=Standard online package; selling price 20,750 IQD; base cost tracked from Regular tier.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Original Pikmin 3 DLC included in Deluxe
+dlc.1.description<<EOF
+The Deluxe release incorporates DLC from the Wii U original into the base package rather than requiring a separate expansion purchase.
+EOF
+dlc.1.release_date=Not separately dated
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available / sourced
+device_performance.1.verification_status=Sourced / compatibility profile
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Pikmin 3 Deluxe targets a clean 720p handheld and 1080p docked presentation at 30 fps.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Pikmin 3 Deluxe targets a clean 720p handheld and 1080p docked presentation at 30 fps.
+EOF
+device_performance.1.mode.1.name=Primary documented / observed profile
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Pikmin 3 Deluxe targets a clean 720p handheld and 1080p docked presentation at 30 fps.
+EOF
+device_performance.1.upscaling=Game / system scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent; no universal value
+device_performance.1.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.1.game_version=Current retail build
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Nintendo official product page + established release performance profile
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+device_performance.1.verified_at=2026-08-27
+device_performance.1.performance_notes<<EOF
+Pikmin 3 Deluxe targets a clean 720p handheld and 1080p docked presentation at 30 fps.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available / sourced
+device_performance.2.verification_status=Sourced / compatibility profile
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld / Backward Compatibility
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked / Backward Compatibility
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+device_performance.2.mode.1.name=Primary documented / observed profile
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+device_performance.2.upscaling=Game / system scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent; no universal value
+device_performance.2.loading_notes<<EOF
+Loading varies by scene, storage state, patch level, and platform.
+EOF
+device_performance.2.game_version=Current retail build
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Nintendo Switch 2 compatibility + original game performance profile
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/pikmin-3-deluxe-switch/
+device_performance.2.verified_at=2026-08-27
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition is represented by this file.
+EOF
+upgrade_price=0

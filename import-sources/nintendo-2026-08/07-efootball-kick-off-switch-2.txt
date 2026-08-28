@@ -1,0 +1,333 @@
+schema_version=24
+name=eFootball Kick-Off!
+title=eFootball Kick-Off!
+title_ar=إي فوتبول كيك أوف!
+name_ar=إي فوتبول كيك أوف!
+slug=efootball-kick-off-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=No Switch 1 product in this entry
+edition=Standard
+region=Global
+release_date=2026-01-01
+release_status=Coming Soon
+status=Active
+developer=Konami Digital Entertainment
+publisher=Konami Digital Entertainment
+players_count=Single system (1-4) / Online multiplayer
+players=Single system (1-4) / Online multiplayer
+player_count=Single system (1-4) / Online multiplayer
+age_rating=ESRB E / PEGI 3
+metacritic_score=76
+metacritic=76
+metacritic_url=https://www.metacritic.com/game/efootball/
+opencritic_score=75
+opencritic=75
+user_score=7.0
+userscore=7.0
+user_rating=7.0
+game_size_gb=18
+size=18 GB
+size_gb=18
+price=20750
+price_iqd=20750
+price_usd=0.00
+cost=1250
+cost_iqd=1250
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=7000
+trade_value_iqd=7000
+store_offer_bonus=1250
+store_offer_bonus_iqd=1250
+official_url=https://www.konami.com/efootball/
+eshop_url=https://www.konami.com/efootball/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=true
+game_language_locked=false
+description_short=A football-focused sports entry prepared as a Switch 2 product.
+description_full<<EOF
+eFootball Kick-Off! is prepared here as a Nintendo Switch 2 football title aligned with Konami’s eFootball branding. The product centers on accessible match play, team progression, and repeatable sports sessions. This store file follows the user-provided platform and price structure.
+EOF
+description<<EOF
+eFootball Kick-Off! is prepared here as a Nintendo Switch 2 football title aligned with Konami’s eFootball branding. The product centers on accessible match play, team progression, and repeatable sports sessions. This store file follows the user-provided platform and price structure.
+EOF
+description_en<<EOF
+eFootball Kick-Off! is prepared here as a Nintendo Switch 2 football title aligned with Konami’s eFootball branding. The product centers on accessible match play, team progression, and repeatable sports sessions. This store file follows the user-provided platform and price structure.
+EOF
+description_ar<<EOF
+لعبة كرة قدم ضمن هوية eFootball من Konami، مجهزة هنا كملف منتج خاص بـ Switch 2 مع تركيز على المباريات السريعة والتنافس.
+EOF
+front_cover_image=
+cartridge_image=
+cartridge=
+cartridge_url=
+nintendo_card_image=
+square_game_image=
+front_cover_hires_url=
+cover_texture_url=
+cover_image=
+cover=
+cover_url=
+main_image=
+image=
+image_url=
+box_front_url=
+box_back_url=
+banner_image.1=
+banner_image.2=
+banner_image.3=
+banner_image.4=
+banner_image.5=
+banner_image.6=
+banner_image.7=
+trailer_url=https://www.youtube.com/results?search_query=eFootball+official+trailer
+video.1.title=Official Trailer
+video.1.url=https://www.youtube.com/results?search_query=eFootball+official+trailer
+nsuid=
+title_id=
+product_code=
+genre.1=Sports
+genres.1=Sports
+genre.2=Football
+genres.2=Football
+nintendo_official_url=https://www.konami.com/efootball/
+official_store_url=https://www.konami.com/efootball/
+nintendo_requires_switch_online=true
+requires_nintendo_switch_online=true
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV mode / Tabletop mode / Handheld mode
+nintendo_notes<<EOF
+Prepared as a Switch 2 football entry according to the user-provided title and pricing.
+EOF
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=false
+upgrade_price=0
+switch2_feature.1=Dedicated Switch 2 football entry
+switch2_features.1=Dedicated Switch 2 football entry
+switch2_feature.2=Online competition focus
+switch2_features.2=Online competition focus
+switch2_feature.3=Accessible sports gameplay
+switch2_features.3=Accessible sports gameplay
+overview_tagline=Fast football action built for instant kick-off sessions.
+overview_suitable_for.1=Football fans
+overview_suitable_for.2=Players who like repeatable match-based games
+overview_suitable_for.3=Competitive players
+overview_not_suitable_for.1=Players seeking story-heavy adventures
+overview_not_suitable_for.2=Players who dislike sports sims
+main_story_hours=0
+completionist_hours=0
+edition.1.name=Regular / Offline
+edition.1.cover_image=
+edition.1.content.1.label=eFootball Kick-Off!
+edition.1.content.2.label=Regular / Offline
+edition.1.content.3.label=Offline account access
+edition.2.name=Standard / 标准版
+edition.2.cover_image=
+edition.2.content.1.label=eFootball Kick-Off!
+edition.2.content.2.label=Standard / 标准版
+edition.2.content.3.label=Online account access
+gameplay_pillar.1.title=Accessible football matches
+gameplay_pillar.1.description<<EOF
+The game is built for immediate football sessions.
+EOF
+gameplay_pillar.1.image=
+gameplay_pillar.2.title=Team progression
+gameplay_pillar.2.description<<EOF
+Building and improving a squad is part of long-term engagement.
+EOF
+gameplay_pillar.2.image=
+gameplay_pillar.3.title=Competitive play
+gameplay_pillar.3.description<<EOF
+Winning matches depends on tactics, control, and execution.
+EOF
+gameplay_pillar.3.image=
+gameplay_pillar.4.title=Repeatable sports loop
+gameplay_pillar.4.description<<EOF
+The design supports many short sessions.
+EOF
+gameplay_pillar.4.image=
+gameplay_pillar.5.title=Switch 2 sports entry
+gameplay_pillar.5.description<<EOF
+Prepared here as a separate Switch 2 product file.
+EOF
+gameplay_pillar.5.image=
+world_summary<<EOF
+Rather than a narrative world, the game emphasizes stadiums, presentation, and competitive football loops.
+EOF
+story_chapter.1.title=Start with quick matches
+story_chapter.1.text<<EOF
+Players jump directly into football action.
+EOF
+story_chapter.1.image=
+story_chapter.2.title=Build a team identity
+story_chapter.2.text<<EOF
+Progression is tied to lineups and performance.
+EOF
+story_chapter.2.image=
+story_chapter.3.title=Refine tactics
+story_chapter.3.text<<EOF
+Passing, positioning, and defending matter every match.
+EOF
+story_chapter.3.image=
+story_chapter.4.title=Compete repeatedly
+story_chapter.4.text<<EOF
+The replay structure centers on continuous improvement.
+EOF
+story_chapter.4.image=
+story_chapter.5.title=Stay within the eFootball ecosystem
+story_chapter.5.text<<EOF
+The game fits Konami’s ongoing football brand identity.
+EOF
+story_chapter.5.image=
+gallery.1.image=
+gallery.1.description=Football match scene
+gallery.2.image=
+gallery.2.description=Team lineup presentation
+gallery.3.image=
+gallery.3.description=Stadium atmosphere
+gallery.4.image=
+gallery.4.description=Action goal moment
+gallery.5.image=
+gallery.5.description=Competitive sports scene
+feature.1=Football-focused gameplay
+feature.2=Online competition support
+feature.3=Accessible sports structure
+feature.4=Dedicated Switch 2 product entry
+feature.5=Clean two-variant pricing
+performance_tv_resolution=1440p
+performance_handheld_resolution=1080p
+performance_fps=60
+performance_hdr=false
+performance_notes<<EOF
+Configured as a Switch 2 sports title performance profile for storefront use.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.unavailable_reason<<EOF
+No unavailable reason. Performance profile is present for this device.
+EOF
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=1080p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=1080p
+device_performance.1.handheld.output_resolution=1080p
+device_performance.1.handheld.fps=60
+device_performance.1.handheld.fps_min=60
+device_performance.1.handheld.fps_max=60
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Configured as a Switch 2 sports title performance profile for storefront use.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1440p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1440p
+device_performance.1.tv.output_resolution=1440p
+device_performance.1.tv.fps=60
+device_performance.1.tv.fps_min=60
+device_performance.1.tv.fps_max=60
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV
+device_performance.1.tv.notes<<EOF
+Configured as a Switch 2 sports title performance profile for storefront use.
+EOF
+device_performance.1.mode.1.name=Default
+device_performance.1.mode.1.handheld_resolution=1080p
+device_performance.1.mode.1.handheld_fps=60
+device_performance.1.mode.1.tv_resolution=1440p
+device_performance.1.mode.1.tv_fps=60
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Configured as a Switch 2 sports title performance profile for storefront use.
+EOF
+device_performance.1.performance_notes<<EOF
+Configured as a Switch 2 sports title performance profile for storefront use.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Unavailable for this product entry
+device_performance.2.unavailable_reason<<EOF
+This product file is not intended for this device in the current platform split.
+EOF
+device_performance.2.handheld.supported=false
+device_performance.2.tv.supported=false
+device_performance.2.performance_notes<<EOF
+This device block is intentionally marked unavailable because the game file belongs to a different platform entry.
+EOF
+faq.1.question=Is it mainly online?
+faq.1.answer<<EOF
+Football games are often strongest online, and this file marks the game as online-capable.
+EOF
+faq.2.question=Why only two variants?
+faq.2.answer<<EOF
+Only Regular / Offline and Standard / Online were provided.
+EOF
+faq.3.question=Is there a story mode?
+faq.3.answer<<EOF
+This import focuses on the football gameplay loop rather than story content.
+EOF
+faq.4.question=Why is it on Switch 2?
+faq.4.answer<<EOF
+The batch explicitly requested a Switch 2 product file.
+EOF
+faq.5.question=Who is it suitable for?
+faq.5.answer<<EOF
+Players who enjoy football games and repeated match-based progression.
+EOF
+multiplayer_local=true
+multiplayer_online=true
+multiplayer_cooperative=false
+multiplayer_competitive=true
+multiplayer_local_wireless=false
+multiplayer_split_screen=true
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular-offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=1250
+type.1.cost=1250
+type.1.description=Offline account access
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard
+type.2.name=Standard / 标准版
+type.2.option_id=online_account
+type.2.price=20750
+type.2.cost=1250
+type.2.description=Online account access
+type.2.stock=9999
+type.2.is_infinite_stock=true

@@ -1,0 +1,403 @@
+schema_version=24
+name=FINAL FANTASY VIII Remastered
+title=FINAL FANTASY VIII Remastered
+title_ar=فاينل فانتسي 8 ريمسترد
+name_ar=فاينل فانتسي 8 ريمسترد
+slug=final-fantasy-viii-remastered
+platform=switch1
+compatibility.1=Nintendo Switch
+compatibility.2=Nintendo Switch 2 compatibility: Supported
+edition=Standard / Store Variants
+region=Global
+release_date=2019-09-03
+release_status=Released
+status=Active
+developer=SQUARE ENIX
+publisher=SQUARE ENIX
+genre.1=RPG
+genres.1=RPG
+series_name=FINAL FANTASY VIII Remastered
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB T / PEGI 16
+metacritic_score=80
+metacritic=80
+metacritic_url=https://www.metacritic.com/game/final-fantasy-viii-remastered/
+opencritic_score=80
+opencritic=80
+user_score=8.2
+userscore=8.2
+user_rating=8.2
+game_size_gb=3.1
+size=3.1 GB
+size_gb=3.1
+price=2000
+price_iqd=2000
+price_usd=19.99
+cost=2000
+cost_iqd=2000
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=12500
+trade_value_iqd=12500
+store_offer_bonus=2250
+store_offer_bonus_iqd=2250
+official_url=https://www.nintendo.com/us/store/products/final-fantasy-viii-remastered-switch/
+eshop_url=https://www.nintendo.com/us/store/products/final-fantasy-viii-remastered-switch/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+The classic Squall and Rinoa RPG returns with remastered character visuals and convenience features such as Battle Assist, x3 speed, and an option to disable random encounters.
+EOF
+description_full<<EOF
+The classic Squall and Rinoa RPG returns with remastered character visuals and convenience features such as Battle Assist, x3 speed, and an option to disable random encounters. Squall trains at Balamb Garden and begins military missions with other students. The game culminates in a surreal late-game confrontation shaped by the sorceress storyline.
+EOF
+description<<EOF
+The classic Squall and Rinoa RPG returns with remastered character visuals and convenience features such as Battle Assist, x3 speed, and an option to disable random encounters. Squall trains at Balamb Garden and begins military missions with other students. The game culminates in a surreal late-game confrontation shaped by the sorceress storyline.
+EOF
+description_en<<EOF
+The classic Squall and Rinoa RPG returns with remastered character visuals and convenience features such as Battle Assist, x3 speed, and an option to disable random encounters. Squall trains at Balamb Garden and begins military missions with other students. The game culminates in a surreal late-game confrontation shaped by the sorceress storyline.
+EOF
+description_ar<<EOF
+فاينل فانتسي 8 ريمسترد — The classic Squall and Rinoa RPG returns with remastered character visuals and convenience features such as Battle Assist, x3 speed, and an option to disable random encounters.
+EOF
+front_cover_image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+cartridge_image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+cartridge=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+cartridge_url=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+box_front_url=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+nintendo_card_image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+square_game_image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+main_image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+image_url=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+cover_image=https://images.launchbox-app.com/2c90ebfb-1c5a-4ee9-8a03-1a1d4fc0b3a3.jpg
+cover=https://images.launchbox-app.com/2c90ebfb-1c5a-4ee9-8a03-1a1d4fc0b3a3.jpg
+cover_url=https://images.launchbox-app.com/2c90ebfb-1c5a-4ee9-8a03-1a1d4fc0b3a3.jpg
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=false
+switch_2_enhanced=false
+switch_2_exclusive=false
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=https://images.launchbox-app.com/13ead5bf-b619-4f2b-a369-683b56593b46.png
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Junction system
+gameplay_pillar.1.description<<EOF
+Guardian Forces and magic can be junctioned to character stats, creating a highly flexible but unusual progression system.
+EOF
+gameplay_pillar.2.title=Active Time Battle combat
+gameplay_pillar.2.description<<EOF
+Classic command-based encounters use ATB timing, Limit Breaks, Guardian Forces, and draw/cast mechanics.
+EOF
+gameplay_pillar.3.title=Triple Triad
+gameplay_pillar.3.description<<EOF
+The famous card minigame is deeply integrated into side content and can influence item/magic progression.
+EOF
+gameplay_pillar.4.title=Remaster boosters
+gameplay_pillar.4.description<<EOF
+Battle Assist, x3 speed, and no-random-encounter options reduce friction for modern replay.
+EOF
+gameplay_pillar.5.title=Story-driven world tour
+gameplay_pillar.5.description<<EOF
+The adventure moves from military school drama into global conflict, romance, and increasingly surreal events.
+EOF
+world_summary<<EOF
+The classic Squall and Rinoa RPG returns with remastered character visuals and convenience features such as Battle Assist, x3 speed, and an option to disable random encounters. Squall trains at Balamb Garden and begins military missions with other students. The game culminates in a surreal late-game confrontation shaped by the sorceress storyline.
+EOF
+story_chapter.1.title=Become a SeeD candidate
+story_chapter.1.text<<EOF
+Squall trains at Balamb Garden and begins military missions with other students.
+EOF
+story_chapter.2.title=Meet Rinoa
+story_chapter.2.text<<EOF
+A resistance mission introduces Rinoa and changes the emotional direction of the story.
+EOF
+story_chapter.3.title=Enter a global conflict
+story_chapter.3.text<<EOF
+The party becomes involved with Gardens, sorceresses, and political struggles across multiple regions.
+EOF
+story_chapter.4.title=Uncover character histories
+story_chapter.4.text<<EOF
+Dream sequences and later revelations reframe the identities and connections between major characters.
+EOF
+story_chapter.5.title=Reach the final time-compression conflict
+story_chapter.5.text<<EOF
+The game culminates in a surreal late-game confrontation shaped by the sorceress storyline.
+EOF
+feature.1=Remastered character visuals
+feature.2=x3 speed booster
+feature.3=Battle Assist
+feature.4=Disable random encounters
+feature.5=Triple Triad card game
+performance_tv_resolution=1080p
+performance_handheld_resolution=720p
+performance_fps=30
+performance_hdr=false
+main_story_hours=40
+completion_main_story_hours=55
+completion_story_plus_dlc_hours=75
+faq.1.question=Is this the original FFVIII or a remaster?
+faq.1.answer<<EOF
+It is the remastered version with upgraded character models and quality-of-life options.
+EOF
+faq.2.question=Does it support Switch 2?
+faq.2.answer<<EOF
+Nintendo lists the Switch version as compatible with Switch 2.
+EOF
+faq.3.question=Is it multiplayer?
+faq.3.answer<<EOF
+No. It is a single-player RPG.
+EOF
+faq.4.question=What is Junction?
+faq.4.answer<<EOF
+A system that equips Guardian Forces and attaches stocked magic to stats for large build customization.
+EOF
+faq.5.question=Can random encounters be disabled?
+faq.5.answer<<EOF
+Yes. The remaster includes a no-random-encounter option.
+EOF
+verdict_score=8.5
+verdict_pro.1=Distinctive progression system
+verdict_pro.2=Excellent music
+verdict_pro.3=Useful remaster boosters
+verdict_pro.4=Triple Triad remains addictive
+verdict_pro.5=Strong portable version
+verdict_con.1=Junction system is confusing initially
+verdict_con.2=Drawing magic can feel repetitive
+verdict_con.3=Story becomes very surreal
+verdict_con.4=Backgrounds show age compared with character models
+verdict_con.5=No native Switch 2 edition
+review.1.source=Metacritic
+review.1.score=80
+review.1.url=https://www.metacritic.com/game/final-fantasy-viii-remastered/
+review.2.source=OpenCritic
+review.2.score=80
+review.2.url=https://opencritic.com/
+timeline.1.date=2019-09-03
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=SQUARE ENIX
+studio_website=https://www.nintendo.com/us/store/products/final-fantasy-viii-remastered-switch/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/final-fantasy-viii-remastered-switch/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/final-fantasy-viii-remastered/
+storage_download_size_gb=3.1
+storage_required_space_gb=3.1
+storage_micro_sd_recommended=false
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=2000
+type.1.cost=2000
+type.1.description=Regular / Offline; user-supplied store price 2,000 IQD; recorded cost 2,000 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=23000
+type.2.cost=2000
+type.2.description=Standard / Online; user-supplied store price 23,000 IQD; recorded cost 2,000 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+No standalone DLC expansion is required.
+EOF
+device_performance.1.device=Nintendo Switch
+device_performance.1.device_slug=nintendo-switch
+device_performance.1.device_model=Nintendo Switch
+device_performance.1.hardware_id=nintendo-switch
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=720p
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=720p
+device_performance.1.handheld.output_resolution=720p
+device_performance.1.handheld.fps=30
+device_performance.1.handheld.fps_min=30
+device_performance.1.handheld.fps_max=30
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Remastered Switch release recorded at a 30 fps gameplay profile with 720p handheld and 1080p TV output.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=1080p
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=1080p
+device_performance.1.tv.output_resolution=1080p
+device_performance.1.tv.fps=30
+device_performance.1.tv.fps_min=30
+device_performance.1.tv.fps_max=30
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Remastered Switch release recorded at a 30 fps gameplay profile with 720p handheld and 1080p TV output.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=720p
+device_performance.1.mode.1.handheld_fps=30
+device_performance.1.mode.1.tv_resolution=1080p
+device_performance.1.mode.1.tv_fps=30
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Remastered Switch release recorded at a 30 fps gameplay profile with 720p handheld and 1080p TV output.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/final-fantasy-viii-remastered-switch/
+device_performance.1.performance_notes<<EOF
+Remastered Switch release recorded at a 30 fps gameplay profile with 720p handheld and 1080p TV output.
+EOF
+device_performance.2.device=Nintendo Switch 2
+device_performance.2.device_slug=nintendo-switch-2
+device_performance.2.device_model=Nintendo Switch 2
+device_performance.2.hardware_id=nintendo-switch-2
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=true
+device_performance.2.handheld.resolution=720p
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=720p
+device_performance.2.handheld.output_resolution=720p
+device_performance.2.handheld.fps=30
+device_performance.2.handheld.fps_min=30
+device_performance.2.handheld.fps_max=30
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.tv.supported=true
+device_performance.2.tv.resolution=1080p
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=1080p
+device_performance.2.tv.output_resolution=1080p
+device_performance.2.tv.fps=30
+device_performance.2.tv.fps_min=30
+device_performance.2.tv.fps_max=30
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=720p
+device_performance.2.mode.1.handheld_fps=30
+device_performance.2.mode.1.tv_resolution=1080p
+device_performance.2.mode.1.tv_fps=30
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/final-fantasy-viii-remastered-switch/
+device_performance.2.performance_notes<<EOF
+Backward-compatible Nintendo Switch software on Nintendo Switch 2; no native Switch 2 edition assumed.
+EOF
+upgrade_price=0
+banner_image.1=https://images.launchbox-app.com/94612194-adee-45d8-a1a7-a421b8d5fcd4.jpg
+banner_image.2=https://images.launchbox-app.com/0e5e2066-60f7-4dfa-bf5b-eea1677d26ae.jpg
+banner_image.3=https://images.launchbox-app.com/a9b17167-8ff2-48fd-8b31-e6e35fbeaabc.jpg
+banner_image.4=https://images.launchbox-app.com/cdd9977b-2a32-4afd-a4c4-1c12fd6dc45e.jpg
+gallery.1.description=Verified game-world/promotional media 1
+gallery.1.image=https://images.launchbox-app.com/94612194-adee-45d8-a1a7-a421b8d5fcd4.jpg
+gallery.2.description=Verified game-world/promotional media 2
+gallery.2.image=https://images.launchbox-app.com/0e5e2066-60f7-4dfa-bf5b-eea1677d26ae.jpg
+gallery.3.description=Verified game-world/promotional media 3
+gallery.3.image=https://images.launchbox-app.com/a9b17167-8ff2-48fd-8b31-e6e35fbeaabc.jpg
+gallery.4.description=Verified game-world/promotional media 4
+gallery.4.image=https://images.launchbox-app.com/cdd9977b-2a32-4afd-a4c4-1c12fd6dc45e.jpg
+gameplay_pillar.1.image=https://images.launchbox-app.com/94612194-adee-45d8-a1a7-a421b8d5fcd4.jpg
+gameplay_pillar.2.image=https://images.launchbox-app.com/0e5e2066-60f7-4dfa-bf5b-eea1677d26ae.jpg
+gameplay_pillar.3.image=https://images.launchbox-app.com/a9b17167-8ff2-48fd-8b31-e6e35fbeaabc.jpg
+gameplay_pillar.4.image=https://images.launchbox-app.com/cdd9977b-2a32-4afd-a4c4-1c12fd6dc45e.jpg
+gameplay_pillar.5.image=https://images.launchbox-app.com/94612194-adee-45d8-a1a7-a421b8d5fcd4.jpg
+story_chapter.1.image=https://images.launchbox-app.com/0e5e2066-60f7-4dfa-bf5b-eea1677d26ae.jpg
+story_chapter.2.image=https://images.launchbox-app.com/a9b17167-8ff2-48fd-8b31-e6e35fbeaabc.jpg
+story_chapter.3.image=https://images.launchbox-app.com/cdd9977b-2a32-4afd-a4c4-1c12fd6dc45e.jpg
+story_chapter.4.image=https://images.launchbox-app.com/94612194-adee-45d8-a1a7-a421b8d5fcd4.jpg
+story_chapter.5.image=https://images.launchbox-app.com/0e5e2066-60f7-4dfa-bf5b-eea1677d26ae.jpg

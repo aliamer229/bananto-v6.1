@@ -1,0 +1,407 @@
+schema_version=24
+name=FINAL FANTASY TACTICS - The Ivalice Chronicles — Nintendo Switch 2 Edition
+title=FINAL FANTASY TACTICS - The Ivalice Chronicles — Nintendo Switch 2 Edition
+title_ar=فاينل فانتسي تاكتيكس: ذا إيفاليس كرونيكلز — إصدار سويتش 2
+name_ar=فاينل فانتسي تاكتيكس: ذا إيفاليس كرونيكلز — إصدار سويتش 2
+slug=final-fantasy-tactics-the-ivalice-chronicles-nintendo-switch-2-edition-switch-2
+platform=switch2
+compatibility.1=Nintendo Switch 2
+compatibility.2=Nintendo Switch version exists separately
+edition=Standard / Store Variants
+region=Global
+release_date=2025-09-30
+release_status=Released
+status=Active
+developer=SQUARE ENIX
+publisher=SQUARE ENIX
+genre.1=Strategy
+genres.1=Strategy
+genre.2=RPG
+genres.2=RPG
+genre.3=Tactical RPG
+genres.3=Tactical RPG
+series_name=FINAL FANTASY TACTICS - The Ivalice Chronicles — Nintendo Switch 2 Edition
+players_count=Single system (1)
+players=Single system (1)
+player_count=Single system (1)
+age_rating=ESRB T — Blood, Drug Reference, Fantasy Violence, Mild Language, Mild Suggestive Themes
+metacritic_score=87
+metacritic=87
+metacritic_url=https://www.metacritic.com/game/final-fantasy-tactics-the-ivalice-chronicles/
+opencritic_score=87
+opencritic=87
+user_score=8.8
+userscore=8.8
+user_rating=8.8
+game_size_gb=10.3
+size=10.3 GB
+size_gb=10.3
+price=3500
+price_iqd=3500
+price_usd=49.99
+cost=3500
+cost_iqd=3500
+stock=9999
+is_infinite_stock=true
+is_hidden=true
+trade_value=14750
+trade_value_iqd=14750
+store_offer_bonus=2500
+store_offer_bonus_iqd=2500
+official_url=https://www.nintendo.com/us/store/products/final-fantasy-tactics-the-ivalice-chronicles-nintendo-switch-2-edition-switch-2/
+eshop_url=https://www.nintendo.com/us/store/products/final-fantasy-tactics-the-ivalice-chronicles-nintendo-switch-2-edition-switch-2/
+display_order=0
+kind=account
+category=nintendo-switch-games
+game_is_offline=true
+game_is_online=false
+game_language_locked=false
+description_short<<EOF
+A modernized release of the classic tactical RPG, offering an enhanced presentation, improved usability, and Switch 2 performance/resolution improvements without changing the underlying game content.
+EOF
+description_full<<EOF
+A modernized release of the classic tactical RPG, offering an enhanced presentation, improved usability, and Switch 2 performance/resolution improvements without changing the underlying game content. The story follows Ramza Beoulve as political and personal tensions destabilize Ivalice. The final chapters reveal the larger forces behind the political war and test the player’s strongest tactical builds.
+EOF
+description<<EOF
+A modernized release of the classic tactical RPG, offering an enhanced presentation, improved usability, and Switch 2 performance/resolution improvements without changing the underlying game content. The story follows Ramza Beoulve as political and personal tensions destabilize Ivalice. The final chapters reveal the larger forces behind the political war and test the player’s strongest tactical builds.
+EOF
+description_en<<EOF
+A modernized release of the classic tactical RPG, offering an enhanced presentation, improved usability, and Switch 2 performance/resolution improvements without changing the underlying game content. The story follows Ramza Beoulve as political and personal tensions destabilize Ivalice. The final chapters reveal the larger forces behind the political war and test the player’s strongest tactical builds.
+EOF
+description_ar<<EOF
+فاينل فانتسي تاكتيكس: ذا إيفاليس كرونيكلز — إصدار سويتش 2 — A modernized release of the classic tactical RPG, offering an enhanced presentation, improved usability, and Switch 2 performance/resolution improvements without changing the underlying game content.
+EOF
+front_cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+cartridge_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+cartridge=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+cartridge_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+box_front_url=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+nintendo_card_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+square_game_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+main_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+image_url=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+cover_image=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/830654ca35accbee0ac86e1ec4c73674879679728f268b908dce90111d23561b
+cover=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/830654ca35accbee0ac86e1ec4c73674879679728f268b908dce90111d23561b
+cover_url=https://assets.nintendo.com/image/upload/ar_16:9,c_fill,g_auto,w_1600/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/830654ca35accbee0ac86e1ec4c73674879679728f268b908dce90111d23561b
+cover_texture_url=
+box_back_url=
+supported_languages_raw=Official supported language list varies by region; see the publisher page linked in Sources.
+text_language.1=See official supported languages on the linked Nintendo/publisher product page
+audio_language.1=Audio language availability varies by title and region; see official product information
+tv_mode=true
+tabletop_mode=true
+handheld_mode=true
+nintendo_play_modes=TV / Tabletop / Handheld
+nintendo_requires_switch_online=false
+requires_nintendo_switch_online=false
+nintendo_cloud_save=true
+save_data_cloud=true
+nintendo_game_key_card=false
+game_key_card=false
+nintendo_physical_requires_download=false
+physical_download_required=false
+switch2_enhanced=true
+switch_2_enhanced=true
+switch_2_exclusive=true
+nintendo_notes<<EOF
+Platform, release, player-count, storage, compatibility, and feature statements in this import are grounded in the official Nintendo/publisher pages listed under Sources. Store package prices are user-supplied storefront values, not assumed MSRP.
+EOF
+edition.1.name=Regular / Offline
+edition.1.cover_image=https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+edition.1.content.1.label=Regular / Offline store package
+edition.1.content.2.label=Offline account access
+edition.1.content.3.label=Infinite stock by default
+edition.2.name=Standard / Online
+edition.2.cover_image=https://assets.nintendo.com/image/upload/ar_1:1,c_fill,g_auto,w_1000/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/a79ce10127b30deb1b647f11aa85333fee47cb1237bc1b23c8a3a4ef3b1aef1a
+edition.2.content.1.label=Standard / Online store package
+edition.2.content.2.label=Online account access
+edition.2.content.3.label=Infinite stock by default
+gameplay_pillar.1.title=Grid-based tactical combat
+gameplay_pillar.1.description<<EOF
+Turn order, elevation, positioning, terrain, and ability ranges define every encounter.
+EOF
+gameplay_pillar.2.title=Deep job system
+gameplay_pillar.2.description<<EOF
+Characters can unlock and combine many jobs, skills, reactions, supports, and movement abilities.
+EOF
+gameplay_pillar.3.title=Political Ivalice story
+gameplay_pillar.3.description<<EOF
+The narrative follows war, class conflict, betrayal, religion, and personal loyalty in Ivalice.
+EOF
+gameplay_pillar.4.title=Enhanced presentation
+gameplay_pillar.4.description<<EOF
+The Ivalice Chronicles modernizes interface and presentation while preserving the strategic core.
+EOF
+gameplay_pillar.5.title=Switch 2 performance upgrade
+gameplay_pillar.5.description<<EOF
+Nintendo states that the Switch 2 version offers improved frame rates and resolution for enhanced visual fidelity.
+EOF
+world_summary<<EOF
+A modernized release of the classic tactical RPG, offering an enhanced presentation, improved usability, and Switch 2 performance/resolution improvements without changing the underlying game content. The story follows Ramza Beoulve as political and personal tensions destabilize Ivalice. The final chapters reveal the larger forces behind the political war and test the player’s strongest tactical builds.
+EOF
+story_chapter.1.title=Ramza enters the conflict
+story_chapter.1.text<<EOF
+The story follows Ramza Beoulve as political and personal tensions destabilize Ivalice.
+EOF
+story_chapter.2.title=Build a flexible party
+story_chapter.2.text<<EOF
+Players train a roster through multiple jobs and ability combinations.
+EOF
+story_chapter.3.title=Navigate war and intrigue
+story_chapter.3.text<<EOF
+Battles are tied to a dense narrative of noble houses, mercenaries, church power, and hidden agendas.
+EOF
+story_chapter.4.title=Master late-game jobs
+story_chapter.4.text<<EOF
+Advanced classes and optimized skill combinations reward long-term planning.
+EOF
+story_chapter.5.title=Resolve the Ivalice conflict
+story_chapter.5.text<<EOF
+The final chapters reveal the larger forces behind the political war and test the player’s strongest tactical builds.
+EOF
+feature.1=Classic tactical RPG restored
+feature.2=Deep job/ability system
+feature.3=Enhanced interface and presentation
+feature.4=Improved Switch 2 frame rate and resolution
+feature.5=Single-player strategy campaign
+performance_tv_resolution=Improved resolution — exact official number not published
+performance_handheld_resolution=Improved resolution — exact official number not published
+performance_fps=0
+performance_hdr=false
+main_story_hours=45
+completion_main_story_hours=65
+completion_story_plus_dlc_hours=90
+faq.1.question=What does the Switch 2 Edition improve?
+faq.1.answer<<EOF
+Nintendo explicitly states improved frame rates and resolution; the game content itself is unchanged.
+EOF
+faq.2.question=Are exact resolution and FPS numbers published?
+faq.2.answer<<EOF
+Nintendo’s product/upgrade page confirms improvements but does not provide exact numeric targets.
+EOF
+faq.3.question=Is there an upgrade path?
+faq.3.answer<<EOF
+Yes. Nintendo lists a Switch 2 Edition Upgrade Pack.
+EOF
+faq.4.question=Is it multiplayer?
+faq.4.answer<<EOF
+No. It is a single-player tactical RPG.
+EOF
+faq.5.question=What is the core progression system?
+faq.5.answer<<EOF
+Characters change jobs, learn abilities, and combine skills to create specialized tactical builds.
+EOF
+verdict_score=8.5
+verdict_pro.1=Excellent tactical depth
+verdict_pro.2=Deep job customization
+verdict_pro.3=Strong political story
+verdict_pro.4=Useful modern quality-of-life improvements
+verdict_pro.5=Native Switch 2 performance enhancements
+verdict_con.1=Steep systems learning curve
+verdict_con.2=Battles can be slow for action-focused players
+verdict_con.3=Grinding jobs may appeal mainly to strategy fans
+verdict_con.4=Exact Switch 2 performance figures are not officially published
+verdict_con.5=Story is text-heavy
+review.1.source=Metacritic
+review.1.score=87
+review.1.url=https://www.metacritic.com/game/final-fantasy-tactics-the-ivalice-chronicles/
+review.2.source=OpenCritic
+review.2.score=87
+review.2.url=https://opencritic.com/
+timeline.1.date=2025-09-30
+timeline.1.title=Released on target Nintendo platform
+update.1.version=Current retail build
+update.1.date=2026-08-27
+studio_name=SQUARE ENIX
+studio_website=https://www.nintendo.com/us/store/products/final-fantasy-tactics-the-ivalice-chronicles-nintendo-switch-2-edition-switch-2/
+studio_location=See publisher/developer profile
+source.1.name=Official Nintendo / publisher product page
+source.1.url=https://www.nintendo.com/us/store/products/final-fantasy-tactics-the-ivalice-chronicles-nintendo-switch-2-edition-switch-2/
+source.2.name=Metacritic
+source.2.url=https://www.metacritic.com/game/final-fantasy-tactics-the-ivalice-chronicles/
+storage_download_size_gb=10.3
+storage_required_space_gb=10.3
+storage_micro_sd_recommended=true
+storage_notes<<EOF
+Storage requirements follow the official product listing where a final numeric size is published; upcoming titles may require a later refresh when final size is posted.
+EOF
+multiplayer_local=false
+multiplayer_online=false
+multiplayer_cooperative=false
+multiplayer_competitive=false
+multiplayer_local_wireless=false
+multiplayer_split_screen=false
+option.1.id=offline_account
+option.1.name=Offline Account
+option.1.description=Offline account access
+option.1.stock=9999
+option.1.is_infinite_stock=true
+option.2.id=online_account
+option.2.name=Online Account
+option.2.description=Online account access
+option.2.stock=9999
+option.2.is_infinite_stock=true
+type.1.id=regular_offline
+type.1.name=Regular / Offline
+type.1.option_id=offline_account
+type.1.price=3500
+type.1.cost=3500
+type.1.description=Regular / Offline; user-supplied store price 3,500 IQD; recorded cost 3,500 IQD.
+type.1.stock=9999
+type.1.is_infinite_stock=true
+type.2.id=standard_online
+type.2.name=Standard / Online
+type.2.option_id=online_account
+type.2.price=27250
+type.2.cost=3500
+type.2.description=Standard / Online; user-supplied store price 27,250 IQD; recorded cost 3,500 IQD.
+type.2.stock=9999
+type.2.is_infinite_stock=true
+dlc.1.title=Downloadable / additional content status
+dlc.1.description<<EOF
+No separate story DLC is required for this entry.
+EOF
+device_performance.1.device=Nintendo Switch 2
+device_performance.1.device_slug=nintendo-switch-2
+device_performance.1.device_model=Nintendo Switch 2
+device_performance.1.hardware_id=nintendo-switch-2
+device_performance.1.information_status=Available
+device_performance.1.handheld.supported=true
+device_performance.1.handheld.resolution=Improved resolution — exact official number not published
+device_performance.1.handheld.resolution_dynamic=false
+device_performance.1.handheld.rendering_resolution=Improved resolution — exact official number not published
+device_performance.1.handheld.output_resolution=Improved resolution — exact official number not published
+device_performance.1.handheld.fps=Improved frame rate — exact official number not published
+device_performance.1.handheld.fps_min=Improved frame rate — exact official number not published
+device_performance.1.handheld.fps_max=Improved frame rate — exact official number not published
+device_performance.1.handheld.refresh_rate=60
+device_performance.1.handheld.hdr=false
+device_performance.1.handheld.vrr=false
+device_performance.1.handheld.mode=Handheld
+device_performance.1.handheld.notes<<EOF
+Nintendo confirms improved frame rates and resolution but does not publish exact numbers.
+EOF
+device_performance.1.tv.supported=true
+device_performance.1.tv.resolution=Improved resolution — exact official number not published
+device_performance.1.tv.resolution_dynamic=false
+device_performance.1.tv.rendering_resolution=Improved resolution — exact official number not published
+device_performance.1.tv.output_resolution=Improved resolution — exact official number not published
+device_performance.1.tv.fps=Improved frame rate — exact official number not published
+device_performance.1.tv.fps_min=Improved frame rate — exact official number not published
+device_performance.1.tv.fps_max=Improved frame rate — exact official number not published
+device_performance.1.tv.refresh_rate=60
+device_performance.1.tv.hdr=false
+device_performance.1.tv.vrr=false
+device_performance.1.tv.mode=TV / Docked
+device_performance.1.tv.notes<<EOF
+Nintendo confirms improved frame rates and resolution but does not publish exact numbers.
+EOF
+device_performance.1.mode.1.name=Primary documented/compatibility profile
+device_performance.1.mode.1.handheld_resolution=Improved resolution — exact official number not published
+device_performance.1.mode.1.handheld_fps=Improved frame rate — exact official number not published
+device_performance.1.mode.1.tv_resolution=Improved resolution — exact official number not published
+device_performance.1.mode.1.tv_fps=Improved frame rate — exact official number not published
+device_performance.1.mode.1.hdr=false
+device_performance.1.mode.1.vrr=false
+device_performance.1.mode.1.notes<<EOF
+Nintendo confirms improved frame rates and resolution but does not publish exact numbers.
+EOF
+device_performance.1.upscaling=Game / system-specific scaling where applicable
+device_performance.1.ray_tracing=false
+device_performance.1.ray_tracing_mode=Not Supported
+device_performance.1.loading_time=Scene-dependent
+device_performance.1.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.1.game_version=Current listed version
+device_performance.1.patch_version=Current available update
+device_performance.1.tested_date=2026-08-27
+device_performance.1.source_name=Official product / compatibility information
+device_performance.1.source_url=https://www.nintendo.com/us/store/products/final-fantasy-tactics-the-ivalice-chronicles-nintendo-switch-2-edition-upgrade-pack-switch-2/
+device_performance.1.performance_notes<<EOF
+Nintendo confirms improved frame rates and resolution but does not publish exact numbers.
+EOF
+device_performance.2.device=Nintendo Switch
+device_performance.2.device_slug=nintendo-switch
+device_performance.2.device_model=Nintendo Switch
+device_performance.2.hardware_id=nintendo-switch
+device_performance.2.information_status=Available
+device_performance.2.handheld.supported=false
+device_performance.2.handheld.resolution=Not Supported
+device_performance.2.handheld.resolution_dynamic=false
+device_performance.2.handheld.rendering_resolution=Not Supported
+device_performance.2.handheld.output_resolution=Not Supported
+device_performance.2.handheld.fps=Not Supported
+device_performance.2.handheld.fps_min=Not Supported
+device_performance.2.handheld.fps_max=Not Supported
+device_performance.2.handheld.refresh_rate=60
+device_performance.2.handheld.hdr=false
+device_performance.2.handheld.vrr=false
+device_performance.2.handheld.mode=Handheld
+device_performance.2.handheld.notes<<EOF
+This file is for the Switch 2 Edition; the Switch 1 version is a separate product.
+EOF
+device_performance.2.tv.supported=false
+device_performance.2.tv.resolution=Not Supported
+device_performance.2.tv.resolution_dynamic=false
+device_performance.2.tv.rendering_resolution=Not Supported
+device_performance.2.tv.output_resolution=Not Supported
+device_performance.2.tv.fps=Not Supported
+device_performance.2.tv.fps_min=Not Supported
+device_performance.2.tv.fps_max=Not Supported
+device_performance.2.tv.refresh_rate=60
+device_performance.2.tv.hdr=false
+device_performance.2.tv.vrr=false
+device_performance.2.tv.mode=TV / Docked
+device_performance.2.tv.notes<<EOF
+This file is for the Switch 2 Edition; the Switch 1 version is a separate product.
+EOF
+device_performance.2.mode.1.name=Primary documented/compatibility profile
+device_performance.2.mode.1.handheld_resolution=Not Supported
+device_performance.2.mode.1.handheld_fps=Not Supported
+device_performance.2.mode.1.tv_resolution=Not Supported
+device_performance.2.mode.1.tv_fps=Not Supported
+device_performance.2.mode.1.hdr=false
+device_performance.2.mode.1.vrr=false
+device_performance.2.mode.1.notes<<EOF
+This file is for the Switch 2 Edition; the Switch 1 version is a separate product.
+EOF
+device_performance.2.upscaling=Game / system-specific scaling where applicable
+device_performance.2.ray_tracing=false
+device_performance.2.ray_tracing_mode=Not Supported
+device_performance.2.loading_time=Scene-dependent
+device_performance.2.loading_notes<<EOF
+Loading time varies by scene, save state, storage, version, and patch.
+EOF
+device_performance.2.game_version=Current listed version
+device_performance.2.patch_version=Current available update
+device_performance.2.tested_date=2026-08-27
+device_performance.2.source_name=Official product / compatibility information
+device_performance.2.source_url=https://www.nintendo.com/us/store/products/final-fantasy-tactics-the-ivalice-chronicles-switch/
+device_performance.2.performance_notes<<EOF
+This file is for the Switch 2 Edition; the Switch 1 version is a separate product.
+EOF
+upgrade_price=0
+banner_image.1=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/fc3d6a8a3b8ac47058cd9dedcf7bc28721dca6fa5e806ab231d553848e6d95be
+banner_image.2=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/84ad1ef921eb2d59e09ef2d4a7d573415de2e1e97fe4f1784e2b3c43f096de95
+banner_image.3=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/9932b6d1503f0fe1d359c2f677cefc9352446e5316ec5c881aa2d81d09c14b3b
+banner_image.4=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/b48e58d583d5bae4d2aabc6c6b3eee195f2720051fd6ace09c62c54b3bce3534
+gallery.1.description=Verified game-world/promotional media 1
+gallery.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/fc3d6a8a3b8ac47058cd9dedcf7bc28721dca6fa5e806ab231d553848e6d95be
+gallery.2.description=Verified game-world/promotional media 2
+gallery.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/84ad1ef921eb2d59e09ef2d4a7d573415de2e1e97fe4f1784e2b3c43f096de95
+gallery.3.description=Verified game-world/promotional media 3
+gallery.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/9932b6d1503f0fe1d359c2f677cefc9352446e5316ec5c881aa2d81d09c14b3b
+gallery.4.description=Verified game-world/promotional media 4
+gallery.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/b48e58d583d5bae4d2aabc6c6b3eee195f2720051fd6ace09c62c54b3bce3534
+gameplay_pillar.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/fc3d6a8a3b8ac47058cd9dedcf7bc28721dca6fa5e806ab231d553848e6d95be
+gameplay_pillar.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/84ad1ef921eb2d59e09ef2d4a7d573415de2e1e97fe4f1784e2b3c43f096de95
+gameplay_pillar.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/9932b6d1503f0fe1d359c2f677cefc9352446e5316ec5c881aa2d81d09c14b3b
+gameplay_pillar.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/b48e58d583d5bae4d2aabc6c6b3eee195f2720051fd6ace09c62c54b3bce3534
+gameplay_pillar.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/fc3d6a8a3b8ac47058cd9dedcf7bc28721dca6fa5e806ab231d553848e6d95be
+story_chapter.1.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/84ad1ef921eb2d59e09ef2d4a7d573415de2e1e97fe4f1784e2b3c43f096de95
+story_chapter.2.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/9932b6d1503f0fe1d359c2f677cefc9352446e5316ec5c881aa2d81d09c14b3b
+story_chapter.3.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/b48e58d583d5bae4d2aabc6c6b3eee195f2720051fd6ace09c62c54b3bce3534
+story_chapter.4.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/fc3d6a8a3b8ac47058cd9dedcf7bc28721dca6fa5e806ab231d553848e6d95be
+story_chapter.5.image=https://assets.nintendo.com/image/upload/ar_16%3A9%2Cb_auto%3Aborder%2Cc_lpad/b_white/f_auto/q_auto/dpr_1.5/store/software/switch2/70010000100754/84ad1ef921eb2d59e09ef2d4a7d573415de2e1e97fe4f1784e2b3c43f096de95
