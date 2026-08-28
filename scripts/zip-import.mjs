@@ -144,6 +144,28 @@ try {
   say(`- (no \`game_aliases\` table — alias matching skipped)`);
 }
 
+/*
+  A created product has to land in the same section as the ninety already there.
+  `createBlankProductForm` defaults to `cat_nintendo`, and the payload builder
+  prefers that default over the template's own `category=nintendo-switch-games`,
+  so the category is taken from the live catalogue instead of hardcoded — a new
+  game filed under a category nothing else uses would be invisible to the
+  storefront and to every audit that selects games by category.
+*/
+function dominantGameCategory() {
+  const counts = new Map();
+  for (const doc of live.values()) {
+    const cat = String(doc.categoryId ?? doc.category ?? "").trim();
+    if (!cat) continue;
+    if (/hardware|accessor|amiibo|gift|console|controller/i.test(cat)) continue;
+    if (!/game/i.test(cat)) continue;
+    counts.set(cat, (counts.get(cat) ?? 0) + 1);
+  }
+  const [best] = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  if (!best) throw new Error("no game category found in the live catalogue — refusing to guess one");
+  return { id: best[0], count: best[1] };
+}
+
 /** Rebuilt after every create so the next template sees what this run added. */
 function indexCatalogue() {
   const bySlug = new Map();
@@ -215,6 +237,9 @@ const filled = (v) => {
 };
 
 /* -------------------------------------------------------------------- main */
+
+const category = dominantGameCategory();
+say(`- New products will be filed under \`${category.id}\` (${category.count} existing games use it)`);
 
 const files = existsSync(TEMPLATE_DIR)
   ? readdirSync(TEMPLATE_DIR).filter((f) => f.endsWith(".txt")).sort()
@@ -336,7 +361,7 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
     }
 
     /* CREATE_NEW — the application's own batch import, hidden by default. */
-    const built = app.buildBatchGameImport(raw, "cat_nintendo");
+    const built = app.buildBatchGameImport(raw, category.id);
     if (!built.ok) {
       totals.parseFailed++;
       say(`- \`${file}\` **${title}**: **cannot build a product** — ${built.reason}`);
