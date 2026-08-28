@@ -283,13 +283,28 @@ say();
 
 /* ------------------------------------------------------------------ Report A */
 
-const CLASS = { COMPLETE: 0, INCOMPLETE: 0, BROKEN_REFERENCE: 0, WRONG_ROLE: 0, NEEDS_RESEARCH: 0, NOT_APPLICABLE: 0 };
+/*
+  A factory, not a shared object. `{ ...TOTALS }` seeded every product's tally
+  with the running totals, so each one started from the sum of all the products
+  before it: the verdict counts grew exponentially (COMPLETE reached 3.8e+28)
+  and every per-product score and broken-reference flag was computed from
+  another product's numbers.
+*/
+const emptyTally = () => ({
+  COMPLETE: 0,
+  INCOMPLETE: 0,
+  BROKEN_REFERENCE: 0,
+  WRONG_ROLE: 0,
+  NEEDS_RESEARCH: 0,
+  NOT_APPLICABLE: 0,
+});
+const TOTALS = emptyTally();
 const rows = [];
 
 for (const [id, doc] of games) {
   const platform = normalizePlatform(doc.platform ?? doc.compatibility);
   const perField = {};
-  const tally = { ...CLASS };
+  const tally = emptyTally();
 
   const applicable = (group, field) => {
     if (group === "switch2" && platform !== "switch2") return false;
@@ -355,7 +370,7 @@ for (const [id, doc] of games) {
     .filter(([, v]) => v !== "COMPLETE" && v !== "NOT_APPLICABLE")
     .map(([f, v]) => `${f}:${v === "NEEDS_RESEARCH" ? "R" : v === "BROKEN_REFERENCE" ? "B" : v === "WRONG_ROLE" ? "W" : "I"}`);
 
-  for (const k of Object.keys(CLASS)) CLASS[k] += tally[k];
+  for (const k of Object.keys(TOTALS)) TOTALS[k] += tally[k];
   rows.push({
     id,
     slug: String(doc.slug ?? ""),
@@ -405,7 +420,7 @@ say(`- Performance in the document but not in the relational table: **${rows.fil
 say(`- Live but absent from \`product_index\`: **${rows.filter((r) => !r.indexed).length}** — ${rows.filter((r) => !r.indexed).map((r) => r.slug).join(", ") || "none"}`);
 say(`- Hidden: **${rows.filter((r) => r.hidden).length}**`);
 say();
-say(`Field verdicts across all games: ${Object.entries(CLASS).map(([k, v]) => `${k} ${v}`).join(" · ")}`);
+say(`Field verdicts across all games: ${Object.entries(TOTALS).map(([k, v]) => `${k} ${v}`).join(" · ")}`);
 say(`R2 probes used: ${probes}/${PROBE_BUDGET}${probes >= PROBE_BUDGET ? " — **budget spent, some media unverified**" : ""}`);
 say();
 
