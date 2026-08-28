@@ -92,21 +92,72 @@ export function contentSize(value: unknown): number {
 }
 
 /**
- * A product document stores references, not payloads.
+ * A product document stores media by reference, not by value.
  *
  * street-fighter-6-switch-2 arrived carrying a 5.9 MB base64 JPEG in
  * `coverHiResImage` — 99.6% of that document and three quarters of the entire
  * catalogue, paid for on every catalogue read. Media belongs in R2 with a URL
  * in the field.
+ *
+ * The rule targets payloads, not length. A description, an FAQ answer, a guide
+ * or a patch note is legitimately long prose and must survive untouched; only
+ * an encoded blob is refused, and a field that holds media is additionally held
+ * to a length no real URL approaches.
  */
-const DATA_URI = /^\s*data:[a-z0-9.+/-]+;base64,/i;
-/** Generous for any real URL, far below anything worth storing as a payload. */
-export const MAX_FIELD_BYTES = 8_192;
+const DATA_URI = /^\s*data:[a-z0-9.+/-]+\/[a-z0-9.+-]+\s*;\s*base64\s*,/i;
+
+/** Fields whose value is an image reference. Nothing else belongs in them. */
+export const MEDIA_FIELDS: readonly string[] = [
+  "image",
+  "images",
+  "banner",
+  "bannerImage",
+  "bannerImages",
+  "galleryImages",
+  "gallery",
+  "screenshots",
+  "cartridgeImage",
+  "nintendoCardImage",
+  "coverImage",
+  "coverHiResImage",
+  "squareGameImage",
+  "packagingFrontImage",
+  "boxImage",
+  "cardArtwork",
+  "mainImage",
+  "modelTextureUrl",
+  "box_front_url",
+  "box_back_url",
+];
+const MEDIA = new Set(MEDIA_FIELDS);
+
+/** No real URL comes close; an inline payload passes it immediately. */
+export const MAX_MEDIA_FIELD_BYTES = 4_096;
+
+/** An unbroken run of base64 this long is an encoded blob, not prose. */
+const BASE64_BLOB = /[A-Za-z0-9+/]{1024,}={0,2}/;
 
 export interface OversizedField {
   field: string;
   bytes: number;
-  reason: "data-uri" | "oversized";
+  reason: "data-uri" | "binary-payload" | "oversized-media-field";
+}
+
+/**
+ * Why this value cannot be stored, or "" if it can.
+ *
+ * Length alone is never a reason outside a media field: rich text is allowed to
+ * be long.
+ */
+export function mediaRejection(field: string, value: unknown): OversizedField | null {
+  if (typeof value !== "string" || !value) return null;
+  const bytes = value.length;
+  if (DATA_URI.test(value)) return { field, bytes, reason: "data-uri" };
+  if (BASE64_BLOB.test(value)) return { field, bytes, reason: "binary-payload" };
+  if (MEDIA.has(field) && bytes > MAX_MEDIA_FIELD_BYTES) {
+    return { field, bytes, reason: "oversized-media-field" };
+  }
+  return null;
 }
 
 export interface BlockedField {
@@ -158,15 +209,29 @@ export function mergeProductUpdate(
     // An explicitly undefined key is the same as an absent one: no opinion.
     if (incoming === undefined) continue;
 
-    // A payload is never accepted into a document field, whatever else is true
-    // of the patch. The caller stores it in R2 and sends the URL.
-    if (typeof incoming === "string" && incoming.length > MAX_FIELD_BYTES) {
-      rejectedMedia.push({
-        field,
-        bytes: incoming.length,
-        reason: DATA_URI.test(incoming) ? "data-uri" : "oversized",
-      });
+    /*
+      A media payload is never accepted into a document field, whatever else is
+      true of the patch: the caller stores it in R2 and sends the URL. Arrays
+      are checked entry by entry, since galleryImages and bannerImages carry
+      their references as elements.
+    */
+    const rejection = mediaRejection(field, incoming);
+    if (rejection) {
+      rejectedMedia.push(rejection);
       continue;
+    }
+    if (Array.isArray(incoming)) {
+      const bad = incoming
+        .map((item) => mediaRejection(field, item))
+        .filter(Boolean) as OversizedField[];
+      if (bad.length) {
+        rejectedMedia.push({
+          field,
+          bytes: bad.reduce((n, b) => n + b.bytes, 0),
+          reason: bad[0]!.reason,
+        });
+        continue;
+      }
     }
 
     const before = contentSize((stored as Record<string, unknown>)[field]);
