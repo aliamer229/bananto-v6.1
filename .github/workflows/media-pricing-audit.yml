@@ -52,6 +52,16 @@ jobs:
           args="--limit=${LIMIT:-0}"
           [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
           node scripts/media-pricing-audit.mjs $args
+      # The full report is long. The headline numbers belong in the log too,
+      # so a reader does not have to download an artifact to see them.
+      - name: Summary
+        if: always()
+        run: |
+          sed -n '1,12p' media-pricing-audit.md || true
+          grep -E '^- (Products whose|Products with no|Image references|Distinct URLs|Products storing)' media-pricing-audit.md || true
+          echo
+          sed -n '/^### References that are not images/,/^$/p' media-pricing-audit.md | head -3 || true
+          sed -n '/what the server actually returned/,/^$/p' media-pricing-audit.md || true
       - name: Upload the report
         if: always()
         uses: actions/upload-artifact@v4
