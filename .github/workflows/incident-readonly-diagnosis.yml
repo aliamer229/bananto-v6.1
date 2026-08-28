@@ -28,7 +28,7 @@ permissions:
 
 concurrency:
   group: incident-diagnosis
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   diagnose:

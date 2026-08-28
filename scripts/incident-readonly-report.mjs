@@ -16,7 +16,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 const DB_NAME = "bananto";
 const CONFIG = "wrangler.jsonc";
@@ -68,13 +68,28 @@ const WRANGLER =
   process.env.WRANGLER_BIN ||
   (existsSync("node_modules/.bin/wrangler") ? "node_modules/.bin/wrangler" : "wrangler");
 
+const WRANGLER_ENV = {
+  ...process.env,
+  // Wrangler's first-run telemetry question blocks on stdin. With stdin closed
+  // that is an indefinite hang, not an error, which is exactly how the first
+  // attempt at this diagnostic burned a 30-minute job doing nothing.
+  WRANGLER_SEND_METRICS: "false",
+  CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN ?? "",
+  CI: "true",
+};
+
+/** Fail loudly after this rather than silently occupying the runner. */
+const COMMAND_TIMEOUT_MS = 120_000;
+
 function wrangler(args, { allowFail = false } = {}) {
   try {
     return execFileSync(WRANGLER, [...args], {
       encoding: "utf8",
       maxBuffer: 512 * 1024 * 1024,
       stdio: ["ignore", "pipe", "pipe"],
-      env: process.env,
+      timeout: COMMAND_TIMEOUT_MS,
+      killSignal: "SIGKILL",
+      env: WRANGLER_ENV,
     });
   } catch (err) {
     if (allowFail) return null;
@@ -96,9 +111,46 @@ function parseJson(raw) {
 }
 
 let queryCount = 0;
+
+/**
+ * Runs several SELECTs in one wrangler invocation.
+ *
+ * Every statement is validated on its own by the same allowlist before any of
+ * them are written to the file, so batching buys speed without widening what
+ * may run. Returns one result array per statement, in order.
+ */
+function d1Batch(statements, { allowFail = false } = {}) {
+  const checked = statements.map(assertReadOnly);
+  if (!checked.length) return [];
+  queryCount += checked.length;
+  const file = `.d1-readonly-${process.pid}-${batchSeq++}.sql`;
+  writeFileSync(file, checked.join(";\n") + ";\n");
+  try {
+    const raw = wrangler(
+      ["d1", "execute", DB_NAME, "--remote", "--json", "--yes", "--config", CONFIG, "--file", file],
+      { allowFail },
+    );
+    const parsed = parseJson(raw);
+    if (!parsed) {
+      if (allowFail) return checked.map(() => null);
+      throw new Error(`unparseable D1 response for a batch of ${checked.length}`);
+    }
+    const sets = Array.isArray(parsed) ? parsed : [parsed];
+    return checked.map((_, i) => sets[i]?.results ?? []);
+  } finally {
+    try {
+      rmSync(file, { force: true });
+    } catch {
+      /* the runner is ephemeral; a leftover temp file is not worth failing on */
+    }
+  }
+}
+
+let batchSeq = 0;
 function d1(sql, { allowFail = false } = {}) {
   const statement = assertReadOnly(sql);
   queryCount++;
+  process.stderr.write(`[q${queryCount}] ${statement.slice(0, 70).replace(/\s+/g, " ")}\n`);
   const raw = wrangler(
     ["d1", "execute", DB_NAME, "--remote", "--json", "--yes", "--config", CONFIG, "--command", statement],
     { allowFail },
@@ -108,6 +160,7 @@ function d1(sql, { allowFail = false } = {}) {
     if (allowFail) return null;
     throw new Error(`unparseable D1 response for: ${statement.slice(0, 80)}`);
   }
+  process.stderr.write(`[q${queryCount}] ok\n`);
   const first = Array.isArray(parsed) ? parsed[0] : parsed;
   return first?.results ?? [];
 }
@@ -294,9 +347,16 @@ const numbered = chunkKeys
   .sort((a, b) => Number(a.split("#")[1]) - Number(b.split("#")[1]));
 
 if (numbered.length) {
-  for (const key of numbered) {
-    const row = d1(`SELECT value FROM store_kv WHERE key = '${key.replace(/'/g, "''")}'`);
-    aggregateRaw += row?.[0]?.value ?? "";
+  // Eight chunks per invocation: ~3 MB of JSON per round trip, and a couple of
+  // calls instead of thirty for a 10 MB catalogue.
+  const BATCH = 8;
+  for (let i = 0; i < numbered.length; i += BATCH) {
+    const slice = numbered.slice(i, i + BATCH);
+    process.stderr.write(`[chunks] ${i + 1}-${i + slice.length} of ${numbered.length}\n`);
+    const sets = d1Batch(
+      slice.map((key) => `SELECT value FROM store_kv WHERE key = '${key.replace(/'/g, "''")}'`),
+    );
+    for (const set of sets) aggregateRaw += set?.[0]?.value ?? "";
   }
 } else if (singleKey) {
   const row = d1("SELECT value FROM store_kv WHERE key = 'store:products'");
