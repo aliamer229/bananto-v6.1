@@ -16,7 +16,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { appendFileSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const DB_NAME = "bananto";
 const CONFIG = "wrangler.jsonc";
@@ -113,40 +113,20 @@ function parseJson(raw) {
 let queryCount = 0;
 
 /**
- * Runs several SELECTs in one wrangler invocation.
+ * Runs several SELECTs.
  *
- * Every statement is validated on its own by the same allowlist before any of
- * them are written to the file, so batching buys speed without widening what
- * may run. Returns one result array per statement, in order.
+ * This used to put them in one `--file` invocation to save round trips. On the
+ * production database that call never returned — the run sat on it until the
+ * job timed out, twice the wall time of simply issuing them one at a time,
+ * which completes in about forty seconds. Correctness of the report matters
+ * more than the round trips, so each statement goes over the `--command` path
+ * that is known to work, and every one is still validated by the same
+ * SELECT-only allowlist.
  */
 function d1Batch(statements, { allowFail = false } = {}) {
-  const checked = statements.map(assertReadOnly);
-  if (!checked.length) return [];
-  queryCount += checked.length;
-  const file = `.d1-readonly-${process.pid}-${batchSeq++}.sql`;
-  writeFileSync(file, checked.join(";\n") + ";\n");
-  try {
-    const raw = wrangler(
-      ["d1", "execute", DB_NAME, "--remote", "--json", "--yes", "--config", CONFIG, "--file", file],
-      { allowFail },
-    );
-    const parsed = parseJson(raw);
-    if (!parsed) {
-      if (allowFail) return checked.map(() => null);
-      throw new Error(`unparseable D1 response for a batch of ${checked.length}`);
-    }
-    const sets = Array.isArray(parsed) ? parsed : [parsed];
-    return checked.map((_, i) => sets[i]?.results ?? []);
-  } finally {
-    try {
-      rmSync(file, { force: true });
-    } catch {
-      /* the runner is ephemeral; a leftover temp file is not worth failing on */
-    }
-  }
+  return statements.map((sql) => d1(sql, { allowFail }) ?? []);
 }
 
-let batchSeq = 0;
 function d1(sql, { allowFail = false } = {}) {
   const statement = assertReadOnly(sql);
   queryCount++;
