@@ -8,6 +8,7 @@ import {
   productsRequestKey,
   LOAD_ATTEMPTS,
   type ProductsQuery,
+  showsPerformanceWarning,
 } from "@/lib/adminProductsLoad";
 import {
   productSortQuery,
@@ -2449,7 +2450,7 @@ function ListingsView({
                         مخفي — بحاجة سعر/تكلفة
                       </span>
                     )}
-                    {isGameProduct(p) && requiresPerformanceReview(p) && (
+                    {showsPerformanceWarning(p) && (
                       <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
                         Performance review required
                       </span>

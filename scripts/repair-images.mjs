@@ -41,7 +41,7 @@ const arg = (name, fallback) =>
   one run needs several hundred probes and cannot finish inside a job, so a run
   covers a slice and the offset walks the catalogue.
 */
-const LIMIT = arg("limit", 25);
+const LIMIT = arg("limit", 200);
 const OFFSET = arg("offset", 0);
 
 /* ------------------------------------------------------------------ safety */
@@ -264,9 +264,14 @@ say();
 
 const allIds = [...live.keys()].sort();
 const roleStats = new Map();
+const sampled = new Map();
+/** Probes spent per role on URLs nothing could replace, purely to measure. */
+const SAMPLE_PER_ROLE = arg("sample", 20);
 const bump = (role, bucket) => {
   const base = String(role).replace(/\[\d+\]$/, "");
-  if (!roleStats.has(base)) roleStats.set(base, { external: 0, alive: 0, dead: 0, replaced: 0, unfixable: 0 });
+  if (!roleStats.has(base)) {
+    roleStats.set(base, { external: 0, alive: 0, dead: 0, replaced: 0, unfixable: 0, unverified: 0 });
+  }
   roleStats.get(base)[bucket]++;
 };
 
@@ -297,6 +302,42 @@ for (const id of targets) {
     }
     if (kind.kind === "empty") return;
     const key = assetKey(current);
+    const match = candidates.find((c) => c.role === role && !claimed.has(assetKey(c.url)));
+
+    /*
+      Probing costs eight seconds on a miss, and `game_images` carries no
+      gallery or screenshot kind, so a dead gallery entry has no replacement
+      whether or not it is dead — 121 such probes in the first 25 products
+      alone, for a plan that could never include them.
+
+      But not probing is not the same as knowing, and a healthy image must not
+      be reported as broken just because nothing could replace it. So a role
+      with no candidate is sampled up to a budget: enough probes to measure how
+      many are really dead, and the remainder recorded as unverified rather
+      than assumed either way.
+    */
+    if (!match) {
+      if (known.has(key)) {
+        claimed.add(key);
+        bump(role, "alive");
+        return;
+      }
+      const base = String(role).replace(/\[\d+\]$/, "");
+      const used = sampled.get(base) ?? 0;
+      if (used >= SAMPLE_PER_ROLE) {
+        bump(role, "unverified");
+        return;
+      }
+      sampled.set(base, used + 1);
+      if (existsInR2(current)) {
+        bump(role, "alive");
+        return;
+      }
+      unrecoverable.push({ role, url: current });
+      bump(role, "unfixable");
+      return;
+    }
+
     // A URL game_images already knows is a verified-present new-generation key.
     if (known.has(key) || existsInR2(current)) {
       claimed.add(key);
@@ -304,8 +345,7 @@ for (const id of targets) {
       return;
     }
     bump(role, "dead");
-    const match = candidates.find((c) => c.role === role && !claimed.has(assetKey(c.url)));
-    if (match && existsInR2(match.url)) {
+    if (existsInR2(match.url)) {
       claimed.add(assetKey(match.url));
       fixes.push({ role, from: current, to: match.url, kind: match.kind });
       bump(role, "replaced");
@@ -342,10 +382,10 @@ for (const p of plans) for (const e of p.external) hosts[e.host] = (hosts[e.host
 say(`- External hosts in use: ${Object.entries(hosts).sort((a, b) => b[1] - a[1]).map(([h, n]) => `${h} (${n})`).join(", ") || "none"}`);
 say(`- R2 probes: ${probes}`);
 say();
-say("| role | external | R2 alive | R2 dead | replaceable | no replacement |");
-say("| --- | ---: | ---: | ---: | ---: | ---: |");
+say("| role | external | R2 alive | R2 dead | replaceable | no replacement | unverified |");
+say("| --- | ---: | ---: | ---: | ---: | ---: | ---: |");
 for (const [role, st] of [...roleStats.entries()].sort()) {
-  say(`| \`${role}\` | ${st.external} | ${st.alive} | ${st.dead} | ${st.replaced} | ${st.unfixable} |`);
+  say(`| \`${role}\` | ${st.external} | ${st.alive} | ${st.dead} | ${st.replaced} | ${st.unfixable} | ${st.unverified} |`);
 }
 say();
 const kinds = new Map();

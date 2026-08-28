@@ -1,0 +1,61 @@
+# TEMPORARY — rebuild product_index from the live catalogue.
+#
+# Dry run by default. Rows are built by the application's own toIndexRow.
+name: Rebuild product index
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the changes (leave unchecked for a dry run)"
+        type: boolean
+        default: false
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/rebuild-index.yml
+      - scripts/rebuild-index.mjs
+      - scripts/lib/index-rebuild-entry.ts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rebuild-index
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: |
+          echo "::add-mask::$ACCOUNT_ID"
+          echo "::add-mask::$DATABASE_ID"
+      - name: Rebuild
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          args=""
+          [ "$APPLY" = "true" ] && args="$args --apply"
+          node scripts/rebuild-index.mjs $args
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rebuild-index
+          path: rebuild-index.md
+          if-no-files-found: warn

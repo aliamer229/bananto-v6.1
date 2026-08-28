@@ -54,6 +54,21 @@ function normalizeRow(raw: Record<string, unknown>): AdminProductRow {
   };
 }
 
+/**
+ * Whether the table should warn that a game needs a performance review.
+ *
+ * The answer comes from the server, which computed it in `toIndexRow` against
+ * the whole product document. The table row is a `product_index` projection and
+ * has no `devicePerformance` at all, so re-running
+ * `requiresPerformanceReview` on it here found no records, decided every
+ * Switch 2 game was missing its performance data, and showed the warning on all
+ * of them — while the documents themselves passed validation and the stored
+ * flag was zero.
+ */
+export function showsPerformanceWarning(row: Record<string, unknown>): boolean {
+  return row["performanceRequired"] === true;
+}
+
 export function interpretProductsPayload(payload: unknown): ProductsPayloadVerdict {
   if (!payload || typeof payload !== "object") {
     return { state: "unusable", reason: "payload is not an object" };

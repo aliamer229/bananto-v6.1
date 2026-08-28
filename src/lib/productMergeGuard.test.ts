@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MAX_MEDIA_FIELD_BYTES,
   contentSize,
   destructiveUpdateLog,
   mergeProductUpdate,
+  oversizedMediaLog,
 } from "./productMergeGuard";
 import type { Product } from "./types";
 
@@ -145,5 +147,99 @@ describe("mergeProductUpdate", () => {
     expect(line).toContain("prd_1");
     expect(line).toContain("bannerImages:3->0");
     expect(line).toContain("variants:1->0");
+  });
+});
+
+describe("embedded media", () => {
+  const dataUri = (bytes: number) => `data:image/jpeg;base64,${"A".repeat(bytes)}`;
+  /* Long-form prose: the kind of value the first version of this guard broke. */
+  const prose = (bytes: number) =>
+    "لعبة رائعة. ".repeat(Math.ceil(bytes / 12)).slice(0, bytes);
+
+  it("keeps a description well over 8 KB", () => {
+    const text = prose(20_000);
+    const { merged, rejectedMedia } = mergeProductUpdate(base(), {
+      description: text,
+    } as Partial<Product>);
+    expect(rejectedMedia).toEqual([]);
+    expect(merged.description).toBe(text);
+  });
+
+  it("keeps long FAQ, guides, reviews, patch notes and story content", () => {
+    const long = prose(12_000);
+    const patch = {
+      faq: [{ q: "سؤال", a: long }],
+      guides: [{ title: "دليل", summary: long, url: "https://example.com" }],
+      reviews: [{ source: "IGN", quote: long }],
+      patchNotes: [{ version: "1.2", body: long }],
+      storyChapters: [{ title: "الفصل", body: long }],
+      sources: [{ name: "Nintendo", url: "https://nintendo.com" }],
+    } as unknown as Partial<Product>;
+    const { merged, rejectedMedia } = mergeProductUpdate(base(), patch);
+    expect(rejectedMedia).toEqual([]);
+    expect((merged as any).faq[0].a).toBe(long);
+    expect((merged as any).guides[0].summary).toBe(long);
+    expect((merged as any).patchNotes[0].body).toBe(long);
+    expect((merged as any).storyChapters[0].body).toBe(long);
+  });
+
+  it("refuses the base64 payload that made one product 76% of the catalogue", () => {
+    const { merged, rejectedMedia, changed } = mergeProductUpdate(base(), {
+      coverHiResImage: dataUri(5_900_000),
+      price: 15000,
+    } as Partial<Product>);
+    expect(rejectedMedia).toMatchObject([{ field: "coverHiResImage", reason: "data-uri" }]);
+    expect(rejectedMedia[0]!.bytes).toBeGreaterThan(5_000_000);
+    // The stored URL survives, and the legitimate edit still lands.
+    expect(merged.coverHiResImage).toBe("/api/files/products/prd_1/3d.webp");
+    expect(merged.price).toBe(15000);
+    expect(changed).toEqual(["price"]);
+  });
+
+  it("refuses a large inline payload inside a media field", () => {
+    const { merged, rejectedMedia } = mergeProductUpdate(base(), {
+      // Long but not base64-shaped, so it is the media-field length rule that
+      // catches it rather than the blob rule.
+      cartridgeImage: "https://example.com/" + "seg-".repeat(MAX_MEDIA_FIELD_BYTES),
+    } as Partial<Product>);
+    expect(rejectedMedia).toMatchObject([
+      { field: "cartridgeImage", reason: "oversized-media-field" },
+    ]);
+    expect(merged.cartridgeImage).toBe("/api/files/products/prd_1/front.avif");
+  });
+
+  it("refuses a payload hidden in a gallery array entry", () => {
+    const { merged, rejectedMedia } = mergeProductUpdate(base({ galleryImages: ["a.webp"] } as any), {
+      galleryImages: ["b.webp", dataUri(50_000)],
+    } as unknown as Partial<Product>);
+    expect(rejectedMedia).toMatchObject([{ field: "galleryImages", reason: "data-uri" }]);
+    expect((merged as any).galleryImages).toEqual(["a.webp"]);
+  });
+
+  it("accepts a normal R2 reference", () => {
+    const url = "/api/files/products/prd_1/3d-texture-abc123.webp";
+    const { merged, rejectedMedia } = mergeProductUpdate(base(), {
+      coverHiResImage: url,
+    } as Partial<Product>);
+    expect(rejectedMedia).toEqual([]);
+    expect(merged.coverHiResImage).toBe(url);
+  });
+
+  it("accepts a normal https image URL", () => {
+    const url = "https://assets.nintendo.com/image/upload/store/software/switch2/70010000103459.jpg";
+    const { merged, rejectedMedia } = mergeProductUpdate(base(), {
+      coverImage: url,
+    } as Partial<Product>);
+    expect(rejectedMedia).toEqual([]);
+    expect(merged.coverImage).toBe(url);
+  });
+
+  it("names what it rejected so the log is actionable", () => {
+    const { rejectedMedia } = mergeProductUpdate(base(), {
+      coverHiResImage: dataUri(9000),
+    } as Partial<Product>);
+    const line = oversizedMediaLog("prd_1", rejectedMedia);
+    expect(line).toContain("EMBEDDED_MEDIA_REJECTED");
+    expect(line).toContain("coverHiResImage:data-uri");
   });
 });

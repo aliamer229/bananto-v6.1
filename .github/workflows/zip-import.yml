@@ -1,0 +1,77 @@
+# TEMPORARY — apply the attached import templates to production.
+#
+# Dry run by default. With apply, the only D1 statement it can write is a single
+# INSERT against one product's overlay row by immutable id: an update goes
+# through the application's own merge guard, and a create is built by the
+# application's own batch import and stored hidden.
+name: Template import
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the changes (leave unchecked for a dry run)"
+        type: boolean
+        default: false
+      actions:
+        description: "Which actions to perform"
+        type: choice
+        options: ["update,create", "update", "create"]
+        default: "update,create"
+      offset:
+        description: "Skip this many templates"
+        default: "0"
+      limit:
+        description: "How many templates this run covers"
+        default: "100"
+permissions:
+  contents: read
+
+concurrency:
+  group: zip-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+      - name: Import
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          APPLY: ${{ inputs.apply }}
+          ACTIONS: ${{ inputs.actions }}
+          OFFSET: ${{ inputs.offset }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          args="--offset=${OFFSET:-0} --limit=${LIMIT:-100} --actions=${ACTIONS:-update,create}"
+          [ "$APPLY" = "true" ] && args="$args --apply"
+          node scripts/zip-import.mjs $args
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip-import-${{ inputs.offset || '0' }}
+          path: zip-import.md
+          if-no-files-found: warn
+      - name: Upload the pre-change documents
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip-import-before-${{ inputs.offset || '0' }}
+          path: zip-import/*.json
+          if-no-files-found: ignore
+          retention-days: 90
