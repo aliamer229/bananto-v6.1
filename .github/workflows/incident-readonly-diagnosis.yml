@@ -1,0 +1,81 @@
+# TEMPORARY — product data-loss incident diagnosis.
+#
+# Read-only by construction: the script it runs refuses any SQL statement that
+# is not a single SELECT, and touches R2 only through `bucket info` and
+# `object get`. It deploys nothing and applies no migration.
+#
+# Delete this file once the incident is closed.
+name: Incident diagnosis (read-only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      products:
+        description: "Optional comma-separated product ids to dissect (defaults to the worst-damaged three)"
+        required: false
+        default: ""
+  # Runs when this diagnostic itself is pushed to the incident branch, so the
+  # report is available without waiting for the workflow to reach the default
+  # branch. Nothing else in the repository triggers it.
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/incident-readonly-diagnosis.yml
+      - scripts/incident-readonly-report.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: incident-diagnosis
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      # Belt and braces. Secrets referenced through `secrets.*` are masked by
+      # Actions already; this also masks them if a tool prints them itself.
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
+        run: |
+          echo "::add-mask::$ACCOUNT_ID"
+          echo "::add-mask::$DATABASE_ID"
+          echo "::add-mask::$BUCKET_NAME"
+
+      - name: Read-only diagnosis
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          CLOUDFLARE_R2_BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
+          # Passed through the environment, never interpolated into the shell.
+          PRODUCTS: ${{ inputs.products }}
+        run: |
+          if [ -n "$PRODUCTS" ]; then
+            node scripts/incident-readonly-report.mjs --products "$PRODUCTS"
+          else
+            node scripts/incident-readonly-report.mjs
+          fi
+
+      - name: Upload the redacted report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: incident-report
+          path: incident-report.md
+          if-no-files-found: warn
