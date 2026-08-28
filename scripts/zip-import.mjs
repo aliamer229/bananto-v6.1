@@ -40,6 +40,7 @@ const LIMIT = num("limit", 100);
 const ACTIONS = flag("actions", "update,create")
   .split(",")
   .map((s) => s.trim().toUpperCase());
+const PREVIEW = flag("preview", "");
 const ONLY_UPDATE = ACTIONS.includes("UPDATE") && !ACTIONS.includes("CREATE");
 const ONLY_CREATE = ACTIONS.includes("CREATE") && !ACTIONS.includes("UPDATE");
 
@@ -283,6 +284,99 @@ function parseWithRecovery(raw) {
   return { parsed: app.parseGameImport(text), dropped, blocking: [], text };
 }
 
+/* --------------------------------------------------------------- pricing */
+
+/**
+ * Replaces the template's monetary fields with priced ones.
+ *
+ * The archive writes supplier figures into `price`, so a product built straight
+ * from a template sells at cost. This rebuilds `options`, `types` and the base
+ * `price`/`cost` from the pricing engine: supplier numbers become costs,
+ * selling prices are calculated per tier, and the customer-facing wording is
+ * the store's Arabic rather than the supplier's.
+ *
+ * Returns the reasons alongside, so a run can be read rather than trusted.
+ */
+function applyPricing(payload, templateText, slug) {
+  const costs = app.mapSupplierCosts(templateTypes(templateText));
+  const platform = normalizePlatform(payload.platform) === "switch2" ? "switch2" : "switch1";
+  const { tier, defaulted } = app.demandTierFor(slug);
+  const pricing = app.priceGame(costs, platform, tier);
+
+  const notes = [];
+  if (defaulted) notes.push(`no demand tier for \`${slug}\` — priced as standard`);
+  notes.push(...pricing.needsReview.map((r) => `COST_NEEDS_REVIEW: ${r}`));
+
+  /* Nothing is written at or below what it cost to acquire. */
+  const unprofitable = pricing.tiers.filter((t) => t.price <= t.cost);
+  for (const t of unprofitable) {
+    notes.push(`UNPROFITABLE: ${t.account}/${t.content} price ${t.price} <= cost ${t.cost}`);
+  }
+
+  const accounts = [...new Set(pricing.tiers.map((t) => t.account))];
+  const options = accounts.map((account) => ({
+    id: `${account}_account`,
+    name: app.customerOptionName(account),
+    description: app.customerOptionName(account),
+    stock: 9999,
+    isInfiniteStock: true,
+  }));
+
+  const built = pricing.tiers.map((t) => ({
+    id: `${t.account}_${t.content}`,
+    name: app.customerTypeName(t.account, t.content),
+    optionId: `${t.account}_account`,
+    price: t.price,
+    cost: t.cost,
+    stock: 9999,
+    isInfiniteStock: true,
+  }));
+
+  return {
+    payload: {
+      ...payload,
+      options,
+      types: built,
+      price: pricing.productPrice ?? 0,
+      cost: pricing.productCost ?? 0,
+    },
+    pricing,
+    costs,
+    tier,
+    notes,
+    unprofitable,
+  };
+}
+
+/**
+ * The `type.N.*` rows, read straight off the template text.
+ *
+ * `parseGameImport` maps the archive's keys onto persisted product fields,
+ * which is the wrong shape here: the pricing engine needs the supplier rows as
+ * the supplier wrote them, before any mapping decided what they meant.
+ */
+function templateTypes(templateText) {
+  const raw = {};
+  for (const line of String(templateText ?? "").split(/\r?\n/)) {
+    const m = line.match(/^(type\.\d+\.[A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/);
+    if (m && !(m[1] in raw)) raw[m[1]] = m[2].trim();
+  }
+  const indexes = [...new Set(
+    Object.keys(raw).map((k) => k.match(/^type\.(\d+)\./)?.[1]).filter(Boolean),
+  )].sort((a, b) => Number(a) - Number(b));
+  const numeric = (v) => {
+    const n = Number(String(v ?? "").replace(/[, ]/g, ""));
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  return indexes.map((i) => ({
+    id: raw[`type.${i}.id`],
+    name: raw[`type.${i}.name`],
+    optionId: raw[`type.${i}.option_id`],
+    price: numeric(raw[`type.${i}.price`]),
+    cost: numeric(raw[`type.${i}.cost`]),
+  }));
+}
+
 /* -------------------------------------------------------------------- main */
 
 const category = dominantGameCategory();
@@ -298,6 +392,7 @@ if (!files.length) throw new Error(`no templates under ${TEMPLATE_DIR}`);
 const totals = {
   updated: 0,
   created: 0,
+  pricingRejected: 0,
   separateEditions: 0,
   droppedValues: 0,
   skippedByFilter: 0,
@@ -308,6 +403,73 @@ const totals = {
   blocked: 0,
 };
 const rows = [];
+if (PREVIEW) {
+  const file = files.find((f) => f === PREVIEW || f.includes(PREVIEW));
+  if (!file) throw new Error(`no template matching ${PREVIEW}`);
+  const raw = readFileSync(path.join(TEMPLATE_DIR, file), "utf8");
+  const { parsed, text: cleaned, dropped } = parseWithRecovery(raw);
+  const slug = String(parsed.data.slug ?? "");
+  const built = app.buildBatchGameImport(cleaned, category.id);
+  if (!built.ok) throw new Error(`cannot build a product: ${built.reason}`);
+  const priced = applyPricing(built.payload, cleaned, slug);
+  const verdict = classify(parsed.data);
+
+  say(`## Controlled pricing test — \`${file}\``);
+  say();
+  say(`- title: **${parsed.data.title || parsed.data.name}**`);
+  say(`- slug: \`${slug}\``);
+  say(`- platform: **${normalizePlatform(parsed.data.platform)}**`);
+  say(`- action against production: **${verdict.action}** (${verdict.how})`);
+  say(`- demand tier: **${priced.tier}**`);
+  if (dropped.length) say(`- placeholder values dropped: ${dropped.map((d) => `\`${d.key}=${d.value}\``).join(", ")}`);
+  say();
+
+  say(`### Raw supplier rows, as the template writes them`);
+  say();
+  say(`| row | option | price field | cost field |`);
+  say(`| --- | --- | ---: | ---: |`);
+  for (const t of templateTypes(cleaned)) {
+    say(`| ${t.name} | \`${t.optionId}\` | ${t.price ?? "—"} | ${t.cost ?? "—"} |`);
+  }
+  say();
+
+  say(`### Interpreted supplier costs`);
+  say();
+  say(`| tier | acquisition cost | read from |`);
+  say(`| --- | ---: | --- |`);
+  for (const [label, key] of [
+    ["Offline base", "offlineBase"],
+    ["Offline extras", "offlineExtras"],
+    ["Online base", "onlineBase"],
+    ["Online extras", "onlineExtras"],
+  ]) {
+    const c = priced.costs[key];
+    say(`| ${label} | ${c ? c.amount.toLocaleString() : "— not stated"} | ${c ? c.source : "—"} |`);
+  }
+  if (priced.costs.unmapped.length) say(`\nUnmapped rows: ${priced.costs.unmapped.join("; ")}`);
+  say();
+
+  say(`### Calculated selling prices`);
+  say();
+  say(`| customer sees | sale price | cost | profit | reasoning |`);
+  say(`| --- | ---: | ---: | ---: | --- |`);
+  for (const t of priced.pricing.tiers) {
+    say(`| ${app.customerTypeName(t.account, t.content)} | ${t.price.toLocaleString()} | ${t.cost.toLocaleString()} | ${t.margin.toLocaleString()} | ${t.reason} |`);
+  }
+  say();
+  say(`### Base product`);
+  say();
+  say(`- \`product.price\` = **${priced.payload.price?.toLocaleString()}** (customer)`);
+  say(`- \`product.cost\` = **${priced.payload.cost?.toLocaleString()}** (supplier)`);
+  say(`- equal? **${priced.payload.price === priced.payload.cost ? "YES — THIS IS THE BUG" : "no"}**`);
+  say();
+  for (const note of priced.notes) say(`- ${note}`);
+  if (priced.unprofitable.length) say(`- **This product would be refused: an option sells at or below cost.**`);
+  say();
+  writeFileSync("zip-import.md", lines.join("\n") + "\n");
+  process.exit(0);
+}
+
 const slice = files.slice(OFFSET, OFFSET + LIMIT);
 
 for (let start = 0; start < slice.length; start += BATCH_SIZE) {
@@ -422,7 +584,15 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
       rows.push({ file, title, action: "CREATE_FAILED", reason: built.reason });
       continue;
     }
-    const payload = { ...built.payload, isHidden: true, createdAt: nowIso(), updatedAt: nowIso() };
+    const priced = applyPricing(built.payload, cleaned, String(parsed.data.slug ?? ""));
+    for (const note of priced.notes) say(`  - ${note}`);
+    if (priced.unprofitable.length) {
+      totals.pricingRejected++;
+      say(`- \`${file}\` **${title}**: **not created** — an option would sell at or below cost.`);
+      rows.push({ file, title, action: "FAILED", reason: "unprofitable option" });
+      continue;
+    }
+    const payload = { ...priced.payload, isHidden: true, createdAt: nowIso(), updatedAt: nowIso() };
     if (live.has(String(payload.id))) {
       // A generated id that already exists would overwrite a real product.
       totals.writeFailed++;
@@ -475,6 +645,7 @@ say(`| Created as a separate edition of an existing title | ${totals.separateEdi
 say(`| Placeholder values the parser refused, dropped | ${totals.droppedValues} |`);
 say(`| Skipped by the action filter | ${totals.skippedByFilter} |`);
 say(`| Rejected by the parser | ${totals.parseFailed} |`);
+say(`| Refused: an option would sell at or below cost | ${totals.pricingRejected} |`);
 say(`| Fields added to existing products | ${totals.fieldsAdded} |`);
 say(`| Values the guard refused | ${totals.blocked} |`);
 say(`| Write or verification failures | ${totals.writeFailed} |`);
