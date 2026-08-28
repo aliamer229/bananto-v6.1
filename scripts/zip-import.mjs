@@ -5,11 +5,11 @@
  * DRY RUN BY DEFAULT — `--apply` is required to write anything.
  *
  * Report B classified all 76 templates. This acts on that classification:
- * a template that matches an existing product updates it, a template that
- * matches nothing creates a product, and a template whose title exists only on
- * the other console is left for a person, because a Switch 1 and a Switch 2
- * edition are separate products in this catalogue and merging them would
- * destroy one of them.
+ * a template that matches an existing product updates it, and a template that
+ * matches nothing creates one. A template whose title exists only on the other
+ * console also creates a product rather than merging into it: a Switch 1 and a
+ * Switch 2 edition are separate products in this catalogue, and merging them
+ * would destroy one of them. Those are called out in the report.
  *
  * The matching is redone here rather than read from the report, so a product
  * created earlier in this same run is visible to every template after it. That
@@ -191,12 +191,20 @@ function classify(data) {
   if (aliasBy.has(nt) && live.has(aliasBy.get(nt))) {
     return { action: "UPDATE_EXISTING", id: aliasBy.get(nt), how: "alias" };
   }
+  /*
+    The same title on the other console is a separate edition, never a match —
+    that is the rule this catalogue is built on. So it is created as its own
+    product rather than merged into the one that exists, and flagged in the
+    report so the pair can be looked at: hidden, like every other new product,
+    so nothing reaches the storefront on the strength of this alone.
+  */
   const other = platform === "switch2" ? "switch1" : "switch2";
   if (byTitlePlatform.has(`${nt}|${other}`)) {
     return {
-      action: "MANUAL_REVIEW",
+      action: "CREATE_NEW",
       id: "",
-      how: `same title on ${other} — separate edition`,
+      how: `separate edition — the same title exists on ${other}`,
+      separateEdition: true,
     };
   }
   return { action: "CREATE_NEW", id: "", how: "no match" };
@@ -236,6 +244,45 @@ const filled = (v) => {
   return false;
 };
 
+/**
+ * Parses a template, dropping only the individual values the parser refuses.
+ *
+ * Three templates carry a placeholder where a number belongs — `price_usd=Not
+ * Announced`, `verdict_score=Pending`, `main_story_hours=Infinite`. Those are
+ * ways of writing "no value yet", and the parser is right to refuse them; but
+ * refusing the whole file over one of them loses a complete game. The offending
+ * line is removed and the file re-parsed, so the field ends up absent — which is
+ * what the placeholder meant — and every other field survives.
+ *
+ * Nothing is substituted. A dropped value is reported with the text it held.
+ */
+function parseWithRecovery(raw) {
+  const dropped = [];
+  let text = raw;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const parsed = app.parseGameImport(text);
+    const blocking = parsed.errors.filter((e) => e.severity === "error");
+    if (!blocking.length) return { parsed, dropped, blocking: [], text };
+
+    const keys = new Set(blocking.map((e) => String(e.key)));
+    let removed = 0;
+    text = text
+      .split(/\r?\n/)
+      .filter((line) => {
+        // Only a scalar assignment. Removing a `key<<EOF` opener would strand
+        // its body as loose lines and corrupt everything after it.
+        const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*=(.*)$/);
+        if (!m || !keys.has(m[1])) return true;
+        dropped.push({ key: m[1], value: m[2].trim() });
+        removed++;
+        return false;
+      })
+      .join("\n");
+    if (!removed) return { parsed, dropped, blocking, text };
+  }
+  return { parsed: app.parseGameImport(text), dropped, blocking: [], text };
+}
+
 /* -------------------------------------------------------------------- main */
 
 const category = dominantGameCategory();
@@ -251,7 +298,8 @@ if (!files.length) throw new Error(`no templates under ${TEMPLATE_DIR}`);
 const totals = {
   updated: 0,
   created: 0,
-  manualReview: 0,
+  separateEditions: 0,
+  droppedValues: 0,
   skippedByFilter: 0,
   unchanged: 0,
   parseFailed: 0,
@@ -270,30 +318,34 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
   for (const file of batch) {
     const raw = readFileSync(path.join(TEMPLATE_DIR, file), "utf8");
     let parsed;
+    let dropped = [];
+    let blocking = [];
+    let cleaned = raw;
     try {
-      parsed = app.parseGameImport(raw);
+      const attempt = parseWithRecovery(raw);
+      ({ parsed, dropped, blocking, text: cleaned } = attempt);
     } catch (err) {
       totals.parseFailed++;
       say(`- \`${file}\`: **parse failed** — ${String(err).slice(0, 120)}`);
       continue;
     }
-    const blocking = parsed.errors.filter((e) => e.severity === "error");
     if (blocking.length) {
       totals.parseFailed++;
       say(`- \`${file}\`: **rejected by the parser** — ${blocking[0].key}: ${blocking[0].message}`);
       rows.push({ file, action: "PARSE_FAILED", reason: blocking[0].message });
       continue;
     }
+    if (dropped.length) {
+      totals.droppedValues += dropped.length;
+      say(
+        `- \`${file}\`: dropped ${dropped.length} placeholder value(s) the parser refused — ` +
+          dropped.map((d) => `\`${d.key}=${d.value}\``).join(", "),
+      );
+    }
 
     const verdict = classify(parsed.data);
     const title = parsed.data.title || parsed.data.name || file;
 
-    if (verdict.action === "MANUAL_REVIEW") {
-      totals.manualReview++;
-      say(`- \`${file}\` **${title}** — MANUAL_REVIEW (${verdict.how}); nothing written.`);
-      rows.push({ file, title, action: "MANUAL_REVIEW", reason: verdict.how });
-      continue;
-    }
     if (verdict.action === "UPDATE_EXISTING" && ONLY_CREATE) {
       totals.skippedByFilter++;
       continue;
@@ -312,6 +364,8 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
       */
       const patch = {};
       for (const [field, value] of Object.entries(parsed.data)) {
+        // Bookkeeping about the template, not anything about the game.
+        if (field === "schema_version" || field === "batchImport") continue;
         if (!filled(value)) continue;
         if (filled(stored[field])) continue;
         patch[field] = value;
@@ -361,7 +415,7 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
     }
 
     /* CREATE_NEW — the application's own batch import, hidden by default. */
-    const built = app.buildBatchGameImport(raw, category.id);
+    const built = app.buildBatchGameImport(cleaned, category.id);
     if (!built.ok) {
       totals.parseFailed++;
       say(`- \`${file}\` **${title}**: **cannot build a product** — ${built.reason}`);
@@ -375,7 +429,11 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
       say(`- \`${file}\` **${title}**: **generated id \`${payload.id}\` is already taken** — skipped.`);
       continue;
     }
-    say(`- \`${file}\` **${title}** → CREATE \`${payload.id}\` (${normalizePlatform(payload.platform)}, hidden)`);
+    if (verdict.separateEdition) totals.separateEditions++;
+    say(
+      `- \`${file}\` **${title}** → CREATE \`${payload.id}\` (${normalizePlatform(payload.platform)}, hidden)` +
+        (verdict.separateEdition ? ` — ${verdict.how}` : ""),
+    );
     if (!APPLY) {
       // Visible to the next template's duplicate check even in a dry run.
       live.set(String(payload.id), payload);
@@ -413,7 +471,8 @@ say(`| Templates in this run | ${slice.length} |`);
 say(`| Updated existing products | ${totals.updated} |`);
 say(`| Created new products (hidden) | ${totals.created} |`);
 say(`| Already complete, nothing to add | ${totals.unchanged} |`);
-say(`| Left for manual review | ${totals.manualReview} |`);
+say(`| Created as a separate edition of an existing title | ${totals.separateEditions} |`);
+say(`| Placeholder values the parser refused, dropped | ${totals.droppedValues} |`);
 say(`| Skipped by the action filter | ${totals.skippedByFilter} |`);
 say(`| Rejected by the parser | ${totals.parseFailed} |`);
 say(`| Fields added to existing products | ${totals.fieldsAdded} |`);
