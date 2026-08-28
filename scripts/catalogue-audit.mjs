@@ -427,7 +427,14 @@ for (const file of files) {
   } else if (byTitlePlatform.has(`${nt}|${platform}`)) {
     matchId = byTitlePlatform.get(`${nt}|${platform}`);
     how = "title+platform";
-  } else if (aliasBy.has(nt)) {
+  } else if (aliasBy.has(nt) && live.has(aliasBy.get(nt))) {
+    /*
+      `game_aliases.game_id` points into the game-records tables, not the
+      catalogue, and those ids (`gme_…`) frequently name nothing live —
+      game_records is empty in production. An alias only counts as a match when
+      it resolves to a product that actually exists, or the template gets
+      reported as an update to a product that is not there.
+    */
     matchId = aliasBy.get(nt);
     how = "alias";
   }
