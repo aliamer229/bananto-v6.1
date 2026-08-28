@@ -283,6 +283,17 @@ const filled = (v) => {
 };
 const NEVER_MOVE = new Set(["id", "createdAt", "created_at", "slug", "_deleted"]);
 
+/**
+ * A value that is a note about a failed serialisation, not data.
+ *
+ * `boxContentsList` on two of these documents holds the literal string
+ * "[Circular]" — what a serialiser writes when it meets a self-reference. It is
+ * stored, so it reads as a filled field, and copying it would move a bug from
+ * one product onto another. A blank stays blank instead.
+ */
+const JUNK = new Set(["[Circular]", "[object Object]", "undefined", "null", "NaN"]);
+const isJunk = (v) => typeof v === "string" && JUNK.has(v.trim());
+
 const results = [];
 
 /* Every product in every pair, counted in one sweep of the database. */
@@ -390,9 +401,14 @@ for (const pair of PAIRS) {
 
   const adds = [];
   const conflicts = [];
+  const junk = [];
   for (const [key, value] of Object.entries(duplicate)) {
     if (NEVER_MOVE.has(key)) continue;
     if (!filled(value)) continue;
+    if (isJunk(value)) {
+      junk.push(key);
+      continue;
+    }
     if (!filled(canonical[key])) {
       adds.push({ key, value });
       continue;
@@ -412,6 +428,11 @@ for (const pair of PAIRS) {
     }
   }
   say();
+
+  if (junk.length) {
+    say(`Not moved, because the stored value is a serialisation note rather than data: ${junk.map((k) => `\`${k}\``).join(", ")}.`);
+    say();
+  }
 
   say(`### Fields both answer, differently — left alone`);
   say();
