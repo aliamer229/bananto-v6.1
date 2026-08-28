@@ -214,6 +214,10 @@ const expected = [
 ];
 const missing = expected.filter((t) => !tables.includes(t));
 say(`- Expected incident tables missing: ${missing.length ? "**" + missing.join(", ") + "**" : "_none_"}`);
+const setAside = tables.filter((t) => /(_old|_backup|_bak|_legacy|_copy|_v\d+)$/i.test(t));
+say(`- Tables renamed aside by migrations (possible pre-incident copies): **${setAside.length}**${setAside.length ? " — " + setAside.slice(0, 15).join(", ") : ""}`);
+const storeLike = tables.filter((t) => /store/i.test(t));
+say(`- Tables whose name mentions \`store\`: ${storeLike.slice(0, 15).join(", ") || "_none_"}`);
 say();
 
 /* 2 — store_kv census ------------------------------------------------------- */
@@ -403,13 +407,74 @@ for (const [id, doc] of overlays) {
 say(`- **Live products after the merge: ${live.size}**`);
 say();
 
+say("### Live products missing from `product_index`");
+say();
+const indexedIds = new Set(
+  d1("SELECT id FROM product_index", { allowFail: true })?.map((r) => String(r.id)) ?? [],
+);
+const notIndexed = [...live.keys()].filter((id) => !indexedIds.has(id));
+const indexedButGone = [...indexedIds].filter((id) => !live.has(id));
+say(`- Live in the catalogue but **absent from \`product_index\`** (invisible in the admin list): **${notIndexed.length}**`);
+for (const id of notIndexed.slice(0, 20)) {
+  say(`  - \`${id}\` — ${String(live.get(id)?.doc?.title ?? "").slice(0, 60)}`);
+}
+say(`- In \`product_index\` but **not** in the catalogue (stale index rows): **${indexedButGone.length}**`);
+for (const id of indexedButGone.slice(0, 20)) say(`  - \`${id}\``);
+say();
+
 /* 7 — richness profile ------------------------------------------------------ */
 
-const RICH_KEYS = [
-  "images", "gallery", "banner", "trailer", "nintendo", "switch2", "overview",
-  "gameplayPillars", "story", "editionOptions", "editions", "dlcs", "genres",
-  "supportedLanguages", "gameTypes", "features", "performance", "devicePerformance",
+/*
+  The first run probed `GameMetadata.images.{cartridgeFront,boxArt,screenshots}`
+  and reported zero for every product — but the catalogue stores its image roles
+  as flat fields, the ones `AdminProductEditor` reads and writes. Probing the
+  nested shape measured nothing and would have been read as total image loss.
+*/
+const IMAGE_FIELDS = [
+  "image", "banner", "cartridgeImage", "nintendoCardImage", "coverImage",
+  "coverHiResImage", "squareGameImage", "packagingFrontImage", "boxImage",
+  "cardArtwork", "mainImage", "regionBanner", "bannerImage", "modelTextureUrl",
 ];
+const IMAGE_ARRAY_FIELDS = ["bannerImages", "gallery", "screenshots", "galleryImages"];
+
+const RICH_KEYS = [
+  "images", "gallery", "bannerImages", "trailer", "trailerUrl", "nintendo", "switch2",
+  "overview", "gameplayPillars", "story", "editionOptions", "editions", "dlcs",
+  "genres", "supportedLanguages", "gameTypes", "features", "performance",
+  "devicePerformance", "variants", "options", "productTypes", "sections",
+];
+
+/** Every asset-looking URL anywhere in the document, however deeply nested. */
+const ASSET_RE = /(^|\/)(api\/files\/|files\/)|\.(avif|webp|jpe?g|png|gif|mp4|glb)($|\?)/i;
+function collectAssetUrls(value, out = new Set(), depth = 0) {
+  if (depth > 8 || value == null) return out;
+  if (typeof value === "string") {
+    const v = value.trim();
+    if (v.length > 4 && ASSET_RE.test(v)) out.add(v);
+    return out;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectAssetUrls(item, out, depth + 1);
+    return out;
+  }
+  if (typeof value === "object") {
+    for (const item of Object.values(value)) collectAssetUrls(item, out, depth + 1);
+  }
+  return out;
+}
+
+/** `/api/files/x.avif`, `files/x.avif` and a full URL all name the same object. */
+function assetKey(url) {
+  let path = String(url);
+  try {
+    if (path.startsWith("http")) path = new URL(path).pathname;
+  } catch {
+    /* not a URL; treat the raw string as a path */
+  }
+  path = path.replace(/^\/+/, "").replace(/^api\//, "");
+  const marker = path.indexOf("files/");
+  return marker > 0 ? path.slice(marker) : path;
+}
 const PROJECTION_KEYS = new Set([
   "id", "slug", "title", "titleEn", "category", "categoryId", "kind", "schemaId",
   "platform", "price", "cost", "stock", "isInfiniteStock", "isHidden", "status",
@@ -430,8 +495,17 @@ function profile(id, entry) {
   const rich = {};
   for (const key of RICH_KEYS) rich[key] = sizeOf(doc[key]);
   const richTotal = Object.values(rich).reduce((a, b) => a + b, 0);
-  const imagesObj = doc.images && typeof doc.images === "object" ? doc.images : {};
+  const imageRoles = {};
+  for (const field of IMAGE_FIELDS) imageRoles[field] = doc[field] ? 1 : 0;
+  for (const field of IMAGE_ARRAY_FIELDS) {
+    imageRoles[field] = Array.isArray(doc[field])
+      ? doc[field].filter((v) => typeof v === "string" && v.trim()).length
+      : 0;
+  }
+  const assetUrls = collectAssetUrls(doc);
   return {
+    assetUrls,
+    assetKeys: new Set([...assetUrls].map(assetKey)),
     id,
     source: entry.source,
     bytes: JSON.stringify(doc).length,
@@ -441,14 +515,8 @@ function profile(id, entry) {
     beyondProjection: keys.filter((k) => !PROJECTION_KEYS.has(k)).length,
     richTotal,
     rich,
-    imageRoles: {
-      image: doc.image ? 1 : 0,
-      banner: doc.banner ? 1 : 0,
-      gallery: Array.isArray(doc.gallery) ? doc.gallery.length : 0,
-      cartridgeFront: imagesObj.cartridgeFront ? 1 : 0,
-      boxArt: imagesObj.boxArt ? 1 : 0,
-      screenshots: Array.isArray(imagesObj.screenshots) ? imagesObj.screenshots.length : 0,
-    },
+    imageRoles,
+    imageCount: Object.values(imageRoles).reduce((a, b) => a + b, 0),
   };
 }
 
@@ -459,10 +527,7 @@ say("## 7. Richness profile across the live catalogue");
 say();
 const projectionOnly = profiles.filter((p) => p.projectionOnly);
 const noRich = profiles.filter((p) => p.richTotal === 0);
-const noImages = profiles.filter(
-  (p) => p.imageRoles.image + p.imageRoles.banner + p.imageRoles.gallery +
-         p.imageRoles.cartridgeFront + p.imageRoles.boxArt + p.imageRoles.screenshots === 0,
-);
+const noImages = profiles.filter((p) => p.imageCount === 0);
 say(`- Live products: **${profiles.length}**`);
 say(`- Carrying **only** \`product_index\` projection keys (Vector B fingerprint): **${projectionOnly.length}**`);
 say(`- Carrying no rich field at all (${RICH_KEYS.length} probed keys all empty): **${noRich.length}**`);
@@ -498,33 +563,56 @@ if (tables.includes("game_device_performance")) {
   }
 }
 
+// The decisive comparison: an asset row whose URL appears nowhere in the
+// product document is an image the storefront can no longer render.
+const relationUrls = new Map();
+if (tables.includes("game_images")) {
+  for (const row of d1("SELECT game_id, kind, url FROM game_images")) {
+    const id = String(row.game_id);
+    if (!relationUrls.has(id)) relationUrls.set(id, []);
+    relationUrls.get(id).push({ kind: String(row.kind), url: String(row.url) });
+  }
+}
+
 const damaged = [];
 for (const p of profiles) {
   const relImages = imagesByProduct.get(p.id) ?? 0;
   const relVariants = variantsByProduct.get(p.id) ?? 0;
   const relPerf = perfByProduct.get(p.id) ?? 0;
-  const docImages =
-    p.imageRoles.image + p.imageRoles.banner + p.imageRoles.gallery +
-    p.imageRoles.cartridgeFront + p.imageRoles.boxArt + p.imageRoles.screenshots;
+  const docImages = p.imageCount;
   const deficit =
     Math.max(0, relImages - docImages) +
     Math.max(0, relVariants - p.rich.editions - p.rich.editionOptions) +
     Math.max(0, relPerf - p.rich.performance - p.rich.devicePerformance);
-  if (deficit > 0 || (relImages > 0 && docImages === 0)) {
-    damaged.push({ ...p, relImages, relVariants, relPerf, docImages, deficit });
+  const rel = relationUrls.get(p.id) ?? [];
+  const orphanRoles = rel
+    .filter((r) => !p.assetKeys.has(assetKey(r.url)))
+    .map((r) => r.kind);
+  if (deficit > 0 || orphanRoles.length > 0 || (relImages > 0 && docImages === 0)) {
+    damaged.push({
+      ...p, relImages, relVariants, relPerf, docImages, deficit,
+      unreferenced: orphanRoles.length,
+      unreferencedRoles: orphanRoles,
+    });
   }
 }
-damaged.sort((a, b) => b.deficit - a.deficit);
+damaged.sort((a, b) => b.unreferenced - a.unreferenced || b.deficit - a.deficit);
 say(`- Products with relation rows the document no longer reflects: **${damaged.length}**`);
 say(`- Of those, with relation images but **zero** images in the document: **${damaged.filter((d) => d.relImages > 0 && d.docImages === 0).length}**`);
+const totalUnreferenced = damaged.reduce((sum, d) => sum + d.unreferenced, 0);
+say(`- **Stored \`game_images\` rows whose URL appears nowhere in the product document: ${totalUnreferenced}** (across ${damaged.filter((d) => d.unreferenced > 0).length} products)`);
+const roleTally = {};
+for (const d of damaged) for (const role of d.unreferencedRoles) roleTally[role] = (roleTally[role] ?? 0) + 1;
+const roleLines = Object.entries(roleTally).sort((a, b) => b[1] - a[1]);
+say(`- Unreferenced by role: ${roleLines.length ? roleLines.map(([k, v]) => `\`${k}\`=${v}`).join(", ") : "_none_"}`);
 say();
 for (const line of table(
   damaged.slice(0, 25).map((d) => ({
     id: d.id, source: d.source, bytes: d.bytes, keys: d.keys,
-    doc_images: d.docImages, rel_images: d.relImages,
-    rel_variants: d.relVariants, rel_perf: d.relPerf, deficit: d.deficit,
+    doc_images: d.docImages, rel_images: d.relImages, unreferenced: d.unreferenced,
+    rel_perf: d.relPerf,
   })),
-  ["id", "source", "bytes", "keys", "doc_images", "rel_images", "rel_variants", "rel_perf", "deficit"],
+  ["id", "source", "bytes", "keys", "doc_images", "rel_images", "unreferenced", "rel_perf"],
 )) say(line);
 say();
 
@@ -554,7 +642,15 @@ for (const id of sample) {
   say(`- Title: \`${String(entry.doc.title ?? "").slice(0, 60)}\` — slug \`${String(entry.doc.slug ?? "")}\``);
   say(`- Source of the live copy: **${p.source}** — ${p.bytes.toLocaleString()} bytes, ${p.keys} top-level keys`);
   say(`- Keys beyond the projection column set: **${p.beyondProjection}** ${p.projectionOnly ? "(**projection-only — Vector B fingerprint**)" : ""}`);
-  say(`- Image roles in the document: ${JSON.stringify(p.imageRoles)}`);
+  const present = Object.entries(p.imageRoles).filter(([, v]) => v > 0);
+  const absent = Object.entries(p.imageRoles).filter(([, v]) => v === 0).map(([k]) => k);
+  say(`- Image fields **present**: ${present.length ? present.map(([k, v]) => `\`${k}\`(${v})`).join(", ") : "_none_"}`);
+  say(`- Image fields **empty**: ${absent.join(", ")}`);
+  say(`- Distinct asset URLs anywhere in the document: **${p.assetUrls.size}**`);
+  const rel = relationUrls.get(id) ?? [];
+  const missingRoles = rel.filter((r) => !p.assetKeys.has(assetKey(r.url)));
+  say(`- \`game_images\` rows the document does **not** reference: **${missingRoles.length}** of ${rel.length}${missingRoles.length ? " — roles: " + missingRoles.map((r) => r.kind).join(", ") : ""}`);
+  say(`- All top-level keys: \`${Object.keys(entry.doc).sort().join(", ").slice(0, 900)}\``);
   say(`- Rich field sizes: ${JSON.stringify(p.rich)}`);
   say(`- Relation rows still in D1: images=${imagesByProduct.get(id) ?? 0}, variants=${variantsByProduct.get(id) ?? 0}, active performance=${perfByProduct.get(id) ?? 0}`);
   const overlayDoc = overlays.get(id);
@@ -605,14 +701,18 @@ for (const { id, kind, url } of sampleUrls.slice(0, 12)) {
     checked.push({ id, kind, key: "(not an R2 key)", present: "n/a" });
     continue;
   }
-  const got = wrangler(["r2", "object", "get", `${PUBLIC_BUCKET}/${key}`, "--remote", "--pipe"], {
-    allowFail: true,
-  });
+  const found = [];
+  for (const bucket of [PUBLIC_BUCKET, PRIVATE_BUCKET]) {
+    const got = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--remote", "--pipe"], {
+      allowFail: true,
+    });
+    if (got && got.length > 0) found.push(bucket);
+  }
   checked.push({
     id: id.slice(0, 22),
     kind,
-    key: key.length > 70 ? "…" + key.slice(-68) : key,
-    present: got && got.length > 0 ? "YES" : "no",
+    key: key.length > 62 ? "…" + key.slice(-60) : key,
+    present: found.length ? found.join(" + ") : "NOT FOUND in either bucket",
   });
 }
 for (const line of table(checked, ["id", "kind", "key", "present"])) say(line);

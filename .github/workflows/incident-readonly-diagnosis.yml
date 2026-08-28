@@ -47,15 +47,17 @@ jobs:
 
       # Belt and braces. Secrets referenced through `secrets.*` are masked by
       # Actions already; this also masks them if a tool prints them itself.
+      # The account id and database id are genuine secrets. The bucket name is
+      # not — `wrangler.jsonc` commits it — and masking it replaced every
+      # occurrence of that word in the first report, including the database
+      # name and the asset hostnames, which made the output unreadable.
       - name: Mask identifiers
         env:
           ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
-          BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
         run: |
           echo "::add-mask::$ACCOUNT_ID"
           echo "::add-mask::$DATABASE_ID"
-          echo "::add-mask::$BUCKET_NAME"
 
       - name: Read-only diagnosis
         env:
