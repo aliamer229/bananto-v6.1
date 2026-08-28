@@ -242,6 +242,17 @@ async function importImage({ sourceUrl, key, onProblem }) {
   return `/api/${finalKey}`;
 }
 
+/** Runs `fn` over `items` with at most `limit` in flight, preserving order. */
+async function mapWithLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    for (let i = next++; i < items.length; i = next++) out[i] = await fn(items[i], i);
+  });
+  await Promise.all(workers);
+  return out;
+}
+
 /** True when a stored image role no longer resolves to anything. */
 async function refIsDead(value) {
   const ref = classifyRef(value);
@@ -361,16 +372,21 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
     let deadCount = 0;
     let aliveCount = 0;
     let hotlinked = 0;
-    let sample = "";
-    for (const entry of stored) {
-      const value = entry.url ?? entry.image ?? entry.src;
-      const ref = classifyRef(value);
-      if (!sample) sample = String(value ?? "").slice(0, 90);
-      if (ref.kind === "external") {
-        // Someone else's CDN is not ours to repair, and it is not broken.
+    const sample = String(
+      stored[0]?.url ?? stored[0]?.image ?? stored[0]?.src ?? "",
+    ).slice(0, 90);
+    const kinds = await mapWithLimit(stored, 4, async (entry) => {
+      const ref = classifyRef(entry.url ?? entry.image ?? entry.src);
+      // Someone else's CDN is not ours to repair, and it is not broken.
+      if (ref.kind === "external") return "hotlinked";
+      if (ref.kind === "own" && (await r2.exists(ref.key))) return "alive";
+      return "dead";
+    });
+    for (const kind of kinds) {
+      if (kind === "hotlinked") {
         hotlinked++;
         aliveCount++;
-      } else if (ref.kind === "own" && (await r2.exists(ref.key))) {
+      } else if (kind === "alive") {
         aliveCount++;
       } else {
         deadCount++;
@@ -398,8 +414,16 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
     } else if (!shots.length) {
       say(`- **No screenshots on the store page** — gallery left as it is.`);
     } else {
-      const imported = [];
-      for (const [i, shot] of shots.entries()) {
+      /*
+        The screenshots of one game are independent of each other, and each
+        costs a download, a conversion and — when the REST path is unavailable —
+        two wrangler processes. Run serially that is most of the wall clock of
+        the whole job; a small amount of concurrency turns a batch of thirty
+        games from a quarter of an hour into a few minutes. The bound is low on
+        purpose: this is someone else's CDN and our own storage, and neither
+        deserves a flood.
+      */
+      const results = await mapWithLimit(shots, 4, async (shot, i) => {
         const n = String(i + 1).padStart(2, "0");
         const ref = await importImage({
           sourceUrl: shot.url,
@@ -409,10 +433,12 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
             say(`  - screenshot ${i + 1}: ${why}`);
           },
         });
-        if (!ref) continue;
+        if (!ref) return null;
         if (APPLY) totals.shotsStored++;
-        imported.push({ url: ref, alt: `${doc.title ?? ""} screenshot ${i + 1}` });
-      }
+        return { url: ref, alt: `${doc.title ?? ""} screenshot ${i + 1}` };
+      });
+      // Order follows the store page, not whichever upload finished first.
+      const imported = results.filter(Boolean);
       if (imported.length) {
         patch.galleryImages = imported;
         filledNames.push(`galleryImages(${imported.length})`);
