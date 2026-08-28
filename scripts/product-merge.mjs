@@ -158,6 +158,9 @@ async function referencingColumns() {
 const REFS = await step("discover product-id columns", referencingColumns);
 
 /** Tables whose JSON body can name a product without a column saying so. */
+/** Tables a reference count could not be read from. Never treated as empty. */
+const UNREADABLE = [];
+
 const DOC_ALIAS = "body";
 const DOC_TABLES = [
   { table: "orders", column: "doc" },
@@ -190,8 +193,15 @@ async function countRefsFor(ids) {
         const pid = String(r?.pid ?? "");
         if (n && byId.has(pid)) byId.get(pid).push({ table, column, n });
       }
-    } catch {
-      /* a table the deployment does not have */
+    } catch (err) {
+      /*
+        A table that could not be read is NOT a table with no references. This
+        used to be swallowed, which would let a query failure look identical to
+        "nothing points here" — and the whole point of counting is to know that
+        before retiring a product. Every failure is recorded and reported, and
+        the merge refuses to retire anything while one is outstanding.
+      */
+      UNREADABLE.push({ table, column, why: String(err?.message ?? err).slice(0, 120) });
     }
   }
   /*
@@ -216,8 +226,8 @@ async function countRefsFor(ids) {
         const n = rows.filter((r) => String(r?.[DOC_ALIAS] ?? "").includes(id)).length;
         if (n) byId.get(id).push({ table, column: `${column} (json)`, n });
       }
-    } catch {
-      /* a table the deployment does not have */
+    } catch (err) {
+      UNREADABLE.push({ table, column, why: String(err?.message ?? err).slice(0, 120) });
     }
   }
   return byId;
@@ -286,6 +296,18 @@ const everyId = [
 const refsById = everyId.length
   ? await step("count every reference", () => countRefsFor(everyId))
   : new Map();
+if (UNREADABLE.length) {
+  say(`### Tables that could not be read (**${UNREADABLE.length}**)`);
+  say();
+  say(`| table.column | why |`);
+  say(`| --- | --- |`);
+  for (const u of UNREADABLE) say(`| \`${u.table}.${u.column}\` | ${u.why} |`);
+  say();
+  say(
+    "A table that cannot be read is not a table with no references. Nothing is retired while any of these is outstanding.",
+  );
+  say();
+}
 say(`- products resolved and counted in one sweep: **${everyId.length}**`);
 say();
 
@@ -494,6 +516,17 @@ for (const pair of PAIRS) {
   }
 
   /* ------------------------------------------------------------ retirement */
+
+  if (UNREADABLE.length) {
+    say(
+      `- **not retiring the duplicate — ${UNREADABLE.length} table(s) could not be read**: ${UNREADABLE.map((u) => `\`${u.table}.${u.column}\` (${u.why})`).join("; ")}`,
+    );
+    say(`- the fields and relations above are merged; the duplicate stays as it is.`);
+    say();
+    results.push({ pair, status: "UNREADABLE_TABLES" });
+    process.exitCode = 1;
+    continue;
+  }
 
   const leftover = await countRefs(String(duplicate.id));
   const stillCustomer = customerWeight(leftover);
