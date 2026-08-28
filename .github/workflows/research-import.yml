@@ -1,0 +1,85 @@
+# TEMPORARY — re-source screenshots and researched fields from each game's own
+# Nintendo store page.
+#
+# Dry run by default. With apply, the only D1 statement it can write is a single
+# INSERT against one product's overlay row by immutable id, and it writes that
+# only after every screenshot it references has been stored in R2 and read back.
+# A field already answered in production is never overwritten.
+name: Research and gallery import
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the changes (leave unchecked for a dry run)"
+        type: boolean
+        default: false
+      offset:
+        description: "Skip this many games (they are ordered by id)"
+        default: "0"
+      limit:
+        description: "How many games this run covers"
+        default: "25"
+      products:
+        description: "Optional comma-separated product ids (overrides offset/limit)"
+        default: ""
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/research-import.yml
+      - scripts/research-import.mjs
+      - scripts/lib/nintendo-store.mjs
+      - scripts/lib/r2-store.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: research-import
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+      - name: Research and import
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          APPLY: ${{ inputs.apply }}
+          OFFSET: ${{ inputs.offset }}
+          LIMIT: ${{ inputs.limit }}
+          PRODUCTS: ${{ inputs.products }}
+        run: |
+          args="--offset=${OFFSET:-0} --limit=${LIMIT:-25}"
+          [ "$APPLY" = "true" ] && args="$args --apply"
+          [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          node scripts/research-import.mjs $args
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-import-${{ inputs.offset || '0' }}
+          path: research-import.md
+          if-no-files-found: warn
+      # Every pre-change document, so the state before this run survives it.
+      - name: Upload the pre-change documents
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-import-before-${{ inputs.offset || '0' }}
+          path: research-import/*.json
+          if-no-files-found: ignore
+          retention-days: 90

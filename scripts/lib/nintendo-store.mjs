@@ -1,0 +1,398 @@
+/**
+ * Reads a Nintendo of America store page and returns the one product it is about.
+ *
+ * The page ships its entire GraphQL cache in `__NEXT_DATA__`, so nothing here
+ * scrapes markup. The cache holds dozens of products — the page's own, plus
+ * every cross-sell and best-seller carousel — which is why the product is
+ * selected by `urlKey`/nsuid and never by "the first Product node". Picking the
+ * wrong node would attach another game's screenshots to this one.
+ */
+
+const UA =
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
+
+export const NINTENDO_ASSET_BASE = "https://assets.nintendo.com/image/upload";
+
+/** Trademark symbols and punctuation Nintendo drops from its own url keys. */
+export function slugifyTitle(title) {
+  return (
+    String(title ?? "")
+      // Before NFKD, which decomposes ™ into the letters "TM".
+      .replace(/[™®©]/g, "")
+      .normalize("NFKD")
+      .replace(/['’]/g, "")
+      .replace(/&/g, " and ")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase()
+  );
+}
+
+/** Comparable form of a title: no marks, no spacing, no edition noise. */
+export function normalizeTitle(title) {
+  return String(title ?? "")
+    .replace(/[™®©]/g, "")
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+export async function fetchText(url, { timeoutMs = 30_000, retries = 2 } = {}) {
+  let lastErr = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        headers: { "user-agent": UA, accept: "text/html,application/xhtml+xml" },
+        signal: ctl.signal,
+      });
+      if (res.status === 404) return { status: 404, body: null };
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return { status: res.status, body: await res.text() };
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  return { status: 0, body: null, error: String(lastErr?.message ?? lastErr) };
+}
+
+export async function fetchBinary(url, { timeoutMs = 45_000, retries = 2 } = {}) {
+  let lastErr = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { headers: { "user-agent": UA }, signal: ctl.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (!buf.length) throw new Error("empty body");
+      return { ok: true, buffer: buf, contentType: res.headers.get("content-type") ?? "" };
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  return { ok: false, error: String(lastErr?.message ?? lastErr) };
+}
+
+function nextData(html) {
+  const m = html.match(
+    /<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/,
+  );
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+/** Follows Apollo `__ref` pointers so a caller sees values, not cache keys. */
+export function deref(state, node, depth = 0) {
+  if (depth > 6 || node == null) return node;
+  if (Array.isArray(node)) return node.map((n) => deref(state, n, depth + 1));
+  if (typeof node !== "object") return node;
+  if (typeof node.__ref === "string") return deref(state, state[node.__ref], depth + 1);
+  const out = {};
+  for (const [k, v] of Object.entries(node)) out[k] = deref(state, v, depth + 1);
+  return out;
+}
+
+/**
+ * @returns {null | {product: object, state: object, urlKey: string}}
+ *   `product` is the page's own product with refs resolved one level deep.
+ */
+export function parseStorePage(html, { urlKey } = {}) {
+  const data = nextData(html);
+  const state = data?.props?.pageProps?.initialApolloState;
+  if (!state) return null;
+
+  const products = Object.entries(state).filter(
+    ([k, v]) => k.startsWith("Product:") && v && typeof v === "object",
+  );
+  if (!products.length) return null;
+
+  const wantKey = String(urlKey ?? data?.query?.slug ?? "").replace(/^\/|\/$/g, "");
+  let hit = products.find(([, v]) => String(v.urlKey ?? "") === wantKey);
+  if (!hit) {
+    // The canonical url is authoritative when the url key was redirected.
+    const canonical = data?.props?.pageProps?.linkedData?.[0]?.offers?.url ?? "";
+    const fromCanonical = canonical.match(/\/store\/products\/([^/]+)\//)?.[1];
+    if (fromCanonical) hit = products.find(([, v]) => String(v.urlKey ?? "") === fromCanonical);
+  }
+  if (!hit) return null;
+
+  return { product: deref(state, hit[1], 0), state, urlKey: String(hit[1].urlKey ?? "") };
+}
+
+const cloudinary = (publicId, transform = "f_auto,q_auto") =>
+  `${NINTENDO_ASSET_BASE}/${transform}/${String(publicId).replace(/^\/+/, "")}`;
+
+/**
+ * Screenshots only.
+ *
+ * `productGallery` interleaves trailer videos with screenshots, and the first
+ * image is usually the same asset as `productImage` — the box art. Neither
+ * belongs in a screenshot gallery, so both are dropped, and the cover is
+ * returned separately for the roles that want it.
+ */
+export function galleryFrom(product) {
+  const gallery = Array.isArray(product?.productGallery) ? product.productGallery : [];
+  const coverId = String(product?.productImage?.publicId ?? "").replace(/^\/+/, "");
+  const seen = new Set();
+  const shots = [];
+  for (const asset of gallery) {
+    if (!asset || asset.resourceType !== "image") continue;
+    const publicId = String(asset.publicId ?? "").replace(/^\/+/, "");
+    if (!publicId || /\/Video\//i.test(publicId)) continue;
+    if (publicId === coverId) continue;
+    if (seen.has(publicId)) continue;
+    seen.add(publicId);
+    shots.push({ publicId, url: cloudinary(publicId) });
+  }
+  return shots;
+}
+
+export function coverFrom(product) {
+  const publicId = String(product?.productImage?.publicId ?? "").replace(/^\/+/, "");
+  const direct = String(product?.productImage?.url ?? "");
+  return publicId ? cloudinary(publicId) : direct || null;
+}
+
+export function squareFrom(product) {
+  const square = product?.['productImage({"shape":"square"})'];
+  const url = String(square?.url ?? "");
+  return url || null;
+}
+
+const PLATFORM_2 = /switch\s*2|nintendo_switch_2/i;
+const isSwitch2 = (text) => PLATFORM_2.test(String(text ?? ""));
+
+const bytesToGb = (n) => Math.round((Number(n) / 1024 ** 3) * 100) / 100;
+
+/** Only what the page states outright. Nothing is inferred or averaged. */
+export function metadataFrom(product) {
+  const out = {};
+  const put = (k, v) => {
+    if (v === null || v === undefined) return;
+    if (typeof v === "string" && !v.trim()) return;
+    if (Array.isArray(v) && !v.length) return;
+    out[k] = v;
+  };
+
+  put("nsuid", product.nsuid);
+  put("product_code", product.productCode);
+  put("title_id", product.applicationId);
+  put("publisher", product.softwarePublisher);
+  put("developer", product.softwareDeveloper);
+  put("edition", product.edition);
+  put("tagline", product.headline);
+  put("officialUrl", product.officialSite);
+  put("nintendoEshopUrl", product.seo?.canonicalUrl);
+
+  if (product.releaseDate) put("releaseDate", String(product.releaseDate).slice(0, 10));
+
+  const genres = (product.tags?.genres ?? []).map((g) => g?.label).filter(Boolean);
+  put("genres", genres);
+
+  const rating = product.contentRating?.label ?? product.contentRating?.code;
+  if (rating) put("ageRating", String(rating));
+
+  const langs = Array.isArray(product.supportedLanguages) ? product.supportedLanguages : [];
+  put("supportedLanguages", langs);
+  if (langs.length) put("arabicSupport", langs.some((l) => /arabic/i.test(String(l))));
+
+  const sys = product.numberOfPlayers?.system;
+  if (sys && (sys.min || sys.max)) {
+    const min = Number(sys.min ?? 1);
+    const max = Number(sys.max ?? min);
+    put("numberOfPlayers", max > min ? `${min}-${max}` : String(min));
+  }
+
+  const modes = (product.playModes ?? []).map((m) => String(m?.code ?? ""));
+  if (modes.length) {
+    put("nintendoPlayModes", (product.playModes ?? []).map((m) => m?.label).filter(Boolean));
+    put("tvMode", modes.includes("TV_MODE"));
+    put("tabletopMode", modes.includes("TABLETOP_MODE"));
+    put("handheldMode", modes.includes("HANDHELD_MODE"));
+  }
+
+  const nso = (product.nsoFeatures ?? []).map((f) => String(f?.code ?? ""));
+  if (product.nsoFeatures) put("nintendoCloudSaves", nso.includes("SAVE_DATA_CLOUD"));
+
+  /*
+    A cross-generation title carries a rom size for each console: HAC is the
+    Nintendo Switch build, BEE the Nintendo Switch 2 build, and they differ —
+    Metroid Prime 4 is 26.35 GB on one and 27.66 GB on the other. Taking the
+    first row would put the wrong download size on one of the two editions.
+  */
+  const wantRom = isSwitch2(product.platform?.code ?? product.platform?.label ?? "") ? "BEE" : "HAC";
+  const romSizes = product.softwareDetails?.romSizes ?? [];
+  const rom =
+    romSizes.find((r) => r?.totalRomSize && r.platform === wantRom) ??
+    romSizes.find((r) => r?.totalRomSize);
+  if (rom) {
+    const gb = bytesToGb(rom.totalRomSize);
+    put("size", `${gb} GB`);
+    put("downloadSizeGb", gb);
+    put("requiredSpaceGb", gb);
+    put("microSdRecommended", gb >= 8);
+  }
+
+  /*
+    `compatibility` in our schema is a list of compatible devices, not prose, so
+    Nintendo's caption — "Supported – Game behavior is consistent with Nintendo
+    Switch." — belongs in the Nintendo notes instead of overwriting a device list.
+  */
+  const compat = product.compatibility?.caption;
+  if (compat) put("nintendoNotes", String(compat));
+
+  const dlc = (product.downloadableContents ?? [])
+    .map((d) => ({ name: d?.name, description: d?.description ?? "" }))
+    .filter((d) => d.name);
+  put("dlc", dlc);
+
+  const editions = (product.variations ?? [])
+    .map((v) => ({ name: v?.label }))
+    .filter((e) => e.name);
+  put("editionsList", editions);
+
+  return out;
+}
+
+/* --------------------------------------------------- identity and resolution */
+
+/** Edition wording differs between our titles and Nintendo's; compare the game. */
+const bareTitle = (title) =>
+  normalizeTitle(
+    String(title ?? "")
+      .replace(/[-–—:]\s*nintendo\s*switch\s*2\s*edition.*$/i, "")
+      .replace(/\bnintendo\s*switch\s*2\s*edition\b/gi, "")
+      .replace(/\b(standard|deluxe|digital|physical|complete|definitive|gold|ultimate)\s+edition\b/gi, "")
+      .replace(/\bswitch\s*2\b/gi, "")
+      .replace(/\bnintendo\s*switch\b/gi, ""),
+  );
+
+/* --------------------------------------------------------------- resolution */
+
+/** Url keys Nintendo might be using for this title, most likely first. */
+export function candidateKeys(doc) {
+  const stored = [doc.nintendoEshopUrl, doc.eshopUrl, doc.officialUrl]
+    .map((u) => String(u ?? "").match(/nintendo\.com\/[^\s"']*\/store\/products\/([^/?#]+)/i)?.[1])
+    .filter(Boolean);
+
+  const base = slugifyTitle(
+    String(doc.title ?? doc.name ?? "")
+      .replace(/[-–—:]\s*nintendo\s*switch\s*2\s*edition.*$/i, " nintendo switch 2 edition")
+      .replace(/\bnintendo\s*switch\s*2\b/gi, "")
+      .replace(/\bnintendo\s*switch\b/gi, ""),
+  );
+  const two = isSwitch2(`${doc.platform ?? ""} ${doc.title ?? ""} ${doc.slug ?? ""}`);
+  const guesses = two
+    ? [`${base}-switch-2`, `${base}-nintendo-switch-2-edition-switch-2`, `${base}-switch`]
+    : [`${base}-switch`, `${base}-switch-2`];
+
+  const fromSlug = String(doc.slug ?? "").replace(/-switch(-2)?$/, "");
+  if (fromSlug && fromSlug !== base) {
+    guesses.push(two ? `${fromSlug}-switch-2` : `${fromSlug}-switch`);
+    if (two) guesses.push(`${fromSlug}-nintendo-switch-2-edition-switch-2`);
+  }
+  return [...new Set([...stored, ...guesses])].filter(Boolean);
+}
+
+export function apolloProducts(html) {
+  const m = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+  if (!m) return { nodes: [], state: null };
+  let data;
+  try {
+    data = JSON.parse(m[1]);
+  } catch {
+    return { nodes: [], state: null };
+  }
+  const state = data?.props?.pageProps?.initialApolloState;
+  if (!state) return { nodes: [], state: null };
+  const nodes = Object.entries(state)
+    .filter(([k, v]) => k.startsWith("Product:") && v && typeof v === "object")
+    .map(([, v]) => v);
+  return { nodes, state };
+}
+
+
+/**
+ * Scores a candidate node against the stored product.
+ *
+ * `nsuid` is definitive when we hold one. Without it both the title and the
+ * platform generation have to agree — a Switch 2 product filled from the
+ * Switch 1 page would take the wrong screenshots and the wrong download size,
+ * and the two are genuinely separate editions in this catalogue.
+ */
+export function identityMatch(doc, node) {
+  const storedNsuid = String(doc.nsuid ?? "").trim();
+  const nodeNsuid = String(node.nsuid ?? "").trim();
+  if (storedNsuid && nodeNsuid) {
+    return storedNsuid === nodeNsuid
+      ? { ok: true, confidence: "nsuid", reason: "nsuid matches" }
+      : { ok: false, reason: `nsuid ${storedNsuid} vs page ${nodeNsuid}` };
+  }
+
+  const want = bareTitle(doc.title ?? doc.name);
+  const got = bareTitle(node.name);
+  if (!want || !got) return { ok: false, reason: "no comparable title" };
+  const titleOk = want === got || want.includes(got) || got.includes(want);
+  if (!titleOk) return { ok: false, reason: `title "${node.name}" is not "${doc.title}"` };
+
+  const wantTwo = isSwitch2(`${doc.platform ?? ""} ${doc.title ?? ""} ${doc.slug ?? ""}`);
+  const gotTwo = isSwitch2(`${node.platform?.label ?? node.platform?.code ?? ""} ${node.name ?? ""}`);
+  if (wantTwo !== gotTwo) {
+    return { ok: false, reason: `platform generation differs (stored ${wantTwo ? "Switch 2" : "Switch"}, page ${gotTwo ? "Switch 2" : "Switch"})` };
+  }
+  return { ok: true, confidence: "title+platform", reason: "title and platform agree" };
+}
+
+const STORE = "https://www.nintendo.com/us/store/products";
+
+/**
+ * Finds the game's own store page.
+ *
+ * A page carries its whole product family in the GraphQL cache, but only the
+ * page's own node is hydrated — siblings arrive with an empty gallery. So a
+ * sibling match is not used directly: its url key is followed and that page is
+ * fetched instead. This is what makes a Switch 2 Edition resolvable from the
+ * Switch 1 url key.
+ */
+export async function resolveProduct(doc, seen = new Set()) {
+  const tried = [];
+  for (const key of candidateKeys(doc)) {
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const url = `${STORE}/${key}/`;
+    const { status, body } = await fetchText(url);
+    tried.push(`${key} → ${status}`);
+    if (!body) continue;
+
+    const { nodes, state } = apolloProducts(body);
+    const own = nodes.find((n) => String(n.urlKey ?? "") === key);
+    if (own) {
+      const verdict = identityMatch(doc, own);
+      if (verdict.ok) {
+        return { product: deref(state, own), url, key, verdict, tried };
+      }
+      // The right edition may be a sibling on this page; follow its url key.
+      const sibling = nodes.find(
+        (n) => n.urlKey && n.urlKey !== key && identityMatch(doc, n).ok && !seen.has(String(n.urlKey)),
+      );
+      if (sibling) {
+        const hop = await resolveProduct({ ...doc, slug: "", nintendoEshopUrl: `${STORE}/${sibling.urlKey}/`, eshopUrl: "", officialUrl: "" }, seen);
+        if (hop.product) return { ...hop, tried: [...tried, ...hop.tried] };
+        tried.push(...hop.tried);
+      }
+    }
+  }
+  return { product: null, tried };
+}
