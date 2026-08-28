@@ -11,7 +11,7 @@ import {
   syncGameDevicePerformance,
 } from "@/lib/devicePerformance.server";
 import { validateGameDevicePerformance } from "@/lib/devicePerformance";
-import { hardDeleteProductRelations, releaseProductIdentity } from "@/lib/product-identity.server";
+import { releaseProductIdentity } from "@/lib/product-identity.server";
 import { resolveCategoryType } from "@/lib/productSection";
 
 import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";

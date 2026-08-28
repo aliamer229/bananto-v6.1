@@ -134,6 +134,28 @@ describe("verification covers every representation a product lives in", () => {
   });
 });
 
+describe("the tombstone outlives the relation cleanup", () => {
+  it("relation cleanup does not delete the granular store_kv row", () => {
+    /*
+      `store:product:<id>` is not a relation — it is the tombstone, and while it
+      exists every read removes the product from the aggregate. Deleting it in
+      the relation cleanup was safe only while the delete also rewrote the
+      aggregate first; once it stopped doing that, this line put the product
+      straight back and the post-delete check reported `aggregate:id`.
+    */
+    const cleanup = IDENTITY.slice(
+      IDENTITY.indexOf("export async function hardDeleteProductRelations"),
+    ).slice(0, 2000);
+    expect(cleanup).not.toMatch(/DELETE FROM store_kv/);
+  });
+
+  it("the delete flow keeps the tombstone until compaction", () => {
+    // Nothing between writing it and returning may remove it.
+    const afterTombstone = OWNER.slice(OWNER.indexOf("await writeTombstone(id)"));
+    expect(afterTombstone).not.toMatch(/DELETE FROM store_kv WHERE key = \?/);
+  });
+});
+
 describe("history survives a delete", () => {
   it("clears catalogue rows but never reviews, orders or wallet history", () => {
     const deletes = [...IDENTITY.matchAll(/DELETE FROM (\w+)/g)].map((m) => m[1]);

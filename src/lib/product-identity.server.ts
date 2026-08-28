@@ -145,7 +145,18 @@ export async function hardDeleteProductRelations(productId: string): Promise<voi
       d1Run(`DELETE FROM game_aliases WHERE game_id = ?`, productId),
       d1Run(`DELETE FROM game_price_history WHERE game_id = ?`, productId),
       d1Run(`DELETE FROM game_import_logs WHERE game_id = ?`, productId),
-      d1Run(`DELETE FROM store_kv WHERE key = ?`, `store:product:${productId}`),
+      /*
+        `store:product:<id>` is deliberately NOT deleted here.
+
+        That row is not a relation — it is the delete's tombstone, and while it
+        exists `loadStore` uses it to remove the product from the aggregate on
+        every read. This function used to drop it, which was safe only while the
+        delete also rewrote the aggregate to remove the product first. It no
+        longer does, so deleting the tombstone here put the product straight
+        back and the post-delete check reported `aggregate:id`. Its lifetime
+        belongs to the delete flow, which keeps it until the next full aggregate
+        write compacts it away.
+      */
     ]);
   } catch (err) {
     console.warn("[product-relations:hard_delete_failed]", { productId }, err);
