@@ -3,7 +3,10 @@ import {
   ARABIC_WARNING,
   VERDICTS,
   classify,
+  comparableTitle,
+  hkIndexFrom,
   iCode,
+  matchHk,
   matchJp,
   platformOfHard,
 } from "./lib/region-language.mjs";
@@ -113,5 +116,40 @@ describe("classify", () => {
 
   it("reports nothing known as nothing known", () => {
     expect(classify({ jpLanguages: null, hkLanguages: null }).verdict).toBe(VERDICTS.RESEARCH);
+  });
+});
+
+describe("comparableTitle", () => {
+  it("ignores the decoration two storefronts add differently", () => {
+    expect(comparableTitle("DARK SOULS™: Remastered")).toBe(comparableTitle("Dark Souls: Remastered"));
+    expect(comparableTitle("PSYVARIAR DELTA《閃速神機》")).toBe(comparableTitle("PSYVARIAR DELTA 閃速神機"));
+  });
+
+  it("keeps Chinese and Japanese characters, which are the title in Asia", () => {
+    expect(comparableTitle("薩爾達傳說 曠野之息")).toBe("薩爾達傳說曠野之息");
+  });
+});
+
+describe("matchHk", () => {
+  const index = hkIndexFrom({
+    titles: [
+      { nsuid: "1", storeName: "DARK SOULS™: Remastered", catalogueTitle: "黑暗靈魂", languages: ["ja", "en"] },
+      { nsuid: "2", storeName: "No Languages", catalogueTitle: "", languages: [] },
+    ],
+  });
+
+  it("finds a game under either name the storefront uses", () => {
+    expect(matchHk(index, ["Dark Souls: Remastered"]).row?.nsuid).toBe("1");
+    expect(matchHk(index, ["黑暗靈魂"]).row?.nsuid).toBe("1");
+  });
+
+  it("does not index a title whose language list is empty", () => {
+    expect(matchHk(index, ["No Languages"]).row).toBe(null);
+  });
+
+  it("reports a near-miss as no match rather than attaching the wrong game", () => {
+    const got = matchHk(index, ["Dark Souls"]);
+    expect(got.row).toBe(null);
+    expect(got.why).toMatch(/not in Nintendo Hong Kong/);
   });
 });

@@ -19,20 +19,20 @@
  */
 
 import { build } from "esbuild";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
   ARABIC_WARNING,
   VERDICTS,
   classify,
-  fetchHkCatalogue,
-  fetchHkTitle,
   fetchJpRows,
+  hkIndexFrom,
   iCode,
+  matchHk,
   matchJp,
 } from "./lib/region-language.mjs";
-import { metadataFrom, normalizeTitle, resolveProduct } from "./lib/nintendo-store.mjs";
+import { metadataFrom, resolveProduct } from "./lib/nintendo-store.mjs";
 
 const flag = (name, fallback) =>
   (process.argv.find((a) => a.startsWith(`--${name}=`)) ?? `--${name}=${fallback}`).split("=")[1];
@@ -177,38 +177,29 @@ say(`- Japanese catalogue rows fetched for ${codes.length} product code(s): **${
 
 /* ----------------------------------------------------------- Hong Kong */
 
-const hkCatalogue = await fetchHkCatalogue();
-say(`- Hong Kong catalogue entries with an eShop id: **${hkCatalogue.length}**`);
+/*
+  Hong Kong publishes no product code, so the join is the name — and reading a
+  few hundred storefront pages is not something an audit should do on every run.
+  `scripts/build-hong-kong-index.mjs` reads them once into this file, which is
+  also where a title whose Chinese name no comparison would match can be
+  corrected by hand.
+*/
+const HK_INDEX_FILE = flag("hk-index", "data/nintendo-hong-kong-languages.json");
+let hkJson = null;
+try {
+  hkJson = JSON.parse(readFileSync(HK_INDEX_FILE, "utf8"));
+} catch (err) {
+  throw new Error(
+    `${HK_INDEX_FILE} is missing or unreadable (${String(err?.message ?? err)}) — run scripts/build-hong-kong-index.mjs first`,
+  );
+}
+const hkIndex = hkIndexFrom(hkJson);
+say(`- Hong Kong index built ${hkJson.builtAt}: **${hkJson.withLanguages}** of ${hkJson.count} storefront titles carry a language list`);
 say();
-
-const hkByTitle = new Map();
-for (const entry of hkCatalogue) {
-  const key = normalizeTitle(entry.title);
-  if (key && !hkByTitle.has(key)) hkByTitle.set(key, entry);
-}
-const hkCache = new Map();
-
-/**
- * The Hong Kong SKU for a game, matched on title.
- *
- * Hong Kong publishes no product code, so the title is the only join there is.
- * It is compared normalised and in full — a containment test once wrote one
- * game's data onto another here, and a near-miss is reported as no match.
- */
-async function hongKongFor(identity, jpTitle) {
-  for (const candidate of [identity.titleEn, identity.title, jpTitle]) {
-    const key = normalizeTitle(candidate ?? "");
-    if (!key || !hkByTitle.has(key)) continue;
-    const entry = hkByTitle.get(key);
-    if (!hkCache.has(entry.nsuid)) hkCache.set(entry.nsuid, await fetchHkTitle(entry.nsuid));
-    const page = hkCache.get(entry.nsuid);
-    if (!page?.ok || !page.languages?.length) {
-      return { entry, languages: null, why: `HK page unreadable (HTTP ${page?.status ?? "?"})` };
-    }
-    return { entry, languages: page.languages, why: `matched on "${candidate}"` };
-  }
-  return { entry: null, languages: null, why: "not in Nintendo Hong Kong's published catalogue" };
-}
+say(
+  "Nintendo Hong Kong publishes the titles it distributes, which is narrower than everything the Hong Kong eShop sells. A game absent from that list is reported as needing research, not as having no English.",
+);
+say();
 
 /* ------------------------------------------------------------- the verdicts */
 
@@ -217,8 +208,8 @@ for (const identity of identities) {
   const jp = identity.code
     ? matchJp(jpRows, identity)
     : { row: null, reason: "no product code — the Nintendo SKU was not established" };
-  const hk = await hongKongFor(identity, jp.row?.title);
-  const verdict = classify({ jpLanguages: jp.row?.languages ?? null, hkLanguages: hk.languages });
+  const hk = matchHk(hkIndex, [identity.titleEn, identity.title, jp.row?.title]);
+  const verdict = classify({ jpLanguages: jp.row?.languages ?? null, hkLanguages: hk.row?.languages ?? null });
   results.push({ identity, jp, hk, ...verdict });
 }
 
@@ -228,9 +219,9 @@ say(`| game | platform | code | Japan SKU | Japan languages | Hong Kong SKU | Ho
 say(`| --- | --- | --- | --- | --- | --- | --- | --- |`);
 for (const r of results) {
   const jpLangs = r.jp.row?.languages?.join(", ") ?? `— ${r.jp.reason}`;
-  const hkLangs = r.hk.languages?.join(", ") ?? `— ${r.hk.why}`;
+  const hkLangs = r.hk.row?.languages?.join(", ") ?? `— ${r.hk.why}`;
   say(
-    `| \`${r.identity.slug}\` | ${r.identity.platform} | ${r.identity.code || "—"} | ${r.jp.row?.title ?? "—"} | ${jpLangs} | ${r.hk.entry?.title ?? "—"} | ${hkLangs} | **${r.verdict}** |`,
+    `| \`${r.identity.slug}\` | ${r.identity.platform} | ${r.identity.code || "—"} | ${r.jp.row?.title ?? "—"} | ${jpLangs} | ${r.hk.row?.storeName || r.hk.row?.catalogueTitle || "—"} | ${hkLangs} | **${r.verdict}** |`,
   );
 }
 say();
@@ -256,7 +247,7 @@ for (const key of [VERDICTS.UNLOCKED, VERDICTS.VARIANT, VERDICTS.LOCKED, VERDICT
 }
 say();
 say(`- Japanese SKU established: **${results.filter((r) => r.jp.row).length}** of ${results.length}`);
-say(`- Hong Kong SKU established: **${results.filter((r) => r.hk.languages).length}** of ${results.length}`);
+say(`- Hong Kong SKU established: **${results.filter((r) => r.hk.row).length}** of ${results.length}`);
 say();
 
 writeFileSync(OUT, lines.join("\n") + "\n");

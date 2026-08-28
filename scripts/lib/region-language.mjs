@@ -186,6 +186,56 @@ export async function fetchHkTitle(nsuid) {
   return { ok: true, status: res.status, nsuid, languages, formalName };
 }
 
+/**
+ * A title reduced to what two storefronts can be expected to agree on.
+ *
+ * Hong Kong keeps the Latin name for a great many third-party releases and
+ * writes a Chinese one for the rest, so the comparison strips the decoration
+ * both sides add — trademark marks, the Chinese book-title brackets, edition
+ * words in parentheses — and then demands the whole remainder match. A
+ * containment test once wrote one game's data onto another in this codebase;
+ * near-misses are reported as no match instead.
+ */
+export function comparableTitle(text) {
+  return String(text ?? "")
+    .replace(/[™®©]/g, "")
+    .replace(/[《》「」『』【】（）()［］\[\]]/g, " ")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\u3040-\u30ff\u4e00-\u9fff]+/g, "");
+}
+
+/**
+ * Loads the Hong Kong index built by `scripts/build-hong-kong-index.mjs`.
+ *
+ * Reading a few hundred storefront pages is not something an audit should do on
+ * every run, and the file is also the place a person can correct a title whose
+ * Chinese name no comparison would ever match.
+ */
+export function hkIndexFrom(json) {
+  const byName = new Map();
+  for (const row of json?.titles ?? []) {
+    if (!row?.languages?.length) continue;
+    for (const name of [row.storeName, row.catalogueTitle]) {
+      const key = comparableTitle(name);
+      if (key && !byName.has(key)) byName.set(key, row);
+    }
+  }
+  return byName;
+}
+
+/** The Hong Kong SKU for a game, or none — never a near-miss. */
+export function matchHk(index, candidates) {
+  for (const candidate of candidates) {
+    const key = comparableTitle(candidate ?? "");
+    if (key && index.has(key)) {
+      return { row: index.get(key), why: `matched on "${candidate}"` };
+    }
+  }
+  return { row: null, why: "not in Nintendo Hong Kong's published catalogue" };
+}
+
 /* ---------------------------------------------------------- the verdict */
 
 /** Languages an Arabic-speaking customer in Iraq can actually play in. */
