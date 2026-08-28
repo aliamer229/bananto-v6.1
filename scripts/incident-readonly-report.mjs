@@ -627,6 +627,44 @@ for (const id of sample) {
   say(`- Image fields **present**: ${present.length ? present.map(([k, v]) => `\`${k}\`(${v})`).join(", ") : "_none_"}`);
   say(`- Image fields **empty**: ${absent.join(", ")}`);
   say(`- Distinct asset URLs anywhere in the document: **${p.assetUrls.size}**`);
+  /*
+    Counting populated fields is not enough. A product can have every role
+    filled and still be wrong, if the roles all point at the same asset — which
+    is precisely the failure being investigated. So print what each field
+    actually holds.
+  */
+  const relKeys = new Set((relationUrls.get(id) ?? []).map((r) => assetKey(r.url)));
+  const short = (u) => {
+    const k = assetKey(String(u));
+    return k.length > 58 ? "…" + k.slice(-56) : k;
+  };
+  const fieldRows = [];
+  for (const field of IMAGE_FIELDS) {
+    if (!entry.doc[field]) continue;
+    fieldRows.push({
+      field,
+      value: short(entry.doc[field]),
+      in_game_images: relKeys.has(assetKey(String(entry.doc[field]))) ? "yes" : "NO",
+    });
+  }
+  for (const field of IMAGE_ARRAY_FIELDS) {
+    const arr = Array.isArray(entry.doc[field]) ? entry.doc[field] : [];
+    arr.forEach((value, i) => {
+      if (typeof value !== "string" || !value.trim()) return;
+      fieldRows.push({
+        field: `${field}[${i}]`,
+        value: short(value),
+        in_game_images: relKeys.has(assetKey(value)) ? "yes" : "NO",
+      });
+    });
+  }
+  say();
+  say("What each image field actually points at:");
+  say();
+  for (const line of table(fieldRows, ["field", "value", "in_game_images"])) say(line);
+  const distinctValues = new Set(fieldRows.map((r) => r.value));
+  say();
+  say(`- ${fieldRows.length} populated image slots resolve to **${distinctValues.size} distinct assets**${distinctValues.size < fieldRows.length ? " — roles are sharing assets" : ""}`);
   const rel = relationUrls.get(id) ?? [];
   const missingRoles = rel.filter((r) => !p.assetKeys.has(assetKey(r.url)));
   say(`- \`game_images\` rows the document does **not** reference: **${missingRoles.length}** of ${rel.length}${missingRoles.length ? " — roles: " + missingRoles.map((r) => r.kind).join(", ") : ""}`);
