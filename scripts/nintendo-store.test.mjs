@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   candidateKeys,
+  familyFacts,
   galleryFrom,
   identityMatch,
   metadataFrom,
@@ -281,5 +282,45 @@ describe("metadataFrom", () => {
   it("gives a single-player game a plain player count", () => {
     const md = metadataFrom({ numberOfPlayers: { system: { min: 1, max: 1 } } });
     expect(md.numberOfPlayers).toBe("1");
+  });
+});
+
+describe("familyFacts", () => {
+  const product = { name: "Metroid Prime™ 4: Beyond – Nintendo Switch™ 2 Edition" };
+
+  it("reads the upgrade price off the upgrade pack's own listing", () => {
+    const facts = familyFacts(product, [
+      {
+        name: "Metroid Prime™ 4: Beyond – Nintendo Switch™ 2 Edition Upgrade Pack",
+        'prices({"personalized":false})': { regularPrice: 9.99, finalPrice: 9.99 },
+      },
+    ]);
+    expect(facts.switch2UpgradePrice).toBe(9.99);
+    expect(facts.switch2Enhanced).toBe(true);
+    expect(facts.switch2Exclusive).toBe(false);
+  });
+
+  it("does not call a game exclusive just because no upgrade pack is listed", () => {
+    const facts = familyFacts({ name: "Donkey Kong™ Bananza" }, [{ name: "Donkey Kong™ Bananza - Digital Deluxe" }]);
+    expect("switch2Exclusive" in facts).toBe(false);
+    expect("switch2Enhanced" in facts).toBe(false);
+    expect("switch2UpgradePrice" in facts).toBe(false);
+  });
+
+  it("takes a Switch 2 Edition as enhanced even with no upgrade pack on the page", () => {
+    const facts = familyFacts(product, []);
+    expect(facts.switch2Enhanced).toBe(true);
+    expect(facts.switch2Exclusive).toBe(false);
+    expect("switch2UpgradePrice" in facts).toBe(false);
+  });
+
+  it("ignores an upgrade pack belonging to a different game", () => {
+    const facts = familyFacts({ name: "Pikmin™ 4" }, [
+      {
+        name: "Metroid Prime™ 4: Beyond – Nintendo Switch™ 2 Edition Upgrade Pack",
+        'prices({"personalized":false})': { finalPrice: 9.99 },
+      },
+    ]);
+    expect(facts).toEqual({});
   });
 });

@@ -36,6 +36,7 @@ import {
   coverFrom,
   squareFrom,
   metadataFrom,
+  familyFacts,
   resolveProduct,
 } from "./lib/nintendo-store.mjs";
 import { createR2 } from "./lib/r2-store.mjs";
@@ -282,6 +283,7 @@ const RESEARCH_FIELDS = [
   "nintendoPlayModes", "tvMode", "tabletopMode", "handheldMode",
   "nintendoCloudSaves", "nsuid", "product_code", "title_id", "nintendoEshopUrl", "officialUrl",
   "edition", "tagline", "dlc", "editionsList", "nintendoNotes", "arabicSupport",
+  "switch2UpgradePrice", "switch2Enhanced", "switch2Exclusive",
 ];
 
 const totals = {
@@ -312,7 +314,7 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
     const label = `${doc.title ?? doc.name ?? id} (${doc.slug ?? "no slug"})`;
     say(`### ${label}`);
 
-    const { product, tried, verdict, url } = await resolveProduct(doc);
+    const { product, family, tried, verdict, url } = await resolveProduct(doc);
     if (!product) {
       totals.unresolved++;
       unresolved.push({ id, label, tried });
@@ -330,7 +332,7 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
     }
 
     /* ---- what production is missing that the page can answer ---- */
-    const page = metadataFrom(product);
+    const page = { ...metadataFrom(product), ...familyFacts(product, family) };
     const patch = {};
     const filledNames = [];
     for (const field of RESEARCH_FIELDS) {

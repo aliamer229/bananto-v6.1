@@ -464,7 +464,17 @@ export async function resolveProduct(doc, seen = new Set()) {
 
     if (ownVerdict.ok) {
       tried.push(`${key} → ${status}, matched`);
-      return { product: deref(state, own), url, key, verdict: ownVerdict, tried };
+      const product = deref(state, own);
+      /*
+        Only the relatives. The cache holds every cross-sell and best-seller on
+        the page, and dereferencing fifty unrelated products to find one upgrade
+        pack costs more than the page fetch did.
+      */
+      const wanted = bareTitle(own.name);
+      const family = nodes
+        .filter((n) => n !== own && bareTitle(n.name).includes(wanted) && wanted)
+        .map((n) => deref(state, n, 2));
+      return { product, family, url, key, verdict: ownVerdict, tried };
     }
     tried.push(`${key} → ${status}, rejected: ${ownVerdict.reason}`);
 
@@ -479,4 +489,42 @@ export async function resolveProduct(doc, seen = new Set()) {
     }
   }
   return { product: null, tried };
+}
+
+/**
+ * What the rest of the product family says about this one.
+ *
+ * A "Nintendo Switch 2 Edition Upgrade Pack" is its own listing with its own
+ * price, which is the only place the upgrade price is written down. Its mere
+ * existence also settles two flags: the game is enhanced for Switch 2, and it
+ * is not exclusive to it, because there is a Switch 1 copy to upgrade from.
+ *
+ * Nothing is concluded from absence. A game with no upgrade pack on the page is
+ * not thereby exclusive — it may simply not have one listed — so
+ * `switch2Exclusive` is only ever reported as false, never as true.
+ */
+const isSwitch2Edition = (name) =>
+  // The mark in "Switch™ 2" sits inside the phrase, so it comes off first.
+  /nintendo\s*switch\s*2\s*edition/i.test(String(name ?? "").replace(/[™®©]/g, ""));
+
+export function familyFacts(product, family = []) {
+  const out = {};
+  const wanted = bareTitle(product?.name);
+  if (!wanted) return out;
+
+  const upgrade = family.find(
+    (n) => /upgrade\s*pack/i.test(String(n?.name ?? "")) && bareTitle(n.name).includes(wanted),
+  );
+  if (upgrade) {
+    const priceKey = Object.keys(upgrade).find((k) => k.startsWith("prices"));
+    const price = Number(upgrade[priceKey]?.finalPrice ?? upgrade[priceKey]?.regularPrice);
+    if (Number.isFinite(price)) out.switch2UpgradePrice = price;
+    out.switch2Enhanced = true;
+    out.switch2Exclusive = false;
+  } else if (isSwitch2Edition(product?.name)) {
+    // The edition exists because a Switch 1 version does.
+    out.switch2Enhanced = true;
+    out.switch2Exclusive = false;
+  }
+  return out;
 }
