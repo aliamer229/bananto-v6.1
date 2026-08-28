@@ -23,7 +23,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: incident-audit
+  group: catalogue-audit
   cancel-in-progress: true
 
 jobs:
