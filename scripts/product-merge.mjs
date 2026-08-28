@@ -109,7 +109,7 @@ async function loadCatalogue() {
   return { live, inOverlay };
 }
 
-const { live, inOverlay } = await loadCatalogue();
+const { live, inOverlay } = await step("compose the live catalogue", loadCatalogue);
 const bySlug = new Map();
 for (const p of live.values()) if (p.slug) bySlug.set(String(p.slug), p);
 const find = (key) => live.get(key) ?? bySlug.get(key) ?? null;
@@ -155,7 +155,7 @@ async function referencingColumns() {
   }
   return found;
 }
-const REFS = await referencingColumns();
+const REFS = await step("discover product-id columns", referencingColumns);
 
 /** Tables whose JSON body can name a product without a column saying so. */
 const DOC_ALIAS = "body";
@@ -179,9 +179,11 @@ async function countRefsFor(ids) {
   const holes = ids.map(() => "?").join(",");
   for (const { table, column } of REFS) {
     try {
-      const rows = await app.d1All(
-        `SELECT ${column} AS pid, count(*) AS n FROM ${table} WHERE ${column} IN (${holes}) GROUP BY ${column}`,
-        ...ids,
+      const rows = await step(`${table}.${column}`, () =>
+        app.d1All(
+          `SELECT ${column} AS pid, count(*) AS n FROM ${table} WHERE ${column} IN (${holes}) GROUP BY ${column}`,
+          ...ids,
+        ),
       );
       for (const r of rows) {
         const n = Number(r?.n ?? 0);
@@ -204,9 +206,11 @@ async function countRefsFor(ids) {
   for (const { table, column } of DOC_TABLES) {
     const anyOf = ids.map(() => `${column} LIKE ?`).join(" OR ");
     try {
-      const rows = await app.d1All(
-        `SELECT ${column} AS ${DOC_ALIAS} FROM ${table} WHERE ${anyOf}`,
-        ...ids.map((id) => `%${id}%`),
+      const rows = await step(`${table}.${column} (json scan)`, () =>
+        app.d1All(
+          `SELECT ${column} AS ${DOC_ALIAS} FROM ${table} WHERE ${anyOf}`,
+          ...ids.map((id) => `%${id}%`),
+        ),
       );
       for (const id of ids) {
         const n = rows.filter((r) => String(r?.[DOC_ALIAS] ?? "").includes(id)).length;
@@ -240,6 +244,24 @@ say(`- ${REFS.map((r) => `\`${r.table}.${r.column}\``).join(", ")}`);
 say();
 
 const nowIso = () => new Date().toISOString();
+
+/*
+  Progress, with the clock on it.
+
+  Two runs were cancelled for being slow on a guess about which query was to
+  blame, and the guesses were wrong twice. Every step that talks to the database
+  now says how long it took, so the next slow run names the culprit instead of
+  inviting a third guess.
+*/
+const startedAt = Date.now();
+const since = () => `${((Date.now() - startedAt) / 1000).toFixed(1)}s`;
+const step = async (label, work) => {
+  const began = Date.now();
+  const value = await work();
+  console.log(`  [${since()}] ${label} — took ${((Date.now() - began) / 1000).toFixed(1)}s`);
+  return value;
+};
+
 const filled = (v) => {
   if (v === null || v === undefined) return false;
   if (typeof v === "string") return Boolean(v.trim());
@@ -261,7 +283,9 @@ const everyId = [
       .map((d) => String(d.id)),
   ),
 ];
-const refsById = everyId.length ? await countRefsFor(everyId) : new Map();
+const refsById = everyId.length
+  ? await step("count every reference", () => countRefsFor(everyId))
+  : new Map();
 say(`- products resolved and counted in one sweep: **${everyId.length}**`);
 say();
 
