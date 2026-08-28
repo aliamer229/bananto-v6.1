@@ -219,21 +219,69 @@ const norm = (t) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
 
+/*
+  The listing suffix, not part of the name.
+
+  Several documents carry `[Switch 2]` on the end of the title for the admin
+  list. Two documents for one game — `mario-kart-world` titled "Mario Kart World
+  [Switch 2]" and `mario-kart-world-switch-2` titled "Mario Kart World" — differ
+  only by that, so comparing the raw titles finds nothing. An edition name like
+  "– Nintendo Switch 2 Edition" is NOT stripped: that names a different SKU that
+  Nintendo sells separately, and collapsing it would merge two real products.
+*/
+const displayTitle = (t) => String(t ?? "").replace(/\s*\[(switch\s*[12]|nintendo switch\s*[12]?)\]\s*$/i, "").trim();
+
+/*
+  Words that say which console or edition, not which game.
+
+  Every slug carries some of these and most titles carry others, so leaving them
+  in makes two unrelated games look half-alike: "Super Mario Party Jamboree –
+  Nintendo Switch 2 Edition" and a slug ending `-switch-2-edition` already share
+  two words before either says what the game is.
+*/
+const PLATFORM_WORDS = new Set([
+  "switch", "nintendo", "edition", "editions", "the", "and", "for", "with", "version", "deluxe",
+]);
+
+/** The words that actually name a game, as a slug would carry them. */
+const tokens = (text) =>
+  new Set(
+    String(text ?? "")
+      .replace(/[™®©]/g, "")
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .map((w) => w.replace(/\d+$/, ""))
+      .filter((w) => w.length > 2 && !PLATFORM_WORDS.has(w)),
+  );
+
 say(`## A slug that names a different game than its title does`);
 say();
-const slugMismatch = scored.filter((s) => {
-  const slugWords = norm(s.slug);
-  const titleWords = norm(s.title);
-  if (!slugWords || !titleWords) return false;
-  /* The slug is built from the title, so the title's first real word should survive in it. */
-  const head = norm(String(s.title).split(/[\s:–—-]+/).slice(0, 2).join(""));
-  return head.length >= 6 && !slugWords.includes(head);
-});
+/*
+  Once the console and edition words are gone, every remaining word in a slug
+  came from some title. Two or more of them that are not in *this* title means
+  the slug was built from a different game's name — which is exactly the case of
+  `super-mario-bros-wonder-switch-2-edition-bellabel-park` sitting on a document
+  titled "Super Mario Party Jamboree". Comparing how much the two share instead
+  misses it, because both games are Super Mario.
+*/
+const slugMismatch = scored
+  .map((s) => {
+    const inTitle = tokens(displayTitle(s.title));
+    const inSlug = tokens(s.slug);
+    const strangers = [...inSlug].filter((w) => !inTitle.has(w));
+    const absent = [...inTitle].filter((w) => !inSlug.has(w));
+    return { ...s, strangers, absent };
+  })
+  .filter((s) => s.strangers.length >= 2);
 if (!slugMismatch.length) say("None.");
 else {
-  say(`| slug | title |`);
-  say(`| --- | --- |`);
-  for (const s of slugMismatch) say(`| \`${s.slug}\` | ${s.title} |`);
+  say(`| slug | title | words in the slug that are not in the title |`);
+  say(`| --- | --- | --- |`);
+  for (const s of slugMismatch) {
+    say(`| \`${s.slug}\` | ${s.title} | ${s.strangers.join(", ")}${s.absent.length ? ` · title words absent from the slug: ${s.absent.join(", ")}` : ""} |`);
+  }
 }
 say();
 
@@ -241,7 +289,7 @@ say(`## Two documents that are the same game on the same console`);
 say();
 const byIdentity = new Map();
 for (const s of scored) {
-  const key = `${norm(s.title)}|${s.platform}`;
+  const key = `${norm(displayTitle(s.title))}|${s.platform}`;
   if (!byIdentity.has(key)) byIdentity.set(key, []);
   byIdentity.get(key).push(s);
 }
@@ -252,7 +300,7 @@ else {
   say(`| --- | --- | --- |`);
   for (const group of dupes) {
     say(
-      `| ${group[0].title} | ${group[0].platform} | ${group.map((s) => `\`${s.slug}\` (${s.score}%, ${s.hidden ? "hidden" : "live"})`).join(" · ")} |`,
+      `| ${displayTitle(group[0].title)} | ${group[0].platform} | ${group.map((s) => `\`${s.slug}\` (${s.score}%, ${s.hidden ? "hidden" : "live"})`).join(" · ")} |`,
     );
   }
 }
