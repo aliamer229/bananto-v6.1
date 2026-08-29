@@ -52,6 +52,14 @@ say();
 
 /* ---------------------------------------------------------------- workers */
 
+/*
+  Version ids that some deployment actually references. Anything uploaded but
+  absent from this set was never served — which is exactly what a Workers Builds
+  run on a non-production branch produces, and what the "Deployment successful"
+  comment it leaves on a pull request does not distinguish.
+*/
+const served = new Set();
+
 const deployments = await api(`/accounts/${ACCOUNT}/workers/scripts/${SCRIPT_NAME}/deployments`);
 say(`## Worker deployments`);
 say();
@@ -61,6 +69,7 @@ if (!deployments.ok) {
   );
 } else {
   const items = deployments.body?.result?.deployments ?? [];
+  for (const d of items) for (const v of d.versions ?? []) served.add(String(v.version_id ?? ""));
   say(`- deployments recorded: **${items.length}**`);
   say();
   say(`| created | author | source | versions |`);
@@ -85,7 +94,11 @@ if (!versions.ok) {
   );
 } else {
   const items = versions.body?.result?.items ?? [];
+  const uploaded = items.filter((v) => !served.has(String(v.id ?? "")));
   say(`- versions recorded: **${items.length}**`);
+  say(
+    `- of those, **${uploaded.length}** were uploaded but never served — no deployment references them`,
+  );
   say();
   say(`| created | version | commit | branch | message |`);
   say(`| --- | --- | --- | --- | --- |`);
@@ -102,6 +115,13 @@ say();
 
 const pages = await api(`/accounts/${ACCOUNT}/pages/projects`);
 say(`## Pages projects`);
+/*
+  Absence here is not absence of a git integration. Cloudflare Workers Builds
+  is a separate product from Pages and does not appear in this list; it posts
+  "Deployment successful" on a pull request while, for a non-production branch,
+  only uploading a version. The versions-without-a-deployment count above is
+  what actually distinguishes an upload from a traffic shift.
+*/
 say();
 if (!pages.ok) {
   say(`- could not read Pages projects: HTTP ${pages.status}`);
