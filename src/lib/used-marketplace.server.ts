@@ -545,10 +545,24 @@ async function refundListingFee(listing: UsedListing, now: string): Promise<bool
         ],
       },
     ]);
-    return results.length > 0;
+    if (!results.length) {
+      // Same condition the charge refuses on. Here it must not undo the
+      // rejection, so it is loud instead: the money is owed and nobody would
+      // otherwise know.
+      console.error(
+        "[used-marketplace] the refund could not run — no batch support",
+        listing.id,
+        amount,
+      );
+      return false;
+    }
+    return true;
   } catch (error) {
     if (isUniqueViolation(error)) return false;
-    throw error;
+    // A failed refund is not a reason to leave the listing un-rejected, but it
+    // is money owed to a member, so it is recorded rather than swallowed.
+    console.error("[used-marketplace] refunding the listing fee failed", listing.id, error);
+    return false;
   }
 }
 
