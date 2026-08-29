@@ -151,9 +151,15 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          bunx wrangler versions deploy "${{ inputs.rollback_to }}@100%" \
+          # Reports show version ids truncated to eight characters, so that is
+          # what anyone typing a rollback will have. Resolve it to the full id
+          # rather than failing on the API call, which is what happened the
+          # first time this ran.
+          full="$(node scripts/resolve-worker-version.mjs "${{ inputs.rollback_to }}")"
+          echo "rolling back to $full"
+          bunx wrangler versions deploy "$full@100%" \
             --config wrangler.jsonc --yes \
-            --message "rollback to ${{ inputs.rollback_to }}"
+            --message "rollback to $full"
 
       # Outside-in, against the public hostname. "wrangler reported success" and
       # "banan.to answers correctly" are different claims. A rollback is checked
