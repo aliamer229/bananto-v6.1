@@ -143,20 +143,18 @@ export function StoreServices() {
           const cardContent = (
             <>
               {service.isFullImage ? (
-                service.image ? (
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    className="w-full h-full object-fill transition-transform duration-300"
-                    loading="lazy"
-                    decoding="async"
-                    width={320}
-                    height={200}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
-                ) : null
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  className="w-full h-full object-fill transition-transform duration-300"
+                  loading="lazy"
+                  decoding="async"
+                  width={320}
+                  height={200}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
               ) : (
                 <>
                   {/* Top Badge */}
@@ -170,18 +168,16 @@ export function StoreServices() {
                   </div>
 
                   {/* Main Image */}
-                  {service.image ? (
-                    <div className="absolute inset-0 z-0 pointer-events-none">
-                      <img
-                        src={service.image}
-                        alt={service.title}
-                        className="w-full h-full object-cover transition-transform duration-300"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
-                      />
-                    </div>
-                  ) : null}
+                  <div className="absolute inset-0 z-0 pointer-events-none">
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className="w-full h-full object-cover transition-transform duration-300"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  </div>
 
                   {/* Bottom Content */}
                   <div className="relative z-20 text-center mt-auto pb-1 md:pb-2">
