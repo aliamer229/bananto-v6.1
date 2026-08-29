@@ -22,21 +22,32 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      # Audited in a directory holding nothing but the manifest and the
+      # lockfile, which is the only arrangement that works here.
+      #
+      # This repository keeps `package-lock.json` and no bun lockfile. Bun 1.3
+      # quietly migrated one at audit time; bun 1.4, which the runners picked up
+      # on 29 August, refuses with "missing lockfile, nothing to audit" — every
+      # run on every branch has been red since, `main` included. Handing the job
+      # to `npm audit` in the workspace does not fix it either: the install is
+      # bun's, so there is no `node_modules/.package-lock.json` for npm to read
+      # and it fails with "loadVirtual requires existing shrinkwrap file" with
+      # or without `--package-lock-only`.
+      #
+      # With no `node_modules` present at all, npm builds the tree from the
+      # lockfile, which is exactly what should be audited. Copying into a temp
+      # directory says that requirement out loud instead of depending on this
+      # step staying above the install.
+      - name: Audit dependencies
+        run: |
+          tmp="$(mktemp -d)"
+          cp package.json package-lock.json "$tmp/"
+          cd "$tmp"
+          npm audit --audit-level=high
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
-      # The repository keeps `package-lock.json` and no bun lockfile. Bun 1.3
-      # silently migrated one at audit time; bun 1.4, which the runners picked
-      # up on 29 August, refuses with "missing lockfile, nothing to audit" — so
-      # every run on every branch has been red since. `npm audit` reads the
-      # lockfile this repository actually maintains.
-      #
-      # `--package-lock-only` because the install above was bun's: plain
-      # `npm audit` walks the npm-installed tree and fails with "loadVirtual
-      # requires existing shrinkwrap file". The lockfile alone is what we want
-      # audited anyway.
-      - run: npm audit --audit-level=high --package-lock-only
       - run: bun run typecheck
       - run: bun run test
       - run: bun run build
