@@ -37,6 +37,7 @@ import {
 import { validateGameDevicePerformance } from "@/lib/devicePerformance";
 import { resolveCategoryType } from "@/lib/productSection";
 import { sanitizeSlug, uniqueSlug } from "@/lib/productSlug";
+import { checkPublishable, isPublishing } from "@/lib/publishGate";
 import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
 
 function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
@@ -570,6 +571,30 @@ export const Route = createFileRoute("/api/admin/products")({
           }
           const productToSave: Product = guard.merged;
 
+          // The same publication floor the full save applies. A patch is the
+          // shorter route to the same transition, and the listing screen's
+          // visibility toggle uses it — which is exactly how a bulk reveal
+          // would happen.
+          if (isPublishing(stored as unknown as Record<string, unknown>, productToSave)) {
+            const gate = checkPublishable(productToSave as unknown as Record<string, unknown>);
+            const override = (payload as Record<string, unknown>)["publishOverride"] === true;
+            if (!gate.ok && !override) {
+              return json(
+                {
+                  error: `لا يمكن نشر هذا المنتج قبل إكمال: ${gate.missing.join("، ")}`,
+                  code: "PRODUCT_NOT_PUBLISHABLE",
+                  missing: gate.missing,
+                },
+                { status: 400 },
+              );
+            }
+            if (!gate.ok && override) {
+              console.warn(
+                `[products] published with override: ${productId} still missing ${gate.missing.join(", ")}`,
+              );
+            }
+          }
+
           // Fast DB Update (UPSERT style on KV value)
           try {
             await d1Run(
@@ -806,6 +831,40 @@ export const Route = createFileRoute("/api/admin/products")({
               },
               { status: 400 },
             );
+          }
+
+          /*
+            The publication floor.
+
+            59 of these products were created hidden on purpose, and hidden was
+            the only thing between a half-researched record and a storefront
+            page with a blank cover and no description — `isHidden` came
+            straight off the request body, so one bulk edit could reveal all of
+            them. This refuses the transition from hidden to visible for a
+            product that cannot answer "what is this and what does it cost".
+
+            `publishOverride` is the deliberate way through, and it is recorded,
+            so publishing an incomplete product stays possible and stops being
+            accidental.
+          */
+          if (isPublishing(stored as unknown as Record<string, unknown>, productToSave)) {
+            const gate = checkPublishable(productToSave as unknown as Record<string, unknown>);
+            const override = (payload as Record<string, unknown>)["publishOverride"] === true;
+            if (!gate.ok && !override) {
+              return json(
+                {
+                  error: `لا يمكن نشر هذا المنتج قبل إكمال: ${gate.missing.join("، ")}`,
+                  code: "PRODUCT_NOT_PUBLISHABLE",
+                  missing: gate.missing,
+                },
+                { status: 400 },
+              );
+            }
+            if (!gate.ok && override) {
+              console.warn(
+                `[products] published with override: ${productId} still missing ${gate.missing.join(", ")}`,
+              );
+            }
           }
 
           try {

@@ -2484,6 +2484,16 @@ export default function AdminProductEditor({
                   ? "المنتج ظاهر في لوحة الإدارة فقط. أزل الإخفاء واحفظ لنشره."
                   : "المنتج ظاهر لجميع المستخدمين."}
               </p>
+              {/*
+                Said before the save rather than after it. The server refuses
+                the same four things; this is so an admin knows why before they
+                spend a click finding out.
+              */}
+              {formData.isHidden && (
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  لن يُنشر بدون: اسم، سعر أعلى من التكلفة، صورة واحدة، ووصف لا يقل عن ٤٠ حرفاً.
+                </p>
+              )}
             </div>
 
             {/* Display Order */}
