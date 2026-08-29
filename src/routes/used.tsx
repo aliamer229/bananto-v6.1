@@ -162,7 +162,7 @@ function ListingCard({ listing }: { listing: any }) {
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="relative aspect-4/3 bg-muted">
+      <div className="relative aspect-[4/3] bg-muted">
         {photo ? (
           <img
             src={photo}
