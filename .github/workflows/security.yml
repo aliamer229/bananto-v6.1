@@ -26,7 +26,12 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
-      - run: bun audit --audit-level=high
+      # The repository keeps `package-lock.json` and no bun lockfile. Bun 1.3
+      # silently migrated one at audit time; bun 1.4, which the runners picked
+      # up on 29 August, refuses with "missing lockfile, nothing to audit" — so
+      # every run on every branch has been red since. `npm audit` reads the
+      # lockfile this repository actually maintains.
+      - run: npm audit --audit-level=high
       - run: bun run typecheck
       - run: bun run test
       - run: bun run build
