@@ -28,6 +28,10 @@ on:
         description: "Apply pending D1 migrations to the production database first"
         type: boolean
         default: false
+      rollback_to:
+        description: "Version id to send 100% of traffic to. Set this and nothing is built — it only shifts traffic to a version that already exists."
+        type: string
+        default: ""
   # A `workflow_dispatch` is only accepted for a workflow on the default branch,
   # so until this merges a push is the only way to exercise the pipeline. A push
   # can only ever reach `preview` — `MODE` below falls back to it and `release`
@@ -81,16 +85,25 @@ jobs:
           echo "migrate: ${{ inputs.migrate }}"
 
       # The gate. Nothing below runs if any of these three fail.
+      #
+      # A rollback skips all of it. The version being rolled back to was already
+      # built, tested and uploaded, and rebuilding it would defeat the point:
+      # the reason to roll back is that what is serving now is bad, and the
+      # fastest safe move is to serve something known good that already exists.
       - name: Typecheck
+        if: ${{ !inputs.rollback_to }}
         run: bun run typecheck
 
       - name: Test
+        if: ${{ !inputs.rollback_to }}
         run: bunx vitest run
 
       - name: Lint
+        if: ${{ !inputs.rollback_to }}
         run: bunx eslint .
 
       - name: Build
+        if: ${{ !inputs.rollback_to }}
         run: bunx vite build
 
       # Read-only, and unconditional: seeing what *would* run is how an operator
@@ -113,7 +126,7 @@ jobs:
         run: bunx wrangler d1 migrations apply bananto --remote --config wrangler.jsonc
 
       - name: Upload a version (no traffic)
-        if: ${{ env.MODE == 'preview' }}
+        if: ${{ env.MODE == 'preview' && !inputs.rollback_to }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -123,16 +136,31 @@ jobs:
             --message "${{ github.sha }} from ${{ github.ref_name }}"
 
       - name: Deploy
-        if: ${{ env.MODE == 'release' }}
+        if: ${{ env.MODE == 'release' && !inputs.rollback_to }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: bunx wrangler deploy --config wrangler.jsonc
 
+      # Shifts all traffic to a version that already exists. Nothing is built,
+      # nothing is uploaded, and the routes are not touched — which matters,
+      # because it is the route reconciliation that the API token cannot do.
+      - name: Roll traffic back to a known-good version
+        if: ${{ inputs.rollback_to }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          bunx wrangler versions deploy "${{ inputs.rollback_to }}@100%" \
+            --config wrangler.jsonc --yes \
+            --message "rollback to ${{ inputs.rollback_to }}"
+
       # Outside-in, against the public hostname. "wrangler reported success" and
-      # "banan.to answers correctly" are different claims.
+      # "banan.to answers correctly" are different claims. A rollback is checked
+      # the same way: restoring service is a claim about the site, not about
+      # wrangler's exit code.
       - name: Verify the live site
-        if: ${{ env.MODE == 'release' }}
+        if: ${{ env.MODE == 'release' || inputs.rollback_to }}
         run: node scripts/verify-deployment.mjs
 
       - name: Read back what Cloudflare is serving
