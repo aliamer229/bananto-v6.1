@@ -263,13 +263,17 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootInner() {
-  // Seed the dictionary from the cookie before any child renders, so the server
-  // HTML is already in the member's language and hydration matches.
-  const cookieLang = readPrefs().lang;
-  if (useI18n.getState().lang !== cookieLang) useI18n.setState({ lang: cookieLang });
+  // Read current language from store
   const lang = useI18n((state) => state.lang);
-  // Re-key the tree when a language pack lands so a runtime switch re-reads it.
   const assetsVersion = useI18n((state) => state.assetsVersion);
+
+  // Sync client-side language preference safely after hydration
+  useEffect(() => {
+    const cookieLang = readPrefs().lang;
+    if (useI18n.getState().lang !== cookieLang) {
+      useI18n.setState({ lang: cookieLang });
+    }
+  }, []);
 
   // Catalogue response: fetched with SWR and shared across the application.
   const { data: store } = useStoreData();

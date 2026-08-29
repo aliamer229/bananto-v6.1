@@ -27,7 +27,13 @@ const MAX_AGE = 60 * 60 * 24 * 365;
 
 /** Cookie header on the server, document.cookie in the browser. */
 const cookieHeader = createIsomorphicFn()
-  .server(() => getRequestHeader("cookie") ?? "")
+  .server(() => {
+    try {
+      return getRequestHeader("cookie") ?? "";
+    } catch {
+      return "";
+    }
+  })
   .client(() => (typeof document === "undefined" ? "" : document.cookie));
 
 /**
@@ -36,26 +42,34 @@ const cookieHeader = createIsomorphicFn()
  * byte is already in the visitor's language.
  */
 const acceptLanguages = createIsomorphicFn()
-  .server(() =>
-    (getRequestHeader("accept-language") ?? "")
-      .split(",")
-      .map((part) => (part.split(";")[0] ?? "").trim())
-      .filter(Boolean),
-  )
+  .server(() => {
+    try {
+      return (getRequestHeader("accept-language") ?? "")
+        .split(",")
+        .map((part) => (part.split(";")[0] ?? "").trim())
+        .filter(Boolean);
+    } catch {
+      return [];
+    }
+  })
   .client(() =>
     typeof navigator === "undefined" ? [] : [...(navigator.languages ?? [navigator.language])],
   );
 
 /** Visitor country from the edge (Cloudflare sets `cf-ipcountry`). */
 const requestCountry = createIsomorphicFn()
-  .server(() =>
-    (
-      getRequestHeader("cf-ipcountry") ??
-      getRequestHeader("x-country") ??
-      getRequestHeader("cf_country") ??
-      ""
-    ).toUpperCase(),
-  )
+  .server(() => {
+    try {
+      return (
+        getRequestHeader("cf-ipcountry") ??
+        getRequestHeader("x-country") ??
+        getRequestHeader("cf_country") ??
+        ""
+      ).toUpperCase();
+    } catch {
+      return "";
+    }
+  })
   .client(() => "");
 
 /** Arabic-speaking markets: these default to Arabic, everyone else to English. */
