@@ -1,14 +1,29 @@
-import React, { useCallback, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle, Copy, FileArchive, Loader2, Play, X } from "lucide-react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Copy,
+  Download,
+  FileArchive,
+  Loader2,
+  Play,
+  Search,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
-import { buildBatchGameImport } from "@/lib/gameImportForm";
+import { buildBatchGameImport, buildBatchSchemaImport } from "@/lib/gameImportForm";
 import {
   COVER_TEXTURE_FETCH_FAILED,
   COVER_TEXTURE_FIELD,
   mirrorCoverTextureSource,
   needsStorageMirror,
 } from "@/lib/coverTexture";
+import { downloadTemplateFile } from "@/lib/downloadTemplate";
+import { api } from "@/lib/api";
+import { PRODUCT_SCHEMAS, detectSchemaId, getSchema } from "@/lib/productImport/registry";
+import { sanitizeSlug } from "@/lib/productSlug";
+import type { ProductSchema } from "@/lib/productImport/types";
 import {
   isImportableTextEntry,
   listZipEntries,
@@ -18,13 +33,37 @@ import {
 import { safeStringify } from "@/utils/safeJson";
 
 /**
- * Batch import of Nintendo Switch games from a ZIP of template files.
+ * Batch import of products from a ZIP of template files.
  *
- * A wrapper, not a second importer: every file goes through the same
- * `parseGameImport` and the same product save endpoint the single-game import
- * uses. All this screen adds is unzipping, running the files one after another
- * so two saves never race, and saving each result hidden.
+ * A wrapper, not a second importer: every file goes through the same parser and
+ * the same product save endpoint the single-product import uses. What this
+ * screen adds is unzipping, a dry run that writes nothing, running the files one
+ * after another so two saves never race, and saving each result hidden.
+ *
+ * Which parser a file gets is the registry's decision, not this component's.
+ * Nintendo Switch Games keeps its own long-standing schema and parser; every
+ * other category resolves to a registry schema. That is the whole reason there
+ * is one importer here rather than one per category.
  */
+
+/** `undefined` schema means the Nintendo Switch Games path. */
+type Target = { label: string; schema?: ProductSchema };
+
+const NINTENDO: Target = { label: "ألعاب Nintendo Switch" };
+
+type Prepared =
+  | {
+      file: string;
+      state: "ready";
+      title: string;
+      slug: string;
+      /** Filled during the dry run against the live catalogue and the archive. */
+      duplicateOf?: string;
+      completeness?: number;
+      missingRequired: string[];
+      payload: Record<string, any>;
+    }
+  | { file: string; state: "failed"; reason: string };
 
 type FileOutcome =
   | { file: string; state: "saved"; title: string }
@@ -32,7 +71,7 @@ type FileOutcome =
   | { file: string; state: "failed"; reason: string };
 
 interface AdminZipImportModalProps {
-  /** Category the imported games are filed under (the games section). */
+  /** Category the imported products are filed under. */
   categoryId: string;
   onClose: () => void;
   /** Called for every product the endpoint stored, so the list stays live. */
@@ -47,11 +86,26 @@ export default function AdminZipImportModal({
   const [fileName, setFileName] = useState("");
   const [entries, setEntries] = useState<ZipEntry[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [current, setCurrent] = useState(0);
+  const [prepared, setPrepared] = useState<Prepared[] | null>(null);
   const [outcomes, setOutcomes] = useState<FileOutcome[]>([]);
   /** Files whose 3D Texture Source could not be pulled off its source host. */
   const [textureFailures, setTextureFailures] = useState<string[]>([]);
   const bufferRef = useRef<ArrayBuffer | null>(null);
+
+  /*
+    The category the admin came from picks the schema; the select is an override
+    for the case where a ZIP was prepared for a different section than the one
+    the product list happens to be filtered to.
+  */
+  const [schemaId, setSchemaId] = useState<string>(
+    () => detectSchemaId({ category: categoryId }) ?? "",
+  );
+  const target: Target = useMemo(() => {
+    const schema = getSchema(schemaId);
+    return schema ? { label: schema.label, schema } : NINTENDO;
+  }, [schemaId]);
 
   const savedCount = outcomes.filter((o) => o.state === "saved").length;
   const duplicateCount = outcomes.filter((o) => o.state === "duplicate").length;
@@ -64,10 +118,17 @@ export default function AdminZipImportModal({
     { state: "duplicate" }
   >[];
 
+  const readyCount = prepared?.filter((p) => p.state === "ready").length ?? 0;
+  const prepFailures = (prepared ?? []).filter((p) => p.state === "failed") as Extract<
+    Prepared,
+    { state: "failed" }
+  >[];
+
   const handleFile = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setOutcomes([]);
+    setPrepared(null);
     setCurrent(0);
     try {
       const buffer = await file.arrayBuffer();
@@ -83,6 +144,107 @@ export default function AdminZipImportModal({
       toast.error(err?.message || "تعذّر قراءة ملف ZIP");
     }
   }, []);
+
+  /** Parses one file through whichever pipeline the target names. */
+  const prepareOne = useCallback(
+    (text: string, baseName: string): Prepared => {
+      /*
+        Only the schema path reports quality; the Nintendo pipeline has its own
+        audit elsewhere. An unmeasured file shows no percentage in the preview
+        rather than showing zero.
+      */
+      const built = target.schema
+        ? buildBatchSchemaImport(text, categoryId, target.schema)
+        : { ...buildBatchGameImport(text, categoryId), quality: undefined };
+      if (!built.ok) return { file: baseName, state: "failed", reason: built.reason };
+
+      const quality = built.quality;
+      const total = quality ? quality.required.total + quality.recommended.total : 0;
+      const present = quality ? quality.required.present + quality.recommended.present : 0;
+      return {
+        file: baseName,
+        state: "ready",
+        title: String(built.payload.title || built.payload.titleEn || baseName),
+        /*
+          The template leaves the slug blank and the endpoint derives it from
+          the English title, so the preview has to derive it the same way or it
+          would compare an empty string against every existing product and
+          report nothing. Same function the endpoint calls.
+        */
+        slug: sanitizeSlug(
+          String(built.payload.slug || built.payload.titleEn || built.payload.title || ""),
+          String(built.payload.id ?? ""),
+        ),
+        completeness: total > 0 ? (present / total) * 100 : undefined,
+        missingRequired: quality?.required.missing ?? [],
+        payload: built.payload,
+      };
+    },
+    [categoryId, target],
+  );
+
+  /**
+   * The dry run. Reads the archive and the catalogue and writes nothing.
+   *
+   * Duplicates are checked against both the live catalogue and the rest of the
+   * archive, because a ZIP that contains the same product twice is the failure
+   * this is most likely to catch — and the endpoint would happily store both.
+   */
+  const dryRun = useCallback(async () => {
+    const buffer = bufferRef.current;
+    if (!buffer || entries.length === 0 || isChecking || isRunning) return;
+
+    setIsChecking(true);
+    setOutcomes([]);
+    try {
+      const results: Prepared[] = [];
+      for (const entry of entries) {
+        try {
+          const text = await readZipEntryText(buffer, entry);
+          results.push(prepareOne(text, entry.baseName));
+        } catch (err: any) {
+          results.push({
+            file: entry.baseName,
+            state: "failed",
+            reason: String(err?.message || err || "خطأ غير معروف"),
+          });
+        }
+      }
+
+      let existing = new Map<string, string>();
+      try {
+        const store: any = await api.store();
+        existing = new Map(
+          (store?.products ?? [])
+            .filter((p: any) => p?.slug)
+            .map((p: any) => [String(p.slug).toLowerCase(), String(p.title || p.titleEn || p.id)]),
+        );
+      } catch {
+        /*
+          A catalogue that will not load is not a reason to refuse the dry run —
+          the endpoint does its own slug check on every save. The preview simply
+          cannot pre-warn about clashes, and says so rather than implying the
+          archive is clean.
+        */
+        toast.warning("تعذّر قراءة الكتالوج — لن يظهر تحذير التكرار قبل الحفظ");
+        existing = new Map();
+      }
+
+      const seenInZip = new Map<string, string>();
+      for (const item of results) {
+        if (item.state !== "ready" || !item.slug) continue;
+        const key = item.slug.toLowerCase();
+        const clash = existing.get(key) ?? seenInZip.get(key);
+        if (clash) item.duplicateOf = clash;
+        if (!seenInZip.has(key)) seenInZip.set(key, `${item.file} (داخل نفس الأرشيف)`);
+      }
+
+      setPrepared(results);
+      toast.success("انتهى الفحص — لم يُكتب أي شيء");
+    } finally {
+      setIsChecking(false);
+    }
+  }, [entries, isChecking, isRunning, prepareOne]);
 
   const runImport = useCallback(async () => {
     const buffer = bufferRef.current;
@@ -101,24 +263,25 @@ export default function AdminZipImportModal({
       let outcome: FileOutcome;
       try {
         const text = await readZipEntryText(buffer, entry);
-        const prepared = buildBatchGameImport(text, categoryId);
-        if (!prepared.ok) {
-          outcome = { file: entry.baseName, state: "failed", reason: prepared.reason };
+        const ready = prepareOne(text, entry.baseName);
+        if (ready.state === "failed") {
+          outcome = { file: entry.baseName, state: "failed", reason: ready.reason };
         } else {
+          const payload = ready.payload;
           /*
             The wrap is a link to an archive that will not serve a plain
             server-side request, so copy it into our storage before the product
             is written. A source that refuses is noted and the field left
-            empty — the game itself still imports.
+            empty — the product itself still imports.
           */
-          const wrap = prepared.payload[COVER_TEXTURE_FIELD];
+          const wrap = payload[COVER_TEXTURE_FIELD];
           if (needsStorageMirror(wrap)) {
             const mirrored = await mirrorCoverTextureSource(String(wrap));
             if (mirrored.ok) {
-              prepared.payload[COVER_TEXTURE_FIELD] = mirrored.url;
+              payload[COVER_TEXTURE_FIELD] = mirrored.url;
             } else {
               // Keep original URL for fallback/audit rather than failing
-              prepared.payload[COVER_TEXTURE_FIELD] = String(wrap);
+              payload[COVER_TEXTURE_FIELD] = String(wrap);
               setTextureFailures((prev) => [...prev, entry.baseName]);
             }
           }
@@ -127,7 +290,7 @@ export default function AdminZipImportModal({
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: safeStringify(prepared.payload),
+            body: safeStringify(payload),
           });
           const result = await res.json().catch(() => null);
           if (!res.ok || !result?.success) {
@@ -164,7 +327,9 @@ export default function AdminZipImportModal({
 
     setIsRunning(false);
     toast.success("انتهى استيراد المجموعة");
-  }, [categoryId, entries, isRunning, onProductSaved]);
+  }, [entries, isRunning, onProductSaved, prepareOne]);
+
+  const busy = isRunning || isChecking;
 
   return (
     <div
@@ -178,16 +343,16 @@ export default function AdminZipImportModal({
               <FileArchive className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">استيراد مجموعة ألعاب</h2>
+              <h2 className="text-lg font-bold">استيراد مجموعة منتجات</h2>
               <p className="text-[11px] text-muted-foreground">
-                ملف ZIP يحتوي ملفات TXT بنفس قالب اللعبة — تُحفظ كل لعبة كمنتج مخفي.
+                ملف ZIP يحتوي ملفات TXT بقالب {target.label} — يُحفظ كل منتج مخفياً.
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            disabled={isRunning}
+            disabled={busy}
             className="rounded-full p-2 transition-colors hover:bg-muted disabled:opacity-40"
           >
             <X className="h-5 w-5" />
@@ -196,17 +361,51 @@ export default function AdminZipImportModal({
 
         <div className="flex-1 space-y-4 overflow-y-auto p-6">
           <div className="flex flex-wrap items-center gap-3">
+            <label className="text-xs font-bold">القالب</label>
+            <select
+              value={schemaId}
+              disabled={busy}
+              onChange={(event) => {
+                setSchemaId(event.target.value);
+                setPrepared(null);
+                setOutcomes([]);
+              }}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-xs disabled:opacity-40"
+            >
+              <option value="">{NINTENDO.label}</option>
+              {PRODUCT_SCHEMAS.map((schema) => (
+                <option key={schema.id} value={schema.id}>
+                  {schema.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() =>
+                void downloadTemplateFile(
+                  target.schema?.templateFile ?? "nintendo-switch-game-template.txt",
+                  target.schema,
+                )
+              }
+              className="rounded-lg border border-border px-3 py-2 text-xs font-bold transition-colors hover:bg-muted"
+            >
+              <Download className="inline h-3.5 w-3.5 ms-1" />
+              تحميل القالب
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
             <input
               type="file"
               accept=".zip,application/zip"
               id="zip-import-file"
               className="hidden"
-              disabled={isRunning}
+              disabled={busy}
               onChange={(event) => void handleFile(event)}
             />
             <label
               htmlFor="zip-import-file"
-              className={`cursor-pointer rounded-lg border border-border px-3 py-2 text-xs font-bold transition-colors hover:bg-muted ${isRunning ? "pointer-events-none opacity-40" : ""}`}
+              className={`cursor-pointer rounded-lg border border-border px-3 py-2 text-xs font-bold transition-colors hover:bg-muted ${busy ? "pointer-events-none opacity-40" : ""}`}
             >
               اختيار ملف ZIP
             </label>
@@ -222,6 +421,43 @@ export default function AdminZipImportModal({
             <Stat label="محفوظة" value={savedCount} tone="ok" />
             <Stat label="فشلت" value={failures.length} tone={failures.length ? "bad" : undefined} />
           </div>
+
+          {prepared && outcomes.length === 0 && (
+            <div className="rounded-xl border border-border bg-card p-3">
+              <h3 className="mb-2 flex items-center gap-1.5 text-[12px] font-bold">
+                <Search className="h-3.5 w-3.5" /> نتيجة الفحص — لم يُكتب أي شيء ({readyCount}{" "}
+                جاهزة، {prepFailures.length} فشلت)
+              </h3>
+              <div className="max-h-56 space-y-1 overflow-y-auto">
+                {prepared.map((item) =>
+                  item.state === "ready" ? (
+                    <div key={item.file} className="text-[11px]">
+                      <span className="font-bold">{item.title}</span>
+                      {typeof item.completeness === "number" && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          — اكتمال {Math.round(item.completeness)}%
+                        </span>
+                      )}
+                      {item.missingRequired.length > 0 && (
+                        <span className="text-[var(--brand-red-dark)]">
+                          {" "}
+                          — ينقص: {item.missingRequired.join("، ")}
+                        </span>
+                      )}
+                      {item.duplicateOf && (
+                        <span className="text-amber-600"> — مكرر مع {item.duplicateOf}</span>
+                      )}
+                    </div>
+                  ) : (
+                    <div key={item.file} className="text-[11px] text-red-600 dark:text-red-300">
+                      <span className="font-bold">{item.file}</span> — {item.reason}
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
 
           {duplicateCount > 0 && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">
@@ -246,7 +482,7 @@ export default function AdminZipImportModal({
                 {textureFailures.length})
               </h3>
               <p className="text-[11px] text-amber-700 dark:text-amber-300">
-                {textureFailures.join("، ")} — حُفظت الألعاب بدون صورة المجسم؛ أضفها يدوياً من محرر
+                {textureFailures.join("، ")} — حُفظت المنتجات بدون صورة المجسم؛ أضفها يدوياً من محرر
                 المنتج.
               </p>
             </div>
@@ -276,21 +512,34 @@ export default function AdminZipImportModal({
 
         <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/30 px-6 py-4">
           <span className="text-[11px] text-muted-foreground">
-            يتم الاستيراد لعبة بعد لعبة بالتتابع.
+            يتم الاستيراد ملفاً بعد ملف بالتتابع.
           </span>
           <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              disabled={isRunning}
+              disabled={busy}
               className="rounded-xl px-6 py-2 text-sm font-bold transition-colors hover:bg-muted disabled:opacity-40"
             >
               إغلاق
             </button>
             <button
               type="button"
+              onClick={() => void dryRun()}
+              disabled={busy || entries.length === 0}
+              className="flex items-center gap-2 rounded-xl border border-border px-6 py-2 text-sm font-bold transition-colors hover:bg-muted disabled:opacity-40"
+            >
+              {isChecking ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+              فحص بدون حفظ
+            </button>
+            <button
+              type="button"
               onClick={() => void runImport()}
-              disabled={isRunning || entries.length === 0}
+              disabled={busy || entries.length === 0}
               className="flex items-center gap-2 rounded-xl bg-[var(--admin-ink)] px-8 py-2 text-sm font-bold text-white transition-all hover:bg-black disabled:opacity-50"
             >
               {isRunning ? (

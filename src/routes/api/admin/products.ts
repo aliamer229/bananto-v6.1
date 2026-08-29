@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCatalogVersion, getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
-import { destructiveUpdateLog, mergeProductUpdate, oversizedMediaLog } from "@/lib/productMergeGuard";
+import {
+  destructiveUpdateLog,
+  mergeProductUpdate,
+  oversizedMediaLog,
+} from "@/lib/productMergeGuard";
 import { deleteProductEverywhere } from "@/lib/product-delete.server";
 import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
@@ -32,6 +36,7 @@ import {
 } from "@/lib/devicePerformance.server";
 import { validateGameDevicePerformance } from "@/lib/devicePerformance";
 import { resolveCategoryType } from "@/lib/productSection";
+import { sanitizeSlug, uniqueSlug } from "@/lib/productSlug";
 import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
 
 function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
@@ -57,29 +62,11 @@ function hardwareProducts(products: Product[], categories: Record<string, unknow
   return products.filter((product) => productSection(product, categories) === "hardware");
 }
 
-/**
- * A free slug for a copy of a product that already exists.
- */
-export function uniqueSlug(desired: string, taken: Iterable<string>): string {
-  const used = new Set([...taken].map((value) => String(value).toLowerCase()));
-  if (!used.has(desired.toLowerCase())) return desired;
-  for (let suffix = 2; suffix < 1000; suffix++) {
-    const candidate = `${desired}-${suffix}`;
-    if (!used.has(candidate.toLowerCase())) return candidate;
-  }
-  return `${desired}-${Date.now().toString(36)}`;
-}
-
-export function sanitizeSlug(input: string, fallbackId: string): string {
-  const cleaned = input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  if (cleaned) return cleaned;
-  const fallbackClean = fallbackId.toLowerCase().replace(/[^a-z0-9]+/g, "");
-  return `product-${fallbackClean || Date.now().toString(36)}`;
-}
+/*
+  Re-exported so the long-standing importers of these names keep working; the
+  rules themselves live in `@/lib/productSlug`, which the browser can import.
+*/
+export { sanitizeSlug, uniqueSlug };
 
 export const Route = createFileRoute("/api/admin/products")({
   server: {
@@ -478,14 +465,17 @@ export const Route = createFileRoute("/api/admin/products")({
           void (async () => {
             try {
               const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-              if (imgVerification.results && imgVerification.results.some((r: any) => r.status === "stored")) {
-                 await d1Run(
-                    `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
-                    JSON.stringify(imgVerification.product),
-                    new Date().toISOString(),
-                    `store:product:${productId}`
-                 );
-                 invalidateStoreCache();
+              if (
+                imgVerification.results &&
+                imgVerification.results.some((r: any) => r.status === "stored")
+              ) {
+                await d1Run(
+                  `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
+                  JSON.stringify(imgVerification.product),
+                  new Date().toISOString(),
+                  `store:product:${productId}`,
+                );
+                invalidateStoreCache();
               }
             } catch (imgErr) {
               console.warn("[BackgroundImgIngestError]", imgErr);
@@ -513,7 +503,11 @@ export const Route = createFileRoute("/api/admin/products")({
                 hardwareProducts(existingCatalog, currentStore.categories || []),
               ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
-            return json({ success: true, product: saved, catalogVersion: await getCatalogVersion() });
+            return json({
+              success: true,
+              product: saved,
+              catalogVersion: await getCatalogVersion(),
+            });
           } catch (dbErr: any) {
             const ref = errorRef();
             console.error("[SaveProduct:DatabaseError]", {
@@ -553,10 +547,7 @@ export const Route = createFileRoute("/api/admin/products")({
           const stored = existingCatalog.find((p) => String(p.id) === productId);
 
           if (!stored) {
-             return json(
-               { error: "Product not found", code: "PRODUCT_NOT_FOUND" },
-               { status: 404 }
-             );
+            return json({ error: "Product not found", code: "PRODUCT_NOT_FOUND" }, { status: 404 });
           }
 
           /*
@@ -593,13 +584,16 @@ export const Route = createFileRoute("/api/admin/products")({
             invalidateStoreCache();
 
             // Background syncing for Game Device Performance (only if performance arrays changed)
-            if (payload.devicePerformance !== undefined && productSection(productToSave, currentStore.categories || []) === "game") {
-               // Fire-and-forget sync to avoid blocking the patch response
-               // Uses standard Promise chain to run in background.
-               syncGameDevicePerformance(
-                  productToSave,
-                  hardwareProducts(existingCatalog, currentStore.categories || [])
-               ).catch(e => console.error("[BackgroundSyncError]", e));
+            if (
+              payload.devicePerformance !== undefined &&
+              productSection(productToSave, currentStore.categories || []) === "game"
+            ) {
+              // Fire-and-forget sync to avoid blocking the patch response
+              // Uses standard Promise chain to run in background.
+              syncGameDevicePerformance(
+                productToSave,
+                hardwareProducts(existingCatalog, currentStore.categories || []),
+              ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
 
             return json({
@@ -766,15 +760,31 @@ export const Route = createFileRoute("/api/admin/products")({
             isHidden: payload.isHidden === true,
             categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
             category: (payload as any).category || payload.categoryId || "cat_nintendo",
-            createdAt: payload.createdAt || payload.created_at || stored?.createdAt || stored?.created_at || nowIso,
-            created_at: payload.created_at || payload.createdAt || stored?.created_at || stored?.createdAt || nowIso,
+            createdAt:
+              payload.createdAt ||
+              payload.created_at ||
+              stored?.createdAt ||
+              stored?.created_at ||
+              nowIso,
+            created_at:
+              payload.created_at ||
+              payload.createdAt ||
+              stored?.created_at ||
+              stored?.createdAt ||
+              nowIso,
             updatedAt: nowIso,
             updated_at: nowIso,
           };
 
           const putGuard = stored
             ? mergeProductUpdate(stored, normalised, { clear: putClearFields })
-            : { merged: normalised as Product, blocked: [], rejectedMedia: [], cleared: [], changed: [] };
+            : {
+                merged: normalised as Product,
+                blocked: [],
+                rejectedMedia: [],
+                cleared: [],
+                changed: [],
+              };
           if (putGuard.blocked.length) {
             console.warn(destructiveUpdateLog(productId, putGuard.blocked));
           }
@@ -809,14 +819,17 @@ export const Route = createFileRoute("/api/admin/products")({
           void (async () => {
             try {
               const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-              if (imgVerification.results && imgVerification.results.some((r: any) => r.status === "stored")) {
-                 await d1Run(
-                    `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
-                    JSON.stringify(imgVerification.product),
-                    new Date().toISOString(),
-                    `store:product:${productId}`
-                 );
-                 invalidateStoreCache();
+              if (
+                imgVerification.results &&
+                imgVerification.results.some((r: any) => r.status === "stored")
+              ) {
+                await d1Run(
+                  `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
+                  JSON.stringify(imgVerification.product),
+                  new Date().toISOString(),
+                  `store:product:${productId}`,
+                );
+                invalidateStoreCache();
               }
             } catch (imgErr) {
               console.warn("[BackgroundImgIngestError]", imgErr);
@@ -843,7 +856,11 @@ export const Route = createFileRoute("/api/admin/products")({
                 hardwareProducts(existingCatalog, currentStore.categories || []),
               ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
-            return json({ success: true, product: saved, catalogVersion: await getCatalogVersion() });
+            return json({
+              success: true,
+              product: saved,
+              catalogVersion: await getCatalogVersion(),
+            });
           } catch (dbErr: any) {
             const ref = errorRef();
             console.error("[UpdateProduct:DatabaseError]", {
