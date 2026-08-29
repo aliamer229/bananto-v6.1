@@ -13,40 +13,41 @@ import {
 
 export { ChatRealtimeDO };
 
-const fetch = createStartHandler(defaultStreamHandler);
+const fetchHandler = createStartHandler(defaultStreamHandler);
 
-export function createServerEntry(entry: { fetch: any }) {
-  return {
-    async fetch(...args: [Request, any, any]) {
-      const [request, env] = args;
-      if (env) {
-        publishEnv(env);
-      }
-      return await entry.fetch(...args);
-    },
+export default {
+  async fetch(request: Request, env: any, ctx: any) {
+    if (env) {
+      publishEnv(env);
+    }
+    return await fetchHandler(request, {
+      context: {
+        env,
+        ctx,
+      },
+    });
+  },
 
-    async queue(batch: CloudflareMessageBatch, env: any, ctx?: any) {
-      if (env) {
-        publishEnv(env);
-      }
-      await handleQueueBatch(batch, env, ctx);
-    },
+  async queue(batch: CloudflareMessageBatch, env: any, ctx?: any) {
+    if (env) {
+      publishEnv(env);
+    }
+    await handleQueueBatch(batch, env, ctx);
+  },
 
-    async scheduled(event: any, env: any, ctx?: any) {
-      if (env) {
-        publishEnv(env);
-      }
-      try {
-        await Promise.allSettled([
-          processAutoScheduledTasks(),
-          processDigitalDeliveryMaintenance(),
-          processBotTrading(),
-        ]);
-      } catch (err) {
-        console.error("[worker:scheduled_error]", err);
-      }
-    },
-  };
-}
+  async scheduled(event: any, env: any, ctx?: any) {
+    if (env) {
+      publishEnv(env);
+    }
+    try {
+      await Promise.allSettled([
+        processAutoScheduledTasks(),
+        processDigitalDeliveryMaintenance(),
+        processBotTrading(),
+      ]);
+    } catch (err) {
+      console.error("[worker:scheduled_error]", err);
+    }
+  },
+};
 
-export default createServerEntry({ fetch });

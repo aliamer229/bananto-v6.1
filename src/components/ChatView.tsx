@@ -2655,25 +2655,27 @@ export default function ChatView({
                     />
                   ) : msg.type === "image" && msg.payload ? (
                     <div className="relative w-64 max-w-[85%] overflow-hidden rounded-2xl border border-[var(--surface-4)] bg-card p-1.5 shadow-xs">
-                      {isVideoUrl(String(msg.payload["imageUrl"] ?? "")) ? (
-                        <video
-                          src={String(msg.payload["imageUrl"] ?? "")}
-                          controls
-                          preload="metadata"
-                          playsInline
-                          className={`max-h-64 w-full rounded-[12px] bg-black ${
-                            msg.status === "sending" ? "blur-[2px]" : ""
-                          }`}
-                        />
-                      ) : (
-                        <img
-                          src={String(msg.payload["imageUrl"] ?? "")}
-                          alt="مرفق"
-                          className={`max-h-64 w-full rounded-[12px] object-cover ${
-                            msg.status === "sending" ? "blur-[2px]" : ""
-                          }`}
-                        />
-                      )}
+                      {msg.payload["imageUrl"] ? (
+                        isVideoUrl(String(msg.payload["imageUrl"])) ? (
+                          <video
+                            src={String(msg.payload["imageUrl"])}
+                            controls
+                            preload="metadata"
+                            playsInline
+                            className={`max-h-64 w-full rounded-[12px] bg-black ${
+                              msg.status === "sending" ? "blur-[2px]" : ""
+                            }`}
+                          />
+                        ) : (
+                          <img
+                            src={String(msg.payload["imageUrl"])}
+                            alt="مرفق"
+                            className={`max-h-64 w-full rounded-[12px] object-cover ${
+                              msg.status === "sending" ? "blur-[2px]" : ""
+                            }`}
+                          />
+                        )
+                      ) : null}
                       {msg.status === "sending" && typeof msg.uploadProgress === "number" && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white backdrop-blur-xs">
                           <div className="relative h-12 w-12 flex items-center justify-center">
