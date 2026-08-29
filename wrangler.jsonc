@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pixel-cart-cloud",
+  "main": "@tanstack/react-start/server-entry",
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "bananto",
+      "database_name": "bananto",
+      "database_id": "bananto"
+    },
+    {
+      "binding": "DB",
+      "database_name": "bananto",
+      "database_id": "bananto"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "bananto",
+      "bucket_name": "bananto"
+    },
+    {
+      "binding": "bananto_private",
+      "bucket_name": "bananto-private"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CHAT_REALTIME_DO",
+        "class_name": "ChatRealtimeDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["ChatRealtimeDO"]
+    }
+  ]
+}
