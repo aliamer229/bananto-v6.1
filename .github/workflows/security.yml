@@ -31,7 +31,12 @@ jobs:
       # up on 29 August, refuses with "missing lockfile, nothing to audit" — so
       # every run on every branch has been red since. `npm audit` reads the
       # lockfile this repository actually maintains.
-      - run: npm audit --audit-level=high
+      #
+      # `--package-lock-only` because the install above was bun's: plain
+      # `npm audit` walks the npm-installed tree and fails with "loadVirtual
+      # requires existing shrinkwrap file". The lockfile alone is what we want
+      # audited anyway.
+      - run: npm audit --audit-level=high --package-lock-only
       - run: bun run typecheck
       - run: bun run test
       - run: bun run build
