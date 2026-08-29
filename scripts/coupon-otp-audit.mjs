@@ -53,21 +53,31 @@ const results = [];
 /**
  * Runs one check.
  *
- * A thrown query is its own outcome, distinct from a check that ran and found
- * nothing. Reporting a failed read as a clean result is the exact bug this
- * whole file is written to avoid.
+ * Three outcomes, not two. A thrown query is UNREADABLE, distinct from a check
+ * that ran and found nothing. And a check whose query had no rows to look at is
+ * VACUOUS: "0 over-limit" across an empty table is not evidence of anything, and
+ * counting it as a pass is how an audit ends up reassuring people about data it
+ * never read. Any check that can be vacuous reports how many rows it examined.
  */
 async function check(name, fn) {
   try {
     const outcome = await fn();
-    results.push({ name, ...outcome });
-    const mark = outcome.ok ? "PASS" : "FAIL";
-    say(`- **${mark}** — ${name}${outcome.detail ? `: ${outcome.detail}` : ""}`);
+    const vacuous = outcome.examined === 0;
+    results.push({ name, ...outcome, vacuous });
+    const mark = vacuous ? "VACUOUS" : outcome.ok ? "PASS" : "FAIL";
+    const scope = outcome.examined === undefined ? "" : ` [${outcome.examined} rows examined]`;
+    say(`- **${mark}** — ${name}${outcome.detail ? `: ${outcome.detail}` : ""}${scope}`);
     for (const row of outcome.rows ?? []) say(`    - ${row}`);
   } catch (error) {
     results.push({ name, ok: false, unreadable: true });
     say(`- **UNREADABLE** — ${name}: ${redact(String(error)).slice(0, 200)}`);
   }
+}
+
+/** How many rows a check's population actually contains. */
+async function countRows(sql, ...binds) {
+  const rows = await app.d1All(sql, ...binds);
+  return Number(rows[0]?.n ?? 0);
 }
 
 /** Column names of a table, read from the CREATE statement D1 will show us. */
@@ -125,6 +135,10 @@ await check("no member has used a coupon more times than its per-user limit", as
   return {
     ok: rows.length === 0,
     detail: `${rows.length} over-limit`,
+    examined: await countRows(
+      `SELECT COUNT(*) AS n FROM coupon_user_usage u JOIN coupons c ON c.id = u.coupon_id
+        WHERE c.per_user_limit IS NOT NULL`,
+    ),
     rows: rows.map((r) => `${r.code}: user ${r.user_id} used ${r.uses} of ${r.per_user_limit}`),
   };
 });
@@ -138,6 +152,10 @@ await check("no lifetime-once coupon has been used twice by one member", async (
   return {
     ok: rows.length === 0,
     detail: `${rows.length} over-limit`,
+    examined: await countRows(
+      `SELECT COUNT(*) AS n FROM coupon_user_usage u JOIN coupons c ON c.id = u.coupon_id
+        WHERE c.once_per_user_lifetime = 1`,
+    ),
     rows: rows.map((r) => `${r.code}: user ${r.user_id} used ${r.uses}`),
   };
 });
@@ -150,6 +168,9 @@ await check("no coupon has been redeemed past its global cap", async () => {
   return {
     ok: rows.length === 0,
     detail: `${rows.length} over cap`,
+    examined: await countRows(
+      `SELECT COUNT(*) AS n FROM coupons WHERE usage_limit IS NOT NULL`,
+    ),
     rows: rows.map((r) => `${r.code}: ${r.total_uses} of ${r.usage_limit}`),
   };
 });
@@ -165,6 +186,7 @@ await check("the same coupon was never redeemed twice on one order", async () =>
   return {
     ok: rows.length === 0,
     detail: `${rows.length} duplicated`,
+    examined: await countRows(`SELECT COUNT(*) AS n FROM coupon_redemptions`),
     rows: rows.map((r) => `coupon ${r.coupon_id} order ${r.order_id} × ${r.n}`),
   };
 });
@@ -187,7 +209,12 @@ await check("the per-member counters agree with the redemption trail", async () 
   return {
     ok: rows.length === 0,
     detail: `${rows.length} drifted`,
-    rows: rows.map((r) => `${r.code}: user ${r.user_id} has ${r.redemptions} rows, counter ${r.counter}`),
+    examined: await countRows(
+      `SELECT COUNT(*) AS n FROM coupon_redemptions r JOIN coupons c ON c.id = r.coupon_id`,
+    ),
+    rows: rows.map(
+      (r) => `${r.code}: user ${r.user_id} has ${r.redemptions} rows, counter ${r.counter}`,
+    ),
   };
 });
 
@@ -211,6 +238,10 @@ await check("no Offline-only coupon was ever redeemed against an Online line", a
   return {
     ok: rows.length === 0,
     detail: `${rows.length} mis-scoped`,
+    examined: await countRows(
+      `SELECT COUNT(*) AS n FROM coupon_redemptions r JOIN coupons c ON c.id = r.coupon_id
+        WHERE c.offline_account_only = 1`,
+    ),
     rows: rows.map((r) => `${r.code}: order ${r.order_id} used option ${r.variant_id}`),
   };
 });
@@ -230,7 +261,37 @@ await check("no redemption is attached to a cancelled order", async () => {
   return {
     ok: rows.length === 0,
     detail: `${rows.length} on cancelled orders`,
+    examined: await countRows(
+      `SELECT COUNT(*) AS n FROM coupon_redemptions r JOIN orders o ON o.id = r.order_id`,
+    ),
     rows: rows.slice(0, 20).map((r) => `${r.code}: order ${r.order_id}, user ${r.user_id}`),
+  };
+});
+
+await check("every redemption still points at a coupon that exists", async () => {
+  /*
+    The first production run of this file passed eight coupon checks against a
+    `coupons` table with nothing in it — 9 redemptions and 9 per-member counter
+    rows all referencing coupons that had been deleted. Nothing is at risk (a
+    deleted coupon cannot be redeemed again), but every check that joins
+    `coupons` was looking at no rows, and a vacuous pass is worse than a
+    failure because it reads like evidence. This is the check that says so.
+  */
+  const orphanRedemptions = await app.d1All(
+    `SELECT r.coupon_id, COUNT(*) AS n FROM coupon_redemptions r
+       LEFT JOIN coupons c ON c.id = r.coupon_id
+      WHERE c.id IS NULL GROUP BY r.coupon_id`,
+  );
+  const orphanCounters = await countRows(
+    `SELECT COUNT(*) AS n FROM coupon_user_usage u
+       LEFT JOIN coupons c ON c.id = u.coupon_id WHERE c.id IS NULL`,
+  );
+  const total = orphanRedemptions.reduce((sum, row) => sum + Number(row.n ?? 0), 0);
+  return {
+    ok: total === 0 && orphanCounters === 0,
+    detail: `${total} redemptions and ${orphanCounters} counter rows reference a deleted coupon`,
+    examined: await countRows(`SELECT COUNT(*) AS n FROM coupon_redemptions`),
+    rows: orphanRedemptions.map((r) => `coupon ${r.coupon_id} — ${r.n} redemptions, no coupon row`),
   };
 });
 
@@ -255,12 +316,29 @@ say();
 say(`## OTP`);
 say();
 
+/*
+  Columns literally named `code` that are not one-time codes, each with the
+  reason it is not one. Named rather than pattern-matched away, so adding an
+  exemption is a decision somebody has to write down.
+*/
+const NOT_ONE_TIME_CODES = {
+  "orders.code": "the human-readable order reference printed on a receipt",
+  "coupons.code": "the discount code a customer types in — public by design",
+  "banan_codes.code":
+    "a prepaid voucher; a bearer token the store issues and the member redeems, not an authentication code",
+};
+
 await check("no table in production stores a one-time code in the clear", async () => {
   /*
     The strongest statement available about "never fabricate an OTP" is
-    structural: a column that could hold a readable code is where a fabricated
-    one would live. `code_hash` is fine — a hash is not a code. Anything named
-    like a bare code, on any table, is reported by name.
+    structural: a column that could hold a readable one-time code is where a
+    fabricated one would live. `code_hash` is fine — a hash is not a code.
+
+    The first run of this check flagged `orders.code`, `coupons.code` and
+    `banan_codes.code`, none of which is a one-time code. That was this check
+    being wrong, not production. Rather than loosen the pattern until it stops
+    complaining, the three are exempted by name with a stated reason, so a
+    genuinely new `code` column still fails.
   */
   const tables = await app.d1All(
     "SELECT name, sql FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
@@ -269,15 +347,22 @@ await check("no table in production stores a one-time code in the clear", async 
   const suspicious = [];
   for (const table of tables) {
     const body = String(table.sql ?? "");
-    for (const match of body.matchAll(/(^|[(,\s])((?:otp|verification)_?code|code)\s+(TEXT|VARCHAR)/gi)) {
+    for (const match of body.matchAll(
+      /(^|[(,\s])((?:otp|verification|one_time|auth|2fa)_?code|code)\s+(TEXT|VARCHAR)/gi,
+    )) {
       const column = match[2];
       if (/hash/i.test(column)) continue;
-      suspicious.push(`${table.name}.${column}`);
+      const key = `${table.name}.${column}`;
+      if (NOT_ONE_TIME_CODES[key]) continue;
+      suspicious.push(key);
     }
   }
   return {
     ok: suspicious.length === 0,
-    detail: suspicious.length ? suspicious.join(", ") : `${tables.length} tables, none`,
+    detail: suspicious.length
+      ? suspicious.join(", ")
+      : `${tables.length} tables scanned, ${Object.keys(NOT_ONE_TIME_CODES).length} known non-OTP columns exempt`,
+    examined: tables.length,
   };
 });
 
@@ -340,18 +425,30 @@ say(
 
 /* ------------------------------- summary ---------------------------------- */
 
-const failed = results.filter((r) => !r.ok);
 const unreadable = results.filter((r) => r.unreadable);
+const vacuous = results.filter((r) => r.vacuous && !r.unreadable);
+const failed = results.filter((r) => !r.ok && !r.unreadable && !r.vacuous);
+const passed = results.filter((r) => r.ok && !r.vacuous && !r.unreadable);
 say();
 say(`## Summary`);
 say();
 say(`- checks run: **${results.length}**`);
-say(`- passed: **${results.length - failed.length}**`);
+say(`- passed on real rows: **${passed.length}**`);
 say(`- failed: **${failed.length}**`);
+say(`- vacuous (nothing to check): **${vacuous.length}**`);
 say(`- unreadable: **${unreadable.length}**`);
 if (failed.length) say(`- failing: ${failed.map((r) => r.name).join("; ")}`);
+if (vacuous.length) {
+  say(`- examined no rows, so they prove nothing: ${vacuous.map((r) => r.name).join("; ")}`);
+}
+if (unreadable.length) say(`- unreadable: ${unreadable.map((r) => r.name).join("; ")}`);
 
 writeFileSync("coupon-otp-audit.md", lines.join("\n") + "\n");
 
-// An unreadable check is not a pass. The job fails so the gap is visible.
-if (failed.length) process.exit(1);
+/*
+  A failure or a query that could not run fails the job. Vacuity does not: an
+  empty coupon table is a fact about the store, not a defect, and failing on it
+  would train everyone to ignore this job. It is reported in the summary instead,
+  where it cannot be mistaken for evidence.
+*/
+if (failed.length || unreadable.length) process.exit(1);
