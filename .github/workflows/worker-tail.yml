@@ -1,0 +1,109 @@
+# Reads the Worker's real runtime error instead of guessing at it.
+#
+# `/api/health` answering 500 with the app's own error page says a request threw
+# somewhere the app could not report, and no amount of reading the diff settles
+# which throw it was. `wrangler tail` streams what the runtime actually raised.
+#
+# Read-only: it observes traffic and requests two pages. It changes nothing.
+name: Worker tail
+
+on:
+  workflow_dispatch:
+    inputs:
+      seconds:
+        description: "How long to listen"
+        type: string
+        default: "45"
+      path:
+        description: "Path to request while listening"
+        type: string
+        default: "/api/health"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worker-tail
+  cancel-in-progress: false
+
+jobs:
+  tail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+
+      - name: Listen, then make a request
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set +e
+          # Start the tail first, so the request that follows is inside the
+          # window. `|| true` on the whole thing: a tail that cannot attach is
+          # worth reporting, not worth failing the job over.
+          bunx wrangler tail pixel-cart-cloud \
+            --config wrangler.jsonc \
+            --format json > tail.jsonl 2>tail.err &
+          TAIL_PID=$!
+          sleep 12
+
+          echo "--- requesting https://banan.to${{ inputs.path }} ---"
+          curl -sS -m 30 -o /dev/null -w "HTTP %{http_code}\n" \
+            -A "bananto-tail-probe" "https://banan.to${{ inputs.path }}" || true
+          curl -sS -m 30 -o /dev/null -w "HTTP %{http_code}\n" \
+            -A "bananto-tail-probe" "https://banan.to/" || true
+
+          sleep "${{ inputs.seconds }}"
+          kill "$TAIL_PID" 2>/dev/null || true
+          sleep 2
+
+          echo "===== tail stderr ====="
+          head -40 tail.err || true
+          echo "===== exceptions and logs ====="
+          # Print only what a diagnosis needs: the thrown message and stack,
+          # and any console output the worker produced.
+          node -e '
+            const fs = require("node:fs");
+            const lines = fs.existsSync("tail.jsonl")
+              ? fs.readFileSync("tail.jsonl", "utf8").split("\n").filter(Boolean)
+              : [];
+            if (!lines.length) { console.log("(no tail events captured)"); process.exit(0); }
+            let shown = 0;
+            for (const line of lines) {
+              let e; try { e = JSON.parse(line); } catch { continue; }
+              const exceptions = e.exceptions ?? [];
+              const logs = e.logs ?? [];
+              if (!exceptions.length && !logs.length) continue;
+              console.log("---", e.outcome ?? "?", e.event?.request?.url ?? "");
+              for (const x of exceptions) {
+                console.log("  EXCEPTION:", x.name, "-", x.message);
+                if (x.stack) console.log(String(x.stack).split("\n").slice(0, 12).join("\n"));
+              }
+              for (const l of logs.slice(0, 6)) {
+                console.log("  LOG:", l.level, String(JSON.stringify(l.message)).slice(0, 500));
+              }
+              if (++shown >= 12) break;
+            }
+            if (!shown) console.log("(events captured, but none carried an exception or a log)");
+          '
+
+      - name: Upload the raw tail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-tail
+          path: |
+            tail.jsonl
+            tail.err
+          if-no-files-found: warn
