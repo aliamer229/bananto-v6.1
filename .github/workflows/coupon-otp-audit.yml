@@ -3,6 +3,15 @@ name: Coupon and OTP audit
 
 on:
   workflow_dispatch:
+  # A `workflow_dispatch` is only accepted for a workflow that exists on the
+  # default branch, so until this merges the push trigger is the only way to run
+  # it. Scoped to the two files that decide what it does, so ordinary commits do
+  # not re-run a production read.
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/coupon-otp-audit.yml
+      - scripts/coupon-otp-audit.mjs
 
 permissions:
   contents: read

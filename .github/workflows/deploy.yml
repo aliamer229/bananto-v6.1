@@ -28,6 +28,16 @@ on:
         description: "Apply pending D1 migrations to the production database first"
         type: boolean
         default: false
+  # A `workflow_dispatch` is only accepted for a workflow on the default branch,
+  # so until this merges a push is the only way to exercise the pipeline. A push
+  # can only ever reach `preview` — `MODE` below falls back to it and `release`
+  # is unreachable without someone choosing it — so this trigger cannot change
+  # what a customer sees, and it is scoped to the files that define the deploy.
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/deploy.yml
+      - scripts/verify-deployment.mjs
 
 permissions:
   contents: read
@@ -42,6 +52,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      # `inputs` is empty on a push, so the fallback is what a push runs: a
+      # version upload that serves no traffic. `release` only ever comes from
+      # someone choosing it in the dispatch form.
+      MODE: ${{ inputs.mode || 'preview' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,7 +77,7 @@ jobs:
         run: |
           echo "ref:    ${{ github.ref_name }}"
           echo "commit: ${{ github.sha }}"
-          echo "mode:   ${{ inputs.mode }}"
+          echo "mode:   $MODE"
           echo "migrate: ${{ inputs.migrate }}"
 
       # The gate. Nothing below runs if any of these three fail.
@@ -98,7 +113,7 @@ jobs:
         run: bunx wrangler d1 migrations apply bananto --remote --config wrangler.jsonc
 
       - name: Upload a version (no traffic)
-        if: ${{ inputs.mode == 'preview' }}
+        if: ${{ env.MODE == 'preview' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -108,7 +123,7 @@ jobs:
             --message "${{ github.sha }} from ${{ github.ref_name }}"
 
       - name: Deploy
-        if: ${{ inputs.mode == 'release' }}
+        if: ${{ env.MODE == 'release' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -117,7 +132,7 @@ jobs:
       # Outside-in, against the public hostname. "wrangler reported success" and
       # "banan.to answers correctly" are different claims.
       - name: Verify the live site
-        if: ${{ inputs.mode == 'release' }}
+        if: ${{ env.MODE == 'release' }}
         run: node scripts/verify-deployment.mjs
 
       - name: Read back what Cloudflare is serving
@@ -131,7 +146,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: deploy-${{ inputs.mode }}
+          name: deploy-${{ env.MODE }}
           path: |
             deployment-verification.md
             deployment-state.md
