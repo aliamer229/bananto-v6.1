@@ -30,11 +30,18 @@ export const ALLOWED_PUBLIC_MIMES: Record<string, string> = {
 };
 
 export function getPublicBucket(): R2Like | undefined {
-  const bucket = getBinding<R2Like>("BANANTO_BUCKET");
+  const bucket =
+    getBinding<R2Like>("BANANTO_BUCKET") ||
+    getBinding<R2Like>("bananto_bucket") ||
+    getBinding<R2Like>("bananto_public_bucket") ||
+    getBinding<R2Like>("bananto_r2");
   if (bucket && typeof bucket.get === "function") return bucket;
 
   const globalEnv = (globalThis as { __CF_ENV__?: Record<string, unknown> }).__CF_ENV__;
-  const globalBucket = globalEnv?.["BANANTO_BUCKET"] as R2Like | undefined;
+  const globalBucket = (globalEnv?.["BANANTO_BUCKET"] ||
+    globalEnv?.["bananto_bucket"] ||
+    globalEnv?.["bananto_public_bucket"] ||
+    globalEnv?.["bananto_r2"]) as R2Like | undefined;
   if (globalBucket && typeof globalBucket.get === "function") return globalBucket;
 
   return undefined;

@@ -36,11 +36,16 @@ const memoryBinary = new Map<string, { bytes: Uint8Array; mime: string }>();
 
 export function getPrivateBucket(): R2Like | undefined {
   // Check request-scoped env first, then fallback
-  const bucket = getBinding<R2Like>("BANANTO_PRIVATE_BUCKET");
+  const bucket =
+    getBinding<R2Like>("BANANTO_PRIVATE_BUCKET") ||
+    getBinding<R2Like>("bananto_private") ||
+    getBinding<R2Like>("bananto_private_bucket");
   if (bucket && typeof bucket.get === "function") return bucket;
 
   const globalEnv = (globalThis as { __CF_ENV__?: Record<string, unknown> }).__CF_ENV__;
-  const globalBucket = globalEnv?.["BANANTO_PRIVATE_BUCKET"] as R2Like | undefined;
+  const globalBucket = (globalEnv?.["BANANTO_PRIVATE_BUCKET"] ||
+    globalEnv?.["bananto_private"] ||
+    globalEnv?.["bananto_private_bucket"]) as R2Like | undefined;
   if (globalBucket && typeof globalBucket.get === "function") return globalBucket;
 
   return undefined;

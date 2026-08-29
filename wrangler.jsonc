@@ -12,20 +12,15 @@
       "binding": "bananto",
       "database_name": "bananto",
       "database_id": "bananto"
-    },
-    {
-      "binding": "DB",
-      "database_name": "bananto",
-      "database_id": "bananto"
     }
   ],
   "r2_buckets": [
     {
-      "binding": "bananto",
+      "binding": "BANANTO_BUCKET",
       "bucket_name": "bananto"
     },
     {
-      "binding": "bananto_private",
+      "binding": "BANANTO_PRIVATE_BUCKET",
       "bucket_name": "bananto-private"
     }
   ],
