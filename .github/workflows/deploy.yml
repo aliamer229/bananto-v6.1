@@ -1,0 +1,153 @@
+# Deploys the Worker to Cloudflare.
+#
+# Deployment was a `wrangler deploy` typed on somebody's laptop, which means the
+# gate in front of production was whatever that person happened to run first.
+# Here the gate is the job: typecheck, the full test suite and a real build all
+# have to pass before wrangler is invoked at all.
+#
+# Two modes, and `preview` is the default on purpose:
+#   preview — uploads a version and serves none of it. Cloudflare gives the
+#             version a preview URL; production keeps serving what it served.
+#   release — the upload plus the traffic shift. This is the one that changes
+#             what a customer sees.
+#
+# Migrations are their own opt-in input, off by default, because applying them
+# is the only step here that touches customer data and it is not reversible by
+# re-running the job.
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "preview = upload a version, serve none of it · release = serve it"
+        type: choice
+        options: [preview, release]
+        default: preview
+      migrate:
+        description: "Apply pending D1 migrations to the production database first"
+        type: boolean
+        default: false
+  # A `workflow_dispatch` is only accepted for a workflow on the default branch,
+  # so until this merges a push is the only way to exercise the pipeline. A push
+  # can only ever reach `preview` — `MODE` below falls back to it and `release`
+  # is unreachable without someone choosing it — so this trigger cannot change
+  # what a customer sees, and it is scoped to the files that define the deploy.
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/deploy.yml
+      - scripts/verify-deployment.mjs
+
+permissions:
+  contents: read
+
+# One deploy at a time, and never cancel one half-way: a cancelled wrangler run
+# can leave the upload done and the traffic shift not.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      # `inputs` is empty on a push, so the fallback is what a push runs: a
+      # version upload that serves no traffic. `release` only ever comes from
+      # someone choosing it in the dispatch form.
+      MODE: ${{ inputs.mode || 'preview' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+
+      - name: Say what is being deployed
+        run: |
+          echo "ref:    ${{ github.ref_name }}"
+          echo "commit: ${{ github.sha }}"
+          echo "mode:   $MODE"
+          echo "migrate: ${{ inputs.migrate }}"
+
+      # The gate. Nothing below runs if any of these three fail.
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bunx vitest run
+
+      - name: Lint
+        run: bunx eslint .
+
+      - name: Build
+        run: bunx vite build
+
+      # Read-only, and unconditional: seeing what *would* run is how an operator
+      # decides whether the migrate input is safe to tick. Wrangler tracks
+      # applied migrations in `d1_migrations`; if that table was never created,
+      # every file in `migrations/` counts as pending and applying them would be
+      # a re-run against a live database rather than an update to it.
+      - name: List pending D1 migrations
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler d1 migrations list bananto --remote --config wrangler.jsonc || true
+
+      # Opt-in, and before the code that expects the new shape goes live.
+      - name: Apply D1 migrations
+        if: ${{ inputs.migrate }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler d1 migrations apply bananto --remote --config wrangler.jsonc
+
+      - name: Upload a version (no traffic)
+        if: ${{ env.MODE == 'preview' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          bunx wrangler versions upload \
+            --config wrangler.jsonc \
+            --message "${{ github.sha }} from ${{ github.ref_name }}"
+
+      - name: Deploy
+        if: ${{ env.MODE == 'release' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler deploy --config wrangler.jsonc
+
+      # Outside-in, against the public hostname. "wrangler reported success" and
+      # "banan.to answers correctly" are different claims.
+      - name: Verify the live site
+        if: ${{ env.MODE == 'release' }}
+        run: node scripts/verify-deployment.mjs
+
+      - name: Read back what Cloudflare is serving
+        if: always()
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/deployment-state.mjs || true
+
+      - name: Upload the reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-${{ env.MODE }}
+          path: |
+            deployment-verification.md
+            deployment-state.md
+          if-no-files-found: warn

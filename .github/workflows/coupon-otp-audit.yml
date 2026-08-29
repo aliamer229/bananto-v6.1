@@ -1,0 +1,55 @@
+# Coupon and OTP integrity against the production database. Read only.
+name: Coupon and OTP audit
+
+on:
+  workflow_dispatch:
+  # A `workflow_dispatch` is only accepted for a workflow that exists on the
+  # default branch, so until this merges the push trigger is the only way to run
+  # it. Scoped to the two files that decide what it does, so ordinary commits do
+  # not re-run a production read.
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/coupon-otp-audit.yml
+      - scripts/coupon-otp-audit.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coupon-otp-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: |
+          echo "::add-mask::$ACCOUNT_ID"
+          echo "::add-mask::$DATABASE_ID"
+      - name: Audit
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: node scripts/coupon-otp-audit.mjs
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coupon-otp-audit
+          path: coupon-otp-audit.md
+          if-no-files-found: warn

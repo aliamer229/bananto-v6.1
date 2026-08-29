@@ -25,6 +25,9 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      # Now that `bun.lock` is committed this installs the resolved versions
+      # rather than re-resolving `package.json` on every run, and `--frozen`
+      # means what it says.
       - run: bun install --frozen-lockfile
       - run: bun audit --audit-level=high
       - run: bun run typecheck

@@ -57,29 +57,24 @@ describe("no statement can outgrow D1's parameter limit", () => {
       "src/lib/devicePerformance.server.ts:activeHardwareIds": "per-game, small",
       // A fixed column list: 49 parameters, constant.
       "src/lib/devicePerformance.server.ts:DATABASE_COLUMNS": "fixed width",
+      // The five statuses that count as live. A literal in the source, not a
+      // function of how many listings exist.
+      "src/lib/used-marketplace.server.ts:ACTIVE_STATUSES": "fixed width",
     };
 
-    const unknown = found.filter(
-      (entry) => !(`${entry.file}:${entry.source}` in KNOWN),
-    );
+    const unknown = found.filter((entry) => !(`${entry.file}:${entry.source}` in KNOWN));
     expect(unknown, `unbounded dynamic SQL: ${JSON.stringify(unknown)}`).toEqual([]);
   });
 
   it("keeps the projection's writer behind the guard", () => {
-    const source = readFileSync(
-      resolve(process.cwd(), "src/lib/product-index.server.ts"),
-      "utf8",
-    );
+    const source = readFileSync(resolve(process.cwd(), "src/lib/product-index.server.ts"), "utf8");
     // Every statement this file emits is sized and then checked.
     expect(source).toContain("chunkForParams");
     expect(source).toContain("assertBoundParameters");
   });
 
   it("keeps the listing free of IN() hydration entirely", () => {
-    const source = readFileSync(
-      resolve(process.cwd(), "src/lib/product-index.server.ts"),
-      "utf8",
-    );
+    const source = readFileSync(resolve(process.cwd(), "src/lib/product-index.server.ts"), "utf8");
     // The page is read from one table. No relation is hydrated per row, so
     // there is no id list to bind in the first place.
     // Just this function: the bootstrap below it legitimately reads store_kv,

@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCatalogVersion, getStore, invalidateStoreCache, updateStore } from "@/lib/db.server";
-import { destructiveUpdateLog, mergeProductUpdate, oversizedMediaLog } from "@/lib/productMergeGuard";
+import {
+  destructiveUpdateLog,
+  mergeProductUpdate,
+  oversizedMediaLog,
+} from "@/lib/productMergeGuard";
 import { deleteProductEverywhere } from "@/lib/product-delete.server";
 import { body, errorRef, guard, json } from "@/lib/http.server";
 import { requireAdmin } from "@/lib/session.server";
@@ -32,6 +36,8 @@ import {
 } from "@/lib/devicePerformance.server";
 import { validateGameDevicePerformance } from "@/lib/devicePerformance";
 import { resolveCategoryType } from "@/lib/productSection";
+import { sanitizeSlug, uniqueSlug } from "@/lib/productSlug";
+import { checkPublishable, isPublishing } from "@/lib/publishGate";
 import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
 
 function productSection(product: Partial<Product>, categories: Record<string, unknown>[]) {
@@ -57,29 +63,11 @@ function hardwareProducts(products: Product[], categories: Record<string, unknow
   return products.filter((product) => productSection(product, categories) === "hardware");
 }
 
-/**
- * A free slug for a copy of a product that already exists.
- */
-export function uniqueSlug(desired: string, taken: Iterable<string>): string {
-  const used = new Set([...taken].map((value) => String(value).toLowerCase()));
-  if (!used.has(desired.toLowerCase())) return desired;
-  for (let suffix = 2; suffix < 1000; suffix++) {
-    const candidate = `${desired}-${suffix}`;
-    if (!used.has(candidate.toLowerCase())) return candidate;
-  }
-  return `${desired}-${Date.now().toString(36)}`;
-}
-
-export function sanitizeSlug(input: string, fallbackId: string): string {
-  const cleaned = input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  if (cleaned) return cleaned;
-  const fallbackClean = fallbackId.toLowerCase().replace(/[^a-z0-9]+/g, "");
-  return `product-${fallbackClean || Date.now().toString(36)}`;
-}
+/*
+  Re-exported so the long-standing importers of these names keep working; the
+  rules themselves live in `@/lib/productSlug`, which the browser can import.
+*/
+export { sanitizeSlug, uniqueSlug };
 
 export const Route = createFileRoute("/api/admin/products")({
   server: {
@@ -478,14 +466,17 @@ export const Route = createFileRoute("/api/admin/products")({
           void (async () => {
             try {
               const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-              if (imgVerification.results && imgVerification.results.some((r: any) => r.status === "stored")) {
-                 await d1Run(
-                    `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
-                    JSON.stringify(imgVerification.product),
-                    new Date().toISOString(),
-                    `store:product:${productId}`
-                 );
-                 invalidateStoreCache();
+              if (
+                imgVerification.results &&
+                imgVerification.results.some((r: any) => r.status === "stored")
+              ) {
+                await d1Run(
+                  `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
+                  JSON.stringify(imgVerification.product),
+                  new Date().toISOString(),
+                  `store:product:${productId}`,
+                );
+                invalidateStoreCache();
               }
             } catch (imgErr) {
               console.warn("[BackgroundImgIngestError]", imgErr);
@@ -513,7 +504,11 @@ export const Route = createFileRoute("/api/admin/products")({
                 hardwareProducts(existingCatalog, currentStore.categories || []),
               ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
-            return json({ success: true, product: saved, catalogVersion: await getCatalogVersion() });
+            return json({
+              success: true,
+              product: saved,
+              catalogVersion: await getCatalogVersion(),
+            });
           } catch (dbErr: any) {
             const ref = errorRef();
             console.error("[SaveProduct:DatabaseError]", {
@@ -553,10 +548,7 @@ export const Route = createFileRoute("/api/admin/products")({
           const stored = existingCatalog.find((p) => String(p.id) === productId);
 
           if (!stored) {
-             return json(
-               { error: "Product not found", code: "PRODUCT_NOT_FOUND" },
-               { status: 404 }
-             );
+            return json({ error: "Product not found", code: "PRODUCT_NOT_FOUND" }, { status: 404 });
           }
 
           /*
@@ -579,6 +571,30 @@ export const Route = createFileRoute("/api/admin/products")({
           }
           const productToSave: Product = guard.merged;
 
+          // The same publication floor the full save applies. A patch is the
+          // shorter route to the same transition, and the listing screen's
+          // visibility toggle uses it — which is exactly how a bulk reveal
+          // would happen.
+          if (isPublishing(stored as unknown as Record<string, unknown>, productToSave)) {
+            const gate = checkPublishable(productToSave as unknown as Record<string, unknown>);
+            const override = (payload as Record<string, unknown>)["publishOverride"] === true;
+            if (!gate.ok && !override) {
+              return json(
+                {
+                  error: `لا يمكن نشر هذا المنتج قبل إكمال: ${gate.missing.join("، ")}`,
+                  code: "PRODUCT_NOT_PUBLISHABLE",
+                  missing: gate.missing,
+                },
+                { status: 400 },
+              );
+            }
+            if (!gate.ok && override) {
+              console.warn(
+                `[products] published with override: ${productId} still missing ${gate.missing.join(", ")}`,
+              );
+            }
+          }
+
           // Fast DB Update (UPSERT style on KV value)
           try {
             await d1Run(
@@ -593,13 +609,16 @@ export const Route = createFileRoute("/api/admin/products")({
             invalidateStoreCache();
 
             // Background syncing for Game Device Performance (only if performance arrays changed)
-            if (payload.devicePerformance !== undefined && productSection(productToSave, currentStore.categories || []) === "game") {
-               // Fire-and-forget sync to avoid blocking the patch response
-               // Uses standard Promise chain to run in background.
-               syncGameDevicePerformance(
-                  productToSave,
-                  hardwareProducts(existingCatalog, currentStore.categories || [])
-               ).catch(e => console.error("[BackgroundSyncError]", e));
+            if (
+              payload.devicePerformance !== undefined &&
+              productSection(productToSave, currentStore.categories || []) === "game"
+            ) {
+              // Fire-and-forget sync to avoid blocking the patch response
+              // Uses standard Promise chain to run in background.
+              syncGameDevicePerformance(
+                productToSave,
+                hardwareProducts(existingCatalog, currentStore.categories || []),
+              ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
 
             return json({
@@ -766,15 +785,31 @@ export const Route = createFileRoute("/api/admin/products")({
             isHidden: payload.isHidden === true,
             categoryId: payload.categoryId || (payload as any).category || "cat_nintendo",
             category: (payload as any).category || payload.categoryId || "cat_nintendo",
-            createdAt: payload.createdAt || payload.created_at || stored?.createdAt || stored?.created_at || nowIso,
-            created_at: payload.created_at || payload.createdAt || stored?.created_at || stored?.createdAt || nowIso,
+            createdAt:
+              payload.createdAt ||
+              payload.created_at ||
+              stored?.createdAt ||
+              stored?.created_at ||
+              nowIso,
+            created_at:
+              payload.created_at ||
+              payload.createdAt ||
+              stored?.created_at ||
+              stored?.createdAt ||
+              nowIso,
             updatedAt: nowIso,
             updated_at: nowIso,
           };
 
           const putGuard = stored
             ? mergeProductUpdate(stored, normalised, { clear: putClearFields })
-            : { merged: normalised as Product, blocked: [], rejectedMedia: [], cleared: [], changed: [] };
+            : {
+                merged: normalised as Product,
+                blocked: [],
+                rejectedMedia: [],
+                cleared: [],
+                changed: [],
+              };
           if (putGuard.blocked.length) {
             console.warn(destructiveUpdateLog(productId, putGuard.blocked));
           }
@@ -798,6 +833,40 @@ export const Route = createFileRoute("/api/admin/products")({
             );
           }
 
+          /*
+            The publication floor.
+
+            59 of these products were created hidden on purpose, and hidden was
+            the only thing between a half-researched record and a storefront
+            page with a blank cover and no description — `isHidden` came
+            straight off the request body, so one bulk edit could reveal all of
+            them. This refuses the transition from hidden to visible for a
+            product that cannot answer "what is this and what does it cost".
+
+            `publishOverride` is the deliberate way through, and it is recorded,
+            so publishing an incomplete product stays possible and stops being
+            accidental.
+          */
+          if (isPublishing(stored as unknown as Record<string, unknown>, productToSave)) {
+            const gate = checkPublishable(productToSave as unknown as Record<string, unknown>);
+            const override = (payload as Record<string, unknown>)["publishOverride"] === true;
+            if (!gate.ok && !override) {
+              return json(
+                {
+                  error: `لا يمكن نشر هذا المنتج قبل إكمال: ${gate.missing.join("، ")}`,
+                  code: "PRODUCT_NOT_PUBLISHABLE",
+                  missing: gate.missing,
+                },
+                { status: 400 },
+              );
+            }
+            if (!gate.ok && override) {
+              console.warn(
+                `[products] published with override: ${productId} still missing ${gate.missing.join(", ")}`,
+              );
+            }
+          }
+
           try {
             productToSave = await autoTranslateProduct(productToSave);
           } catch (transErr) {
@@ -809,14 +878,17 @@ export const Route = createFileRoute("/api/admin/products")({
           void (async () => {
             try {
               const imgVerification = await sanitizeAndVerifyProductImages(productToSave);
-              if (imgVerification.results && imgVerification.results.some((r: any) => r.status === "stored")) {
-                 await d1Run(
-                    `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
-                    JSON.stringify(imgVerification.product),
-                    new Date().toISOString(),
-                    `store:product:${productId}`
-                 );
-                 invalidateStoreCache();
+              if (
+                imgVerification.results &&
+                imgVerification.results.some((r: any) => r.status === "stored")
+              ) {
+                await d1Run(
+                  `UPDATE store_kv SET value = ?, updated_at = ? WHERE key = ?`,
+                  JSON.stringify(imgVerification.product),
+                  new Date().toISOString(),
+                  `store:product:${productId}`,
+                );
+                invalidateStoreCache();
               }
             } catch (imgErr) {
               console.warn("[BackgroundImgIngestError]", imgErr);
@@ -843,7 +915,11 @@ export const Route = createFileRoute("/api/admin/products")({
                 hardwareProducts(existingCatalog, currentStore.categories || []),
               ).catch((e) => console.error("[BackgroundSyncError]", e));
             }
-            return json({ success: true, product: saved, catalogVersion: await getCatalogVersion() });
+            return json({
+              success: true,
+              product: saved,
+              catalogVersion: await getCatalogVersion(),
+            });
           } catch (dbErr: any) {
             const ref = errorRef();
             console.error("[UpdateProduct:DatabaseError]", {

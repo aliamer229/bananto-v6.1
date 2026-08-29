@@ -13,6 +13,10 @@ import { toStepList } from "./stepsText";
 import { safeRandomUUID } from "./polyfills";
 import { parseGameImport } from "./gameImportParser";
 import { dedupeDevicePerformance, getDevicePerformanceList } from "./devicePerformance";
+import { parseProductImport } from "./productImport/parser";
+import { buildQualityReport, type QualityReport } from "./productImport/quality";
+import { applySchemaImportToForm } from "./productImport/toProductForm";
+import type { ProductSchema } from "./productImport/types";
 
 /** The state a brand new product form starts with. */
 export function createBlankProductForm(defaultCategoryId: string): Record<string, any> {
@@ -193,13 +197,20 @@ export function buildProductSavePayload(
   const selectedCategoryId = formData.categoryId || formData.category || "cat_nintendo";
 
   const cleanedData = { ...formData };
-  
+
   // Remove UI state and massive fields
   const ignoreKeys = ["files", "previewData", "blob", "blobs", "file", "dataUrl"];
   for (const key of Object.keys(cleanedData)) {
-    if (ignoreKeys.includes(key) || typeof cleanedData[key] === "function" || cleanedData[key] instanceof File) {
+    if (
+      ignoreKeys.includes(key) ||
+      typeof cleanedData[key] === "function" ||
+      cleanedData[key] instanceof File
+    ) {
       delete cleanedData[key];
-    } else if (typeof cleanedData[key] === "string" && (cleanedData[key].startsWith("data:image/") || cleanedData[key].startsWith("blob:"))) {
+    } else if (
+      typeof cleanedData[key] === "string" &&
+      (cleanedData[key].startsWith("data:image/") || cleanedData[key].startsWith("blob:"))
+    ) {
       delete cleanedData[key]; // Do not send base64 or blob strings!
     }
   }
@@ -207,12 +218,14 @@ export function buildProductSavePayload(
   // Clean nested images in gallery or bannerImages
   if (Array.isArray(cleanedData.gallery)) {
     cleanedData.gallery = cleanedData.gallery.filter(
-      (img: any) => typeof img === "string" && !img.startsWith("data:image/") && !img.startsWith("blob:")
+      (img: any) =>
+        typeof img === "string" && !img.startsWith("data:image/") && !img.startsWith("blob:"),
     );
   }
   if (Array.isArray(cleanedData.bannerImages)) {
     cleanedData.bannerImages = cleanedData.bannerImages.filter(
-      (img: any) => typeof img === "string" && !img.startsWith("data:image/") && !img.startsWith("blob:")
+      (img: any) =>
+        typeof img === "string" && !img.startsWith("data:image/") && !img.startsWith("blob:"),
     );
   }
 
@@ -276,5 +289,51 @@ export function buildBatchGameImport(rawText: string, categoryId: string): Batch
       isHidden: true,
       batchImport: true,
     },
+  };
+}
+
+/**
+ * One template file from a batch archive, for any schema in the registry.
+ *
+ * The Nintendo path above is left exactly as it was — it has its own long
+ * standing parser and its own field mapping. This is the same three steps for
+ * everything else: parse against the schema, run the file through the very
+ * normalisation the product editor runs, and assemble the same save payload.
+ * Both share the two batch flags, so a taken slug produces a flagged hidden
+ * copy rather than a refusal, and nothing a batch creates is ever visible
+ * before someone looks at it.
+ */
+export function buildBatchSchemaImport(
+  rawText: string,
+  categoryId: string,
+  schema: ProductSchema,
+): BatchGameImport & { quality?: QualityReport } {
+  const parsed = parseProductImport(rawText, schema);
+  const blocking = parsed.errors.filter((issue) => issue.severity === "error");
+  if (blocking.length > 0) {
+    const first = blocking[0]!;
+    return { ok: false, reason: `${first.key}: ${first.message}` };
+  }
+
+  const blank = createBlankProductForm(categoryId);
+  const form = applySchemaImportToForm(blank, parsed, schema);
+  if (!form["titleEn"] && !form["title"]) {
+    return { ok: false, reason: "الملف لا يحتوي اسم المنتج (name=)" };
+  }
+
+  return {
+    ok: true,
+    payload: {
+      ...buildProductSavePayload(form, schema),
+      isHidden: true,
+      batchImport: true,
+    },
+    /*
+      A file that parses is not a file worth publishing: a template with only a
+      name filled in parses exactly as cleanly as a researched one. The report
+      rides along so the dry run can say which is which before anything is
+      written.
+    */
+    quality: buildQualityReport(parsed.data, schema),
   };
 }

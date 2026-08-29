@@ -40,7 +40,6 @@ export default tseslint.config(
         reformatting several hundred lines of them would bury the two rules that
         are here for a reason.
       */
-      "prettier/prettier": "off",
       "no-undef": "error",
       /*
         Left to `scripts/script-hygiene.test.mjs`, which checks the module level
@@ -59,6 +58,17 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   eslintPluginPrettier,
+  {
+    /*
+      Turning formatting off has to come after the prettier preset, or the
+      preset switches it back on. It did, and the result was four hundred
+      formatting errors burying the two correctness rules above — the ones that
+      exist because a TDZ crash and an undefined call both reached a `--apply`
+      dispatch against production.
+    */
+    files: ["scripts/**/*.mjs"],
+    rules: { "prettier/prettier": "off" },
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
