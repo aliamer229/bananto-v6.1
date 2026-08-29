@@ -1,0 +1,47 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pixel-cart-cloud",
+  "main": "./dist/pixel_cart_cloud/index.js",
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": [
+    "nodejs_compat_v2"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "bananto",
+      "database_name": "bananto",
+      "database_id": "745b155e-b5f5-4e61-89e6-767279d837b2"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BANANTO_BUCKET",
+      "bucket_name": "bananto"
+    },
+    {
+      "binding": "BANANTO_PRIVATE_BUCKET",
+      "bucket_name": "bananto-private"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "NOTIFICATIONS_QUEUE",
+        "queue": "banana-notifications"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "banana-notifications",
+        "max_batch_size": 100,
+        "max_batch_timeout": 10
+      }
+    ]
+  },
+  "durable_objects": {
+    "bindings": []
+  }
+}

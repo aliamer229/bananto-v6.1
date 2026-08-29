@@ -21,13 +21,6 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as Disc_tradeRouteImport } from './routes/disc_trade'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as GamesRouteImport } from './routes/games'
-import { Route as PolicyRouteImport } from './routes/policy'
-import { Route as ProblemRouteImport } from './routes/problem'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as SupportRouteImport } from './routes/support'
-import { Route as SwRouteImport } from './routes/sw'
-import { Route as UsedRouteImport } from './routes/used'
-import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
@@ -61,16 +54,7 @@ import { Route as BundlesIndexRouteImport } from './routes/bundles.index'
 import { Route as BundlesBundleIdRouteImport } from './routes/bundles.$bundleId'
 import { Route as CategoryCategoryIdRouteImport } from './routes/category.$categoryId'
 import { Route as HardwareSlugRouteImport } from './routes/hardware/$slug'
-import { Route as OrdersIndexRouteImport } from './routes/orders.index'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
-import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
-import { Route as TelegramIndexRouteImport } from './routes/telegram/index'
-import { Route as TelegramAccountRouteImport } from './routes/telegram/account'
-import { Route as TelegramContestsRouteImport } from './routes/telegram/contests'
-import { Route as TelegramNotificationsRouteImport } from './routes/telegram/notifications'
-import { Route as TelegramReferralsRouteImport } from './routes/telegram/referrals'
-import { Route as TelegramSecurityRouteImport } from './routes/telegram/security'
-import { Route as TelegramWalletReviewRouteImport } from './routes/telegram/wallet-review'
 import { Route as ApiAdminAssetsRouteImport } from './routes/api/admin/assets'
 import { Route as ApiAdminBananaRouteImport } from './routes/api/admin/banana'
 import { Route as ApiAdminBinanceTopupsRouteImport } from './routes/api/admin/binance-topups'
@@ -183,41 +167,6 @@ const FaqRoute = FaqRouteImport.update({
 const GamesRoute = GamesRouteImport.update({
   id: '/games',
   path: '/games',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PolicyRoute = PolicyRouteImport.update({
-  id: '/policy',
-  path: '/policy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProblemRoute = ProblemRouteImport.update({
-  id: '/problem',
-  path: '/problem',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SupportRoute = SupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SwRoute = SwRouteImport.update({
-  id: '/sw',
-  path: '/sw',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UsedRoute = UsedRouteImport.update({
-  id: '/used',
-  path: '/used',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WalletRoute = WalletRouteImport.update({
-  id: '/wallet',
-  path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -385,54 +334,9 @@ const HardwareSlugRoute = HardwareSlugRouteImport.update({
   path: '/hardware/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrdersIndexRoute = OrdersIndexRouteImport.update({
-  id: '/orders/',
-  path: '/orders/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
   id: '/orders/$orderId',
   path: '/orders/$orderId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductProductIdRoute = ProductProductIdRouteImport.update({
-  id: '/product/$productId',
-  path: '/product/$productId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramIndexRoute = TelegramIndexRouteImport.update({
-  id: '/telegram/',
-  path: '/telegram/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramAccountRoute = TelegramAccountRouteImport.update({
-  id: '/telegram/account',
-  path: '/telegram/account',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramContestsRoute = TelegramContestsRouteImport.update({
-  id: '/telegram/contests',
-  path: '/telegram/contests',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramNotificationsRoute = TelegramNotificationsRouteImport.update({
-  id: '/telegram/notifications',
-  path: '/telegram/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramReferralsRoute = TelegramReferralsRouteImport.update({
-  id: '/telegram/referrals',
-  path: '/telegram/referrals',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramSecurityRoute = TelegramSecurityRouteImport.update({
-  id: '/telegram/security',
-  path: '/telegram/security',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TelegramWalletReviewRoute = TelegramWalletReviewRouteImport.update({
-  id: '/telegram/wallet-review',
-  path: '/telegram/wallet-review',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminAssetsRoute = ApiAdminAssetsRouteImport.update({
@@ -730,13 +634,6 @@ export interface FileRoutesByFullPath {
   '/disc_trade': typeof Disc_tradeRoute
   '/faq': typeof FaqRoute
   '/games': typeof GamesRoute
-  '/policy': typeof PolicyRoute
-  '/problem': typeof ProblemRoute
-  '/profile': typeof ProfileRoute
-  '/support': typeof SupportRoute
-  '/sw': typeof SwRoute
-  '/used': typeof UsedRoute
-  '/wallet': typeof WalletRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/api/admin-wipe': typeof ApiAdminWipeRoute
@@ -769,17 +666,8 @@ export interface FileRoutesByFullPath {
   '/category/$categoryId': typeof CategoryCategoryIdRoute
   '/hardware/$slug': typeof HardwareSlugRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
-  '/product/$productId': typeof ProductProductIdRoute
-  '/telegram/account': typeof TelegramAccountRoute
-  '/telegram/contests': typeof TelegramContestsRoute
-  '/telegram/notifications': typeof TelegramNotificationsRoute
-  '/telegram/referrals': typeof TelegramReferralsRoute
-  '/telegram/security': typeof TelegramSecurityRoute
-  '/telegram/wallet-review': typeof TelegramWalletReviewRoute
   '/admin/': typeof AdminIndexRoute
   '/bundles/': typeof BundlesIndexRoute
-  '/orders/': typeof OrdersIndexRoute
-  '/telegram/': typeof TelegramIndexRoute
   '/api/admin/assets': typeof ApiAdminAssetsRoute
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
@@ -847,13 +735,6 @@ export interface FileRoutesByTo {
   '/disc_trade': typeof Disc_tradeRoute
   '/faq': typeof FaqRoute
   '/games': typeof GamesRoute
-  '/policy': typeof PolicyRoute
-  '/problem': typeof ProblemRoute
-  '/profile': typeof ProfileRoute
-  '/support': typeof SupportRoute
-  '/sw': typeof SwRoute
-  '/used': typeof UsedRoute
-  '/wallet': typeof WalletRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/api/admin-wipe': typeof ApiAdminWipeRoute
@@ -886,17 +767,8 @@ export interface FileRoutesByTo {
   '/category/$categoryId': typeof CategoryCategoryIdRoute
   '/hardware/$slug': typeof HardwareSlugRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
-  '/product/$productId': typeof ProductProductIdRoute
-  '/telegram/account': typeof TelegramAccountRoute
-  '/telegram/contests': typeof TelegramContestsRoute
-  '/telegram/notifications': typeof TelegramNotificationsRoute
-  '/telegram/referrals': typeof TelegramReferralsRoute
-  '/telegram/security': typeof TelegramSecurityRoute
-  '/telegram/wallet-review': typeof TelegramWalletReviewRoute
   '/admin': typeof AdminIndexRoute
   '/bundles': typeof BundlesIndexRoute
-  '/orders': typeof OrdersIndexRoute
-  '/telegram': typeof TelegramIndexRoute
   '/api/admin/assets': typeof ApiAdminAssetsRoute
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
@@ -965,13 +837,6 @@ export interface FileRoutesById {
   '/disc_trade': typeof Disc_tradeRoute
   '/faq': typeof FaqRoute
   '/games': typeof GamesRoute
-  '/policy': typeof PolicyRoute
-  '/problem': typeof ProblemRoute
-  '/profile': typeof ProfileRoute
-  '/support': typeof SupportRoute
-  '/sw': typeof SwRoute
-  '/used': typeof UsedRoute
-  '/wallet': typeof WalletRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/api/admin-wipe': typeof ApiAdminWipeRoute
@@ -1004,17 +869,8 @@ export interface FileRoutesById {
   '/category/$categoryId': typeof CategoryCategoryIdRoute
   '/hardware/$slug': typeof HardwareSlugRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
-  '/product/$productId': typeof ProductProductIdRoute
-  '/telegram/account': typeof TelegramAccountRoute
-  '/telegram/contests': typeof TelegramContestsRoute
-  '/telegram/notifications': typeof TelegramNotificationsRoute
-  '/telegram/referrals': typeof TelegramReferralsRoute
-  '/telegram/security': typeof TelegramSecurityRoute
-  '/telegram/wallet-review': typeof TelegramWalletReviewRoute
   '/admin/': typeof AdminIndexRoute
   '/bundles/': typeof BundlesIndexRoute
-  '/orders/': typeof OrdersIndexRoute
-  '/telegram/': typeof TelegramIndexRoute
   '/api/admin/assets': typeof ApiAdminAssetsRoute
   '/api/admin/banana': typeof ApiAdminBananaRoute
   '/api/admin/binance-topups': typeof ApiAdminBinanceTopupsRoute
@@ -1084,13 +940,6 @@ export interface FileRouteTypes {
     | '/disc_trade'
     | '/faq'
     | '/games'
-    | '/policy'
-    | '/problem'
-    | '/profile'
-    | '/support'
-    | '/sw'
-    | '/used'
-    | '/wallet'
     | '/admin/import'
     | '/admin/orders'
     | '/api/admin-wipe'
@@ -1123,17 +972,8 @@ export interface FileRouteTypes {
     | '/category/$categoryId'
     | '/hardware/$slug'
     | '/orders/$orderId'
-    | '/product/$productId'
-    | '/telegram/account'
-    | '/telegram/contests'
-    | '/telegram/notifications'
-    | '/telegram/referrals'
-    | '/telegram/security'
-    | '/telegram/wallet-review'
     | '/admin/'
     | '/bundles/'
-    | '/orders/'
-    | '/telegram/'
     | '/api/admin/assets'
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
@@ -1201,13 +1041,6 @@ export interface FileRouteTypes {
     | '/disc_trade'
     | '/faq'
     | '/games'
-    | '/policy'
-    | '/problem'
-    | '/profile'
-    | '/support'
-    | '/sw'
-    | '/used'
-    | '/wallet'
     | '/admin/import'
     | '/admin/orders'
     | '/api/admin-wipe'
@@ -1240,17 +1073,8 @@ export interface FileRouteTypes {
     | '/category/$categoryId'
     | '/hardware/$slug'
     | '/orders/$orderId'
-    | '/product/$productId'
-    | '/telegram/account'
-    | '/telegram/contests'
-    | '/telegram/notifications'
-    | '/telegram/referrals'
-    | '/telegram/security'
-    | '/telegram/wallet-review'
     | '/admin'
     | '/bundles'
-    | '/orders'
-    | '/telegram'
     | '/api/admin/assets'
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
@@ -1318,13 +1142,6 @@ export interface FileRouteTypes {
     | '/disc_trade'
     | '/faq'
     | '/games'
-    | '/policy'
-    | '/problem'
-    | '/profile'
-    | '/support'
-    | '/sw'
-    | '/used'
-    | '/wallet'
     | '/admin/import'
     | '/admin/orders'
     | '/api/admin-wipe'
@@ -1357,17 +1174,8 @@ export interface FileRouteTypes {
     | '/category/$categoryId'
     | '/hardware/$slug'
     | '/orders/$orderId'
-    | '/product/$productId'
-    | '/telegram/account'
-    | '/telegram/contests'
-    | '/telegram/notifications'
-    | '/telegram/referrals'
-    | '/telegram/security'
-    | '/telegram/wallet-review'
     | '/admin/'
     | '/bundles/'
-    | '/orders/'
-    | '/telegram/'
     | '/api/admin/assets'
     | '/api/admin/banana'
     | '/api/admin/binance-topups'
@@ -1436,13 +1244,6 @@ export interface RootRouteChildren {
   Disc_tradeRoute: typeof Disc_tradeRoute
   FaqRoute: typeof FaqRoute
   GamesRoute: typeof GamesRoute
-  PolicyRoute: typeof PolicyRoute
-  ProblemRoute: typeof ProblemRoute
-  ProfileRoute: typeof ProfileRoute
-  SupportRoute: typeof SupportRoute
-  SwRoute: typeof SwRoute
-  UsedRoute: typeof UsedRoute
-  WalletRoute: typeof WalletRoute
   AdminImportRoute: typeof AdminImportRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   ApiAdminWipeRoute: typeof ApiAdminWipeRoute
@@ -1475,17 +1276,8 @@ export interface RootRouteChildren {
   CategoryCategoryIdRoute: typeof CategoryCategoryIdRoute
   HardwareSlugRoute: typeof HardwareSlugRoute
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
-  ProductProductIdRoute: typeof ProductProductIdRoute
-  TelegramAccountRoute: typeof TelegramAccountRoute
-  TelegramContestsRoute: typeof TelegramContestsRoute
-  TelegramNotificationsRoute: typeof TelegramNotificationsRoute
-  TelegramReferralsRoute: typeof TelegramReferralsRoute
-  TelegramSecurityRoute: typeof TelegramSecurityRoute
-  TelegramWalletReviewRoute: typeof TelegramWalletReviewRoute
   AdminIndexRoute: typeof AdminIndexRoute
   BundlesIndexRoute: typeof BundlesIndexRoute
-  OrdersIndexRoute: typeof OrdersIndexRoute
-  TelegramIndexRoute: typeof TelegramIndexRoute
   ApiAdminAssetsRoute: typeof ApiAdminAssetsRoute
   ApiAdminBananaRoute: typeof ApiAdminBananaRoute
   ApiAdminBinanceTopupsRoute: typeof ApiAdminBinanceTopupsRoute
@@ -1613,55 +1405,6 @@ declare module '@tanstack/react-router' {
       path: '/games'
       fullPath: '/games'
       preLoaderRoute: typeof GamesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/policy': {
-      id: '/policy'
-      path: '/policy'
-      fullPath: '/policy'
-      preLoaderRoute: typeof PolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/problem': {
-      id: '/problem'
-      path: '/problem'
-      fullPath: '/problem'
-      preLoaderRoute: typeof ProblemRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/support': {
-      id: '/support'
-      path: '/support'
-      fullPath: '/support'
-      preLoaderRoute: typeof SupportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sw': {
-      id: '/sw'
-      path: '/sw'
-      fullPath: '/sw'
-      preLoaderRoute: typeof SwRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/used': {
-      id: '/used'
-      path: '/used'
-      fullPath: '/used'
-      preLoaderRoute: typeof UsedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/wallet': {
-      id: '/wallet'
-      path: '/wallet'
-      fullPath: '/wallet'
-      preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1895,74 +1638,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HardwareSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/orders/': {
-      id: '/orders/'
-      path: '/orders'
-      fullPath: '/orders/'
-      preLoaderRoute: typeof OrdersIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/orders/$orderId': {
       id: '/orders/$orderId'
       path: '/orders/$orderId'
       fullPath: '/orders/$orderId'
       preLoaderRoute: typeof OrdersOrderIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/product/$productId': {
-      id: '/product/$productId'
-      path: '/product/$productId'
-      fullPath: '/product/$productId'
-      preLoaderRoute: typeof ProductProductIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram/': {
-      id: '/telegram/'
-      path: '/telegram'
-      fullPath: '/telegram/'
-      preLoaderRoute: typeof TelegramIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram/account': {
-      id: '/telegram/account'
-      path: '/telegram/account'
-      fullPath: '/telegram/account'
-      preLoaderRoute: typeof TelegramAccountRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram/contests': {
-      id: '/telegram/contests'
-      path: '/telegram/contests'
-      fullPath: '/telegram/contests'
-      preLoaderRoute: typeof TelegramContestsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram/notifications': {
-      id: '/telegram/notifications'
-      path: '/telegram/notifications'
-      fullPath: '/telegram/notifications'
-      preLoaderRoute: typeof TelegramNotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram/referrals': {
-      id: '/telegram/referrals'
-      path: '/telegram/referrals'
-      fullPath: '/telegram/referrals'
-      preLoaderRoute: typeof TelegramReferralsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram/security': {
-      id: '/telegram/security'
-      path: '/telegram/security'
-      fullPath: '/telegram/security'
-      preLoaderRoute: typeof TelegramSecurityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/telegram/wallet-review': {
-      id: '/telegram/wallet-review'
-      path: '/telegram/wallet-review'
-      fullPath: '/telegram/wallet-review'
-      preLoaderRoute: typeof TelegramWalletReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/assets': {
@@ -2414,13 +2094,6 @@ const rootRouteChildren: RootRouteChildren = {
   Disc_tradeRoute: Disc_tradeRoute,
   FaqRoute: FaqRoute,
   GamesRoute: GamesRoute,
-  PolicyRoute: PolicyRoute,
-  ProblemRoute: ProblemRoute,
-  ProfileRoute: ProfileRoute,
-  SupportRoute: SupportRoute,
-  SwRoute: SwRoute,
-  UsedRoute: UsedRoute,
-  WalletRoute: WalletRoute,
   AdminImportRoute: AdminImportRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   ApiAdminWipeRoute: ApiAdminWipeRoute,
@@ -2453,17 +2126,8 @@ const rootRouteChildren: RootRouteChildren = {
   CategoryCategoryIdRoute: CategoryCategoryIdRoute,
   HardwareSlugRoute: HardwareSlugRoute,
   OrdersOrderIdRoute: OrdersOrderIdRoute,
-  ProductProductIdRoute: ProductProductIdRoute,
-  TelegramAccountRoute: TelegramAccountRoute,
-  TelegramContestsRoute: TelegramContestsRoute,
-  TelegramNotificationsRoute: TelegramNotificationsRoute,
-  TelegramReferralsRoute: TelegramReferralsRoute,
-  TelegramSecurityRoute: TelegramSecurityRoute,
-  TelegramWalletReviewRoute: TelegramWalletReviewRoute,
   AdminIndexRoute: AdminIndexRoute,
   BundlesIndexRoute: BundlesIndexRoute,
-  OrdersIndexRoute: OrdersIndexRoute,
-  TelegramIndexRoute: TelegramIndexRoute,
   ApiAdminAssetsRoute: ApiAdminAssetsRoute,
   ApiAdminBananaRoute: ApiAdminBananaRoute,
   ApiAdminBinanceTopupsRoute: ApiAdminBinanceTopupsRoute,
@@ -2511,11 +2175,10 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }
