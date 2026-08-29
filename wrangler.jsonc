@@ -3,7 +3,9 @@
   "name": "pixel-cart-cloud",
   "main": "dist/server/server.js",
   "compatibility_date": "2026-08-28",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "assets": {
     "directory": "dist/client",
     "binding": "ASSETS"
@@ -39,7 +41,9 @@
   "migrations": [
     {
       "tag": "v1",
-      "new_classes": ["ChatRealtimeDO"]
+      "new_classes": [
+        "ChatRealtimeDO"
+      ]
     }
   ]
 }
