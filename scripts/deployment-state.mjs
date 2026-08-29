@@ -5,10 +5,12 @@
  * READ ONLY. Queries the Workers API for this script's deployments and versions,
  * and reports the commit each was built from where Cloudflare records it.
  *
- * The repository cannot answer this on its own: there is no deploy workflow in
- * it, `main` is a week behind the working branch, and a branch being pushed is
- * not a branch being served. Reading the deployment metadata is the only way to
- * know whether a fix that exists in source exists in production.
+ * A branch being pushed is not a branch being served, and for most of this
+ * repository's life deployment was a `wrangler deploy` typed on a laptop, so
+ * the commit in production was not recorded anywhere the repository could read.
+ * Reading Cloudflare's own deployment metadata is how that question gets an
+ * answer rather than a guess. `.github/workflows/deploy.yml` now runs this
+ * after every deploy for the same reason.
  */
 
 import { writeFileSync } from "node:fs";
