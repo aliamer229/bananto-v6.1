@@ -14,7 +14,7 @@ function ambientHeader(name: string): string | undefined {
   }
 }
 
-import { signValue, unsignValue } from "./crypto.server.ts";
+import { signValue, unsignValue } from "./crypto.server";
 import { constantTimeEqual } from "./security.server";
 import { findUserById, toPublicUser } from "./db.server";
 import type { User } from "./types";
