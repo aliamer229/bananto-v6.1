@@ -1,63 +1,32 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { savePreferences } from "@/lib/settings.functions";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface SettingsState {
   soundEnabled: boolean;
   musicEnabled: boolean;
   liteMotion: boolean;
-  musicTrack: string | undefined;
-  setSoundEnabled: (enabled: boolean, sync?: boolean) => void;
-  setMusicEnabled: (enabled: boolean, sync?: boolean) => void;
-  setLiteMotion: (enabled: boolean, sync?: boolean) => void;
-  setMusicTrack: (id: string | undefined, sync?: boolean) => void;
-  syncWithDB: () => Promise<void>;
+  musicTrack: string | null;
+  setSoundEnabled: (enabled: boolean) => void;
+  setMusicEnabled: (enabled: boolean) => void;
+  setLiteMotion: (lite: boolean) => void;
+  setMusicTrack: (track: string | null) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       soundEnabled: true,
       musicEnabled: true,
       liteMotion: false,
-      musicTrack: undefined,
-
-      setSoundEnabled: (enabled, sync = true) => {
-        set({ soundEnabled: enabled });
-        if (sync) get().syncWithDB();
-      },
-      setMusicEnabled: (enabled, sync = true) => {
-        set({ musicEnabled: enabled });
-        if (sync) get().syncWithDB();
-      },
-      setLiteMotion: (enabled, sync = true) => {
-        set({ liteMotion: enabled });
-        if (sync) get().syncWithDB();
-      },
-      setMusicTrack: (id, sync = true) => {
-        set({ musicTrack: id });
-        if (sync) get().syncWithDB();
-      },
-
-      syncWithDB: async () => {
-        const state = get();
-        const prefs = {
-          soundEnabled: state.soundEnabled,
-          musicEnabled: state.musicEnabled,
-          liteMotion: state.liteMotion,
-          musicTrack: state.musicTrack,
-        };
-        try {
-          await savePreferences({ data: { prefs } });
-        } catch (error) {
-          // Silently fail if not logged in or network error
-          console.debug("Failed to sync preferences with DB", error);
-        }
-      },
+      musicTrack: null,
+      setSoundEnabled: (enabled: boolean) => set({ soundEnabled: enabled }),
+      setMusicEnabled: (enabled: boolean) => set({ musicEnabled: enabled }),
+      setLiteMotion: (lite: boolean) => set({ liteMotion: lite }),
+      setMusicTrack: (track: string | null) => set({ musicTrack: track }),
     }),
     {
-      name: "nintendo-settings",
-      // Only persist basic UI settings locally, the rest comes from DB if logged in
-    },
-  ),
+      name: "settings-storage",
+      storage: createJSONStorage(() => (typeof window !== "undefined" ? localStorage : (undefined as any))),
+    }
+  )
 );

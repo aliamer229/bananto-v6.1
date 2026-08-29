@@ -1,69 +1,49 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-
-import type { ProductKind } from "@/lib/types";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface CartLine {
+  id: string;
   productId: string | number;
+  kind?: string;
   title: string;
-  /**
-   * Snapshot of the picture at the time of adding.
-   *
-   * Only a last resort for a line whose product has since left the catalogue.
-   * Lines persist to localStorage, so a URL written here by an older build
-   * outlives any correction to the product — the cart resolves from the live
-   * record via `resolvePurchaseImage()` whenever it can find one.
-   */
-  image?: string;
-  /** The live catalogue record, attached at render time. Never persisted. */
-  source?: Record<string, unknown> | undefined;
   price: number;
-  kind: ProductKind;
   quantity: number;
-  /** Which hub offer this line came from (account / lend / disc). */
-  offerKind?: string;
-  offerLabel?: string;
-  /** Specific option selection (e.g. Offline account, Online account) */
+  image?: string;
   optionId?: string;
-  optionName?: string;
-  /** Specific type / variant selection (e.g. Standard, DLC) */
   typeId?: string;
-  typeName?: string;
-  editionId?: string;
-  /** Physical offers need a delivery address at checkout. */
-  requiresAddress?: boolean;
-  meta?: {
-    editionId?: string | null;
-    dlcIds?: string[] | null;
-    optionId?: string | null;
-    optionName?: string | null;
-    typeId?: string | null;
-    typeName?: string | null;
-  };
+  source?: Record<string, unknown>;
+  meta?: Record<string, any>;
+  [key: string]: any;
 }
 
-/** Lines are unique per product, offer, option, type, and edition so separate combinations don't merge by mistake. */
-export const lineKey = (line: Partial<CartLine> & { productId: string | number }) =>
-  `${String(line.productId)}::${line.offerKind ?? ""}::${line.optionId ?? ""}::${line.typeId ?? ""}::${line.editionId ?? ""}`;
+export function cartCount(lines: CartLine[] = []): number {
+  return lines.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
+}
+
+export function cartTotal(lines: CartLine[] = []): number {
+  return lines.reduce(
+    (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+    0
+  );
+}
+
+export function cartNeedsAddress(lines: CartLine[] = []): boolean {
+  return lines.some((l) => {
+    const k = String(l.kind || "").toLowerCase();
+    if (k === "hardware" || k === "accessory" || k === "used") return true;
+    if (l.source && typeof l.source === "object") {
+      const src = l.source as Record<string, any>;
+      if (src.requiresShipping || src.isPhysical) return true;
+    }
+    return false;
+  });
+}
 
 interface CartState {
   lines: CartLine[];
-  add: (line: Omit<CartLine, "quantity">, quantity?: number) => void;
-  setQuantity: (
-    productId: string | number,
-    quantity: number,
-    offerKind?: string,
-    optionId?: string,
-    typeId?: string,
-    editionId?: string,
-  ) => void;
-  remove: (
-    productId: string | number,
-    offerKind?: string,
-    optionId?: string,
-    typeId?: string,
-    editionId?: string,
-  ) => void;
+  add: (item: Partial<CartLine> & { productId: string | number; title?: string; price?: number }) => void;
+  remove: (idOrProductId: string | number) => void;
+  setQuantity: (idOrProductId: string | number, quantity: number) => void;
   clear: () => void;
 }
 
@@ -71,40 +51,70 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       lines: [],
-      add: (line, quantity = 1) =>
+      add: (item) =>
         set((state) => {
-          const key = lineKey(line);
-          if (state.lines.some((l) => lineKey(l) === key)) {
+          const id = item.id || `${item.productId}_${item.optionId || item.kind || "default"}`;
+          const existingIndex = state.lines.findIndex(
+            (line) => line.id === id || (line.productId === item.productId && line.optionId === item.optionId)
+          );
+
+          if (existingIndex > -1) {
+            const updated = [...state.lines];
+            const existing = updated[existingIndex]!;
+            updated[existingIndex] = {
+              ...existing,
+              ...item,
+              quantity: (existing.quantity || 1) + (item.quantity || 1),
+            };
+            return { lines: updated };
+          }
+
+          const newLine: CartLine = {
+            id,
+            productId: item.productId,
+            title: item.title || "منتج",
+            price: Number(item.price) || 0,
+            quantity: item.quantity || 1,
+            kind: item.kind || "account",
+            image: item.image,
+            optionId: item.optionId,
+            typeId: item.typeId,
+            source: item.source,
+            meta: item.meta,
+            ...item,
+          };
+
+          return { lines: [...state.lines, newLine] };
+        }),
+      remove: (idOrProductId) =>
+        set((state) => ({
+          lines: state.lines.filter(
+            (line) => line.id !== String(idOrProductId) && line.productId !== idOrProductId
+          ),
+        })),
+      setQuantity: (idOrProductId, quantity) =>
+        set((state) => {
+          if (quantity <= 0) {
             return {
-              lines: state.lines.map((l) =>
-                lineKey(l) === key ? { ...l, quantity: l.quantity + quantity } : l,
+              lines: state.lines.filter(
+                (line) => line.id !== String(idOrProductId) && line.productId !== idOrProductId
               ),
             };
           }
-          return { lines: [...state.lines, { ...line, quantity }] };
-        }),
-      setQuantity: (productId, quantity, offerKind, optionId, typeId, editionId) =>
-        set((state) => {
-          const key = lineKey({ productId, offerKind, optionId, typeId, editionId });
           return {
-            lines: state.lines
-              .map((l) => (lineKey(l) === key ? { ...l, quantity: Math.max(0, quantity) } : l))
-              .filter((l) => l.quantity > 0),
+            lines: state.lines.map((line) => {
+              if (line.id === String(idOrProductId) || line.productId === idOrProductId) {
+                return { ...line, quantity };
+              }
+              return line;
+            }),
           };
-        }),
-      remove: (productId, offerKind, optionId, typeId, editionId) =>
-        set((state) => {
-          const key = lineKey({ productId, offerKind, optionId, typeId, editionId });
-          return { lines: state.lines.filter((l) => lineKey(l) !== key) };
         }),
       clear: () => set({ lines: [] }),
     }),
-    { name: "banana_cart_v1" },
-  ),
+    {
+      name: "cart-storage",
+      storage: createJSONStorage(() => (typeof window !== "undefined" ? localStorage : (undefined as any))),
+    }
+  )
 );
-
-export const cartCount = (lines: CartLine[]) => lines.reduce((sum, l) => sum + l.quantity, 0);
-export const cartTotal = (lines: CartLine[]) =>
-  lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
-export const cartNeedsAddress = (lines: CartLine[]) =>
-  lines.some((l) => l.requiresAddress === true || l.kind === "hardware");
