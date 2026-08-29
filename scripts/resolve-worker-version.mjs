@@ -21,24 +21,43 @@ const prefix = String(process.argv[2] ?? "").trim();
 if (!ACCOUNT || !TOKEN) throw new Error("missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN");
 if (!prefix) throw new Error("usage: resolve-worker-version.mjs <version-id-or-prefix>");
 
-const res = await fetch(
-  `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/workers/scripts/${SCRIPT_NAME}/versions`,
-  { headers: { Authorization: `Bearer ${TOKEN}`, "content-type": "application/json" } },
-);
-const body = await res.json().catch(() => null);
-if (!res.ok || body?.success === false) {
-  // A failed read is never "no match" — that conflation is how a rollback ends
-  // up pointed at nothing while looking like it merely found no candidate.
-  throw new Error(`could not list versions: HTTP ${res.status}`);
+const api = async (path) => {
+  const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+    headers: { Authorization: `Bearer ${TOKEN}`, "content-type": "application/json" },
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok || body?.success === false) {
+    // A failed read is never "no match" — that conflation is how a rollback ends
+    // up pointed at nothing while looking like it merely found no candidate.
+    throw new Error(`could not read ${path}: HTTP ${res.status}`);
+  }
+  return body?.result;
+};
+
+const base = `/accounts/${ACCOUNT}/workers/scripts/${SCRIPT_NAME}`;
+
+/*
+  Both sources, because the one a person reads an id from is not the one that
+  lists it for long. `/versions` returns only the most recent page, and the
+  version worth rolling back to is by definition an older one — during the
+  first real incident, the target had already aged out of it. The deployments
+  list is where the id was read from in the first place, and it keeps the id of
+  whatever each deployment served.
+*/
+const ids = new Set();
+for (const v of (await api(`${base}/versions`))?.items ?? []) {
+  if (v?.id) ids.add(String(v.id));
+}
+for (const d of (await api(`${base}/deployments`))?.deployments ?? []) {
+  for (const v of d?.versions ?? []) if (v?.version_id) ids.add(String(v.version_id));
 }
 
-const items = body?.result?.items ?? [];
-if (!items.length) throw new Error("the versions list came back empty — refusing to resolve");
+if (!ids.size) throw new Error("both lists came back empty — refusing to resolve");
 
-const matches = items.filter((v) => String(v.id ?? "").startsWith(prefix));
+const matches = [...ids].filter((id) => id.startsWith(prefix)).map((id) => ({ id }));
 if (matches.length === 0) {
   throw new Error(
-    `no version starts with "${prefix}" among the ${items.length} most recent — it may have aged out of the list`,
+    `no version starts with "${prefix}" among the ${ids.size} known to the versions and deployments lists`,
   );
 }
 if (matches.length > 1) {
