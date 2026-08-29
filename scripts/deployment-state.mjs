@@ -50,13 +50,13 @@ say();
 
 /* ---------------------------------------------------------------- workers */
 
-const deployments = await api(
-  `/accounts/${ACCOUNT}/workers/scripts/${SCRIPT_NAME}/deployments`,
-);
+const deployments = await api(`/accounts/${ACCOUNT}/workers/scripts/${SCRIPT_NAME}/deployments`);
 say(`## Worker deployments`);
 say();
 if (!deployments.ok) {
-  say(`- could not read deployments: HTTP ${deployments.status} ${redact(JSON.stringify(deployments.body?.errors ?? deployments.error ?? ""))}`);
+  say(
+    `- could not read deployments: HTTP ${deployments.status} ${redact(JSON.stringify(deployments.body?.errors ?? deployments.error ?? ""))}`,
+  );
 } else {
   const items = deployments.body?.result?.deployments ?? [];
   say(`- deployments recorded: **${items.length}**`);
@@ -64,8 +64,12 @@ if (!deployments.ok) {
   say(`| created | author | source | versions |`);
   say(`| --- | --- | --- | --- |`);
   for (const d of items.slice(0, 10)) {
-    const versions = (d.versions ?? []).map((v) => `${v.version_id?.slice(0, 8)} @${v.percentage ?? 100}%`).join(", ");
-    say(`| ${d.created_on ?? "—"} | ${d.author_email ?? "—"} | ${d.source ?? "—"} | ${versions || "—"} |`);
+    const versions = (d.versions ?? [])
+      .map((v) => `${v.version_id?.slice(0, 8)} @${v.percentage ?? 100}%`)
+      .join(", ");
+    say(
+      `| ${d.created_on ?? "—"} | ${d.author_email ?? "—"} | ${d.source ?? "—"} | ${versions || "—"} |`,
+    );
   }
 }
 say();
@@ -74,7 +78,9 @@ const versions = await api(`/accounts/${ACCOUNT}/workers/scripts/${SCRIPT_NAME}/
 say(`## Worker versions and the commit each was built from`);
 say();
 if (!versions.ok) {
-  say(`- could not read versions: HTTP ${versions.status} ${redact(JSON.stringify(versions.body?.errors ?? versions.error ?? ""))}`);
+  say(
+    `- could not read versions: HTTP ${versions.status} ${redact(JSON.stringify(versions.body?.errors ?? versions.error ?? ""))}`,
+  );
 } else {
   const items = versions.body?.result?.items ?? [];
   say(`- versions recorded: **${items.length}**`);
@@ -84,7 +90,7 @@ if (!versions.ok) {
   for (const v of items.slice(0, 12)) {
     const a = v.annotations ?? {};
     say(
-      `| ${v.created_on ?? "—"} | \`${String(v.id ?? "").slice(0, 8)}\` | \`${String(a["workers/triggered_by"] === "deployment" ? a["workers/message"] : a["workers/tag"] ?? "").slice(0, 40) || "—"}\` | ${a["workers/branch"] ?? "—"} | ${String(a["workers/message"] ?? "").slice(0, 60) || "—"} |`,
+      `| ${v.created_on ?? "—"} | \`${String(v.id ?? "").slice(0, 8)}\` | \`${String(a["workers/triggered_by"] === "deployment" ? a["workers/message"] : (a["workers/tag"] ?? "")).slice(0, 40) || "—"}\` | ${a["workers/branch"] ?? "—"} | ${String(a["workers/message"] ?? "").slice(0, 60) || "—"} |`,
     );
   }
 }
@@ -101,7 +107,9 @@ if (!pages.ok) {
   const projects = pages.body?.result ?? [];
   if (!projects.length) say("- none");
   for (const p of projects) {
-    say(`- \`${p.name}\` — production branch **${p.source?.config?.production_branch ?? "—"}**, last deploy ${p.latest_deployment?.created_on ?? "—"} from \`${p.latest_deployment?.deployment_trigger?.metadata?.branch ?? "—"}\` commit \`${String(p.latest_deployment?.deployment_trigger?.metadata?.commit_hash ?? "").slice(0, 8) || "—"}\``);
+    say(
+      `- \`${p.name}\` — production branch **${p.source?.config?.production_branch ?? "—"}**, last deploy ${p.latest_deployment?.created_on ?? "—"} from \`${p.latest_deployment?.deployment_trigger?.metadata?.branch ?? "—"}\` commit \`${String(p.latest_deployment?.deployment_trigger?.metadata?.commit_hash ?? "").slice(0, 8) || "—"}\``,
+    );
   }
 }
 say();
@@ -114,7 +122,9 @@ for (const url of ["https://banan.to/", "https://banan.to/api/health"]) {
   try {
     const res = await fetch(url, { headers: { "user-agent": "bananto-deployment-check" } });
     const text = await res.text();
-    say(`- \`${url}\` → HTTP ${res.status}, ${text.length} bytes, \`${res.headers.get("cf-ray") ? "served by Cloudflare" : "no cf-ray"}\``);
+    say(
+      `- \`${url}\` → HTTP ${res.status}, ${text.length} bytes, \`${res.headers.get("cf-ray") ? "served by Cloudflare" : "no cf-ray"}\``,
+    );
     const build = text.match(/assets\/([a-zA-Z0-9_-]+)-([a-f0-9]{8,})\.js/);
     if (build) say(`  - build asset: \`${build[0]}\``);
     if (url.endsWith("/api/health")) say(`  - body: \`${text.slice(0, 200)}\``);
