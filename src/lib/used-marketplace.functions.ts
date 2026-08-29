@@ -262,6 +262,7 @@ export const reviewUsedListing = createServerFn({ method: "POST" })
       to: statusEnum,
       note: z.string().max(1000).optional(),
       soldOrderId: z.string().max(64).optional(),
+      isReturned: z.boolean().optional(),
     }),
   )
   .handler(async ({ data, context }) => {
@@ -271,6 +272,7 @@ export const reviewUsedListing = createServerFn({ method: "POST" })
         actorUserId: context.userId,
         note: data.note,
         soldOrderId: data.soldOrderId,
+        isReturned: data.isReturned,
       });
       return { success: true as const, listing };
     } catch (error) {

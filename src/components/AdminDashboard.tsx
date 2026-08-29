@@ -108,6 +108,7 @@ import ReviewsManager from "./admin/ReviewsManager";
 import BundlesManager from "./admin/BundlesManager";
 import { BananaManagementView } from "./admin/BananaManagementView";
 import CouponsManager from "./admin/CouponsManager";
+import UsedListingsManager from "./admin/UsedListingsManager";
 import { StoreAdvisorSection } from "./admin/StoreAdvisorSection";
 import AdminInboxView from "./admin/inbox/AdminInboxView";
 import OrdersManagerView from "./admin/OrdersManagerView";
@@ -237,7 +238,9 @@ export default function AdminDashboard() {
   }, []);
 
   const [isLoaded, setIsLoaded] = useState(false);
-  const [productLoadStatus, setProductLoadStatus] = useState<"loading" | "loaded_with_data" | "loaded_empty" | "failed">("loading");
+  const [productLoadStatus, setProductLoadStatus] = useState<
+    "loading" | "loaded_with_data" | "loaded_empty" | "failed"
+  >("loading");
   const [d1ProductCount, setD1ProductCount] = useState<number | null>(null);
 
   const [products, setProducts] = useState<any[]>([]);
@@ -452,7 +455,8 @@ export default function AdminDashboard() {
     if (Array.isArray(data.notifications)) setNotifications(cleanArray(data.notifications));
     if (Array.isArray(data.gameRequests)) setGameRequests(cleanArray(data.gameRequests));
     if (Array.isArray(data.discTrades)) setDiscTrades(cleanArray(data.discTrades));
-    if (Array.isArray(data.problemSolutions)) setProblemSolutions(cleanArray(data.problemSolutions));
+    if (Array.isArray(data.problemSolutions))
+      setProblemSolutions(cleanArray(data.problemSolutions));
 
     if (typeof data.visits === "number") setVisits(data.visits);
     if (typeof data.views === "number") setViews(data.views);
@@ -589,7 +593,9 @@ export default function AdminDashboard() {
       }
 
       if (signal.aborted) return true;
-      setDbError("تعذر قراءة إعدادات المتجر — الحفظ متوقف مؤقتاً. قائمة المنتجات تُحمَّل بشكل مستقل.");
+      setDbError(
+        "تعذر قراءة إعدادات المتجر — الحفظ متوقف مؤقتاً. قائمة المنتجات تُحمَّل بشكل مستقل.",
+      );
       setDbErrorDetail(lastDetail);
       return false;
     },
@@ -765,6 +771,7 @@ export default function AdminDashboard() {
 
     { id: "reviews", icon: Star, label: "تقييمات الأعضاء" },
     { id: "game_requests", icon: Sparkles, label: "طلبات الألعاب" },
+    { id: "used_listings", icon: Tag, label: "سوق المستعمل والمسترجع" },
 
     {
       id: "financial_mgmt",
@@ -842,7 +849,9 @@ export default function AdminDashboard() {
       case "listings_all":
       case activeSidebar.startsWith("listings_") ? activeSidebar : "": {
         const selectedCategoryId =
-          activeSidebar === "listings_all" || activeSidebar === "listings" || activeSidebar === "products"
+          activeSidebar === "listings_all" ||
+          activeSidebar === "listings" ||
+          activeSidebar === "products"
             ? null
             : activeSidebar.replace("listings_", "");
         return (
@@ -929,6 +938,8 @@ export default function AdminDashboard() {
         return <WalletManagementView />;
       case "coupons":
         return <CouponsManager />;
+      case "used_listings":
+        return <UsedListingsManager />;
       case "binance_mgmt":
         return <BinanceManagementView />;
       case "banan_codes":
@@ -1155,9 +1166,7 @@ Please think step-by-step in order to resolve it.
                 className="mb-4"
               />
             )}
-            <AdminErrorBoundary sectionName={activeSidebar}>
-              {renderContent()}
-            </AdminErrorBoundary>
+            <AdminErrorBoundary sectionName={activeSidebar}>{renderContent()}</AdminErrorBoundary>
           </div>
         )}
       </main>
@@ -1796,7 +1805,12 @@ function ListingsView({
   const unpricedCount = facets?.unpriced ?? 0;
   const hiddenCount = facets?.hidden ?? 0;
   const isGameProduct = (product: any) => {
-    const categoryId = typeof product.category === "string" ? product.category : (typeof product.categoryId === "string" ? product.categoryId : product.category?.id);
+    const categoryId =
+      typeof product.category === "string"
+        ? product.category
+        : typeof product.categoryId === "string"
+          ? product.categoryId
+          : product.category?.id;
     const category = categories.find((item: any) => String(item.id) === String(categoryId));
     return (
       resolveCategoryType(categoryId, category?.title, product.kind, product.schemaId) === "game"
@@ -1810,7 +1824,12 @@ function ListingsView({
     resolveCategoryType(initialCategoryId || undefined, sectionCategory?.title) === "game";
 
   const hardwareProducts = (products || []).filter((product: any) => {
-    const categoryId = typeof product.category === "string" ? product.category : (typeof product.categoryId === "string" ? product.categoryId : product.category?.id);
+    const categoryId =
+      typeof product.category === "string"
+        ? product.category
+        : typeof product.categoryId === "string"
+          ? product.categoryId
+          : product.category?.id;
     const category = categories.find((item: any) => String(item.id) === String(categoryId));
     return (
       resolveCategoryType(categoryId, category?.title, product.kind, product.schemaId) ===
@@ -1855,9 +1874,7 @@ function ListingsView({
     initialCategoryId,
   ]);
 
-  const filteredProducts = (products || []).filter(
-    (p: any) => p && typeof p === "object",
-  );
+  const filteredProducts = (products || []).filter((p: any) => p && typeof p === "object");
 
   /*
     The same comparator the server used, applied again here.
@@ -1960,35 +1977,32 @@ function ListingsView({
     The editor is therefore never handed a listing row. It gets the stored
     document, fetched by id, or it does not open.
   */
-  const openProductForEdit = React.useCallback(
-    async (row: any) => {
-      const id = row?.id === undefined || row?.id === null ? "" : String(row.id).trim();
-      if (!id) {
-        toast.error("لا يمكن فتح منتج بدون معرّف");
+  const openProductForEdit = React.useCallback(async (row: any) => {
+    const id = row?.id === undefined || row?.id === null ? "" : String(row.id).trim();
+    if (!id) {
+      toast.error("لا يمكن فتح منتج بدون معرّف");
+      return;
+    }
+    setIsOpeningEditor(id);
+    try {
+      const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success || !data.product) {
+        toast.error(
+          data?.error || `تعذر تحميل المنتج الكامل (HTTP ${res.status}) — لم يتم فتح المحرر`,
+          { duration: 8000 },
+        );
         return;
       }
-      setIsOpeningEditor(id);
-      try {
-        const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
-          credentials: "include",
-        });
-        const data = await res.json().catch(() => null);
-        if (!res.ok || !data?.success || !data.product) {
-          toast.error(
-            data?.error || `تعذر تحميل المنتج الكامل (HTTP ${res.status}) — لم يتم فتح المحرر`,
-            { duration: 8000 },
-          );
-          return;
-        }
-        setEditingProduct(data.product);
-      } catch (err: any) {
-        toast.error(`تعذر تحميل المنتج: ${err?.message || "خطأ في الشبكة"}`, { duration: 8000 });
-      } finally {
-        setIsOpeningEditor(null);
-      }
-    },
-    [],
-  );
+      setEditingProduct(data.product);
+    } catch (err: any) {
+      toast.error(`تعذر تحميل المنتج: ${err?.message || "خطأ في الشبكة"}`, { duration: 8000 });
+    } finally {
+      setIsOpeningEditor(null);
+    }
+  }, []);
 
   const handleSave = async (productData: any) => {
     try {
@@ -2001,14 +2015,14 @@ function ListingsView({
             hasChanges = true;
           }
         }
-        
+
         if (!hasChanges) {
           toast.success("لم يتم إجراء أي تعديلات", { id: "save-product" });
           setEditingProduct(null);
           setIsAdding(false);
           return;
         }
-        
+
         toast.loading("جاري الحفظ...", { id: "save-product" });
         const res = await fetch("/api/admin/products", {
           method: "PATCH",
@@ -2022,7 +2036,7 @@ function ListingsView({
           toast.error(errorMsg, { id: "save-product", duration: 8000 });
           throw Object.assign(new Error(errorMsg), { reported: true });
         }
-        
+
         const savedProduct = result.product || { ...editingProduct, ...dirtyFields };
         notifyCatalogChanged(result?.catalogVersion);
         setProducts((prev: any[]) => {
@@ -2041,11 +2055,11 @@ function ListingsView({
       }
 
       const payloadString = safeStringify(productData);
-      
+
       // If the payload is larger than 50KB, use staged/chunked save
       if (payloadString.length > 50 * 1024) {
         toast.loading("يتم الآن تجهيز الحفظ المجزأ...", { id: "save-product" });
-        
+
         // 1. Start session
         const startRes = await fetch("/api/admin/products/save/start", {
           method: "POST",
@@ -2056,7 +2070,22 @@ function ListingsView({
         const sessionId = startData.save_session_id;
 
         // 2. Split payload into logical chunks
-        const coreKeys = ["id", "title", "titleEn", "description", "descriptionEn", "price", "cost", "stock", "categoryId", "category", "status", "isActive", "kind", "schemaId"];
+        const coreKeys = [
+          "id",
+          "title",
+          "titleEn",
+          "description",
+          "descriptionEn",
+          "price",
+          "cost",
+          "stock",
+          "categoryId",
+          "category",
+          "status",
+          "isActive",
+          "kind",
+          "schemaId",
+        ];
         const coreData: any = {};
         const imagesData: any = {};
         const contentData: any = {};
@@ -2071,9 +2100,18 @@ function ListingsView({
             imagesData[key] = value;
           } else if (key === "options" || key === "types" || key === "variants") {
             variantsData[key] = value;
-          } else if (key.startsWith("perf_") || key.includes("performance") || key === "devicePerformance") {
+          } else if (
+            key.startsWith("perf_") ||
+            key.includes("performance") ||
+            key === "devicePerformance"
+          ) {
             performanceData[key] = value;
-          } else if (key === "content" || key.includes("description") || key === "specs" || key === "details") {
+          } else if (
+            key === "content" ||
+            key.includes("description") ||
+            key === "specs" ||
+            key === "details"
+          ) {
             contentData[key] = value;
           } else {
             metadataData[key] = value;
@@ -2086,19 +2124,25 @@ function ListingsView({
           { part: "variants", data: variantsData },
           { part: "performance", data: performanceData },
           { part: "content", data: contentData },
-          { part: "metadata", data: metadataData }
+          { part: "metadata", data: metadataData },
         ];
 
         // 3. Upload chunks
         let i = 1;
         for (const chunk of chunks) {
           if (Object.keys(chunk.data).length === 0) continue;
-          toast.loading(`يتم حفظ الجزء ${i} من ${chunks.length} (${chunk.part})...`, { id: "save-product" });
+          toast.loading(`يتم حفظ الجزء ${i} من ${chunks.length} (${chunk.part})...`, {
+            id: "save-product",
+          });
           const chunkRes = await fetch("/api/admin/products/save/chunk", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ save_session_id: sessionId, part: chunk.part, data: chunk.data }),
+            body: JSON.stringify({
+              save_session_id: sessionId,
+              part: chunk.part,
+              data: chunk.data,
+            }),
           });
           if (!chunkRes.ok) throw new Error(`Failed to save chunk ${chunk.part}`);
           i++;
@@ -2112,12 +2156,12 @@ function ListingsView({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ save_session_id: sessionId }),
         });
-        
+
         const result = await finalRes.json().catch(() => null);
         if (!finalRes.ok || !result?.success) {
           throw new Error(result?.error || `HTTP ${finalRes.status}: Finalize failed`);
         }
-        
+
         toast.success(t("admin.saved") || "تم الحفظ بنجاح", { id: "save-product" });
         notifyCatalogChanged(result?.catalogVersion);
 
@@ -2131,7 +2175,7 @@ function ListingsView({
           }
           return [productData, ...prev];
         });
-        
+
         setEditingProduct(null);
         return;
       }
@@ -2235,7 +2279,8 @@ function ListingsView({
         <div className="flex flex-col">
           <h1 className="text-[22px] font-bold text-[var(--admin-ink)]">
             {initialCategoryId
-              ? categories.find((c: any) => c.id === initialCategoryId)?.title || t("admin.products")
+              ? categories.find((c: any) => c.id === initialCategoryId)?.title ||
+                t("admin.products")
               : t("admin.products")}
           </h1>
           <span className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
@@ -2373,7 +2418,9 @@ function ListingsView({
                         فشل تحميل قائمة المنتجات من قاعدة البيانات
                       </p>
                       <p className="text-xs text-muted-foreground mb-3">
-                        {loadErrorDetail || loadError || "تعذر الاتصال بقاعدة البيانات D1 أو استرجاع سجلات المنتجات."}
+                        {loadErrorDetail ||
+                          loadError ||
+                          "تعذر الاتصال بقاعدة البيانات D1 أو استرجاع سجلات المنتجات."}
                       </p>
                       {onRetry && (
                         <button
@@ -2381,7 +2428,9 @@ function ListingsView({
                           disabled={isReloading}
                           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
-                          <RefreshCw className={`w-3.5 h-3.5 ${isReloading ? "animate-spin" : ""}`} />
+                          <RefreshCw
+                            className={`w-3.5 h-3.5 ${isReloading ? "animate-spin" : ""}`}
+                          />
                           إعادة المحاولة الآن
                         </button>
                       )}
@@ -2432,91 +2481,107 @@ function ListingsView({
               )}
 
               {sortedProducts.map((p: any) => {
-                const safeTitle = typeof p.title === "string" ? p.title : (typeof p.titleEn === "string" ? p.titleEn : String(p.id || ""));
-                const catId = typeof p.category === "string" ? p.category : (typeof p.categoryId === "string" ? p.categoryId : (p.category?.id || ""));
-                const catTitle = categories.find((c: any) => String(c.id) === String(catId))?.title || t("category.uncategorized");
-                const safeStock = p.isInfiniteStock ? t("admin.infiniteStock") : String(p.stock ?? "0");
+                const safeTitle =
+                  typeof p.title === "string"
+                    ? p.title
+                    : typeof p.titleEn === "string"
+                      ? p.titleEn
+                      : String(p.id || "");
+                const catId =
+                  typeof p.category === "string"
+                    ? p.category
+                    : typeof p.categoryId === "string"
+                      ? p.categoryId
+                      : p.category?.id || "";
+                const catTitle =
+                  categories.find((c: any) => String(c.id) === String(catId))?.title ||
+                  t("category.uncategorized");
+                const safeStock = p.isInfiniteStock
+                  ? t("admin.infiniteStock")
+                  : String(p.stock ?? "0");
                 const safeSales = String(p.sales ?? "0");
                 const safeStatus = String(p.status ?? "نشط");
                 const editedAt = lastModifiedAt(p);
                 const lastEdited =
                   editedAt === null ? null : new Date(editedAt).toISOString().slice(0, 10);
                 return (
-                <tr key={String(p.id || Math.random())} className="hover:bg-muted transition-colors">
-                  <td className="px-4 py-3 font-medium text-[var(--admin-ink)]">
-                    {safeTitle}
-                    {!isProductPriced(p) && (
-                      <span className="ms-2 inline-block rounded-md bg-[var(--bad-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--brand-red-dark)]">
-                        مخفي — بحاجة سعر/تكلفة
-                      </span>
-                    )}
-                    {showsPerformanceWarning(p) && (
-                      <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
-                        Performance review required
-                      </span>
-                    )}
-                    {isProductHidden(p) && (
-                      <span className="ms-2 inline-block rounded-md bg-slate-500/10 px-2 py-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                        مخفي
-                      </span>
-                    )}
-                    {p.isDuplicate && (
-                      <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
-                        مكرر
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-foreground" dir="ltr">
-                    {(Number(p.price) || 0).toLocaleString()} د.ع
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {catTitle}
-                  </td>
-                  <td className="px-4 py-3 text-foreground" dir="ltr">
-                    {safeStock}
-                  </td>
-                  <td className="px-4 py-3 text-foreground">{safeSales}</td>
-                  <td className="px-4 py-3 text-muted-foreground whitespace-nowrap" dir="ltr">
-                    {/* A sortable column an admin cannot read is half a feature. */}
-                    {lastEdited ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded-md text-[12px] font-medium ${safeStatus === "نشط" ? "bg-[var(--ok-bg)] text-[var(--ok-ink)]" : "bg-[var(--bad-bg)] text-[var(--brand-red-dark)]"}`}
-                    >
-                      {safeStatus}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => void openProductForEdit(p)}
-                        disabled={isOpeningEditor !== null}
-                        aria-busy={isOpeningEditor === String(p.id)}
-                        title={
-                          isOpeningEditor === String(p.id)
-                            ? "جاري تحميل المنتج الكامل..."
-                            : t("admin.editProduct" as any) || "تعديل"
-                        }
-                        className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                  <tr
+                    key={String(p.id || Math.random())}
+                    className="hover:bg-muted transition-colors"
+                  >
+                    <td className="px-4 py-3 font-medium text-[var(--admin-ink)]">
+                      {safeTitle}
+                      {!isProductPriced(p) && (
+                        <span className="ms-2 inline-block rounded-md bg-[var(--bad-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--brand-red-dark)]">
+                          مخفي — بحاجة سعر/تكلفة
+                        </span>
+                      )}
+                      {showsPerformanceWarning(p) && (
+                        <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                          Performance review required
+                        </span>
+                      )}
+                      {isProductHidden(p) && (
+                        <span className="ms-2 inline-block rounded-md bg-slate-500/10 px-2 py-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          مخفي
+                        </span>
+                      )}
+                      {p.isDuplicate && (
+                        <span className="ms-2 inline-block rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                          مكرر
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-foreground" dir="ltr">
+                      {(Number(p.price) || 0).toLocaleString()} د.ع
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{catTitle}</td>
+                    <td className="px-4 py-3 text-foreground" dir="ltr">
+                      {safeStock}
+                    </td>
+                    <td className="px-4 py-3 text-foreground">{safeSales}</td>
+                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap" dir="ltr">
+                      {/* A sortable column an admin cannot read is half a feature. */}
+                      {lastEdited ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[12px] font-medium ${safeStatus === "نشط" ? "bg-[var(--ok-bg)] text-[var(--ok-ink)]" : "bg-[var(--bad-bg)] text-[var(--brand-red-dark)]"}`}
                       >
-                        <Edit
-                          className={`w-4 h-4 ${isOpeningEditor === String(p.id) ? "animate-pulse" : ""}`}
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setProductToDelete(p)}
-                        className="text-muted-foreground hover:text-[var(--brand-red-dark)] transition-colors p-1 rounded hover:bg-destructive/10"
-                        title={t("admin.deleteProduct" as any) || "حذف"}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )})}
+                        {safeStatus}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => void openProductForEdit(p)}
+                          disabled={isOpeningEditor !== null}
+                          aria-busy={isOpeningEditor === String(p.id)}
+                          title={
+                            isOpeningEditor === String(p.id)
+                              ? "جاري تحميل المنتج الكامل..."
+                              : t("admin.editProduct" as any) || "تعديل"
+                          }
+                          className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                        >
+                          <Edit
+                            className={`w-4 h-4 ${isOpeningEditor === String(p.id) ? "animate-pulse" : ""}`}
+                          />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setProductToDelete(p)}
+                          className="text-muted-foreground hover:text-[var(--brand-red-dark)] transition-colors p-1 rounded hover:bg-destructive/10"
+                          title={t("admin.deleteProduct" as any) || "حذف"}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -2540,7 +2605,17 @@ function ListingsView({
               <button
                 type="button"
                 disabled={pageInfo.page <= 1 || isRefreshing}
-                onClick={() => onQuery?.({ page: pageInfo.page - 1, sort, search: searchTerm, hidden: onlyHidden, unpriced: onlyUnpriced, performance: onlyMissingPerformance, ...(initialCategoryId ? { category: initialCategoryId } : {}) })}
+                onClick={() =>
+                  onQuery?.({
+                    page: pageInfo.page - 1,
+                    sort,
+                    search: searchTerm,
+                    hidden: onlyHidden,
+                    unpriced: onlyUnpriced,
+                    performance: onlyMissingPerformance,
+                    ...(initialCategoryId ? { category: initialCategoryId } : {}),
+                  })
+                }
                 className="rounded-lg border border-border px-3 py-1.5 font-bold transition-colors hover:bg-muted disabled:opacity-40"
               >
                 السابق
@@ -2548,7 +2623,17 @@ function ListingsView({
               <button
                 type="button"
                 disabled={!pageInfo.hasMore || isRefreshing}
-                onClick={() => onQuery?.({ page: pageInfo.page + 1, sort, search: searchTerm, hidden: onlyHidden, unpriced: onlyUnpriced, performance: onlyMissingPerformance, ...(initialCategoryId ? { category: initialCategoryId } : {}) })}
+                onClick={() =>
+                  onQuery?.({
+                    page: pageInfo.page + 1,
+                    sort,
+                    search: searchTerm,
+                    hidden: onlyHidden,
+                    unpriced: onlyUnpriced,
+                    performance: onlyMissingPerformance,
+                    ...(initialCategoryId ? { category: initialCategoryId } : {}),
+                  })
+                }
                 className="rounded-lg border border-border px-3 py-1.5 font-bold transition-colors hover:bg-muted disabled:opacity-40"
               >
                 التالي
@@ -2560,20 +2645,31 @@ function ListingsView({
 
       {productToDelete && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150" dir="rtl">
+          <div
+            className="bg-card border border-border rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            dir="rtl"
+          >
             <div className="flex items-center gap-3 text-destructive">
               <div className="p-2.5 rounded-full bg-destructive/10">
                 <Trash2 className="w-6 h-6 text-destructive" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-foreground">تأكيد حذف المنتج</h3>
-                <p className="text-xs text-muted-foreground">لا يمكن التراجع عن هذه العملية بعد التأكيد</p>
+                <p className="text-xs text-muted-foreground">
+                  لا يمكن التراجع عن هذه العملية بعد التأكيد
+                </p>
               </div>
             </div>
 
             <div className="bg-muted/40 p-3 rounded-lg border border-border/60 text-sm">
-              <p className="font-semibold text-foreground">{productToDelete.title || productToDelete.titleEn || productToDelete.id}</p>
-              {productToDelete.id && <p className="text-xs text-muted-foreground mt-0.5" dir="ltr">ID: {productToDelete.id}</p>}
+              <p className="font-semibold text-foreground">
+                {productToDelete.title || productToDelete.titleEn || productToDelete.id}
+              </p>
+              {productToDelete.id && (
+                <p className="text-xs text-muted-foreground mt-0.5" dir="ltr">
+                  ID: {productToDelete.id}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
@@ -4751,7 +4847,7 @@ function UsersManagementView() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                        {u.name ? u.name[0] : (u.username ? u.username[0] : "👤")}
+                        {u.name ? u.name[0] : u.username ? u.username[0] : "👤"}
                       </div>
                       <div>
                         <p className="font-bold text-sm">{u.name}</p>

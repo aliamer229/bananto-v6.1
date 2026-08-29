@@ -168,6 +168,22 @@ export async function processAutoScheduledTasks() {
   } catch (err) {
     console.error("[scheduled-jobs] processInactivityAndQueue error:", err);
   }
+
+  /*
+    4. Close used-marketplace listings whose paid window has ended.
+
+    The storefront query already hides an expired listing, so this is about the
+    seller's own view and the per-seller cap rather than about what a customer
+    can see. It goes through the same transition gate as every other status
+    change, so each expiry still gets its event row and its notification.
+  */
+  try {
+    const { expireDueListings } = await import("./used-marketplace.server");
+    const result = await expireDueListings();
+    if (result.expired.length) console.log("[scheduled-jobs:used-market]", result.expired.length);
+  } catch (err) {
+    console.error("[scheduled-jobs] expiring used listings failed:", err);
+  }
 }
 
 /**

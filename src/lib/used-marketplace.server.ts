@@ -561,6 +561,12 @@ export interface TransitionOptions {
   /** Required on the move into SUBMITTED — the seller accepting the policy. */
   policyAccepted?: boolean;
   soldOrderId?: string;
+  /**
+   * Marks the item as one the store itself took back, which is what the
+   * مسترجع badge means. Admin-only by construction: it is read from the
+   * options a reviewer sends, never from anything the seller can write.
+   */
+  isReturned?: boolean;
 }
 
 async function recordEvent(
@@ -673,6 +679,11 @@ export async function transitionListing(
   if (to === "REJECTED" || to === "NEEDS_CHANGES" || to === "UNDER_REVIEW") {
     sets.push("reviewed_by_user_id = ?", "reviewed_at = ?", "review_notes = ?");
     binds.push(options.actorUserId ?? null, now, options.note ?? null);
+  }
+
+  if (options.isReturned !== undefined && options.actor === "admin") {
+    sets.push("is_returned = ?");
+    binds.push(options.isReturned ? 1 : 0);
   }
 
   if (to === "SOLD") {

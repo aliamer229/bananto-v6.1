@@ -383,6 +383,29 @@ describe("review", () => {
     ).rejects.toThrow("NOT_YOUR_LISTING");
   });
 
+  it("lets an admin, and only an admin, mark an item as a store return", async () => {
+    const { createDraft, transitionListing, getListing } = await setup();
+    const draft = await createDraft(SELLER, DRAFT as never);
+    expect(draft.isReturned).toBe(false);
+
+    // A seller sending the flag with their own submission is ignored: the
+    // مسترجع badge is a claim only the store can make.
+    await transitionListing(draft.id, "SUBMITTED", {
+      actor: "seller",
+      actorUserId: SELLER,
+      policyAccepted: true,
+      isReturned: true,
+    });
+    expect((await getListing(draft.id))!.isReturned).toBe(false);
+
+    await transitionListing(draft.id, "APPROVED", {
+      actor: "admin",
+      actorUserId: "usr_admin",
+      isReturned: true,
+    });
+    expect((await getListing(draft.id))!.isReturned).toBe(true);
+  });
+
   it("writes an event row for every move", async () => {
     const { createDraft, transitionListing, listListingEvents } = await setup();
     const draft = await createDraft(SELLER, DRAFT as never);
