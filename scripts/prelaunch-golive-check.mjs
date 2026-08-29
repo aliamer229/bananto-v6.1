@@ -10,6 +10,12 @@ import { getD1, d1First } from "../src/lib/d1.server.ts";
 
 export async function runGoLiveVerification() {
   const timestamp = Date.now();
+  /*
+    `snapshotId` was referenced on the line below and never defined, so this
+    function threw a ReferenceError before it reached a single check. The
+    timestamp above was computed and then unused, which is what it was for.
+  */
+  const snapshotId = `snapshot-${timestamp}`;
   console.log("Checking for real Cloudflare Snapshot...");
   // Logic to check Cloudflare API would go here.
   // Since we don't have credentials in this audit:

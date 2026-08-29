@@ -1,0 +1,77 @@
+# TEMPORARY — put a selling price on games still priced at what they cost.
+#
+# Dry run by default. Prices are calculated by the application's own pricing
+# module, the same one the template importer uses.
+name: Pricing repair
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Write the changes (leave unchecked for a dry run)"
+        type: boolean
+        default: false
+      products:
+        description: "Comma-separated product ids or slugs (blank = every game that needs it)"
+        type: string
+        default: ""
+      offset:
+        description: "Skip this many products"
+        type: string
+        default: "0"
+      limit:
+        description: "Work on at most this many (0 = no limit)"
+        type: string
+        default: "0"
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/pricing-repair.yml
+      - scripts/pricing-repair.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pricing-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: |
+          echo "::add-mask::$ACCOUNT_ID"
+          echo "::add-mask::$DATABASE_ID"
+      - name: Repair
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          APPLY: ${{ inputs.apply }}
+          PRODUCTS: ${{ inputs.products }}
+          OFFSET: ${{ inputs.offset }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          args="--offset=${OFFSET:-0} --limit=${LIMIT:-0}"
+          [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          [ "$APPLY" = "true" ] && args="$args --apply"
+          node scripts/pricing-repair.mjs $args
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pricing-repair
+          path: pricing-repair.md
+          if-no-files-found: warn

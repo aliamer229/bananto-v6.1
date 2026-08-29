@@ -1,0 +1,6366 @@
+{
+ "source": "https://www.nintendo.com.hk/data/json/switch_software.json + https://ec.nintendo.com/HK/zh/titles/<nsuid>",
+ "builtAt": "2026-08-28T22:22:14.368Z",
+ "count": 442,
+ "withLanguages": 386,
+ "titles": [
+  {
+   "nsuid": "70010000008802",
+   "catalogueTitle": "DARK SOULS™: Remastered",
+   "storeName": "DARK SOULS™: Remastered",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.10.18"
+  },
+  {
+   "nsuid": "70010000008864",
+   "catalogueTitle": "莎莉之定律",
+   "storeName": "莎莉之定律",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "POLARISX",
+   "releaseDate": "2018.8.9"
+  },
+  {
+   "nsuid": "70010000008902",
+   "catalogueTitle": "Capcom Belt Action Collection",
+   "storeName": "Capcom Belt Action Collection",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2018.11.7"
+  },
+  {
+   "nsuid": "70010000008922",
+   "catalogueTitle": "PSYVARIAR DELTA《閃速神機》",
+   "storeName": "PSYVARIAR DELTA《閃速神機》",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CITY CONNECTION",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000009065",
+   "catalogueTitle": "荒野之槍 重裝上陣",
+   "storeName": "荒野之槍 重裝上陣",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000009102",
+   "catalogueTitle": "ULTRA STREET FIGHTER® II The Final Challengers",
+   "storeName": "ULTRA STREET FIGHTER® II The Final Challengers",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2018.6.20"
+  },
+  {
+   "nsuid": "70010000009162",
+   "catalogueTitle": "ZELDA無雙 海拉魯全明星 豪華版",
+   "storeName": "ZELDA無雙 海拉魯全明星 豪華版",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2018.6.20"
+  },
+  {
+   "nsuid": "70010000009164",
+   "catalogueTitle": "航海王：海賊無雙3 豪華版",
+   "storeName": "航海王：海賊無雙3 豪華版",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000009221",
+   "catalogueTitle": "戰場女武神",
+   "storeName": "戰場女武神",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.10.15"
+  },
+  {
+   "nsuid": "70010000009229",
+   "catalogueTitle": "Go Vacation",
+   "storeName": "Go Vacation™",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl"
+   ],
+   "catalogueLang": "",
+   "publisher": "BANDAI NAMCO / Nintendo",
+   "releaseDate": "2018.7.27"
+  },
+  {
+   "nsuid": "70010000009367",
+   "catalogueTitle": "薩爾達傳說 曠野之息",
+   "storeName": "薩爾達傳說 曠野之息",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009372",
+   "catalogueTitle": "超級瑪利歐 奧德賽",
+   "storeName": "超級瑪利歐 奧德賽",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009373",
+   "catalogueTitle": "瑪利歐賽車8 豪華版",
+   "storeName": "瑪利歐賽車8 豪華版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009374",
+   "catalogueTitle": "1-2-Switch",
+   "storeName": "1-2-Switch",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru"
+   ],
+   "catalogueLang": "EN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009376",
+   "catalogueTitle": "你裁我剪！斯尼帕 Plus",
+   "storeName": "你裁我剪！斯尼帕Plus",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009377",
+   "catalogueTitle": "瑪利歐 + 瘋狂兔子 王國之戰 (日中版)",
+   "storeName": "瑪利歐 + 瘋狂兔子 王國之戰 (日中版)",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009381",
+   "catalogueTitle": "ARMS",
+   "storeName": "ARMS",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009382",
+   "catalogueTitle": "星之卡比 新星同盟",
+   "storeName": "星之卡比 新星同盟",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009403",
+   "catalogueTitle": "Slice, Dice & Rice",
+   "storeName": "Slice, Dice ",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.10.11"
+  },
+  {
+   "nsuid": "70010000009563",
+   "catalogueTitle": "Fitness Boxing",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000009567",
+   "catalogueTitle": "2020東京奧運 The Official Video Game™",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000009601",
+   "catalogueTitle": "BLAZBLUE CROSS TAG BATTLE",
+   "storeName": "BLAZBLUE CROSS TAG BATTLE",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.6.20"
+  },
+  {
+   "nsuid": "70010000009641",
+   "catalogueTitle": "Splatoon2 (日文版)",
+   "storeName": "Splatoon™ 2 (日文版)",
+   "languages": [
+    "ja"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009642",
+   "catalogueTitle": "Splatoon2 (英文版)",
+   "storeName": "Splatoon™ 2 (美版)",
+   "languages": [
+    "en",
+    "es",
+    "fr"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009643",
+   "catalogueTitle": "ポッ拳　POKKÉN TOURNAMENT DX",
+   "storeName": "ポッ拳　POKKÉN TOURNAMENT DX",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009644",
+   "catalogueTitle": "ポッ拳　POKKÉN TOURNAMENT DX 體驗版",
+   "storeName": "ポッ拳　POKKÉN TOURNAMENT DX 體驗版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009646",
+   "catalogueTitle": "星之卡比 新星同盟 體驗版",
+   "storeName": "星之卡比 新星同盟 體驗版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009647",
+   "catalogueTitle": "異度神劍2",
+   "storeName": "異度神劍2",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.4.3"
+  },
+  {
+   "nsuid": "70010000009718",
+   "catalogueTitle": "戰場女武神４",
+   "storeName": "戰場女武神４",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.9.27"
+  },
+  {
+   "nsuid": "70010000009741",
+   "catalogueTitle": "Dungeon Rushers",
+   "storeName": "Dungeon Rushers",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000009847",
+   "catalogueTitle": "RADIOHAMMER STATION",
+   "storeName": "RADIOHAMMER STATION",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000010041",
+   "catalogueTitle": "Kunio Kun: The World Classics Collection",
+   "storeName": "Kunio Kun: The World Classics Collection",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2018.12.20"
+  },
+  {
+   "nsuid": "70010000010134",
+   "catalogueTitle": "Mega Man Legacy Collection 2",
+   "storeName": "Mega Man Legacy Collection 2",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000010186",
+   "catalogueTitle": "Shikhondo - 食魂徒",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000010203",
+   "catalogueTitle": "死亡細胞 (Dead Cells)",
+   "storeName": "死亡細胞 (Dead Cells)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2018.8.9"
+  },
+  {
+   "nsuid": "70010000010278",
+   "catalogueTitle": "飢餓鯊：世界",
+   "storeName": "《飢餓鯊：世界》(Hungry Shark World)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2018.11.15"
+  },
+  {
+   "nsuid": "70010000010321",
+   "catalogueTitle": "光明之響　龍奏回音",
+   "storeName": "光明之響 龍奏回音",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000010528",
+   "catalogueTitle": "CLOSED NIGHTMARE",
+   "storeName": "CLOSED NIGHTMARE",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000010572",
+   "catalogueTitle": "Dimension Drive",
+   "storeName": "Dimension Drive",
+   "languages": [
+    "en",
+    "es"
+   ],
+   "catalogueLang": "",
+   "publisher": "eastasiasoft",
+   "releaseDate": "2020.1.23"
+  },
+  {
+   "nsuid": "70010000010625",
+   "catalogueTitle": "Survive! MR.CUBE",
+   "storeName": "方塊先生大逃亡",
+   "languages": [
+    "ja",
+    "en",
+    "ko"
+   ],
+   "catalogueLang": "",
+   "publisher": "Intragames",
+   "releaseDate": "2019.6.20"
+  },
+  {
+   "nsuid": "70010000010663",
+   "catalogueTitle": "VOEZ",
+   "storeName": "VOEZ",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Flyhigh Works",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000010680",
+   "catalogueTitle": "Donkey Kong Tropical Freeze",
+   "storeName": "Donkey Kong Tropical Freeze (英日版)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "JP",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.5.3"
+  },
+  {
+   "nsuid": "70010000010681",
+   "catalogueTitle": "Mario Tennis Ace",
+   "storeName": "Mario Tennis Ace",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.6.22"
+  },
+  {
+   "nsuid": "70010000010683",
+   "catalogueTitle": "《刺客教條 III 重製版》",
+   "storeName": "《刺客教條 III 重製版》(Assassin's Creed 3 Remastered)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2019.5.23"
+  },
+  {
+   "nsuid": "70010000010701",
+   "catalogueTitle": "LEGO® 超人特攻隊",
+   "storeName": "LEGO® 超人特攻隊",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "WB Games",
+   "releaseDate": "2020.2.27"
+  },
+  {
+   "nsuid": "70010000010816",
+   "catalogueTitle": "Scribblenauts Mega Pack",
+   "storeName": "Scribblenauts Mega Pack",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt"
+   ],
+   "catalogueLang": "",
+   "publisher": "WB Games",
+   "releaseDate": "2020.2.24"
+  },
+  {
+   "nsuid": "70010000010825",
+   "catalogueTitle": "奈爾克與傳說之鍊金術士們 ～新大地之鍊金工房～",
+   "storeName": "奈爾克與傳說之鍊金術士們 ～新大地之鍊金工房～",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2019.3.26"
+  },
+  {
+   "nsuid": "70010000011025",
+   "catalogueTitle": "Monster Hunter Generations Ultimate™",
+   "storeName": "Monster Hunter Generations Ultimate™",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2018.8.28"
+  },
+  {
+   "nsuid": "70010000011064",
+   "catalogueTitle": "超回転 寿司ストライカー The Way of Sushido (日文版)",
+   "storeName": "超回転 寿司ストライカー The Way of Sushido (日文版)",
+   "languages": [
+    "ja"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.6.8"
+  },
+  {
+   "nsuid": "70010000011066",
+   "catalogueTitle": "Sushi Striker™: The Way of Sushido (英文版)",
+   "storeName": "Sushi Striker™: The Way of Sushido (英文版)",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.6.8"
+  },
+  {
+   "nsuid": "70010000011067",
+   "catalogueTitle": "進め！キノピオ隊長",
+   "storeName": "進め！キノピオ隊長",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "nl"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.7.13"
+  },
+  {
+   "nsuid": "70010000011229",
+   "catalogueTitle": "Mega Man 11",
+   "storeName": "Mega Man 11",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2018.10.3"
+  },
+  {
+   "nsuid": "70010000011230",
+   "catalogueTitle": "寶可夢探險尋寶",
+   "storeName": "寶可夢探險尋寶",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.6.1"
+  },
+  {
+   "nsuid": "70010000011357",
+   "catalogueTitle": "刀劍神域 虛空幻界 豪華版",
+   "storeName": "刀劍神域 虛空幻界 豪華版",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.4.25"
+  },
+  {
+   "nsuid": "70010000011472",
+   "catalogueTitle": "Cytus α",
+   "storeName": "Cytus α",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Flyhigh Works",
+   "releaseDate": "2019.4.25"
+  },
+  {
+   "nsuid": "70010000011481",
+   "catalogueTitle": "NBA 2K19",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000011484",
+   "catalogueTitle": "《傳奇小釣手》",
+   "storeName": "《傳奇小釣手》(Legendary Fishing)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2018.9.18"
+  },
+  {
+   "nsuid": "70010000011605",
+   "catalogueTitle": "Blade Strangers",
+   "storeName": "Blade Strangers",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Pikii",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000011639",
+   "catalogueTitle": "TEAM SONIC RACING",
+   "storeName": "TEAM SONIC RACING",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.5.21"
+  },
+  {
+   "nsuid": "70010000011652",
+   "catalogueTitle": "瑪利歐 + 瘋狂兔子 王國之戰 (英中版)",
+   "storeName": "《瑪利歐 + 瘋狂兔子 王國之戰》- 英中版 (Mario + Rabbids Kingdom Battle Standard Edition)",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2018.6.26"
+  },
+  {
+   "nsuid": "70010000011790",
+   "catalogueTitle": "太鼓之達人 Nintendo Switch版！",
+   "storeName": "太鼓之達人 Nintendo Switch版！",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000011852",
+   "catalogueTitle": "The World Ends with You: Final Remix",
+   "storeName": "The World Ends with You -Final Remix-",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.10.12"
+  },
+  {
+   "nsuid": "70010000011856",
+   "catalogueTitle": "Happy Birthdays",
+   "storeName": "Happy Birthdays",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000011858",
+   "catalogueTitle": "OCTOPATH TRAVELER™ Prologue Demo",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000011897",
+   "catalogueTitle": "高高興興動物樂園",
+   "storeName": "高高興興動物樂園",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "NIPPON COLUMBIA",
+   "releaseDate": "2018.7.26"
+  },
+  {
+   "nsuid": "70010000011999",
+   "catalogueTitle": "魔法氣泡eSports",
+   "storeName": "魔法氣泡eSports",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.10.25"
+  },
+  {
+   "nsuid": "70010000012033",
+   "catalogueTitle": "SONIC FORCES",
+   "storeName": "SONIC FORCES",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000012034",
+   "catalogueTitle": "魔法氣泡 TETRIS®",
+   "storeName": "魔法氣泡 TETRIS®",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.6.20"
+  },
+  {
+   "nsuid": "70010000012088",
+   "catalogueTitle": "FIRE EMBLEM 無雙",
+   "storeName": "FIRE EMBLEM 無雙",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2018.6.20"
+  },
+  {
+   "nsuid": "70010000012097",
+   "catalogueTitle": "Brawlhalla",
+   "storeName": "《英靈神殿大亂鬥》(Brawlhalla)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2019.9.12"
+  },
+  {
+   "nsuid": "70010000012132",
+   "catalogueTitle": "Rayman® Legends Definitive Edition",
+   "storeName": "《雷射超人：傳奇決定版》(Rayman Legends Definitive Edition)",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt",
+    "ru"
+   ],
+   "catalogueLang": "",
+   "publisher": "Ubisoft",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000012137",
+   "catalogueTitle": "魔界戰記DISGAEA Refine",
+   "storeName": "魔界戰記DISGAEA Refine",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.8.9"
+  },
+  {
+   "nsuid": "70010000012248",
+   "catalogueTitle": "神奇小子 龍之陷阱",
+   "storeName": "神奇小子 龍之陷阱",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000012263",
+   "catalogueTitle": "說謊公主與盲眼王子",
+   "storeName": "說謊公主與盲眼王子",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.8.23"
+  },
+  {
+   "nsuid": "70010000012345",
+   "catalogueTitle": "勇者戰機少女　世界啊，宇宙啊，刮目相看吧！！ 終極ＲＰＧ宣言！！",
+   "storeName": "勇者戰機少女　世界啊，宇宙啊，刮目相看吧！！ 終極ＲＰＧ宣言！！",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CFK",
+   "releaseDate": "2019.7.4"
+  },
+  {
+   "nsuid": "70010000012347",
+   "catalogueTitle": "夜迴＆深夜迴for Nintendo Switch",
+   "storeName": "夜迴＆深夜迴for Nintendo Switch",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.10.25"
+  },
+  {
+   "nsuid": "70010000012361",
+   "catalogueTitle": "我的英雄學院 唯我正義",
+   "storeName": "我的英雄學院 唯我正義",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2018.10.25"
+  },
+  {
+   "nsuid": "70010000012421",
+   "catalogueTitle": "進め！キノピオ隊長 體驗版",
+   "storeName": "進め！キノピオ隊長 體驗版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.6.20"
+  },
+  {
+   "nsuid": "70010000012522",
+   "catalogueTitle": "ポケモン不思議のダンジョン 救助隊DX",
+   "storeName": "ポケモン不思議のダンジョン 救助隊DX",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.3.6"
+  },
+  {
+   "nsuid": "70010000012526",
+   "catalogueTitle": "Super Bomberman R (English/Chinese/Korean/Japanese Ver.) ",
+   "storeName": "Super Bomberman R (English/Chinese/Korean/Japanese Ver.) ",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KONAMI",
+   "releaseDate": "2020.2.13"
+  },
+  {
+   "nsuid": "70010000012582",
+   "catalogueTitle": "GOD WARS THE COMPLETE LEGEND",
+   "storeName": "GOD WARS THE COMPLETE LEGEND",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KADOKAWA GAMES",
+   "releaseDate": "2018.9.27"
+  },
+  {
+   "nsuid": "70010000012664",
+   "catalogueTitle": "GUILTY GEAR XX ACCENT CORE PLUS R",
+   "storeName": "GUILTY GEAR XX ACCENT CORE PLUS R",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.5.16"
+  },
+  {
+   "nsuid": "70010000012684",
+   "catalogueTitle": "體感嘉年華",
+   "storeName": "體感嘉年華",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Take Two Interactive UK Limited",
+   "releaseDate": "2020.3.5"
+  },
+  {
+   "nsuid": "70010000012752",
+   "catalogueTitle": "Little Dragons Café",
+   "storeName": "Little Dragons Café",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000012849",
+   "catalogueTitle": "Resident Evil 0",
+   "storeName": "Resident Evil 0",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.5.21"
+  },
+  {
+   "nsuid": "70010000012853",
+   "catalogueTitle": "Resident Evil",
+   "storeName": "Resident Evil",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.5.21"
+  },
+  {
+   "nsuid": "70010000012857",
+   "catalogueTitle": "resident evil 4",
+   "storeName": "resident evil 4",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.5.21"
+  },
+  {
+   "nsuid": "70010000012889",
+   "catalogueTitle": "彩京精選 Vol.1",
+   "storeName": "彩京精選 Vol.1",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.9.21"
+  },
+  {
+   "nsuid": "70010000012908",
+   "catalogueTitle": "任天堂明星大亂鬥 特別版",
+   "storeName": "任天堂明星大亂鬥 特別版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.12.7"
+  },
+  {
+   "nsuid": "70010000012912",
+   "catalogueTitle": "SONIC MANIA",
+   "storeName": "SONIC MANIA",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.9.13"
+  },
+  {
+   "nsuid": "70010000012976",
+   "catalogueTitle": "墮落軍團 - 光榮系譜 -",
+   "storeName": "墮落軍團 - 光榮系譜 -",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000013033",
+   "catalogueTitle": "【體驗版】太鼓之達人 Nintendo Switch版！",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000013036",
+   "catalogueTitle": "高高興興動物樂園　體驗版",
+   "storeName": "高高興興動物樂園　體驗版",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "NIPPON COLUMBIA",
+   "releaseDate": "2018.7.26"
+  },
+  {
+   "nsuid": "70010000013053",
+   "catalogueTitle": "魯弗蘭的地下迷宮與魔女的旅團",
+   "storeName": "魯弗蘭的地下迷宮與魔女的旅團",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2018.9.27"
+  },
+  {
+   "nsuid": "70010000013094",
+   "catalogueTitle": "WORLD OF FINAL FANTASY MAXIMA",
+   "storeName": "WORLD OF FINAL FANTASY MAXIMA",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Square Enix",
+   "releaseDate": "2018.11.6"
+  },
+  {
+   "nsuid": "70010000013161",
+   "catalogueTitle": "Mega Man Legacy Collection",
+   "storeName": "Mega Man Legacy Collection ",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ru"
+   ],
+   "catalogueLang": "",
+   "publisher": "CAPCOM",
+   "releaseDate": "2018.7.19"
+  },
+  {
+   "nsuid": "70010000013222",
+   "catalogueTitle": "LEGO® DC 超級反派",
+   "storeName": "LEGO® DC 超級反派",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "WB Games",
+   "releaseDate": "2020.3.12"
+  },
+  {
+   "nsuid": "70010000013358",
+   "catalogueTitle": "樂高玩電影2遊戲",
+   "storeName": "樂高玩電影2遊戲",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "WB Games",
+   "releaseDate": "2020.2.27"
+  },
+  {
+   "nsuid": "70010000013363",
+   "catalogueTitle": "方塊創造者X",
+   "storeName": "方塊創造者X",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000013420",
+   "catalogueTitle": "戰鬥公主瑪德琳",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000013535",
+   "catalogueTitle": "LEGO® Harry Potter™ Collection",
+   "storeName": "LEGO® Harry Potter™ Collection",
+   "languages": [
+    "es",
+    "fr",
+    "en",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "WB Games",
+   "releaseDate": "2020.2.23"
+  },
+  {
+   "nsuid": "70010000013556",
+   "catalogueTitle": "新大開拓時代~建造村落~",
+   "storeName": "新大開拓時代~建造村落~",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.9"
+  },
+  {
+   "nsuid": "70010000013576",
+   "catalogueTitle": "Shephy",
+   "storeName": "Shephy",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.9"
+  },
+  {
+   "nsuid": "70010000013577",
+   "catalogueTitle": "沙漠老鼠團！改！",
+   "storeName": "沙漠老鼠團！改！",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.9"
+  },
+  {
+   "nsuid": "70010000013581",
+   "catalogueTitle": "宵星傳奇 REMASTER",
+   "storeName": "宵星傳奇 REMASTER",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.1.11"
+  },
+  {
+   "nsuid": "70010000013586",
+   "catalogueTitle": "光明之子",
+   "storeName": "《光明之子》- 終極版 (Child of Light Ultimate Edition)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2018.11.15"
+  },
+  {
+   "nsuid": "70010000013601",
+   "catalogueTitle": "蕾咪羅亞～少女與異世界與魔導書～",
+   "storeName": "蕾咪羅亞～少女與異世界與魔導書～",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Pikii",
+   "releaseDate": "2019.3.28"
+  },
+  {
+   "nsuid": "70010000013611",
+   "catalogueTitle": "運動派對",
+   "storeName": "《運動派對》(Sports Party)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2018.10.30"
+  },
+  {
+   "nsuid": "70010000013625",
+   "catalogueTitle": "蒼藍雷霆GUNVOLT 強襲合輯",
+   "storeName": "蒼藍雷霆GUNVOLT 強襲合輯",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "INTI CREATES",
+   "releaseDate": "2018.12.6"
+  },
+  {
+   "nsuid": "70010000013626",
+   "catalogueTitle": "方塊創造者X 體驗版",
+   "storeName": "方塊創造者X 體驗版",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.23"
+  },
+  {
+   "nsuid": "70010000013722",
+   "catalogueTitle": "MONSTER HUNTER GENERATIONS ULTIMATE™ Demo",
+   "storeName": "MONSTER HUNTER GENERATIONS ULTIMATE™ Demo",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2018.8.20"
+  },
+  {
+   "nsuid": "70010000013723",
+   "catalogueTitle": "DEEMO",
+   "storeName": "DEEMO",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Flyhigh Works",
+   "releaseDate": "2018.8.9"
+  },
+  {
+   "nsuid": "70010000013729",
+   "catalogueTitle": "NBA 2K 熱血街球場2",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000013830",
+   "catalogueTitle": "雙截龍4",
+   "storeName": "雙截龍4",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000013831",
+   "catalogueTitle": "Gotcha Racing 2nd",
+   "storeName": "Gotcha Racing 2nd",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.8.30"
+  },
+  {
+   "nsuid": "70010000013864",
+   "catalogueTitle": "Mulaka",
+   "storeName": "Mulaka",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Intragames",
+   "releaseDate": "2019.1.23"
+  },
+  {
+   "nsuid": "70010000013896",
+   "catalogueTitle": "瑪利歐&amp;索尼克 AT 2020東京奧運™",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000013979",
+   "catalogueTitle": "Death Road to Canada",
+   "storeName": "Death Road to Canada",
+   "languages": [
+    "en"
+   ],
+   "catalogueLang": "",
+   "publisher": "eastasiasoft",
+   "releaseDate": "2020.3.5"
+  },
+  {
+   "nsuid": "70010000014321",
+   "catalogueTitle": "蒼翼默示錄 神觀之夢 特別版",
+   "storeName": "蒼翼默示錄 神觀之夢 特別版",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE ",
+   "releaseDate": "2019.2.7"
+  },
+  {
+   "nsuid": "70010000014348",
+   "catalogueTitle": "Dungreed",
+   "storeName": "Dungreed",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Pikii",
+   "releaseDate": "2020.9.24"
+  },
+  {
+   "nsuid": "70010000014357",
+   "catalogueTitle": "彩京精選 Vol.2",
+   "storeName": "彩京精選 Vol.2",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.11.22"
+  },
+  {
+   "nsuid": "70010000014422",
+   "catalogueTitle": "Old School Musical（舊式歌劇）",
+   "storeName": "Old School Musical（舊式歌劇）",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2018.12.6"
+  },
+  {
+   "nsuid": "70010000014443",
+   "catalogueTitle": "GUILTY GEAR",
+   "storeName": "GUILTY GEAR",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.5.16"
+  },
+  {
+   "nsuid": "70010000014450",
+   "catalogueTitle": "夜下降生 Exe:Late[cl-r]",
+   "storeName": "夜下降生 Exe:Late[cl-r]",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2020.2.20"
+  },
+  {
+   "nsuid": "70010000014494",
+   "catalogueTitle": "Ghost Blade HD",
+   "storeName": "Ghost Blade HD",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "eastasiasoft",
+   "releaseDate": "2020.2.20"
+  },
+  {
+   "nsuid": "70010000014554",
+   "catalogueTitle": "Asterix & Obelix XXL 2",
+   "storeName": "Asterix ",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE ",
+   "releaseDate": "2019.2.7"
+  },
+  {
+   "nsuid": "70010000014595",
+   "catalogueTitle": "文明帝國VI",
+   "storeName": "《文明帝國VI》",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Take Two Interactive UK Limited",
+   "releaseDate": "2020.3.5"
+  },
+  {
+   "nsuid": "70010000014607",
+   "catalogueTitle": "Super Mario Party",
+   "storeName": "Super Mario Party",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.10.5"
+  },
+  {
+   "nsuid": "70010000014621",
+   "catalogueTitle": "刀劍神域 奪命凶彈 完全版",
+   "storeName": "刀劍神域 奪命凶彈 完全版",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.8.8"
+  },
+  {
+   "nsuid": "70010000014707",
+   "catalogueTitle": "Reverie: Sweet As Edition",
+   "storeName": "Reverie: Sweet As Edition",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "eastasiasoft",
+   "releaseDate": "2020.1.16"
+  },
+  {
+   "nsuid": "70010000014731",
+   "catalogueTitle": "Nippon Marathon",
+   "storeName": "Nippon Marathon",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.12.17"
+  },
+  {
+   "nsuid": "70010000014793",
+   "catalogueTitle": "Lapis x Labyrinth　深淵狂獵",
+   "storeName": "Lapis x Labyrinth　深淵狂獵",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.2.21"
+  },
+  {
+   "nsuid": "70010000014888",
+   "catalogueTitle": "TOKI",
+   "storeName": "TOKI",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2018.12.20"
+  },
+  {
+   "nsuid": "70010000014890",
+   "catalogueTitle": "Gear.Club Unlimited 2",
+   "storeName": "Gear.Club Unlimited 2",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2019.1.16"
+  },
+  {
+   "nsuid": "70010000014924",
+   "catalogueTitle": "Onimusha: Warlords",
+   "storeName": "鬼武者（Onimusha: Warlords）",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.1.16"
+  },
+  {
+   "nsuid": "70010000014944",
+   "catalogueTitle": "The MISSING -J.J. 麥克菲爾德與追憶之島-",
+   "storeName": "The MISSING -J.J. 麥克菲爾德與追憶之島-",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2018.10.11"
+  },
+  {
+   "nsuid": "70010000015122",
+   "catalogueTitle": "Travis Strikes Again：No More Heroes",
+   "storeName": "Travis Strikes Again: No More Heroes",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.1.18"
+  },
+  {
+   "nsuid": "70010000015128",
+   "catalogueTitle": "Air Conflicts: Pacific Carriers",
+   "storeName": "Air Conflicts: Pacific Carriers",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "\r\nH2 INTERACTIVE",
+   "releaseDate": "2019.8.8"
+  },
+  {
+   "nsuid": "70010000015163",
+   "catalogueTitle": "Fate/EXTELLA LINK",
+   "storeName": "Fate/EXTELLA LINK",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.1.31"
+  },
+  {
+   "nsuid": "70010000015172",
+   "catalogueTitle": "KAMEN RIDER 巔峰亂鬥",
+   "storeName": "KAMEN RIDER 巔峰亂鬥",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2018.11.29"
+  },
+  {
+   "nsuid": "70010000015247",
+   "catalogueTitle": "隊長小翼 新秀崛起",
+   "storeName": "隊長小翼 新秀崛起",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2020.8.27"
+  },
+  {
+   "nsuid": "70010000015478",
+   "catalogueTitle": "BLADE ARCUS Rebellion from Shining",
+   "storeName": "BLADE ARCUS Rebellion from Shining",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.3.14"
+  },
+  {
+   "nsuid": "70010000015667",
+   "catalogueTitle": "超級機器人大戰Ｔ",
+   "storeName": "超級機器人大戰Ｔ",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.3.20"
+  },
+  {
+   "nsuid": "70010000015693",
+   "catalogueTitle": "精靈寶可夢 Let's Go！伊布",
+   "storeName": "精靈寶可夢 Let's Go！伊布",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.11.16"
+  },
+  {
+   "nsuid": "70010000015694",
+   "catalogueTitle": "精靈寶可夢 Let's Go！皮卡丘",
+   "storeName": "精靈寶可夢 Let's Go！皮卡丘",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2018.11.16"
+  },
+  {
+   "nsuid": "70010000015706",
+   "catalogueTitle": "少女與戰車 戰車夢幻大會戰 DX",
+   "storeName": "少女與戰車 戰車夢幻大會戰 DX",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.2.21"
+  },
+  {
+   "nsuid": "70010000015845",
+   "catalogueTitle": "Phoenix Wright: Ace Attorney Trilogy(逆轉裁判123成步堂精選集)",
+   "storeName": "Phoenix Wright: Ace Attorney Trilogy(逆轉裁判123成步堂精選集)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.4.10"
+  },
+  {
+   "nsuid": "70010000015870",
+   "catalogueTitle": "《特技摩托賽：崛起》",
+   "storeName": "《特技摩托賽：崛起》- 標準版 (Trials Rising Standard Edition)",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2020.3.5"
+  },
+  {
+   "nsuid": "70010000015875",
+   "catalogueTitle": "Resident Evil 5",
+   "storeName": "Resident Evil 5",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.10.29"
+  },
+  {
+   "nsuid": "70010000015879",
+   "catalogueTitle": "Resident Evil 6",
+   "storeName": "Resident Evil 6",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.10.29"
+  },
+  {
+   "nsuid": "70010000015945",
+   "catalogueTitle": "真‧三國無雙７ with 猛將傳 DX",
+   "storeName": "真‧三國無雙７ with 猛將傳 DX",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2018.12.27"
+  },
+  {
+   "nsuid": "70010000015947",
+   "catalogueTitle": "ONINAKI",
+   "storeName": "ONINAKI",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "de"
+   ],
+   "catalogueLang": "",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.8.22"
+  },
+  {
+   "nsuid": "70010000015950",
+   "catalogueTitle": "蘿樂娜的鍊金工房 ～亞蘭德之鍊金術士～ DX",
+   "storeName": "蘿樂娜的鍊金工房 ～亞蘭德之鍊金術士～ DX",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2018.12.4"
+  },
+  {
+   "nsuid": "70010000015982",
+   "catalogueTitle": "SD GUNDAM G 世代 火線縱橫",
+   "storeName": "SD GUNDAM G 世代 火線縱橫",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.11.28"
+  },
+  {
+   "nsuid": "70010000016043",
+   "catalogueTitle": "卡里古拉·過量強化",
+   "storeName": "卡里古拉·過量強化",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.3.14"
+  },
+  {
+   "nsuid": "70010000016050",
+   "catalogueTitle": "火影忍者疾風傳 終極風暴4 慕留人傳",
+   "storeName": "火影忍者疾風傳 終極風暴4 慕留人傳",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2020.4.23"
+  },
+  {
+   "nsuid": "70010000016165",
+   "catalogueTitle": "托托莉的鍊金工房 ～亞蘭德之鍊金術士2～ DX",
+   "storeName": "托托莉的鍊金工房 ～亞蘭德之鍊金術士2～ DX",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2018.12.4"
+  },
+  {
+   "nsuid": "70010000016195",
+   "catalogueTitle": "梅露露的鍊金工房 ～亞蘭德之鍊金術士3～ DX",
+   "storeName": "梅露露的鍊金工房 ～亞蘭德之鍊金術士3～ DX",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2018.12.4"
+  },
+  {
+   "nsuid": "70010000016261",
+   "catalogueTitle": "FINAL FANTASY X/X-2 HD Remaster",
+   "storeName": "FINAL FANTASY X/X-2 HD Remaster",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.4.11"
+  },
+  {
+   "nsuid": "70010000016505",
+   "catalogueTitle": "FINAL FANTASY XII THE ZODIAC AGE",
+   "storeName": "FINAL FANTASY XII THE ZODIAC AGE",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.4.25"
+  },
+  {
+   "nsuid": "70010000016581",
+   "catalogueTitle": "青梅竹馬是人魚姬!? My Girlfriend is a Mermaid!?",
+   "storeName": "青梅竹馬是人魚姬!? My Girlfriend is a Mermaid!?",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Cosen",
+   "releaseDate": "2019.2.28"
+  },
+  {
+   "nsuid": "70010000016610",
+   "catalogueTitle": "偵探 神宮寺三郎 前傳 DAEDALUS : The Awakening of Golden Jazz",
+   "storeName": "偵探 神宮寺三郎 前傳 DAEDALUS : The Awakening of Golden Jazz",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.5.23"
+  },
+  {
+   "nsuid": "70010000016696",
+   "catalogueTitle": "ZOIDS機獸戰記 狂野爆發　王者爆發",
+   "storeName": "ZOIDS機獸戰記 狂野爆發　王者爆發",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "TAKARA TOMY",
+   "releaseDate": "2019.2.28"
+  },
+  {
+   "nsuid": "70010000016823",
+   "catalogueTitle": "王牌釣手 Nintendo Switch版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000016829",
+   "catalogueTitle": "SD GUNDAM G 世代 火線縱橫 Premium G Sound Edition",
+   "storeName": "SD GUNDAM G 世代 火線縱橫 Premium G Sound Edition",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.11.28"
+  },
+  {
+   "nsuid": "70010000016832",
+   "catalogueTitle": "EA SPORTS™《FIFA 20》Nintendo Switch™ 傳奇版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000016881",
+   "catalogueTitle": "DESTINY CONNECT　命運連動",
+   "storeName": "DESTINY CONNECT　命運連動",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.5.30"
+  },
+  {
+   "nsuid": "70010000016903",
+   "catalogueTitle": "Ni no Kuni: Wrath of the White Witch ",
+   "storeName": "Ni no Kuni: Wrath of the White Witch ",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.9.20"
+  },
+  {
+   "nsuid": "70010000017051",
+   "catalogueTitle": "SEGA Mega Drive Classics",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000017081",
+   "catalogueTitle": "極限凸記 萌萌編年史 H",
+   "storeName": "極限凸記 萌萌編年史 H",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2019.5.16"
+  },
+  {
+   "nsuid": "70010000017149",
+   "catalogueTitle": "New 超級瑪利歐兄弟U 豪華版",
+   "storeName": "New 超級瑪利歐兄弟U 豪華版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.1.11"
+  },
+  {
+   "nsuid": "70010000017203",
+   "catalogueTitle": "Devil May Cry",
+   "storeName": "Devil May Cry",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.6.25"
+  },
+  {
+   "nsuid": "70010000017204",
+   "catalogueTitle": "Devil May Cry 2",
+   "storeName": "Devil May Cry 2",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.9.19"
+  },
+  {
+   "nsuid": "70010000017442",
+   "catalogueTitle": "Caladrius Blaze",
+   "storeName": "Caladrius Blaze",
+   "languages": [
+    "en",
+    "ko"
+   ],
+   "catalogueLang": "",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2019.7.31"
+  },
+  {
+   "nsuid": "70010000017531",
+   "catalogueTitle": "Air Conflicts: Secret Wars",
+   "storeName": "Air Conflicts: Secret Wars",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "\r\nH2 INTERACTIVE",
+   "releaseDate": "2019.8.8"
+  },
+  {
+   "nsuid": "70010000017616",
+   "catalogueTitle": "CONTRA: ROGUE CORPS (中英韓文版)",
+   "storeName": "CONTRA: ROGUE CORPS (中英韓文版)",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KONAMI",
+   "releaseDate": "2020.2.13"
+  },
+  {
+   "nsuid": "70010000017903",
+   "catalogueTitle": "《銀河聯軍：阿特拉斯之戰》- 數位標準版",
+   "storeName": "《銀河聯軍：阿特拉斯之戰》- 數位標準版 (Starlink Standard Edition)",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2019.6.6"
+  },
+  {
+   "nsuid": "70010000018001",
+   "catalogueTitle": "Mars or Die!",
+   "storeName": "Mars or Die!",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2019.5.9"
+  },
+  {
+   "nsuid": "70010000018065",
+   "catalogueTitle": "忍兔：胡蘿蔔大戰　體驗版",
+   "storeName": "忍兔：胡蘿蔔大戰",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.5.9"
+  },
+  {
+   "nsuid": "70010000018077",
+   "catalogueTitle": "真人快打11",
+   "storeName": "真人快打11",
+   "languages": [
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "WB Games",
+   "releaseDate": "2020.5.27"
+  },
+  {
+   "nsuid": "70010000018161",
+   "catalogueTitle": "Blazing Chrome",
+   "storeName": "Blazing Chrome",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2019.9.19"
+  },
+  {
+   "nsuid": "70010000018202",
+   "catalogueTitle": "新世界地圖 1469",
+   "storeName": "新世界地圖 1469",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "STUDIO ARTDINK",
+   "releaseDate": "2020.3.5"
+  },
+  {
+   "nsuid": "70010000018203",
+   "catalogueTitle": "FINAL FANTASY VII",
+   "storeName": "FINAL FANTASY VII",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de"
+   ],
+   "catalogueLang": "",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.3.26"
+  },
+  {
+   "nsuid": "70010000018237",
+   "catalogueTitle": "小小伙伴 -狗狗&貓貓-",
+   "storeName": "小小伙伴 -狗狗",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.4.25"
+  },
+  {
+   "nsuid": "70010000018262",
+   "catalogueTitle": "WONDER BOY RETURNS REMIX",
+   "storeName": "WONDER BOY RETURNS REMIX",
+   "languages": [
+    "ja",
+    "en"
+   ],
+   "catalogueLang": "",
+   "publisher": "CFK",
+   "releaseDate": "2019.6.13"
+  },
+  {
+   "nsuid": "70010000018442",
+   "catalogueTitle": "ONE PIECE 海賊無雙4",
+   "storeName": "ONE PIECE 海賊無雙4",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2020.3.26"
+  },
+  {
+   "nsuid": "70010000018622",
+   "catalogueTitle": "Just Dance 舞力全開 2020",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000018679",
+   "catalogueTitle": "數碼寶貝物語 網路偵探 駭客追憶",
+   "storeName": "數碼寶貝物語 網路偵探 駭客追憶",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.10.17"
+  },
+  {
+   "nsuid": "70010000018691",
+   "catalogueTitle": "Dragon's Dogma: Dark Arisen",
+   "storeName": "Dragon's Dogma: Dark Arisen",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2019.4.25"
+  },
+  {
+   "nsuid": "70010000018698",
+   "catalogueTitle": "初音未來 Project DIVA MEGA39's",
+   "storeName": "初音未來 Project DIVA MEGA39's",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2020.2.13"
+  },
+  {
+   "nsuid": "70010000018821",
+   "catalogueTitle": "我的英雄學院 唯我正義2",
+   "storeName": "我的英雄學院 唯我正義2",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2020.3.12"
+  },
+  {
+   "nsuid": "70010000018834",
+   "catalogueTitle": "LOVE LOVE 甜點 ~你和我的秘密食譜~",
+   "storeName": "LOVE LOVE 甜點 ~你和我的秘密食譜~",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.5.30"
+  },
+  {
+   "nsuid": "70010000018872",
+   "catalogueTitle": "耀西的手工世界",
+   "storeName": "耀西的手工世界",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.3.29"
+  },
+  {
+   "nsuid": "70010000018934",
+   "catalogueTitle": "符文工廠4豪華版",
+   "storeName": "符文工廠4豪華版",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.12.5"
+  },
+  {
+   "nsuid": "70010000018955",
+   "catalogueTitle": "Yu-Gi-Oh! Legacy of the Duelist: Link Evolution",
+   "storeName": "Yu-Gi-Oh! Legacy of the Duelist: Link Evolution",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "KONAMI",
+   "releaseDate": "2020.3.5"
+  },
+  {
+   "nsuid": "70010000019036",
+   "catalogueTitle": "FINAL FANTASY VIII Remastered",
+   "storeName": "FINAL FANTASY VIII Remastered",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.9.3"
+  },
+  {
+   "nsuid": "70010000019039",
+   "catalogueTitle": "魔犬大騷亂",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000019187",
+   "catalogueTitle": "刺客教條：逆命合輯",
+   "storeName": "《刺客教條：逆命合輯》(Assassin's Creed The Rebel Collection)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2019.12.6"
+  },
+  {
+   "nsuid": "70010000019221",
+   "catalogueTitle": "煉獄冒險家: 重生",
+   "storeName": "煉獄冒險家: 重生",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.5.16"
+  },
+  {
+   "nsuid": "70010000019241",
+   "catalogueTitle": "血咒之城：暗夜儀式",
+   "storeName": "血咒之城：暗夜儀式",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2019.6.25"
+  },
+  {
+   "nsuid": "70010000019367",
+   "catalogueTitle": "馬基騎士 -鮮血巴哥斯-",
+   "storeName": "馬基騎士 -鮮血巴哥斯-",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CFK",
+   "releaseDate": "2019.5.9"
+  },
+  {
+   "nsuid": "70010000019372",
+   "catalogueTitle": "復活同盟 HD Remastered",
+   "storeName": "復活同盟 HD Remastered",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.10.10"
+  },
+  {
+   "nsuid": "70010000019407",
+   "catalogueTitle": "噬神者3",
+   "storeName": "噬神者3",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.7.11"
+  },
+  {
+   "nsuid": "70010000019501",
+   "catalogueTitle": "現嚐好滋味！超級猴子球",
+   "storeName": "現嚐好滋味！超級猴子球",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.10.31"
+  },
+  {
+   "nsuid": "70010000019627",
+   "catalogueTitle": "愛上火車 -Pure Station-",
+   "storeName": "愛上火車 -Pure Station-",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CIRCLE",
+   "releaseDate": "2020.2.20"
+  },
+  {
+   "nsuid": "70010000019727",
+   "catalogueTitle": "熱血硬派國夫君外傳熱血少女 River City Girls",
+   "storeName": "熱血硬派國夫君外傳熱血少女 River City Girls",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2019.9.12"
+  },
+  {
+   "nsuid": "70010000019734",
+   "catalogueTitle": "煉獄圍城 (Hell Warders)",
+   "storeName": "煉獄圍城 (Hell Warders)",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Game Source Entertainment",
+   "releaseDate": "2019.6.27"
+  },
+  {
+   "nsuid": "70010000019738",
+   "catalogueTitle": "露露亞的鍊金工房 ～亞蘭德之鍊金術士4～",
+   "storeName": "露露亞的鍊金工房 ～亞蘭德之鍊金術士4～",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2019.5.21"
+  },
+  {
+   "nsuid": "70010000019765",
+   "catalogueTitle": "超級機器人大戰V",
+   "storeName": "超級機器人大戰V",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.10.3"
+  },
+  {
+   "nsuid": "70010000019769",
+   "catalogueTitle": "超級機器人大戰Ｘ",
+   "storeName": "超級機器人大戰Ｘ",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2020.1.10"
+  },
+  {
+   "nsuid": "70010000019785",
+   "catalogueTitle": "侍道外傳 刀神",
+   "storeName": "侍道外傳 刀神",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Spike Chunsoft",
+   "releaseDate": "2020.2.20"
+  },
+  {
+   "nsuid": "70010000019844",
+   "catalogueTitle": "THE NINJA SAVIORS: 戰士歸來",
+   "storeName": "THE NINJA SAVIORS: 戰士歸來",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.7.25"
+  },
+  {
+   "nsuid": "70010000019901",
+   "catalogueTitle": "BOXBOY! ＋ BOXGIRL!",
+   "storeName": "BOXBOY! ＋ BOXGIRL!",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.4.26"
+  },
+  {
+   "nsuid": "70010000019943",
+   "catalogueTitle": "哆啦A夢 牧場物語",
+   "storeName": "哆啦A夢 牧場物語",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.7.25"
+  },
+  {
+   "nsuid": "70010000019988",
+   "catalogueTitle": "NBA 2K20",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000020086",
+   "catalogueTitle": "Omega Labyrinth Life (ω 迷宮 Life)",
+   "storeName": "Omega Labyrinth Life (ω 迷宮 Life)",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "\r\nH2 INTERACTIVE",
+   "releaseDate": "2019.8.1"
+  },
+  {
+   "nsuid": "70010000020120",
+   "catalogueTitle": "Panty Party",
+   "storeName": "Panty Party",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Cosen",
+   "releaseDate": "2019.5.16"
+  },
+  {
+   "nsuid": "70010000020241",
+   "catalogueTitle": "方塊方舟（PixARK）",
+   "storeName": "方塊方舟（PixARK）",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "スパイク・チュンソフト",
+   "releaseDate": "2020.1.23"
+  },
+  {
+   "nsuid": "70010000020269",
+   "catalogueTitle": "Dusk Diver 酉閃町",
+   "storeName": "Dusk Diver 酉閃町",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2020.1.23"
+  },
+  {
+   "nsuid": "70010000020273",
+   "catalogueTitle": "銀白鋼鐵X THE OUT OF GUNVOLT",
+   "storeName": "銀白鋼鐵X THE OUT OF GUNVOLT",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "INTI CREATES",
+   "releaseDate": "2019.9.24"
+  },
+  {
+   "nsuid": "70010000020297",
+   "catalogueTitle": "KILL la KILL -IF",
+   "storeName": "KILL la KILL -IF",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.7.25"
+  },
+  {
+   "nsuid": "70010000020629",
+   "catalogueTitle": "Dragon Quest Builders 2",
+   "storeName": "勇者鬥惡龍 創世小玩家２　破壞神席德與空蕩島",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.8.9"
+  },
+  {
+   "nsuid": "70010000020718",
+   "catalogueTitle": "THE LAST REMNANT Remastered",
+   "storeName": "THE LAST REMNANT Remastered",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.6.11"
+  },
+  {
+   "nsuid": "70010000020843",
+   "catalogueTitle": "Super Mario Maker 2（超級瑪利歐創作家 2）",
+   "storeName": "Super Mario Maker 2（超級瑪利歐創作家 2）",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.6.28"
+  },
+  {
+   "nsuid": "70010000020986",
+   "catalogueTitle": "《巫師 3：狂獵》－完全版",
+   "storeName": "《巫師 3：狂獵》－完全版",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CD PROJEKT",
+   "releaseDate": "2019.10.15"
+  },
+  {
+   "nsuid": "70010000021176",
+   "catalogueTitle": "凱登絲勇闖海拉魯：死靈舞師地牢 薩爾達傳說 合作鉅獻",
+   "storeName": "凱登絲勇闖海拉魯：死靈舞師地牢 薩爾達傳說 合作鉅獻",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.6.14"
+  },
+  {
+   "nsuid": "70010000021222",
+   "catalogueTitle": "擔架拍擋™ ",
+   "storeName": "擔架拍檔™ ",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.11.8"
+  },
+  {
+   "nsuid": "70010000021223",
+   "catalogueTitle": "OCTOPATH TRAVELER 歧路旅人",
+   "storeName": "OCTOPATH TRAVELER 歧路旅人",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.6.7"
+  },
+  {
+   "nsuid": "70010000021252",
+   "catalogueTitle": "街頭大亂鬥進行曲 Mach!!",
+   "storeName": "街頭大亂鬥進行曲 Mach!!",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2019.10.10"
+  },
+  {
+   "nsuid": "70010000021361",
+   "catalogueTitle": "Fire Emblem 風花雪月",
+   "storeName": "Fire Emblem 風花雪月",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.7.26"
+  },
+  {
+   "nsuid": "70010000021368",
+   "catalogueTitle": "牧場物語 重聚礦石鎮",
+   "storeName": "牧場物語 重聚礦石鎮",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2019.10.17"
+  },
+  {
+   "nsuid": "70010000021394",
+   "catalogueTitle": "槍彈突擊小精靈 for Nintendo Switch",
+   "storeName": "槍彈突擊小精靈 for Nintendo Switch",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2020.1.23"
+  },
+  {
+   "nsuid": "70010000021562",
+   "catalogueTitle": "布列克斯大獎賽",
+   "storeName": "布列克斯大獎賽",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Intragames",
+   "releaseDate": "2019.8.29"
+  },
+  {
+   "nsuid": "70010000021605",
+   "catalogueTitle": "DAEMON X MACHINA（機甲戰魔）",
+   "storeName": "DAEMON X MACHINA（機甲戰魔）",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Marvelous",
+   "releaseDate": "2019.9.13"
+  },
+  {
+   "nsuid": "70010000021687",
+   "catalogueTitle": "小小夢魘2 (Little Nightmares II)",
+   "storeName": "小小夢魘2 (Little Nightmares II)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment Asia",
+   "releaseDate": "2021.1.28"
+  },
+  {
+   "nsuid": "70010000021707",
+   "catalogueTitle": "WWE 2K殺戮戰場",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000021825",
+   "catalogueTitle": "在地下城尋求邂逅是否搞錯了什麼　無限・戰鬥",
+   "storeName": "在地下城尋求邂逅是否搞錯了什麼　無限・戰鬥",
+   "languages": [
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "MAGES.",
+   "releaseDate": "2020.2.6"
+  },
+  {
+   "nsuid": "70010000021858",
+   "catalogueTitle": "KAMEN RIDER 英雄尋憶",
+   "storeName": "KAMEN RIDER 英雄尋憶",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2020.10.29"
+  },
+  {
+   "nsuid": "70010000022096",
+   "catalogueTitle": "FAIRY TAIL",
+   "storeName": "FAIRY TAIL",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2020.7.30"
+  },
+  {
+   "nsuid": "70010000022227",
+   "catalogueTitle": "MISTOVER",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000022316",
+   "catalogueTitle": "LEGO® 侏羅紀世界",
+   "storeName": "LEGO® 侏羅紀世界",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru"
+   ],
+   "catalogueLang": "",
+   "publisher": "WB Games",
+   "releaseDate": "2020.2.27"
+  },
+  {
+   "nsuid": "70010000022478",
+   "catalogueTitle": "異界鎖鏈",
+   "storeName": "異界鎖鏈",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.8.30"
+  },
+  {
+   "nsuid": "70010000022481",
+   "catalogueTitle": "Damascus Gear Operation Osaka",
+   "storeName": "Damascus Gear Operation Osaka",
+   "languages": [
+    "ja",
+    "en"
+   ],
+   "catalogueLang": "",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.8.29"
+  },
+  {
+   "nsuid": "70010000022591",
+   "catalogueTitle": "Damascus Gear Operation Tokyo",
+   "storeName": "Damascus Gear Operation Tokyo",
+   "languages": [
+    "ja",
+    "en"
+   ],
+   "catalogueLang": "",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.8.29"
+  },
+  {
+   "nsuid": "70010000022723",
+   "catalogueTitle": "萊莎的鍊金工房 ～常闇女王與秘密藏身處～",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000022756",
+   "catalogueTitle": "Disney TSUM TSUM FESTIVAL",
+   "storeName": "Disney TSUM TSUM FESTIVAL",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.10.10"
+  },
+  {
+   "nsuid": "70010000022793",
+   "catalogueTitle": "殭屍仙境瘋狂旅DX",
+   "storeName": "殭屍仙境瘋狂旅DX ",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.12.4"
+  },
+  {
+   "nsuid": "70010000022813",
+   "catalogueTitle": "輕鬆網球SP",
+   "storeName": "輕鬆網球SP(Family Tennis SP)",
+   "languages": [
+    "ja",
+    "en"
+   ],
+   "catalogueLang": "",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.12.4"
+  },
+  {
+   "nsuid": "70010000022818",
+   "catalogueTitle": "Two Point Hospital™",
+   "storeName": "Two Point Hospital™",
+   "languages": [
+    "pt",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2020.2.25"
+  },
+  {
+   "nsuid": "70010000022872",
+   "catalogueTitle": "Ghostbusters: The Video Game Remastered",
+   "storeName": "Ghostbusters: The Video Game Remastered",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE ",
+   "releaseDate": "2019.12.12"
+  },
+  {
+   "nsuid": "70010000022954",
+   "catalogueTitle": "邊緣禁地：年度版",
+   "storeName": "邊緣禁地：年度版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Take Two Interactive UK Limited",
+   "releaseDate": "2020.5.29"
+  },
+  {
+   "nsuid": "70010000022968",
+   "catalogueTitle": "Star Wars Pinball",
+   "storeName": "Star Wars Pinball",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "GAME SOURCE ENTERTAINMENT",
+   "releaseDate": "2020.1.23"
+  },
+  {
+   "nsuid": "70010000022993",
+   "catalogueTitle": "超級卡比獵人隊",
+   "storeName": "超級卡比獵人隊",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.9.5"
+  },
+  {
+   "nsuid": "70010000023209",
+   "catalogueTitle": "Super Famicom Nintendo Switch Online",
+   "storeName": "Super Famicom Nintendo Classics",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.9.6"
+  },
+  {
+   "nsuid": "70010000023460",
+   "catalogueTitle": "魔界戰記４Return",
+   "storeName": "魔界戰記４Return",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "NIHONICHI",
+   "releaseDate": "2020.4.23"
+  },
+  {
+   "nsuid": "70010000023476",
+   "catalogueTitle": "SAMURAI SHODOWN",
+   "storeName": "SAMURAI SHODOWN",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SNK",
+   "releaseDate": "2019.11.21"
+  },
+  {
+   "nsuid": "70010000023514",
+   "catalogueTitle": "薩爾達傳說 織夢島",
+   "storeName": "薩爾達傳說 織夢島",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.9.20"
+  },
+  {
+   "nsuid": "70010000023657",
+   "catalogueTitle": "絕體絕命都市 4 Plus：夏日回憶",
+   "storeName": "絕體絕命都市 4 Plus：夏日回憶",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2020.4.9"
+  },
+  {
+   "nsuid": "70010000023734",
+   "catalogueTitle": "熱血外傳：好酷啊！小林",
+   "storeName": "熱血外傳：好酷啊！小林",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.11.7"
+  },
+  {
+   "nsuid": "70010000023815",
+   "catalogueTitle": "LANGRISSER I & II Remake 夢幻模擬戰 I & II 重製版",
+   "storeName": "LANGRISSER I ",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2020.1.23"
+  },
+  {
+   "nsuid": "70010000023876",
+   "catalogueTitle": "泰拉瑞亞",
+   "storeName": "泰拉瑞亞(Terraria)",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Spike Chunsoft",
+   "releaseDate": "2020.2.13"
+  },
+  {
+   "nsuid": "70010000023990",
+   "catalogueTitle": "忍者寶盒",
+   "storeName": "忍者寶盒",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO",
+   "releaseDate": "2019.12.26"
+  },
+  {
+   "nsuid": "70010000023998",
+   "catalogueTitle": "勇者鬥惡龍",
+   "storeName": "勇者鬥惡龍",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.11.28"
+  },
+  {
+   "nsuid": "70010000024000",
+   "catalogueTitle": "勇者鬥惡龍 II　惡靈之神",
+   "storeName": "勇者鬥惡龍 II　惡靈之神",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.11.28"
+  },
+  {
+   "nsuid": "70010000024002",
+   "catalogueTitle": "勇者鬥惡龍 III　傳說的起點…",
+   "storeName": "勇者鬥惡龍 III　傳說的起點…",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Square Enix",
+   "releaseDate": "2019.11.28"
+  },
+  {
+   "nsuid": "70010000024288",
+   "catalogueTitle": "哆啦A夢：大雄的月球探測記",
+   "storeName": "哆啦A夢：大雄的月球探測記",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.12.19"
+  },
+  {
+   "nsuid": "70010000024429",
+   "catalogueTitle": "退魔忍法帖~妖怪地獄變~",
+   "storeName": "退魔忍法帖~妖怪地獄變~",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.12.4"
+  },
+  {
+   "nsuid": "70010000024513",
+   "catalogueTitle": "Friday The 13th: The Game ULTIMATE SLASHER EDITION (十三號星期五-終極斬殺版)",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000024516",
+   "catalogueTitle": "泡泡龍 4 伙伴",
+   "storeName": "泡泡龍 4 伙伴",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2019.12.19"
+  },
+  {
+   "nsuid": "70010000024520",
+   "catalogueTitle": "伊蘇VIII -丹娜的隕涕日-",
+   "storeName": "伊蘇VIII -丹娜的隕涕日-",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "NIHONICHI",
+   "releaseDate": "2020.5.28"
+  },
+  {
+   "nsuid": "70010000024522",
+   "catalogueTitle": "Minecraft",
+   "storeName": "Minecraft",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Microsoft",
+   "releaseDate": "2020.1.16"
+  },
+  {
+   "nsuid": "70010000024566",
+   "catalogueTitle": "路易吉洋樓３",
+   "storeName": "路易吉洋樓３",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.10.31"
+  },
+  {
+   "nsuid": "70010000024934",
+   "catalogueTitle": "Ninja JaJaMaru Collection -忍者茶茶丸 合集-",
+   "storeName": "Ninja JaJaMaru Collection -忍者茶茶丸 合集-",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE ",
+   "releaseDate": "2019.12.12"
+  },
+  {
+   "nsuid": "70010000025058",
+   "catalogueTitle": "怪物男孩與被詛咒的王國",
+   "storeName": "怪物男孩與被詛咒的王國",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2020.8.6"
+  },
+  {
+   "nsuid": "70010000025089",
+   "catalogueTitle": "Ultra Age",
+   "storeName": "Ultra Age",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Intragames",
+   "releaseDate": "2021.9.9"
+  },
+  {
+   "nsuid": "70010000025169",
+   "catalogueTitle": "Trials of Mana (中文版)",
+   "storeName": "Trials of Mana (中文版)",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Square Enix",
+   "releaseDate": "2020.4.24"
+  },
+  {
+   "nsuid": "70010000025794",
+   "catalogueTitle": "妖怪手錶4 我們仰望著同一片天空",
+   "storeName": "妖怪手錶4 我們仰望著同一片天空",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "LEVEL-5",
+   "releaseDate": "2019.12.5"
+  },
+  {
+   "nsuid": "70010000026110",
+   "catalogueTitle": "寶可夢&ensp;劍",
+   "storeName": "寶可夢 劍",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.11.15"
+  },
+  {
+   "nsuid": "70010000026111",
+   "catalogueTitle": "寶可夢&ensp;盾",
+   "storeName": "寶可夢 盾",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2019.11.15"
+  },
+  {
+   "nsuid": "70010000026353",
+   "catalogueTitle": "愛夏的鍊金工房 ～黃昏大地之鍊金術士～ DX",
+   "storeName": "愛夏的鍊金工房 ～黃昏大地之鍊金術士～ DX",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": " KOEI TECMO GAMES",
+   "releaseDate": "2019.12.25"
+  },
+  {
+   "nsuid": "70010000026355",
+   "catalogueTitle": "愛絲卡&羅吉的鍊金工房 ～黃昏天空之鍊金術士～ DX",
+   "storeName": "愛絲卡",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": " KOEI TECMO GAMES",
+   "releaseDate": "2019.12.25"
+  },
+  {
+   "nsuid": "70010000026357",
+   "catalogueTitle": "夏莉的鍊金工房 ～黃昏海洋之鍊金術士～ DX",
+   "storeName": "夏莉的鍊金工房 ～黃昏海洋之鍊金術士～ DX",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": " KOEI TECMO GAMES",
+   "releaseDate": "2019.12.25"
+  },
+  {
+   "nsuid": "70010000026608",
+   "catalogueTitle": "LEGO® Marvel™超級英雄",
+   "storeName": "LEGO® Marvel™超級英雄",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru"
+   ],
+   "catalogueLang": "",
+   "publisher": "WB Games",
+   "releaseDate": "2021.10.6"
+  },
+  {
+   "nsuid": "70010000027022",
+   "catalogueTitle": "《橫衝直撞：狂飆樂園》重製版",
+   "storeName": "《橫衝直撞：狂飆樂園》重製版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "EA",
+   "releaseDate": "2020.6.18"
+  },
+  {
+   "nsuid": "70010000027085",
+   "catalogueTitle": "女神異聞錄５ 亂戰：魅影攻手",
+   "storeName": "女神異聞錄５ 亂戰：魅影攻手",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2020.6.18"
+  },
+  {
+   "nsuid": "70010000027332",
+   "catalogueTitle": "幻影異聞錄♯FE Encore",
+   "storeName": "幻影異聞錄♯FE Encore",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.1.17"
+  },
+  {
+   "nsuid": "70010000027335",
+   "catalogueTitle": "戶外釣魚：公路旅行冒險",
+   "storeName": "戶外釣魚：公路旅行冒險",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2020.6.24"
+  },
+  {
+   "nsuid": "70010000027374",
+   "catalogueTitle": "Re：從零開始的異世界生活 虛假的王選候補",
+   "storeName": "Re：從零開始的異世界生活 虛假的王選候補",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Spike Chunsoft",
+   "releaseDate": "2021.1.28"
+  },
+  {
+   "nsuid": "70010000027450",
+   "catalogueTitle": "釣魚明星 世界巡迴賽",
+   "storeName": "釣魚明星 世界巡迴賽",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2020.3.26"
+  },
+  {
+   "nsuid": "70010000027622",
+   "catalogueTitle": "集合啦！動物森友會",
+   "storeName": "集合啦！動物森友會",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.3.20"
+  },
+  {
+   "nsuid": "70010000027950",
+   "catalogueTitle": "新次元遊戲 戰機少女 VII",
+   "storeName": "新次元遊戲 戰機少女 VII",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2020.6.18"
+  },
+  {
+   "nsuid": "70010000027953",
+   "catalogueTitle": "極限凸起 萌情水晶 H",
+   "storeName": "極限凸起 萌情水晶 H",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2020.5.28"
+  },
+  {
+   "nsuid": "70010000027956",
+   "catalogueTitle": "虔誠之花的晚鐘 -ricordo-",
+   "storeName": "虔誠之花的晚鐘 -ricordo-",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "GAME SOURCE ENTERTAINMENT",
+   "releaseDate": "2020.5.21"
+  },
+  {
+   "nsuid": "70010000028031",
+   "catalogueTitle": "前進，天空塔！Forward To The Sky",
+   "storeName": "前進，天空塔！Forward To The Sky",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "COSEN",
+   "releaseDate": "2021.2.25"
+  },
+  {
+   "nsuid": "70010000028223",
+   "catalogueTitle": "爆鑽小英雄 鑽頭樂園",
+   "storeName": "爆鑽小英雄 鑽頭樂園",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2020.6.25"
+  },
+  {
+   "nsuid": "70010000028293",
+   "catalogueTitle": "Bare Knuckle IV",
+   "storeName": "Bare Knuckle IV",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 Interactive",
+   "releaseDate": "2020.4.30"
+  },
+  {
+   "nsuid": "70010000028393",
+   "catalogueTitle": "Zumba Burn It Up!",
+   "storeName": "ZUMBA® Burn It Up！　新價格版",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2020.6.18"
+  },
+  {
+   "nsuid": "70010000028466",
+   "catalogueTitle": "MODEL Debut #nicola/模特兒出道 nicola",
+   "storeName": "MODEL Debut #nicola/模特兒出道 nicola",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2020.5.28"
+  },
+  {
+   "nsuid": "70010000028539",
+   "catalogueTitle": "PGA TOUR 2K21",
+   "storeName": "PGA TOUR 2K21",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Take Two Interactive UK Limited",
+   "releaseDate": "2020.8.21"
+  },
+  {
+   "nsuid": "70010000028629",
+   "catalogueTitle": "Metro: Last Light Redux",
+   "storeName": "Metro: Last Light Redux",
+   "languages": [
+    "ja",
+    "en",
+    "ru"
+   ],
+   "catalogueLang": "",
+   "publisher": "Koch Media",
+   "releaseDate": "2020.4.23"
+  },
+  {
+   "nsuid": "70010000028630",
+   "catalogueTitle": "Metro 2033 Redux",
+   "storeName": "Metro 2033 Redux",
+   "languages": [
+    "ja",
+    "en",
+    "ru"
+   ],
+   "catalogueLang": "",
+   "publisher": "Koch Media",
+   "releaseDate": "2020.4.23"
+  },
+  {
+   "nsuid": "70010000028777",
+   "catalogueTitle": "漂亮公主 魔法衣裳",
+   "storeName": "漂亮公主 魔法衣裳",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "DAEWON MEDIA",
+   "releaseDate": "2020.10.22"
+  },
+  {
+   "nsuid": "70010000028907",
+   "catalogueTitle": "索尼克繽紛色彩 究極版（Sonic Colors: Ultimate）",
+   "storeName": "索尼克繽紛色彩 究極版（Sonic Colors: Ultimate）",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2021.9.9"
+  },
+  {
+   "nsuid": "70010000028996",
+   "catalogueTitle": "Scribblenauts Showdown",
+   "storeName": "Scribblenauts Showdown",
+   "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt"
+   ],
+   "catalogueLang": "",
+   "publisher": "WB Games",
+   "releaseDate": "2020.3.5"
+  },
+  {
+   "nsuid": "70010000029013",
+   "catalogueTitle": "MONSTER HUNTER RISE",
+   "storeName": "MONSTER HUNTER RISE",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "pt",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "CAPCOM",
+   "releaseDate": "2021.3.26"
+  },
+  {
+   "nsuid": "70010000029098",
+   "catalogueTitle": "Journey to the savage planet",
+   "storeName": "Journey to the savage planet",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 Interactive",
+   "releaseDate": "2020.8.20"
+  },
+  {
+   "nsuid": "70010000029211",
+   "catalogueTitle": "JUMP FORCE - 豪華版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000029214",
+   "catalogueTitle": "天穗之咲稻姬",
+   "storeName": "天穗之咲稻姬",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Marvelous Entertainment",
+   "releaseDate": "2020.11.12"
+  },
+  {
+   "nsuid": "70010000029259",
+   "catalogueTitle": "Steam Prison",
+   "storeName": "Steam Prison",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "HuneX",
+   "releaseDate": "2021.2.25"
+  },
+  {
+   "nsuid": "70010000029271",
+   "catalogueTitle": "Brigandine The Legend of Runersia",
+   "storeName": "Brigandine The Legend of Runersia",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Justdan",
+   "releaseDate": "2020.6.25"
+  },
+  {
+   "nsuid": "70010000029277",
+   "catalogueTitle": "《極速快感™超熱力追緝》重製版 (Need for Speed™ Hot Pursuit Remastered)",
+   "storeName": "《極速快感™超熱力追緝》重製版 (Need for Speed™ Hot Pursuit Remastered)",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2020.11.13"
+  },
+  {
+   "nsuid": "70010000029305",
+   "catalogueTitle": "魔法氣泡™ 特趣思™ 俄羅斯方塊™ 2",
+   "storeName": "魔法氣泡™ 特趣思™ 俄羅斯方塊™ 2",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2020.12.10"
+  },
+  {
+   "nsuid": "70010000029382",
+   "catalogueTitle": "Air Missions: HIND",
+   "storeName": "Air Missions: HIND",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Pikii",
+   "releaseDate": "2020.7.30"
+  },
+  {
+   "nsuid": "70010000029522",
+   "catalogueTitle": "極限凸起 萌情水晶 H (英文版)",
+   "storeName": "極限凸起 萌情水晶 H (英文版)",
+   "languages": [
+    "en"
+   ],
+   "catalogueLang": "",
+   "publisher": "eastasiasoft",
+   "releaseDate": "2020.10.8"
+  },
+  {
+   "nsuid": "70010000029714",
+   "catalogueTitle": "異度神劍 終極版",
+   "storeName": "異度神劍 終極版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.5.29"
+  },
+  {
+   "nsuid": "70010000029719",
+   "catalogueTitle": "世界遊戲大全51",
+   "storeName": "世界遊戲大全51",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.6.5"
+  },
+  {
+   "nsuid": "70010000029724",
+   "catalogueTitle": "Good Job!",
+   "storeName": "Good Job!",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.3.26"
+  },
+  {
+   "nsuid": "70010000029729",
+   "catalogueTitle": "紙片瑪利歐：摺紙國王",
+   "storeName": "紙片瑪利歐：摺紙國王",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.7.17"
+  },
+  {
+   "nsuid": "70010000029734",
+   "catalogueTitle": "超級瑪利歐 3D 收藏輯",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000029910",
+   "catalogueTitle": "Moving Out",
+   "storeName": "Moving Out",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Team17",
+   "releaseDate": "2020.4.28"
+  },
+  {
+   "nsuid": "70010000029971",
+   "catalogueTitle": "鬼哭之邦(繁體中文版)",
+   "storeName": "鬼哭之邦(繁體中文版)",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Arc System Works",
+   "releaseDate": "2020.8.13"
+  },
+  {
+   "nsuid": "70010000030110",
+   "catalogueTitle": "爆丸：維斯托亞之冠",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000030342",
+   "catalogueTitle": "《NBA 2K21》",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000030390",
+   "catalogueTitle": "幻奏咖啡廳-Enchanté-",
+   "storeName": "幻奏咖啡廳-Enchanté-",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Game Source Entertainment",
+   "releaseDate": "2020.12.24"
+  },
+  {
+   "nsuid": "70010000030488",
+   "catalogueTitle": "SAMURAI SHODOWN NEOGEO COLLECTION",
+   "storeName": "SAMURAI SHODOWN NEOGEO COLLECTION",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SNK",
+   "releaseDate": "2020.7.30"
+  },
+  {
+   "nsuid": "70010000030515",
+   "catalogueTitle": "硬核機甲",
+   "storeName": "硬核機甲",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Lightning Games",
+   "releaseDate": "2020.10.15"
+  },
+  {
+   "nsuid": "70010000030536",
+   "catalogueTitle": "Let's Sing 2021 中文版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000030609",
+   "catalogueTitle": "真・女神轉生Ⅲ NOCTURNE HD REMASTER",
+   "storeName": "真・女神轉生Ⅲ NOCTURNE HD REMASTER",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2020.10.29"
+  },
+  {
+   "nsuid": "70010000030631",
+   "catalogueTitle": "《曲途》（No Straight Roads）",
+   "storeName": "《曲途》（No Straight Roads）",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "GAME SOURCE ENTERTAINMENT",
+   "releaseDate": "2020.8.25"
+  },
+  {
+   "nsuid": "70010000030740",
+   "catalogueTitle": "遙遠時空７",
+   "storeName": "遙遠時空７",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2020.6.18"
+  },
+  {
+   "nsuid": "70010000030768",
+   "catalogueTitle": "萊莎的鍊金工房２ ～失落傳說與秘密妖精～",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000030778",
+   "catalogueTitle": "A列車：開始吧 觀光開發計畫",
+   "storeName": "A列車：開始吧 觀光開發計畫",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARTDINK",
+   "releaseDate": "2021.3.12"
+  },
+  {
+   "nsuid": "70010000030971",
+   "catalogueTitle": "食用系少女 Food Girls",
+   "storeName": "食用系少女 Food Girls",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "JUSTDAN",
+   "releaseDate": "2020.11.26"
+  },
+  {
+   "nsuid": "70010000031020",
+   "catalogueTitle": "Deadly Premonition 2 A Blessing in Disguise",
+   "storeName": "Deadly Premonition 2: A Blessing In Disguise",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Rising Star Games",
+   "releaseDate": "2020.7.10"
+  },
+  {
+   "nsuid": "70010000031077",
+   "catalogueTitle": "腦科學專家 川島隆太博士監修 大人的Nintendo Switch腦部鍛鍊",
+   "storeName": "腦科學專家 川島隆太博士監修 大人的Nintendo Switch腦部鍛鍊",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.7.1"
+  },
+  {
+   "nsuid": "70010000031180",
+   "catalogueTitle": "方根膠捲",
+   "storeName": "方根膠捲",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2020.8.6"
+  },
+  {
+   "nsuid": "70010000031946",
+   "catalogueTitle": "MAD RAT DEAD",
+   "storeName": "MAD RAT DEAD",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "NIHONICHI",
+   "releaseDate": "2020.10.29"
+  },
+  {
+   "nsuid": "70010000032025",
+   "catalogueTitle": "現嚐好滋味！超級猴子球 1&2 重製版",
+   "storeName": "現嚐好滋味！超級猴子球 1",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2021.10.7"
+  },
+  {
+   "nsuid": "70010000032293",
+   "catalogueTitle": "太鼓之達人 咚咔！二合一大冒險",
+   "storeName": "太鼓之達人 咚咔！二合一大冒險",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2020.11.26"
+  },
+  {
+   "nsuid": "70010000032355",
+   "catalogueTitle": "KINGDOM HEARTS Melody of Memory (中文版）",
+   "storeName": "KINGDOM HEARTS Melody of Memory (中文版)",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SQUARE ENIX",
+   "releaseDate": "2020.11.11"
+  },
+  {
+   "nsuid": "70010000032448",
+   "catalogueTitle": "Pokémon Café Mix",
+   "storeName": "[Pokémon Café Mix]歡迎光臨！寶可夢咖啡店 ～拌拌繽紛趣～",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.6.24"
+  },
+  {
+   "nsuid": "70010000032628",
+   "catalogueTitle": "The Survivalists",
+   "storeName": "The Survivalists",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Team17",
+   "releaseDate": "2020.10.9"
+  },
+  {
+   "nsuid": "70010000032645",
+   "catalogueTitle": "哆啦A夢 大雄的新恐龍",
+   "storeName": "哆啦A夢 大雄的新恐龍",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARC SYSTEM WORKS",
+   "releaseDate": "2020.12.17"
+  },
+  {
+   "nsuid": "70010000032682",
+   "catalogueTitle": "碧藍航線 Crosswave",
+   "storeName": "碧藍航線 Crosswave",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "JUSTDAN",
+   "releaseDate": "2020.10.22"
+  },
+  {
+   "nsuid": "70010000032838",
+   "catalogueTitle": "超級機器人大戰30",
+   "storeName": "超級機器人大戰30",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2021.10.28"
+  },
+  {
+   "nsuid": "70010000033032",
+   "catalogueTitle": "Citizens Unite!: Earth x Space",
+   "storeName": "Citizens Unite!: Earth x Space",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "KEMCO",
+   "releaseDate": "2021.1.28"
+  },
+  {
+   "nsuid": "70010000033202",
+   "catalogueTitle": "哆啦Ａ夢　大雄與小仙子的英語冒險",
+   "storeName": "哆啦Ａ夢　大雄與小仙子的英語冒險",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "小學館",
+   "releaseDate": "2021.7.15"
+  },
+  {
+   "nsuid": "70010000033203",
+   "catalogueTitle": "哆啦Ａ夢　大雄的日文漢字大作戰",
+   "storeName": "哆啦Ａ夢　大雄的日文漢字大作戰",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "小學館",
+   "releaseDate": "2021.7.15"
+  },
+  {
+   "nsuid": "70010000033208",
+   "catalogueTitle": "哆啦Ａ夢　迷你哆啦樂園的七大修煉",
+   "storeName": "哆啦Ａ夢　迷你哆啦樂園的七大修煉",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "小學館",
+   "releaseDate": "2021.7.15"
+  },
+  {
+   "nsuid": "70010000033209",
+   "catalogueTitle": "哆啦Ａ夢 大雄的數字大冒險",
+   "storeName": "哆啦Ａ夢  大雄的數字大冒險",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "小學館",
+   "releaseDate": "2021.7.15"
+  },
+  {
+   "nsuid": "70010000033281",
+   "catalogueTitle": "牧場物語 橄欖鎮與希望的大地",
+   "storeName": "牧場物語 橄欖鎮與希望的大地",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2021.2.25"
+  },
+  {
+   "nsuid": "70010000033355",
+   "catalogueTitle": "MONKEY BARRELS",
+   "storeName": "MONKEY BARRELS",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "JUSTDAN",
+   "releaseDate": "2021.2.25"
+  },
+  {
+   "nsuid": "70010000033408",
+   "catalogueTitle": "《伊蘇：始源 (Ys Origin)》",
+   "storeName": "《伊蘇：始源 (Ys Origin)》",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "GAME SOURCE ENTERTAINMENT",
+   "releaseDate": "2020.10.1"
+  },
+  {
+   "nsuid": "70010000033445",
+   "catalogueTitle": "東方咒術泡泡",
+   "storeName": "東方咒術泡泡",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARC SYSTEM WORKS",
+   "releaseDate": "2020.10.15"
+  },
+  {
+   "nsuid": "70010000033509",
+   "catalogueTitle": "桑塔與七賽蓮",
+   "storeName": "桑塔與七賽蓮",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARC SYSTEM WORKS",
+   "releaseDate": "2020.10.29"
+  },
+  {
+   "nsuid": "70010000033621",
+   "catalogueTitle": "Sniper Elite 4",
+   "storeName": "Sniper Elite 4",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "RebellionInteract",
+   "releaseDate": "2020.12.3"
+  },
+  {
+   "nsuid": "70010000033778",
+   "catalogueTitle": "Jump King",
+   "storeName": "Jump King",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "ru",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Pikii",
+   "releaseDate": "2020.12.17"
+  },
+  {
+   "nsuid": "70010000033794",
+   "catalogueTitle": "祭物與雪之剎那",
+   "storeName": "祭物與雪之剎那",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARC SYSTEM WORKS",
+   "releaseDate": "2020.10.29"
+  },
+  {
+   "nsuid": "70010000033861",
+   "catalogueTitle": "三國志14 with 威力加強版",
+   "storeName": "三國志14 with 威力加強版",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "KOEI TECMO GAMES",
+   "releaseDate": "2020.12.10"
+  },
+  {
+   "nsuid": "70010000033871",
+   "catalogueTitle": "童話森林",
+   "storeName": "童話森林",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2021.1.28"
+  },
+  {
+   "nsuid": "70010000033920",
+   "catalogueTitle": "Just Dance 舞力全開 2021",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000034017",
+   "catalogueTitle": "皮克敏™３ 豪華版",
+   "storeName": "皮克敏™３ 豪華版",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.10.30"
+  },
+  {
+   "nsuid": "70010000034112",
+   "catalogueTitle": "Commandos 2 - HD Remaster",
+   "storeName": "Commandos 2 - HD Remaster",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2021.8.5"
+  },
+  {
+   "nsuid": "70010000034165",
+   "catalogueTitle": "坦克戰記 異傳：重生（METAL MAX Xeno Reborn）",
+   "storeName": "坦克戰記 異傳：重生（METAL MAX Xeno Reborn）",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2020.12.24"
+  },
+  {
+   "nsuid": "70010000034284",
+   "catalogueTitle": "罪惡帝國",
+   "storeName": "罪惡帝國",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2021.2.25"
+  },
+  {
+   "nsuid": "70010000034442",
+   "catalogueTitle": "超級瑪利歐 ３Ｄ世界 ＋ 狂怒世界",
+   "storeName": "超級瑪利歐 ３Ｄ世界 ＋ 狂怒世界",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.2.12"
+  },
+  {
+   "nsuid": "70010000034599",
+   "catalogueTitle": "草泥馬足球 全明星",
+   "storeName": "草泥馬足球  全明星",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Leoful",
+   "releaseDate": "2020.11.5"
+  },
+  {
+   "nsuid": "70010000034638",
+   "catalogueTitle": "卡比群星戰2",
+   "storeName": "卡比群星戰2",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.9.24"
+  },
+  {
+   "nsuid": "70010000034687",
+   "catalogueTitle": "《芬尼克斯傳說》",
+   "storeName": "《芬尼克斯傳說》(Immortals Fenyx Rising)",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Ubisoft",
+   "releaseDate": "2020.12.3"
+  },
+  {
+   "nsuid": "70010000034768",
+   "catalogueTitle": "ZELDA無雙 災厄啟示錄",
+   "storeName": "ZELDA無雙 災厄啟示錄",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.11.20"
+  },
+  {
+   "nsuid": "70010000035026",
+   "catalogueTitle": "少女☆射擊 回歸初心",
+   "storeName": "少女☆射擊 回歸初心",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Inti Creates",
+   "releaseDate": "2021.1.28"
+  },
+  {
+   "nsuid": "70010000035065",
+   "catalogueTitle": "真・女神轉生Ⅴ",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000035097",
+   "catalogueTitle": "魔女之泉3 Re:Fine　─玩偶小魔女艾露迪的故事─",
+   "storeName": "魔女之泉3  Re:Fine　─玩偶小魔女艾露迪的故事─",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2020.12.17"
+  },
+  {
+   "nsuid": "70010000035240",
+   "catalogueTitle": "Fitness Boxing 2: Rhythm & Exercise",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000035242",
+   "catalogueTitle": "失落領域",
+   "storeName": "失落領域",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "de",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARC SYSTEM WORKS",
+   "releaseDate": "2021.1.28"
+  },
+  {
+   "nsuid": "70010000035340",
+   "catalogueTitle": "七龍珠Z 卡卡洛特 + 新覺醒篇",
+   "storeName": "七龍珠Z 卡卡洛特 + 新覺醒篇",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2021.9.22"
+  },
+  {
+   "nsuid": "70010000035464",
+   "catalogueTitle": "Ghostrunner",
+   "storeName": "Ghostrunner",
+   "languages": [
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2020.12.24"
+  },
+  {
+   "nsuid": "70010000035555",
+   "catalogueTitle": "第六妖守",
+   "storeName": "第六妖守",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Game Source Entertainment",
+   "releaseDate": "2021.9.24"
+  },
+  {
+   "nsuid": "70010000035960",
+   "catalogueTitle": "BRAVELY DEFAULT II",
+   "storeName": "BRAVELY DEFAULT II",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SQUARE ENIX",
+   "releaseDate": "2021.2.26"
+  },
+  {
+   "nsuid": "70010000035981",
+   "catalogueTitle": "英雄傳說 零之軌跡：改",
+   "storeName": "英雄傳說 零之軌跡：改",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2021.2.25"
+  },
+  {
+   "nsuid": "70010000036181",
+   "catalogueTitle": "UFO找工作",
+   "storeName": "UFO找工作",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2020.10.28"
+  },
+  {
+   "nsuid": "70010000037510",
+   "catalogueTitle": "Spacebase Startopia",
+   "storeName": "Spacebase Startopia ",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "H2 INTERACTIVE",
+   "releaseDate": "2021.10.14"
+  },
+  {
+   "nsuid": "70010000037694",
+   "catalogueTitle": "COTTOn Reboot!",
+   "storeName": "COTTOn Reboot!",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BEEP",
+   "releaseDate": "2021.3.18"
+  },
+  {
+   "nsuid": "70010000037868",
+   "catalogueTitle": "TRIANGLE STRATEGY",
+   "storeName": "TRIANGLE STRATEGY",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SQUARE ENIX",
+   "releaseDate": "2022.3.4"
+  },
+  {
+   "nsuid": "70010000037992",
+   "catalogueTitle": "New 寶可夢隨樂拍",
+   "storeName": "New 寶可夢隨樂拍",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.4.30"
+  },
+  {
+   "nsuid": "70010000038040",
+   "catalogueTitle": "兩人一起！貓咪大戰爭",
+   "storeName": "兩人一起！貓咪大戰爭",
+   "languages": [
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "BANDAI NAMCO Entertainment",
+   "releaseDate": "2021.12.9"
+  },
+  {
+   "nsuid": "70010000038620",
+   "catalogueTitle": "\r\n迷托邦",
+   "storeName": "迷托邦",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.5.21"
+  },
+  {
+   "nsuid": "70010000038625",
+   "catalogueTitle": "瑪利歐高爾夫 超級衝衝衝",
+   "storeName": "瑪利歐高爾夫 超級衝衝衝",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.6.25"
+  },
+  {
+   "nsuid": "70010000038630",
+   "catalogueTitle": "DC Super Hero Girls: Teen Power",
+   "storeName": "DC Super Hero Girls: Teen Power",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it"
+   ],
+   "catalogueLang": "",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.6.4"
+  },
+  {
+   "nsuid": "70010000038673",
+   "catalogueTitle": "\tFIFA 22 Nintendo Switch™ Legacy Edition",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000039478",
+   "catalogueTitle": "復活邪神3",
+   "storeName": "復活邪神3",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARC SYSTEM WORKS",
+   "releaseDate": "2021.8.19"
+  },
+  {
+   "nsuid": "70010000039948",
+   "catalogueTitle": "寶可夢傳說 阿爾宙斯",
+   "storeName": "寶可夢傳說 阿爾宙斯",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2022.1.28"
+  },
+  {
+   "nsuid": "70010000039953",
+   "catalogueTitle": "寶可夢 晶燦鑽石",
+   "storeName": "寶可夢 晶燦鑽石",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.11.19"
+  },
+  {
+   "nsuid": "70010000039958",
+   "catalogueTitle": "寶可夢 明亮珍珠",
+   "storeName": "寶可夢 明亮珍珠",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.11.19"
+  },
+  {
+   "nsuid": "70010000040285",
+   "catalogueTitle": "《Just Dance 舞力全開 2022》 - Just Dance 2022",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000040395",
+   "catalogueTitle": "英雄傳說 閃之軌跡II：改 -The Erebonian Civil War-",
+   "storeName": "英雄傳說 閃之軌跡II：改 -The Erebonian Civil War-",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2021.8.5"
+  },
+  {
+   "nsuid": "70010000040398",
+   "catalogueTitle": "英雄傳說 創之軌跡",
+   "storeName": "英雄傳說 創之軌跡",
+   "languages": [
+    "ja",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2021.8.26"
+  },
+  {
+   "nsuid": "70010000041052",
+   "catalogueTitle": "《NBA 2K22》",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 404"
+  },
+  {
+   "nsuid": "70010000041270",
+   "catalogueTitle": "附帶導航！一做就上手 第一次的遊戲程式設計",
+   "storeName": "附帶導航！一做就上手 第一次的遊戲程式設計",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.6.11"
+  },
+  {
+   "nsuid": "70010000041353",
+   "catalogueTitle": "舊書店街的橋姬 々",
+   "storeName": "舊書店街的橋姬 々",
+   "languages": [
+    "ja",
+    "en",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "HuneX",
+   "releaseDate": "2021.12.16"
+  },
+  {
+   "nsuid": "70010000041992",
+   "catalogueTitle": "ConnecTank™",
+   "storeName": "ConnecTank™",
+   "languages": [
+    "ja",
+    "en",
+    "fr",
+    "de",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SOFT SOURCE",
+   "releaseDate": "2021.10.7"
+  },
+  {
+   "nsuid": "70010000042720",
+   "catalogueTitle": "節奏健身 HOME FiT",
+   "storeName": "節奏健身 HOME FiT",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "ARC SYSTEM WORKS",
+   "releaseDate": "2021.9.16"
+  },
+  {
+   "nsuid": "70010000042723",
+   "catalogueTitle": "罪惡王權／Monark",
+   "storeName": "罪惡王權／Monark",
+   "languages": [
+    "ja",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Clouded Leopard Entertainment",
+   "releaseDate": "2021.10.14"
+  },
+  {
+   "nsuid": "70010000042927",
+   "catalogueTitle": "密特羅德 生存恐懼",
+   "storeName": "密特羅德 生存恐懼",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.10.8"
+  },
+  {
+   "nsuid": "70010000042932",
+   "catalogueTitle": "分享同樂！瓦利歐製造",
+   "storeName": "分享同樂！瓦利歐製造",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.9.10"
+  },
+  {
+   "nsuid": "70010000042937",
+   "catalogueTitle": "Mario Party™ Superstars（瑪利歐派對 超級巨星）",
+   "storeName": "Mario Party™ Superstars（瑪利歐派對 超級巨星）",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.10.29"
+  },
+  {
+   "nsuid": "70010000043258",
+   "catalogueTitle": "搭檔任務 秘密搜查組",
+   "storeName": "搭檔任務 秘密搜查組",
+   "languages": [
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.8.20"
+  },
+  {
+   "nsuid": "70010000043295",
+   "catalogueTitle": "Pokémon UNITE",
+   "storeName": "Pokémon UNITE",
+   "languages": [
+    "ja",
+    "en",
+    "pt",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "The Pokémon Company",
+   "releaseDate": "2021.7.21"
+  },
+  {
+   "nsuid": "70010000043393",
+   "catalogueTitle": "死亡終局 輪迴試煉 2",
+   "storeName": "死亡終局 輪迴試煉 2",
+   "languages": [
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Game Source Entertainment",
+   "releaseDate": "2021.9.2"
+  },
+  {
+   "nsuid": "70010000043639",
+   "catalogueTitle": "Angry Alligator 憤怒鱷魚",
+   "storeName": "Angry Alligator 憤怒鱷魚",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "goGame",
+   "releaseDate": "2021.10.28"
+  },
+  {
+   "nsuid": "70010000043791",
+   "catalogueTitle": "魔界戰記DISGAEA 5 Alliance of Vengeance",
+   "storeName": "魔界戰記DISGAEA 5 Alliance of Vengeance",
+   "languages": [
+    "ja",
+    "en",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "SEGA",
+   "releaseDate": "2021.7.29"
+  },
+  {
+   "nsuid": "70010000044889",
+   "catalogueTitle": "HOT WHEELS UNLEASHED™",
+   "storeName": "HOT WHEELS UNLEASHED™",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Koch Media",
+   "releaseDate": "2021.9.30"
+  },
+  {
+   "nsuid": "70010000044954",
+   "catalogueTitle": "靈活腦學校 一起伸展大腦",
+   "storeName": "靈活腦學校 一起伸展大腦",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2021.12.3"
+  },
+  {
+   "nsuid": "70010000046408",
+   "catalogueTitle": "星之卡比 探索發現",
+   "storeName": "星之卡比 探索發現",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2022.3.25"
+  },
+  {
+   "nsuid": "70010000049934",
+   "catalogueTitle": "Nintendo Switch 運動",
+   "storeName": "Nintendo Switch 運動",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "nl",
+    "pt",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2022.4.29"
+  },
+  {
+   "nsuid": "70010000049939",
+   "catalogueTitle": "瑪利歐激戰前鋒 戰鬥聯賽",
+   "storeName": "瑪利歐激戰前鋒 戰鬥聯賽",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "pt",
+    "de",
+    "it",
+    "nl",
+    "ru",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2022.6.10"
+  },
+  {
+   "nsuid": "70010000050752",
+   "catalogueTitle": "FIRE EMBLEM 無雙 風花雪月",
+   "storeName": "FIRE EMBLEM 無雙 風花雪月",
+   "languages": [
+    "ja",
+    "en",
+    "es",
+    "fr",
+    "de",
+    "it",
+    "ko",
+    "zh"
+   ],
+   "catalogueLang": "CN",
+   "publisher": "Nintendo",
+   "releaseDate": "2022.6.24"
+  },
+  {
+   "nsuid": "70070000005301",
+   "catalogueTitle": "DEAD OR ALIVE Xtreme 沙灘排球 3 Scarlet",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000005441",
+   "catalogueTitle": "忍紓壓 閃亂神樂",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000006141",
+   "catalogueTitle": "PEACH BALL 閃亂神樂",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000006284",
+   "catalogueTitle": "進擊的巨人２ -Final Battle-",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000007382",
+   "catalogueTitle": "勇者鬥惡龍XI S 尋覓逝去的時光 – Definitive Edition",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000008241",
+   "catalogueTitle": "《鬥陣特攻》傳奇版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000009301",
+   "catalogueTitle": "三國志13 with 威力加強版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000009402",
+   "catalogueTitle": "無雙OROCHI 蛇魔３ Ultimate",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000011182",
+   "catalogueTitle": "DOOM® Eternal",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000011265",
+   "catalogueTitle": "真人快打11終極版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000011494",
+   "catalogueTitle": "Fatal Seed Bundle",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012401",
+   "catalogueTitle": "現嚐好滋味！超級猴子球 1&2 重製版　數位豪華版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012483",
+   "catalogueTitle": "Minecraft Dungeons：終極版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012574",
+   "catalogueTitle": "Ace Attorney Turnabout Collection",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012582",
+   "catalogueTitle": "索尼克繽紛色彩 究極版 七彩繽紛包（Sonic Colors: Ultimate - Digital Deluxe）",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012608",
+   "catalogueTitle": "《席德·梅爾的文明帝國VI 白金版》",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012800",
+   "catalogueTitle": "《NBA 2K22》NBA 75週年紀念版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012845",
+   "catalogueTitle": "七龍珠Z 卡卡洛特 + 新覺醒篇 數位豪華版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012846",
+   "catalogueTitle": "七龍珠Z 卡卡洛特 + 新覺醒篇 數位終極版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000012874",
+   "catalogueTitle": "零 ～濡鴉ノ巫女～ 數位豪華版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000013017",
+   "catalogueTitle": "HOT WHEELS UNLEASHED™ - Collectors Edition",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000013018",
+   "catalogueTitle": "HOT WHEELS UNLEASHED™ - Ultimate Stunt Edition",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000013177",
+   "catalogueTitle": "真・女神轉生Ⅴ　＋　DLC Bundle 組合包",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000013724",
+   "catalogueTitle": "瑪利歐賽車8 豪華版 新增賽道通行證",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  },
+  {
+   "nsuid": "70070000013911",
+   "catalogueTitle": "闇影詩章‧霸者之戰 傳奇版",
+   "storeName": "",
+   "languages": null,
+   "note": "unreadable — HTTP 200"
+  }
+ ]
+}

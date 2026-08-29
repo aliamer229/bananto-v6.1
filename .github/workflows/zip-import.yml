@@ -18,6 +18,9 @@ on:
         type: choice
         options: ["update,create", "update", "create"]
         default: "update,create"
+      preview:
+        description: "Preview one template's pricing and media, write nothing"
+        default: ""
       offset:
         description: "Skip this many templates"
         default: "0"
@@ -53,12 +56,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
           APPLY: ${{ inputs.apply }}
+          PREVIEW: ${{ inputs.preview }}
           ACTIONS: ${{ inputs.actions }}
           OFFSET: ${{ inputs.offset }}
           LIMIT: ${{ inputs.limit }}
         run: |
           args="--offset=${OFFSET:-0} --limit=${LIMIT:-100} --actions=${ACTIONS:-update,create}"
           [ "$APPLY" = "true" ] && args="$args --apply"
+          [ -n "$PREVIEW" ] && args="$args --preview=$PREVIEW"
           node scripts/zip-import.mjs $args
       - name: Upload the report
         if: always()

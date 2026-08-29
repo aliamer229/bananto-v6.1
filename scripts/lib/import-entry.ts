@@ -7,8 +7,21 @@
  * product goes through `mergeProductUpdate`, the guard the save endpoint uses.
  * Re-deriving either in a script would be a second implementation of the rules
  * that decide what production keeps.
+ *
+ * The pricing module is here for the same reason: supplier costs and selling
+ * prices are decided in one place, tested there, and used identically by the
+ * importer and by anything else that needs them.
  */
 export { parseGameImport } from "@/lib/gameImportParser";
 export { buildBatchGameImport } from "@/lib/gameImportForm";
 export { mergeProductUpdate, destructiveUpdateLog, oversizedMediaLog } from "@/lib/productMergeGuard";
 export { d1All, d1Run } from "@/lib/d1.server";
+export {
+  mapSupplierCosts,
+  priceGame,
+  customerOptionName,
+  customerTypeName,
+  isExtrasRow,
+  CUSTOMER_LABELS,
+} from "@/lib/nintendoPricing";
+export { demandTierFor } from "@/lib/nintendoDemandTiers";

@@ -1,0 +1,72 @@
+# TEMPORARY — establish, per game, what a Japanese or Hong Kong account can read.
+#
+# READ ONLY. Japan and Hong Kong are asked of their own catalogues and the two
+# answers are never merged.
+name: Language audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      products:
+        description: "Comma-separated product ids or slugs (blank = every canonical game)"
+        type: string
+        default: ""
+      offset:
+        description: "Skip this many games"
+        type: string
+        default: "0"
+      limit:
+        description: "Audit at most this many (0 = no limit)"
+        type: string
+        default: "0"
+  push:
+    branches: [claude/nintendo-product-template-schema-6dtvza]
+    paths:
+      - .github/workflows/language-audit.yml
+      - scripts/language-audit.mjs
+      - scripts/lib/region-language.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: language-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: |
+          echo "::add-mask::$ACCOUNT_ID"
+          echo "::add-mask::$DATABASE_ID"
+      - name: Audit
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+          PRODUCTS: ${{ inputs.products }}
+          OFFSET: ${{ inputs.offset }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          args="--offset=${OFFSET:-0} --limit=${LIMIT:-0}"
+          [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          node scripts/language-audit.mjs $args
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: language-audit
+          path: language-audit.md
+          if-no-files-found: warn
