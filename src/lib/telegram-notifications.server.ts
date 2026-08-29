@@ -350,6 +350,49 @@ export async function notifyAdminDiscTrade(params: {
   }
 }
 
+/**
+ * Tell the store a member has put a second-hand item up for review.
+ *
+ * The listing is already paid for and already waiting; this only shortens the
+ * time before someone looks at it. A Telegram failure is logged and swallowed —
+ * the submission is the transaction, and losing it because a bot token expired
+ * would be absurd.
+ */
+export async function notifyAdminUsedListing(params: {
+  listingId: string;
+  title: string;
+  priceIqd: number;
+  conditionGrade?: string | null;
+  usedType?: string | null;
+  user: { id: string; name?: string; phone?: string };
+}): Promise<boolean> {
+  const { listingId, title, priceIqd, conditionGrade, usedType, user } = params;
+  const adminChatId = getAdminTelegramChatId();
+  if (!adminChatId) return false;
+
+  const messageText =
+    `🏷️ <b>عرض قطعة مستعملة بانتظار المراجعة</b> 🍌\n\n` +
+    `📦 <b>القطعة:</b> <b>${escapeHtml(title)}</b>\n` +
+    (usedType ? `🔖 <b>النوع:</b> ${escapeHtml(usedType)}\n` : "") +
+    (conditionGrade ? `⭐ <b>الحالة:</b> ${escapeHtml(conditionGrade)}\n` : "") +
+    `💰 <b>السعر:</b> <b>${Math.round(priceIqd).toLocaleString()} د.ع</b>\n` +
+    `👤 <b>البائع:</b> ${escapeHtml(user.name || "عضو")} (<code>${escapeHtml(user.phone || user.id)}</code>)\n` +
+    `\nلا يظهر العرض لأي زبون قبل موافقتك 👇`;
+
+  const replyMarkup = buildInlineAppButton(`🔍 مراجعة العرض`, `used_${listingId}`, `/admin`);
+
+  try {
+    const res = await sendTelegramMessage(adminChatId, messageText, {
+      parse_mode: "HTML",
+      reply_markup: replyMarkup,
+    });
+    return res.ok;
+  } catch (err) {
+    console.error("[telegram:notifyAdminUsedListing] failed", err);
+    return false;
+  }
+}
+
 /* =========================================================================
    2. USER NOTIFICATIONS
    ========================================================================= */

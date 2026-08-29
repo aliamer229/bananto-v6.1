@@ -719,6 +719,7 @@ export async function transitionListing(
   }
 
   await notifySeller(listing, to, options);
+  if (to === "SUBMITTED") await notifyStore(listing);
 
   if (options.actorUserId) {
     await createAuditLog(
@@ -767,6 +768,33 @@ async function notifySeller(
     // The status change is the transaction; a failed notification must not
     // undo it or make the admin's click look like it failed.
     console.error("[used-marketplace] notifying the seller failed", listing.id, error);
+  }
+}
+
+/**
+ * Tells the store a listing is waiting, over Telegram.
+ *
+ * Dynamically imported so the marketplace does not drag the Telegram client
+ * into every module that touches a listing, and swallowed on failure for the
+ * same reason as the seller notice: the status change is the transaction.
+ */
+async function notifyStore(listing: UsedListing) {
+  try {
+    const [{ notifyAdminUsedListing }, { findUserById }] = await Promise.all([
+      import("./telegram-notifications.server"),
+      import("./db.server"),
+    ]);
+    const seller = await findUserById(listing.sellerUserId);
+    await notifyAdminUsedListing({
+      listingId: listing.id,
+      title: listing.title,
+      priceIqd: listing.priceIqd,
+      conditionGrade: listing.conditionGrade,
+      usedType: listing.usedType,
+      user: { id: listing.sellerUserId, name: seller?.name, phone: seller?.phone },
+    });
+  } catch (error) {
+    console.error("[used-marketplace] telling the store failed", listing.id, error);
   }
 }
 
