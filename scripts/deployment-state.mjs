@@ -96,8 +96,17 @@ if (!versions.ok) {
   const items = versions.body?.result?.items ?? [];
   const uploaded = items.filter((v) => !served.has(String(v.id ?? "")));
   say(`- versions recorded: **${items.length}**`);
+  /*
+    Both lists are one page deep, so this compares what was read against what
+    was read and says so. A version older than the ten listed above will look
+    unreferenced here even while it is the one serving traffic — which is
+    exactly the case for `c3792f9c`.
+  */
   say(
-    `- of those, **${uploaded.length}** were uploaded but never served — no deployment references them`,
+    `- of these ${items.length}, **${uploaded.length}** are referenced by none of the deployments listed above`,
+  );
+  say(
+    `  (both lists are the most recent page only — an older serving version can fall outside it)`,
   );
   say();
   say(`| created | version | commit | branch | message |`);
