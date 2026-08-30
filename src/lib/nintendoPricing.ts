@@ -325,6 +325,135 @@ export function priceGame(
   };
 }
 
+/**
+ * Converts legacy “shared/private” account products to canonical Offline/Online
+ * without changing any price or cost.
+ */
+export function normalizeNintendoAccountPricing<T extends Record<string, any>>(product: T): T {
+  const sourceOptions = Array.isArray(product.options) ? product.options : [];
+  const sourceTypes = Array.isArray(product.types)
+    ? product.types
+    : Array.isArray(product.variants)
+      ? product.variants
+      : [];
+
+  const accountFrom = (value: unknown): AccountKind | null => {
+    const folded = String(value ?? "").trim().toLowerCase();
+    if (!folded) return null;
+    if (
+      folded.includes("offline") ||
+      folded.includes("أوفلاين") ||
+      folded.includes("اوفلاين") ||
+      folded.includes("shared") ||
+      folded.includes("مشترك")
+    ) return "offline";
+    if (
+      folded.includes("online") ||
+      folded.includes("أونلاين") ||
+      folded.includes("اونلاين") ||
+      folded.includes("private") ||
+      folded.includes("خاص بك")
+    ) return "online";
+    return null;
+  };
+
+  const optionAccounts = new Map<string, AccountKind>();
+  for (const option of sourceOptions) {
+    const account = accountFrom(`${option?.id ?? ""} ${option?.name ?? ""} ${option?.description ?? ""}`);
+    if (account && option?.id) optionAccounts.set(String(option.id), account);
+  }
+  for (const type of sourceTypes) {
+    const linked = optionAccounts.get(String(type?.optionId ?? ""));
+    const account =
+      linked ??
+      accountFrom(`${type?.optionId ?? ""} ${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`);
+    if (account && type?.optionId) optionAccounts.set(String(type.optionId), account);
+  }
+
+  const recognised =
+    optionAccounts.size > 0 ||
+    sourceTypes.some((type: any) =>
+      Boolean(accountFrom(`${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`)),
+    );
+  if (!recognised) return product;
+
+  const seenOptions = new Set<AccountKind>();
+  const options = sourceOptions.map((option: any) => {
+    const account =
+      optionAccounts.get(String(option?.id ?? "")) ??
+      accountFrom(`${option?.id ?? ""} ${option?.name ?? ""} ${option?.description ?? ""}`);
+    if (!account || seenOptions.has(account)) return option;
+    seenOptions.add(account);
+    return {
+      ...option,
+      id: `${account}_account`,
+      name: customerOptionName(account),
+      description:
+        account === "offline"
+          ? "حساب مخصص للعب دون اتصال بعد إكمال خطوات التفعيل."
+          : "حساب يدعم تشغيل اللعبة مع الاتصال والميزات المتاحة أونلاين.",
+    };
+  });
+
+  const rowsSeen = { offline: 0, online: 0 };
+  const typeIds = new Set<string>();
+  const types = sourceTypes.map((type: any) => {
+    const account =
+      optionAccounts.get(String(type?.optionId ?? "")) ??
+      accountFrom(`${type?.optionId ?? ""} ${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`);
+    if (!account) return type;
+
+    const folded = `${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`.toLowerCase();
+    const explicitlyExtras =
+      isExtrasRow(folded) ||
+      folded.includes("مع الإضافات") ||
+      folded.includes("مع الاضافات") ||
+      folded.includes("إضافات") ||
+      folded.includes("اضافات");
+    const explicitlyBase =
+      folded.includes("اللعبة الأساسية") ||
+      folded.includes("اللعبة الاساسية") ||
+      folded.includes("عادي") ||
+      BASE.test(folded);
+    const content: ContentKind = explicitlyExtras
+      ? "extras"
+      : explicitlyBase
+        ? "base"
+        : rowsSeen[account] === 0
+          ? "base"
+          : "extras";
+    rowsSeen[account] += 1;
+
+    const canonicalId = `${account}_${content}`;
+    const id = typeIds.has(canonicalId) ? `${canonicalId}_${rowsSeen[account]}` : canonicalId;
+    typeIds.add(id);
+    return {
+      ...type,
+      id,
+      optionId: `${account}_account`,
+      name: customerTypeName(account, content),
+      description:
+        content === "extras"
+          ? "تشمل اللعبة الأساسية والمحتوى الإضافي المثبت في هذا الإصدار."
+          : "تشمل الإصدار العادي من اللعبة.",
+    };
+  });
+
+  for (const account of ["offline", "online"] as const) {
+    if (rowsSeen[account] === 0 || seenOptions.has(account)) continue;
+    options.push({
+      id: `${account}_account`,
+      name: customerOptionName(account),
+      description:
+        account === "offline"
+          ? "حساب مخصص للعب دون اتصال بعد إكمال خطوات التفعيل."
+          : "حساب يدعم تشغيل اللعبة مع الاتصال والميزات المتاحة أونلاين.",
+    });
+  }
+
+  return { ...product, options, types, variants: types };
+}
+
 /* ------------------------------------------------------- what the customer reads */
 
 /** Arabic labels. Supplier wording and Chinese text never reach a customer. */
