@@ -69,6 +69,10 @@ function hardwareProducts(products: Product[], categories: Record<string, unknow
 */
 export { sanitizeSlug, uniqueSlug };
 
+// A filtered empty page can be a stale partial projection. Repair each category
+// once per Worker isolate; store_kv remains the source of truth and is read-only.
+const attemptedCategoryProjectionRepairs = new Set<string>();
+
 export const Route = createFileRoute("/api/admin/products")({
   server: {
     handlers: {
@@ -200,8 +204,19 @@ export const Route = createFileRoute("/api/admin/products")({
             !query.performanceRequired &&
             !query.categoryId &&
             page.page === 1;
+          const categoryRepairKey = String(query.categoryId || "");
+          const isBareCategory =
+            Boolean(categoryRepairKey) &&
+            !search &&
+            query.hidden === undefined &&
+            !query.onlyUnpriced &&
+            !query.performanceRequired &&
+            page.page === 1;
+          const shouldRepairCategory =
+            isBareCategory && !attemptedCategoryProjectionRepairs.has(categoryRepairKey);
 
-          if (page.total === 0 && isUnfiltered) {
+          if (page.total === 0 && (isUnfiltered || shouldRepairCategory)) {
+            if (shouldRepairCategory) attemptedCategoryProjectionRepairs.add(categoryRepairKey);
             const bootStart = Date.now();
             const rev = await getCatalogVersion();
             const result = await bootstrapProductIndex(rev);
