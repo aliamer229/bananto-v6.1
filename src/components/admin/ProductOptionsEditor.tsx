@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Layers, Link as LinkIcon, Sparkles, Check, Info, ShieldCheck } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Layers,
+  Link as LinkIcon,
+  Sparkles,
+  Check,
+  Info,
+  ShieldCheck,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { normalizeNintendoAccountPricing } from "@/lib/nintendoPricing";
 import {
@@ -52,10 +61,8 @@ export function ProductOptionsEditor({
   const [activeTab, setActiveTab] = useState<"structure" | "preview">("structure");
 
   /*
-   * Old catalogues called the same two account modes “shared/private”. Convert
-   * those labels and links as soon as the editor opens, retaining every price,
-   * cost and stock figure. The equality checks make this a one-shot migration
-   * for legacy records and a no-op for already canonical products.
+   * Legacy catalogues called Offline/Online “shared/private”. Convert those
+   * labels and links once when the editor opens, retaining every numeric value.
    */
   React.useEffect(() => {
     const normalized = normalizeNintendoAccountPricing({ options, types });
@@ -207,7 +214,8 @@ export function ProductOptionsEditor({
   const standardizeAllDescriptions = () => {
     const newOptions = options.map((opt) => ({
       ...opt,
-      description: resolveOptionStandardDescription(opt.name || opt.id, opt.description) || opt.description,
+      description:
+        resolveOptionStandardDescription(opt.name || opt.id, opt.description) || opt.description,
     }));
     const newTypes = types.map((t) => ({
       ...t,
@@ -457,14 +465,18 @@ export function ProductOptionsEditor({
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
-                        onClick={() => updateOption(idx, "description", STANDARD_OPTION_DESCRIPTIONS.OFFLINE)}
+                        onClick={() =>
+                          updateOption(idx, "description", STANDARD_OPTION_DESCRIPTIONS.OFFLINE)
+                        }
                         className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
                       >
                         حساب مشترك
                       </button>
                       <button
                         type="button"
-                        onClick={() => updateOption(idx, "description", STANDARD_OPTION_DESCRIPTIONS.ONLINE)}
+                        onClick={() =>
+                          updateOption(idx, "description", STANDARD_OPTION_DESCRIPTIONS.ONLINE)
+                        }
                         className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
                       >
                         حساب خاص بك
@@ -654,14 +666,18 @@ export function ProductOptionsEditor({
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
-                        onClick={() => updateType(idx, "description", STANDARD_TYPE_DESCRIPTIONS.BASE)}
+                        onClick={() =>
+                          updateType(idx, "description", STANDARD_TYPE_DESCRIPTIONS.BASE)
+                        }
                         className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
                       >
                         اللعبة الأساسية
                       </button>
                       <button
                         type="button"
-                        onClick={() => updateType(idx, "description", STANDARD_TYPE_DESCRIPTIONS.DLC)}
+                        onClick={() =>
+                          updateType(idx, "description", STANDARD_TYPE_DESCRIPTIONS.DLC)
+                        }
                         className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors font-medium"
                       >
                         اللعبة مع الإضافات
