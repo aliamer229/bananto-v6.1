@@ -232,6 +232,31 @@ describe("filtering happens in SQL", () => {
     expect((await readProductIndexPage({ onlyUnpriced: true })).items.map((i) => i.id)).toEqual(["b"]);
   });
 
+  it("matches legacy store category ids to canonical indexed ids", async () => {
+    await rebuildProductIndex(
+      [
+        product({ id: "legacy-card", categoryId: "gift-cards", schemaId: "gift_card" }),
+        product({ id: "canonical-card", categoryId: "cat_gift_cards", schemaId: "gift_card" }),
+        product({ id: "game", categoryId: "cat_nintendo" }),
+      ],
+      2,
+    );
+
+    const legacyFilter = await readProductIndexPage({ categoryId: "gift-cards" });
+    const canonicalFilter = await readProductIndexPage({ categoryId: "cat_gift_cards" });
+
+    expect(legacyFilter.items.map((item) => item.id).sort()).toEqual([
+      "canonical-card",
+      "legacy-card",
+    ]);
+    expect(canonicalFilter.items.map((item) => item.id).sort()).toEqual([
+      "canonical-card",
+      "legacy-card",
+    ]);
+    expect(legacyFilter.total).toBe(2);
+    expect(canonicalFilter.total).toBe(2);
+  });
+
   it("counts the filtered set, so hasMore describes the rows it returned", async () => {
     const page = await readProductIndexPage({ search: "mario", limit: 1 });
     expect(page.total).toBe(1);
@@ -333,10 +358,11 @@ describe("bound parameters stay within D1's limit", () => {
       onlyUnpriced: true,
       performanceRequired: true,
     });
-    // Every filter at once still binds a handful: the page query's parameter
-    // count is a function of the filters, never of the catalogue.
+    // Every filter and every legacy category alias at once still uses less
+    // than a quarter of D1's 100-variable ceiling. The count is a function of
+    // the filters, never of the catalogue.
     for (const sql of db.log) {
-      expect((sql.match(/\?/g) ?? []).length).toBeLessThan(12);
+      expect((sql.match(/\?/g) ?? []).length).toBeLessThan(25);
     }
   });
 });

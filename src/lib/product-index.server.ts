@@ -35,7 +35,7 @@
 import { d1All, d1BatchRun, d1First } from "./d1.server";
 import { assertBoundParameters, chunkForParams } from "./sql-params";
 import { requiresPerformanceReview } from "./devicePerformance";
-import { isGameProduct } from "./productSection";
+import { categoryFilterAliases, isGameProduct } from "./productSection";
 import { lastModifiedAt, sortableName, sortableNameKey, type ProductSort } from "./productSort";
 import { isProductHidden } from "./purchasable";
 
@@ -473,8 +473,17 @@ export async function readProductIndexPage(query: ProductIndexQuery): Promise<Pr
     params.push(needle, `%${search}%`, `%${search}%`);
   }
   if (text(query.categoryId)) {
-    where.push(`(category_id = ? OR category = ?)`);
-    params.push(query.categoryId, query.categoryId);
+    /*
+      Store categories and imported products have used different ids for the
+      same section over time (`gift-cards` vs `cat_gift_cards`,
+      `nintendo-switch-games` vs `cat_nintendo`, etc.). The storefront already
+      treats them as aliases; the admin query must do the same or selecting a
+      visible category produces an empty table.
+    */
+    const aliases = categoryFilterAliases(query.categoryId);
+    const placeholders = aliases.map(() => "?").join(",");
+    where.push(`(category_id IN (${placeholders}) OR category IN (${placeholders}))`);
+    params.push(...aliases, ...aliases);
   }
   if (query.hidden === true) where.push(`hidden = 1`);
   if (query.hidden === false) where.push(`hidden = 0`);
