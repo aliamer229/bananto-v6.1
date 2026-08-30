@@ -23,7 +23,6 @@ import { SeriesSection, SetupSection, SimilarGamesSection, StudioSection } from 
 import { PatchNotesSection, SoundtrackSection, TimelineSection } from "./History";
 import { DataSourcesNote, FaqSection, FinalCta, PurchaseSection } from "./Closing";
 import { useI18n } from "@/hub/i18n";
-import { useReveal } from "@/hub/hooks/useReveal";
 import {
   applySeo,
   buildBreadcrumbJsonLd,
@@ -52,10 +51,6 @@ export function GameHub({
   const { t, ogLocale } = useI18n();
 
   const navItems = useMemo(() => buildNavItems(game, t), [game, t]);
-
-  // Re-arm the reveal observer per record: the section set, and therefore the
-  // number of observed elements, changes with the data.
-  useReveal([game.slug]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
