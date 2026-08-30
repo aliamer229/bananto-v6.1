@@ -6,15 +6,28 @@ import {
   customerTypeName,
   isExtrasRow,
   mapSupplierCosts,
+  normalizeNintendoAccountPricing,
   priceGame,
   roundToStep,
 } from "./nintendoPricing";
 
 /** Super Smash Bros. Ultimate, exactly as the archive stores it. */
 const SMASH = [
-  { id: "regular_offline", name: "Regular / Offline", optionId: "offline_account", price: 1750, cost: 1750 },
+  {
+    id: "regular_offline",
+    name: "Regular / Offline",
+    optionId: "offline_account",
+    price: 1750,
+    cost: 1750,
+  },
   { id: "special", name: "Special", optionId: "offline_account", price: 3000, cost: 3000 },
-  { id: "standard_online", name: "Standard / Online", optionId: "online_account", price: 25000, cost: 1750 },
+  {
+    id: "standard_online",
+    name: "Standard / Online",
+    optionId: "online_account",
+    price: 25000,
+    cost: 1750,
+  },
   { id: "deluxe", name: "Deluxe", optionId: "online_account", price: 38000, cost: 3000 },
 ];
 
@@ -105,7 +118,9 @@ describe("mapSupplierCosts", () => {
   });
 
   it("reports a row it cannot place instead of guessing a slot", () => {
-    const costs = mapSupplierCosts([{ name: "Mystery", optionId: "something_else", price: 100, cost: 100 }]);
+    const costs = mapSupplierCosts([
+      { name: "Mystery", optionId: "something_else", price: 100, cost: 100 },
+    ]);
     expect(costs.unmapped).toHaveLength(1);
     expect(costs.offlineBase).toBeUndefined();
   });
@@ -123,7 +138,8 @@ describe("priceGame", () => {
   it("keeps the offline base inside its console band", () => {
     const one = priceGame(mapSupplierCosts(TWO_ROW), "switch1", "flagship");
     const two = priceGame(mapSupplierCosts(TWO_ROW), "switch2", "flagship");
-    const base = (p: typeof one) => p.tiers.find((t) => t.account === "offline" && t.content === "base")!.price;
+    const base = (p: typeof one) =>
+      p.tiers.find((t) => t.account === "offline" && t.content === "base")!.price;
     expect(base(one)).toBeLessThanOrEqual(15_000);
     expect(base(one)).toBeGreaterThanOrEqual(5_000);
     expect(base(two)).toBeLessThanOrEqual(20_000);
@@ -185,7 +201,9 @@ describe("priceGame", () => {
   it("gives the base product the offline base figures", () => {
     const pricing = priceGame(mapSupplierCosts(SMASH), "switch1", "flagship");
     expect(pricing.productCost).toBe(1750);
-    expect(pricing.productPrice).toBe(pricing.tiers.find((t) => t.account === "offline" && t.content === "base")!.price);
+    expect(pricing.productPrice).toBe(
+      pricing.tiers.find((t) => t.account === "offline" && t.content === "base")!.price,
+    );
     expect(pricing.productPrice).not.toBe(pricing.productCost);
   });
 
@@ -215,5 +233,63 @@ describe("customer labels", () => {
     for (const label of Object.values(CUSTOMER_LABELS)) {
       expect(label).not.toMatch(/[A-Za-z一-鿿]/);
     }
+  });
+});
+
+describe("normalizeNintendoAccountPricing", () => {
+  it("migrates shared/private labels while preserving all four prices and costs", () => {
+    const original = {
+      options: [
+        { id: "shared", name: "حساب مشترك" },
+        { id: "private", name: "حساب خاص بك" },
+      ],
+      types: [
+        {
+          id: "s1",
+          optionId: "shared",
+          name: "مشترك — اللعبة الأساسية",
+          price: 15_000,
+          cost: 1_750,
+        },
+        { id: "s2", optionId: "shared", name: "مشترك — مع الإضافات", price: 17_500, cost: 3_000 },
+        {
+          id: "p1",
+          optionId: "private",
+          name: "خاص بك — اللعبة الأساسية",
+          price: 25_000,
+          cost: 1_750,
+        },
+        { id: "p2", optionId: "private", name: "خاص بك — مع الإضافات", price: 38_000, cost: 3_000 },
+      ],
+    };
+
+    const normalized = normalizeNintendoAccountPricing(original);
+    expect(normalized.options.map((option: any) => [option.id, option.name])).toEqual([
+      ["shared", "حساب أوفلاين"],
+      ["private", "حساب أونلاين"],
+    ]);
+    expect(normalized.types.map((type: any) => [type.id, type.optionId])).toEqual([
+      ["s1", "shared"],
+      ["s2", "shared"],
+      ["p1", "private"],
+      ["p2", "private"],
+    ]);
+    expect(normalized.types.map((type: any) => type.name)).toEqual([
+      "حساب أوفلاين — عادي",
+      "حساب أوفلاين — مع الإضافات",
+      "حساب أونلاين — عادي",
+      "حساب أونلاين — مع الإضافات",
+    ]);
+    expect(normalized.types.map((type: any) => [type.price, type.cost])).toEqual([
+      [15_000, 1_750],
+      [17_500, 3_000],
+      [25_000, 1_750],
+      [38_000, 3_000],
+    ]);
+  });
+
+  it("leaves unrelated product options unchanged", () => {
+    const hardware = { options: [{ id: "white", name: "أبيض" }], types: [] };
+    expect(normalizeNintendoAccountPricing(hardware)).toBe(hardware);
   });
 });
