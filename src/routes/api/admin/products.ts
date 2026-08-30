@@ -35,7 +35,7 @@ import {
   syncGameDevicePerformance,
 } from "@/lib/devicePerformance.server";
 import { validateGameDevicePerformance } from "@/lib/devicePerformance";
-import { resolveCategoryType } from "@/lib/productSection";
+import { categoryFilterAliases, resolveCategoryType } from "@/lib/productSection";
 import { sanitizeSlug, uniqueSlug } from "@/lib/productSlug";
 import { checkPublishable, isPublishing } from "@/lib/publishGate";
 import { sanitizeAndVerifyProductImages } from "@/lib/productImageVerification.server";
@@ -70,7 +70,7 @@ function hardwareProducts(products: Product[], categories: Record<string, unknow
 export { sanitizeSlug, uniqueSlug };
 
 // A filtered empty page can be a stale partial projection. Repair each category
-// once per Worker isolate; store_kv remains the source of truth and is read-only.
+// once per Worker isolate; store_kv remains the read-only source of truth.
 const attemptedCategoryProjectionRepairs = new Set<string>();
 
 export const Route = createFileRoute("/api/admin/products")({
@@ -204,9 +204,12 @@ export const Route = createFileRoute("/api/admin/products")({
             !query.performanceRequired &&
             !query.categoryId &&
             page.page === 1;
+
           const categoryRepairKey = String(query.categoryId || "");
+          const isKnownSectionCategory = categoryFilterAliases(categoryRepairKey).length > 1;
           const isBareCategory =
             Boolean(categoryRepairKey) &&
+            isKnownSectionCategory &&
             !search &&
             query.hidden === undefined &&
             !query.onlyUnpriced &&
@@ -216,10 +219,10 @@ export const Route = createFileRoute("/api/admin/products")({
             isBareCategory && !attemptedCategoryProjectionRepairs.has(categoryRepairKey);
 
           if (page.total === 0 && (isUnfiltered || shouldRepairCategory)) {
-            if (shouldRepairCategory) attemptedCategoryProjectionRepairs.add(categoryRepairKey);
             const bootStart = Date.now();
             const rev = await getCatalogVersion();
             const result = await bootstrapProductIndex(rev);
+            if (shouldRepairCategory) attemptedCategoryProjectionRepairs.add(categoryRepairKey);
             if (result.built > 0) {
               page = await readProductIndexPage(query);
               bootstrapped = true;
