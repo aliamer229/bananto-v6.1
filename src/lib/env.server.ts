@@ -16,13 +16,26 @@ export interface Env {
 // disappear. AsyncLocalStorage keeps the bindings scoped to the current request.
 const requestEnv = new AsyncLocalStorage<Record<string, unknown>>();
 
+// Cloudflare's nodejs_compat currently exposes AsyncLocalStorage but throws
+// "enterWith() is not implemented" when the method is called. Keep the
+// request-scoped path for Node/Nitro, then permanently fall back to the Worker
+// isolate binding object after the first unsupported call. Bindings do not
+// change between requests within a deployed Worker isolate.
+let asyncLocalStorageSupported = true;
+
 /** Install the current platform bindings. Called at the edge request boundary. */
 export function publishEnv(value: unknown): void {
   if (!value || typeof value !== "object") return;
   const record = value as Record<string, unknown>;
-  requestEnv.enterWith(record);
+  if (asyncLocalStorageSupported) {
+    try {
+      requestEnv.enterWith(record);
+    } catch {
+      asyncLocalStorageSupported = false;
+    }
+  }
   // Retain the global fallback for local tooling and older runtimes. Request
-  // handlers always prefer the isolated store below.
+  // handlers prefer the isolated store below when the runtime implements it.
   (globalThis as { __CF_ENV__?: Record<string, unknown> }).__CF_ENV__ = record;
 }
 
@@ -32,9 +45,15 @@ export function publishEnv(value: unknown): void {
  * In Node.js, it falls back to process.env.
  */
 export function getEnv(): Env {
-  const scopedEnv = requestEnv.getStore();
-  if (scopedEnv) {
-    return scopedEnv as Env;
+  if (asyncLocalStorageSupported) {
+    try {
+      const scopedEnv = requestEnv.getStore();
+      if (scopedEnv) {
+        return scopedEnv as Env;
+      }
+    } catch {
+      asyncLocalStorageSupported = false;
+    }
   }
 
   // Cloudflare exposes every secret and platform binding through this built-in
