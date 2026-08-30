@@ -235,3 +235,133 @@ async function safeJson<T>(response: Response): Promise<T | undefined> {
 }
 
 export const chatRealtime = new ChatRealtimeHub();
+
+/**
+ * Cloudflare Durable Object for cross-isolate chat fan-out, typing state, and
+ * presence. The class name is part of the deployed Cloudflare migration and
+ * must remain a named Worker export (see src/server.ts and wrangler.jsonc).
+ */
+export class ChatRealtimeDO {
+  state: any;
+  env: any;
+  private subscribers: Set<ReadableStreamDefaultController> = new Set();
+  private typingMap: Map<string, TypingParticipant & { expiresAt: number }> = new Map();
+  private presenceMap: Map<string, PresenceParticipant> = new Map();
+
+  constructor(state: any, env: any) {
+    this.state = state;
+    this.env = env;
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/^\/+/, "");
+
+    if (path === "subscribe") {
+      let controller: ReadableStreamDefaultController;
+      const stream = new ReadableStream({
+        start: (streamController) => {
+          controller = streamController;
+          this.subscribers.add(streamController);
+        },
+        cancel: () => {
+          if (controller) this.subscribers.delete(controller);
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
+
+    if (path === "broadcast" && request.method === "POST") {
+      const data = await request.text();
+      this.pushEvent(data);
+      return jsonResponse({ ok: true });
+    }
+
+    if (path === "setTyping" && request.method === "POST") {
+      const body = (await request.json().catch(() => ({}))) as any;
+      const { user, isTyping } = body || {};
+      if (user?.id) {
+        if (isTyping) {
+          this.typingMap.set(user.id, {
+            userId: user.id,
+            userName: user.name,
+            senderRole: user.role,
+            expiresAt: Date.now() + 4000,
+          });
+        } else {
+          this.typingMap.delete(user.id);
+        }
+      }
+
+      this.cleanExpired();
+      const event = {
+        type: "typing.update",
+        payload: { typers: this.activeTypers() },
+        timestamp: new Date().toISOString(),
+      };
+      this.pushEvent(JSON.stringify(event));
+      return jsonResponse({ ok: true });
+    }
+
+    if (path === "recordPresence" && request.method === "POST") {
+      const body = (await request.json().catch(() => ({}))) as any;
+      const { userId } = body || {};
+      if (userId) {
+        this.presenceMap.set(userId, { userId, lastSeen: Date.now() });
+      }
+      return jsonResponse({ ok: true });
+    }
+
+    if (path === "getActiveTypers") {
+      this.cleanExpired();
+      return jsonResponse(this.activeTypers());
+    }
+
+    if (path === "isUserOnline") {
+      const userId = url.searchParams.get("userId");
+      const presence = userId ? this.presenceMap.get(userId) : undefined;
+      return jsonResponse(Boolean(presence && Date.now() - presence.lastSeen < 60_000));
+    }
+
+    return new Response("Not Found", { status: 404 });
+  }
+
+  private pushEvent(data: string) {
+    const encoded = new TextEncoder().encode(`data: ${data}\n\n`);
+    for (const subscriber of this.subscribers) {
+      try {
+        subscriber.enqueue(encoded);
+      } catch {
+        this.subscribers.delete(subscriber);
+      }
+    }
+  }
+
+  private activeTypers() {
+    return Array.from(this.typingMap.values()).map((typing) => ({
+      userId: typing.userId,
+      userName: typing.userName,
+      senderRole: typing.senderRole,
+    }));
+  }
+
+  private cleanExpired() {
+    const now = Date.now();
+    for (const [userId, item] of this.typingMap.entries()) {
+      if (item.expiresAt < now) this.typingMap.delete(userId);
+    }
+  }
+}
+
+function jsonResponse(value: unknown): Response {
+  return new Response(JSON.stringify(value), {
+    headers: { "Content-Type": "application/json" },
+  });
+}
