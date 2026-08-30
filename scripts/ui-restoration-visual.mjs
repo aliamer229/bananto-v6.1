@@ -192,23 +192,26 @@ for (const stage of [
     }
     await page.waitForTimeout(600);
     await page.evaluate(async () => {
-      for (let y = 0; y < document.body.scrollHeight; y += 450) {
-        window.scrollTo(0, y);
+      const browser = globalThis;
+      for (let y = 0; y < browser.document.body.scrollHeight; y += 450) {
+        browser.scrollTo(0, y);
         await new Promise((resolve) => setTimeout(resolve, 35));
       }
-      window.scrollTo(0, 0);
+      browser.scrollTo(0, 0);
     });
     await page.waitForTimeout(900);
 
     const metrics = await page.evaluate(() => {
-      const root = getComputedStyle(document.documentElement);
-      const body = getComputedStyle(document.body);
+      const browser = globalThis;
+      const root = browser.getComputedStyle(browser.document.documentElement);
+      const body = browser.getComputedStyle(browser.document.body);
       return {
-        statusTheme: document.documentElement.dataset.theme,
-        direction: document.documentElement.dir,
-        innerWidth: window.innerWidth,
-        scrollWidth: document.documentElement.scrollWidth,
-        overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+        statusTheme: browser.document.documentElement.dataset.theme,
+        direction: browser.document.documentElement.dir,
+        innerWidth: browser.innerWidth,
+        scrollWidth: browser.document.documentElement.scrollWidth,
+        overflow:
+          browser.document.documentElement.scrollWidth > browser.innerWidth + 1,
         bodyBackground: body.backgroundColor,
         bodyFont: body.fontFamily,
         tokens: {
