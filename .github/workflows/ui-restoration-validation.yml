@@ -1,0 +1,110 @@
+name: UI restoration validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - src/styles.css
+      - src/styles-identity.test.ts
+      - scripts/ui-restoration-visual.mjs
+      - .github/workflows/ui-restoration-validation.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-restoration-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Tests
+        if: always()
+        run: bun run test
+      - name: Lint
+        if: always()
+        run: bun run lint
+      - name: Production build
+        if: always()
+        run: bun run build
+
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out current main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: baseline
+          persist-credentials: false
+      - name: Check out restored branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: restored
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install both trees
+        run: |
+          cd baseline
+          bun install --frozen-lockfile
+          cd ../restored
+          bun install --frozen-lockfile
+      - name: Capture before and after at the acceptance viewports
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd baseline && bunx vite dev --host 127.0.0.1 --port 4173 > ../baseline.log 2>&1) &
+          baseline_pid=$!
+          (cd restored && bunx vite dev --host 127.0.0.1 --port 4174 > ../restored.log 2>&1) &
+          restored_pid=$!
+          trap 'kill "$baseline_pid" "$restored_pid" 2>/dev/null || true' EXIT
+          for port in 4173 4174; do
+            ready=0
+            for attempt in {1..90}; do
+              if curl --fail --silent "http://127.0.0.1:${port}/" >/dev/null; then
+                ready=1
+                break
+              fi
+              sleep 1
+            done
+            if [ "$ready" -ne 1 ]; then
+              echo "Server on port ${port} did not become ready"
+              tail -100 baseline.log restored.log || true
+              exit 1
+            fi
+          done
+          chrome_path="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          cd restored
+          BASELINE_URL=http://127.0.0.1:4173 \
+          RESTORED_URL=http://127.0.0.1:4174 \
+          CHROMIUM_PATH="$chrome_path" \
+          OUTPUT_DIR=visual-restoration \
+          bun scripts/ui-restoration-visual.mjs
+      - name: Upload comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-restoration-comparison
+          path: |
+            restored/visual-restoration
+            baseline.log
+            restored.log
+          if-no-files-found: warn
+          retention-days: 7
