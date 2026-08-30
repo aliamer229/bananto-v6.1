@@ -33,19 +33,45 @@ export function useReveal(deps: unknown[] = []): void {
       document
         .querySelectorAll<HTMLElement>('[data-reveal="hidden"]')
         .forEach((el) => (el.dataset["reveal"] = "shown"));
+      delete document.documentElement.dataset["revealReady"];
       return;
     }
 
     subscribers += 1;
     const targets = document.querySelectorAll<HTMLElement>('[data-reveal="hidden"]');
-    targets.forEach((el) => instance.observe(el));
+    const observed: HTMLElement[] = [];
+
+    targets.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+
+      /*
+        A restored scroll position can place an unrevealed element above the
+        viewport before IntersectionObserver gets its first callback. Such an
+        element will never intersect while the visitor keeps scrolling down,
+        but it still owns its layout height — the result is the large blank
+        block seen on iPad product pages. Anything already above or inside the
+        reading viewport must therefore be visible immediately.
+      */
+      if (rect.bottom <= 0 || rect.top <= window.innerHeight * 0.92) {
+        el.dataset["reveal"] = "shown";
+        return;
+      }
+
+      observed.push(el);
+      instance.observe(el);
+    });
+
+    // CSS hides pending elements only after the observer is ready. Until this
+    // marker exists, server-rendered content stays visible (progressive enhancement).
+    document.documentElement.dataset["revealReady"] = "true";
 
     return () => {
       subscribers -= 1;
-      targets.forEach((el) => instance.unobserve(el));
+      observed.forEach((el) => instance.unobserve(el));
       if (subscribers === 0) {
         instance.disconnect();
         observer = null;
+        delete document.documentElement.dataset["revealReady"];
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
