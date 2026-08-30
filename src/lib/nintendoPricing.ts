@@ -102,7 +102,11 @@ export function mapSupplierCosts(types: readonly TemplateType[]): SupplierCosts 
 
   for (const type of types) {
     const account: AccountKind | null =
-      type.optionId === "offline_account" ? "offline" : type.optionId === "online_account" ? "online" : null;
+      type.optionId === "offline_account"
+        ? "offline"
+        : type.optionId === "online_account"
+          ? "online"
+          : null;
     if (!account) {
       out.unmapped.push(`${type.name ?? type.id ?? "?"} — no recognisable option`);
       continue;
@@ -118,7 +122,13 @@ export function mapSupplierCosts(types: readonly TemplateType[]): SupplierCosts 
       only a fallback for a malformed row that was not present in that group.
     */
     const content: ContentKind =
-      rowIndex >= 0 ? (rowIndex === 0 ? "base" : "extras") : isExtrasRow(type.name) ? "extras" : "base";
+      rowIndex >= 0
+        ? rowIndex === 0
+          ? "base"
+          : "extras"
+        : isExtrasRow(type.name)
+          ? "extras"
+          : "base";
 
     /*
       Most legacy rows copied the corresponding offline cost into online
@@ -244,11 +254,7 @@ export function roundToStep(value: number, step = 250): number {
  * cost to acquire, so a 6,000 season pass moves the price further than a 1,250
  * one does.
  */
-export function priceGame(
-  costs: SupplierCosts,
-  platform: Platform,
-  tier: DemandTier,
-): GamePricing {
+export function priceGame(costs: SupplierCosts, platform: Platform, tier: DemandTier): GamePricing {
   const tiers: PricedTier[] = [];
   const needsReview = [...costs.unmapped];
 
@@ -327,7 +333,7 @@ export function priceGame(
 
 /**
  * Converts legacy “shared/private” account products to canonical Offline/Online
- * without changing any price or cost.
+ * without changing any price, cost, stock, or commercial value.
  */
 export function normalizeNintendoAccountPricing<T extends Record<string, any>>(product: T): T {
   const sourceOptions = Array.isArray(product.options) ? product.options : [];
@@ -338,7 +344,9 @@ export function normalizeNintendoAccountPricing<T extends Record<string, any>>(p
       : [];
 
   const accountFrom = (value: unknown): AccountKind | null => {
-    const folded = String(value ?? "").trim().toLowerCase();
+    const folded = String(value ?? "")
+      .trim()
+      .toLowerCase();
     if (!folded) return null;
     if (
       folded.includes("offline") ||
@@ -346,27 +354,35 @@ export function normalizeNintendoAccountPricing<T extends Record<string, any>>(p
       folded.includes("اوفلاين") ||
       folded.includes("shared") ||
       folded.includes("مشترك")
-    ) return "offline";
+    ) {
+      return "offline";
+    }
     if (
       folded.includes("online") ||
       folded.includes("أونلاين") ||
       folded.includes("اونلاين") ||
       folded.includes("private") ||
       folded.includes("خاص بك")
-    ) return "online";
+    ) {
+      return "online";
+    }
     return null;
   };
 
   const optionAccounts = new Map<string, AccountKind>();
   for (const option of sourceOptions) {
-    const account = accountFrom(`${option?.id ?? ""} ${option?.name ?? ""} ${option?.description ?? ""}`);
+    const account = accountFrom(
+      `${option?.id ?? ""} ${option?.name ?? ""} ${option?.description ?? ""}`,
+    );
     if (account && option?.id) optionAccounts.set(String(option.id), account);
   }
   for (const type of sourceTypes) {
     const linked = optionAccounts.get(String(type?.optionId ?? ""));
     const account =
       linked ??
-      accountFrom(`${type?.optionId ?? ""} ${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`);
+      accountFrom(
+        `${type?.optionId ?? ""} ${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`,
+      );
     if (account && type?.optionId) optionAccounts.set(String(type.optionId), account);
   }
 
@@ -386,7 +402,6 @@ export function normalizeNintendoAccountPricing<T extends Record<string, any>>(p
     seenOptions.add(account);
     return {
       ...option,
-      id: `${account}_account`,
       name: customerOptionName(account),
       description:
         account === "offline"
@@ -396,11 +411,12 @@ export function normalizeNintendoAccountPricing<T extends Record<string, any>>(p
   });
 
   const rowsSeen = { offline: 0, online: 0 };
-  const typeIds = new Set<string>();
   const types = sourceTypes.map((type: any) => {
     const account =
       optionAccounts.get(String(type?.optionId ?? "")) ??
-      accountFrom(`${type?.optionId ?? ""} ${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`);
+      accountFrom(
+        `${type?.optionId ?? ""} ${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`,
+      );
     if (!account) return type;
 
     const folded = `${type?.id ?? ""} ${type?.name ?? ""} ${type?.description ?? ""}`.toLowerCase();
@@ -424,13 +440,12 @@ export function normalizeNintendoAccountPricing<T extends Record<string, any>>(p
           : "extras";
     rowsSeen[account] += 1;
 
-    const canonicalId = `${account}_${content}`;
-    const id = typeIds.has(canonicalId) ? `${canonicalId}_${rowsSeen[account]}` : canonicalId;
-    typeIds.add(id);
     return {
       ...type,
-      id,
-      optionId: `${account}_account`,
+      // Existing ids are commercial/relational identities used by carts and
+      // linked editions. Only products whose selector is genuinely missing
+      // need a new canonical option id.
+      optionId: sourceOptions.length === 0 ? `${account}_account` : type.optionId,
       name: customerTypeName(account, content),
       description:
         content === "extras"
@@ -439,6 +454,7 @@ export function normalizeNintendoAccountPricing<T extends Record<string, any>>(p
     };
   });
 
+  // Recreate missing selectors only when the tier rows prove the account exists.
   for (const account of ["offline", "online"] as const) {
     if (rowsSeen[account] === 0 || seenOptions.has(account)) continue;
     options.push({
