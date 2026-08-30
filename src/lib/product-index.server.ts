@@ -146,6 +146,12 @@ export function toIndexRow(product: Row): ProductIndexRow {
   const id = text(product["id"]) || String(product["id"] ?? "");
   const title = text(product["title"]);
   const titleEn = text(product["titleEn"]) || text(product["english_name"]);
+  const isLegacyGiftCard = Boolean(
+    text(product["cardValue"]) ||
+    text(product["card_value"]) ||
+    text(product["cardCurrency"]) ||
+    text(product["card_currency"]),
+  );
   return {
     id,
     slug: text(product["slug"]) || id,
@@ -153,8 +159,11 @@ export function toIndexRow(product: Row): ProductIndexRow {
     titleEn: titleEn || title || id,
     category: text(product["category"]),
     categoryId: text(product["categoryId"]) || text(product["category"]),
-    kind: text(product["kind"]),
-    schemaId: text(product["schemaId"]),
+    kind: text(product["kind"]) || (isLegacyGiftCard ? "digital_code" : ""),
+    schemaId:
+      text(product["schemaId"]) ||
+      text(product["schema_id"]) ||
+      (isLegacyGiftCard ? "gift_card" : ""),
     platform: text(product["platform"]),
     price: numberOrNull(product["price"]) ?? numberOrNull(product["basePrice"]),
     cost: numberOrNull(product["cost"]),
@@ -371,10 +380,7 @@ export async function readProductIndexFingerprints(): Promise<Map<string, string
     // Rebuilt from the stored columns in the same order `bindsFor` emits them,
     // minus `rev` — which changes on every save and would make every row look
     // changed.
-    map.set(
-      id,
-      fingerprint([...COLUMNS.filter((c) => c !== "rev").map((c) => row[c] ?? null), 0]),
-    );
+    map.set(id, fingerprint([...COLUMNS.filter((c) => c !== "rev").map((c) => row[c] ?? null), 0]));
   }
   return map;
 }
@@ -468,29 +474,61 @@ export async function readProductIndexPage(query: ProductIndexQuery): Promise<Pr
   if (search) {
     // Matched against the same folded key the name column is sorted by, so an
     // Arabic search with a different alef still finds the product.
-    where.push(`(sort_name LIKE ? OR slug LIKE ? OR id LIKE ?)`);
-    const needle = `%${sortableNameKey(search)}%`;
-    params.push(needle, `%${search}%`, `%${search}%`);
+    where.push("(sort_name LIKE ? OR slug LIKE ? OR id LIKE ?)");
+    const needle = "%" + sortableNameKey(search) + "%";
+    params.push(needle, "%" + search + "%", "%" + search + "%");
   }
   if (text(query.categoryId)) {
     /*
       Store categories and imported products have used different ids for the
-      same section over time (`gift-cards` vs `cat_gift_cards`,
-      `nintendo-switch-games` vs `cat_nintendo`, etc.). The storefront already
+      same section over time (gift-cards vs cat_gift_cards,
+      nintendo-switch-games vs cat_nintendo, etc.). The storefront already
       treats them as aliases; the admin query must do the same or selecting a
       visible category produces an empty table.
     */
     const aliases = categoryFilterAliases(query.categoryId);
-    const placeholders = aliases.map(() => "?").join(",");
-    where.push(`(category_id IN (${placeholders}) OR category IN (${placeholders}))`);
-    params.push(...aliases, ...aliases);
+    // A fixed predicate keeps D1 bindings bounded and auditable. The largest
+    // alias family currently has six ids; unused slots can never match a real
+    // category.
+    const aliasSlots = [...aliases.slice(0, 6)];
+    while (aliasSlots.length < 6) aliasSlots.push("__no_category_alias__");
+    const categoryPredicate =
+      "(category_id = ? OR category_id = ? OR category_id = ? OR category_id = ? OR category_id = ? OR category_id = ?" +
+      " OR category = ? OR category = ? OR category = ? OR category = ? OR category = ? OR category = ?)";
+    const isGiftCardSection = aliases.some((alias) =>
+      ["gift-cards", "gift_cards", "cat_gift_cards", "gift_card", "cards"].includes(alias),
+    );
+    if (isGiftCardSection) {
+      /*
+        Old eShop cards can predate category normalization while still carrying
+        a stable schema/kind identity. Include those identities so storefront
+        cards do not disappear from the admin table.
+      */
+      where.push(
+        "(" +
+          categoryPredicate +
+          " OR schema_id = ? OR kind = ? OR kind = ? OR kind = ? OR kind = ?)",
+      );
+      params.push(
+        ...aliasSlots,
+        ...aliasSlots,
+        "gift_card",
+        "digital_code",
+        "gift_card",
+        "gift-card",
+        "giftcard",
+      );
+    } else {
+      where.push(categoryPredicate);
+      params.push(...aliasSlots, ...aliasSlots);
+    }
   }
-  if (query.hidden === true) where.push(`hidden = 1`);
-  if (query.hidden === false) where.push(`hidden = 0`);
-  if (query.onlyUnpriced) where.push(`(price IS NULL OR price <= 0)`);
-  if (query.performanceRequired) where.push(`performance_required = 1`);
+  if (query.hidden === true) where.push("hidden = 1");
+  if (query.hidden === false) where.push("hidden = 0");
+  if (query.onlyUnpriced) where.push("(price IS NULL OR price <= 0)");
+  if (query.performanceRequired) where.push("performance_required = 1");
 
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
   const sort = query.sort ?? { field: "order" as const, direction: "desc" as const };
 
   const [countRow, rows, facetRow] = await Promise.all([
@@ -579,7 +617,11 @@ export async function bootstrapProductIndex(rev: number): Promise<{
   }
 
   let products: Row[] = [];
-  const joined = chunks.sort((a, b) => a.index - b.index).map((c) => c.value).join("") || base;
+  const joined =
+    chunks
+      .sort((a, b) => a.index - b.index)
+      .map((c) => c.value)
+      .join("") || base;
   if (joined.trim()) {
     try {
       const parsed = JSON.parse(joined);

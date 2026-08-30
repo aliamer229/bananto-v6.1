@@ -5,6 +5,7 @@ import {
   buildMediaRequestHeaders,
   fetchRemoteMedia,
   fetchRemoteImageWithRetry,
+  remoteMediaCandidates,
 } from "./mediaIngest.server";
 import { sanitizeAndVerifyProductImages } from "./productImageVerification.server";
 
@@ -54,26 +55,64 @@ describe("mediaIngest SSRF & Validation", () => {
     expect(nintendoHeaders["Referer"]).toContain("nintendo.com");
     expect(nintendoHeaders["User-Agent"]).toContain("Mozilla");
 
-      const eshopHeaders = buildMediaRequestHeaders("https://img-eshop.cdn.nintendo.net/i/cover.jpg");
+    const eshopHeaders = buildMediaRequestHeaders("https://img-eshop.cdn.nintendo.net/i/cover.jpg");
     expect(eshopHeaders["Referer"]).toContain("nintendo.net");
 
-    const amazonHeaders = buildMediaRequestHeaders("https://m.media-amazon.com/images/I/81test.jpg");
+    const amazonHeaders = buildMediaRequestHeaders(
+      "https://m.media-amazon.com/images/I/81test.jpg",
+    );
     expect(amazonHeaders["Referer"]).toContain("amazon.com");
 
     const walmartHeaders = buildMediaRequestHeaders("https://i5.walmartimages.com/asr/test.jpg");
     expect(walmartHeaders["Referer"]).toContain("walmartimages.com");
 
-    const bestbuyHeaders = buildMediaRequestHeaders("https://multimedia.bbycastatic.ca/products/test.jpg");
+    const bestbuyHeaders = buildMediaRequestHeaders(
+      "https://multimedia.bbycastatic.ca/products/test.jpg",
+    );
     expect(bestbuyHeaders["Referer"]).toContain("bbycastatic.ca");
 
-    const costcoHeaders = buildMediaRequestHeaders("https://bfasset.costco-static.com/images/test.jpg");
+    const costcoHeaders = buildMediaRequestHeaders(
+      "https://bfasset.costco-static.com/images/test.jpg",
+    );
     expect(costcoHeaders["Referer"]).toContain("costco-static.com");
 
     const tradeinnHeaders = buildMediaRequestHeaders("https://www.tradeinn.com/f/game.jpg");
     expect(tradeinnHeaders["Referer"]).toContain("tradeinn.com");
 
-    const coverProjectHeaders = buildMediaRequestHeaders("https://www.thecoverproject.net/view.php");
+    const coverProjectHeaders = buildMediaRequestHeaders(
+      "https://www.thecoverproject.net/view.php",
+    );
     expect(coverProjectHeaders["Referer"]).toContain("thecoverproject.net");
+  });
+
+  it("retries Nintendo Cloudinary assets without a rejected delivery transform", async () => {
+    const transformed =
+      "https://assets.nintendo.com/image/upload/ar_3:4,c_fit,g_auto,w_1000/f_auto/q_auto/game-cover.jpg";
+    const candidates = remoteMediaCandidates(transformed);
+    expect(candidates).toHaveLength(2);
+    expect(candidates[1]).toBe("https://assets.nintendo.com/image/upload/game-cover.jpg");
+
+    const imageBytes = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(null, { status: 400, headers: { "content-type": "text/plain" } }),
+      )
+      .mockResolvedValueOnce(
+        new Response(imageBytes, { status: 200, headers: { "content-type": "image/png" } }),
+      );
+    const originalFetch = global.fetch;
+    global.fetch = fetchMock;
+    try {
+      const result = await fetchRemoteMedia(transformed, { maxAttempts: 2 });
+      expect(result.ok).toBe(true);
+      expect(result.attempts).toBe(2);
+      expect(fetchMock.mock.calls[1]?.[0]).toBe(candidates[1]);
+    } finally {
+      global.fetch = originalFetch;
+    }
   });
 });
 
@@ -110,7 +149,9 @@ describe("sniffImageMimeType Magic Numbers", () => {
   });
 
   it("returns undefined for HTML or random non-image bytes", () => {
-    const htmlBytes = new TextEncoder().encode("<!DOCTYPE html><html><body>Error 503</body></html>");
+    const htmlBytes = new TextEncoder().encode(
+      "<!DOCTYPE html><html><body>Error 503</body></html>",
+    );
     expect(sniffImageMimeType(htmlBytes)).toBeUndefined();
   });
 });
@@ -162,10 +203,10 @@ describe("sanitizeAndVerifyProductImages Media Isolation Guarantee", () => {
 
       // Original URLs are preserved for subsequent repair rather than lost
       expect(result.product.cartridgeImage).toBe(
-        "https://assets.nintendo.com/image/upload/dw_origins_503.jpg"
+        "https://assets.nintendo.com/image/upload/dw_origins_503.jpg",
       );
       expect(result.product.coverHiResImage).toBe(
-        "https://thecoverproject.net/dw_origins_wrap_503.jpg"
+        "https://thecoverproject.net/dw_origins_wrap_503.jpg",
       );
       expect(result.warnings).toBeDefined();
       expect(result.warnings?.length).toBeGreaterThan(0);
@@ -185,7 +226,11 @@ describe("sanitizeAndVerifyProductImages Media Isolation Guarantee", () => {
 
     const result = await sanitizeAndVerifyProductImages(incomingProduct);
     expect(result.ok).toBe(true);
-    expect(result.product.cartridgeImage).toBe("/api/files/products/game_zelda_totk/cartridge-abc123.webp");
-    expect(result.product.coverHiResImage).toBe("/api/files/products/game_zelda_totk/wrap-xyz789.webp");
+    expect(result.product.cartridgeImage).toBe(
+      "/api/files/products/game_zelda_totk/cartridge-abc123.webp",
+    );
+    expect(result.product.coverHiResImage).toBe(
+      "/api/files/products/game_zelda_totk/wrap-xyz789.webp",
+    );
   });
 });

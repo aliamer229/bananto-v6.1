@@ -22,6 +22,7 @@ import {
   customerOptionName,
   customerTypeName,
   mapSupplierCosts,
+  normalizeNintendoAccountPricing,
   priceGame,
   type AccountKind,
   type ContentKind,
@@ -203,10 +204,13 @@ export function buildProductSavePayload(
   formData: Record<string, any>,
   activeSchema?: { id?: string; kind?: string },
 ): Record<string, any> {
-  const stableId = formData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
-  const selectedCategoryId = formData.categoryId || formData.category || "cat_nintendo";
+  const normalizedFormData = normalizeNintendoAccountPricing(formData);
+  const stableId =
+    normalizedFormData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
+  const selectedCategoryId =
+    normalizedFormData.categoryId || normalizedFormData.category || "cat_nintendo";
 
-  const cleanedData = { ...formData };
+  const cleanedData = { ...normalizedFormData };
 
   // Remove UI state and massive fields
   const ignoreKeys = ["files", "previewData", "blob", "blobs", "file", "dataUrl"];
@@ -249,22 +253,26 @@ export function buildProductSavePayload(
     id: stableId,
     category: selectedCategoryId,
     categoryId: selectedCategoryId,
-    title: formData.titleEn || formData.title,
-    titleEn: formData.titleEn || formData.title,
-    description: formData.descriptionEn || formData.description || "",
-    descriptionEn: formData.descriptionEn || formData.description || "",
-    price: Number(formData.price) || 0,
-    cost: Number(formData.cost) || 0,
-    stock: formData.isInfiniteStock ? 999999 : Number(formData.stock) || 0,
-    displayOrder: Number(formData.displayOrder) || 0,
-    image: formData.coverImage || formData.cartridgeImage || formData.image || "",
-    banner: formData.bannerImages?.[0] || formData.banner || "",
-    nintendoCardImage: formData.nintendoCardImage || "",
-    coverHiResImage: formData.coverHiResImage || "",
+    title: normalizedFormData.titleEn || normalizedFormData.title,
+    titleEn: normalizedFormData.titleEn || normalizedFormData.title,
+    description: normalizedFormData.descriptionEn || normalizedFormData.description || "",
+    descriptionEn: normalizedFormData.descriptionEn || normalizedFormData.description || "",
+    price: Number(normalizedFormData.price) || 0,
+    cost: Number(normalizedFormData.cost) || 0,
+    stock: normalizedFormData.isInfiniteStock ? 999999 : Number(normalizedFormData.stock) || 0,
+    displayOrder: Number(normalizedFormData.displayOrder) || 0,
+    image:
+      normalizedFormData.coverImage ||
+      normalizedFormData.cartridgeImage ||
+      normalizedFormData.image ||
+      "",
+    banner: normalizedFormData.bannerImages?.[0] || normalizedFormData.banner || "",
+    nintendoCardImage: normalizedFormData.nintendoCardImage || "",
+    coverHiResImage: normalizedFormData.coverHiResImage || "",
     // Records the section explicitly, so the storefront renders this product's
     // own details page instead of guessing from the category name.
     schemaId: activeSchema?.id ?? "",
-    kind: formData.kind || activeSchema?.kind || "account",
+    kind: normalizedFormData.kind || activeSchema?.kind || "account",
   };
 }
 
@@ -307,7 +315,11 @@ export function buildBatchGameImport(rawText: string, categoryId: string): Batch
   const sourceTypes = Array.isArray(form.types) ? form.types : [];
   const costs = mapSupplierCosts(sourceTypes);
   const pricing = priceGame(costs, platform, demand.tier);
-  if (pricing.needsReview.length > 0 || pricing.productPrice === undefined || pricing.productCost === undefined) {
+  if (
+    pricing.needsReview.length > 0 ||
+    pricing.productPrice === undefined ||
+    pricing.productCost === undefined
+  ) {
     return { ok: false, reason: `التكاليف تحتاج مراجعة: ${pricing.needsReview.join("؛ ")}` };
   }
 

@@ -86,7 +86,9 @@ describe("projection", () => {
   it("binds every column it declares", () => {
     const statements = productIndexStatements([product({ id: "prd_1" })], 7);
     const insert = statements.find((s) => s.sql.startsWith("INSERT"))!;
-    const columns = insert.sql.slice(insert.sql.indexOf("(") + 1, insert.sql.indexOf(")")).split(",");
+    const columns = insert.sql
+      .slice(insert.sql.indexOf("(") + 1, insert.sql.indexOf(")"))
+      .split(",");
     expect(insert.params).toHaveLength(columns.length);
   });
 });
@@ -112,13 +114,19 @@ describe("reading a page", () => {
   });
 
   it("never returns more than the maximum page size", async () => {
-    await rebuildProductIndex(Array.from({ length: 300 }, () => product()), 1);
+    await rebuildProductIndex(
+      Array.from({ length: 300 }, () => product()),
+      1,
+    );
     const page = await readProductIndexPage({ page: 1, limit: 5000 });
     expect(page.items.length).toBeLessThanOrEqual(100);
   });
 
   it("defaults to fifty rows rather than the catalogue", async () => {
-    await rebuildProductIndex(Array.from({ length: 200 }, () => product()), 1);
+    await rebuildProductIndex(
+      Array.from({ length: 200 }, () => product()),
+      1,
+    );
     const page = await readProductIndexPage({});
     expect(page.items).toHaveLength(DEFAULT_PAGE_SIZE);
   });
@@ -229,7 +237,9 @@ describe("filtering happens in SQL", () => {
   it("filters hidden and unpriced rows in the query, not after it", async () => {
     expect((await readProductIndexPage({ hidden: true })).items.map((i) => i.id)).toEqual(["c"]);
     expect((await readProductIndexPage({ hidden: false })).total).toBe(2);
-    expect((await readProductIndexPage({ onlyUnpriced: true })).items.map((i) => i.id)).toEqual(["b"]);
+    expect((await readProductIndexPage({ onlyUnpriced: true })).items.map((i) => i.id)).toEqual([
+      "b",
+    ]);
   });
 
   it("matches legacy store category ids to canonical indexed ids", async () => {
@@ -255,6 +265,39 @@ describe("filtering happens in SQL", () => {
     ]);
     expect(legacyFilter.total).toBe(2);
     expect(canonicalFilter.total).toBe(2);
+  });
+
+  it("includes pre-migration gift cards by schema or kind", async () => {
+    await rebuildProductIndex(
+      [
+        product({
+          id: "schema-card",
+          categoryId: "legacy-custom-category",
+          schemaId: "gift_card",
+        }),
+        product({
+          id: "kind-card",
+          categoryId: "another-old-category",
+          kind: "digital_code",
+        }),
+        product({
+          id: "field-card",
+          categoryId: "old-topup-category",
+          cardValue: "$20",
+          cardCurrency: "USD",
+        }),
+        product({ id: "game", categoryId: "cat_nintendo", kind: "account" }),
+      ],
+      3,
+    );
+
+    const page = await readProductIndexPage({ categoryId: "cat_gift_cards" });
+    expect(page.items.map((item) => item.id).sort()).toEqual([
+      "field-card",
+      "kind-card",
+      "schema-card",
+    ]);
+    expect(page.total).toBe(3);
   });
 
   it("counts the filtered set, so hasMore describes the rows it returned", async () => {
@@ -288,14 +331,17 @@ describe("cost of a page", () => {
   });
 
   it("uses an index for every sort the table offers", async () => {
-    await rebuildProductIndex(Array.from({ length: 200 }, () => product()), 1);
+    await rebuildProductIndex(
+      Array.from({ length: 200 }, () => product()),
+      1,
+    );
     for (const field of ["updated", "price", "name", "order"] as const) {
       db.reset();
       await readProductIndexPage({ sort: { field, direction: "desc" }, limit: 50 });
       const select = db.log.find((sql) => sql.startsWith("SELECT id"))!;
-      const plan = db.raw
-        .prepare(`EXPLAIN QUERY PLAN ${select.replace(/\?/g, "50")}`)
-        .all() as { detail: string }[];
+      const plan = db.raw.prepare(`EXPLAIN QUERY PLAN ${select.replace(/\?/g, "50")}`).all() as {
+        detail: string;
+      }[];
       const detail = plan.map((row) => row.detail).join(" | ");
       // A temporary B-tree in the plan means SQLite sorted the whole table to
       // answer one page, which is the cost this index set exists to avoid.
@@ -347,7 +393,10 @@ describe("bound parameters stay within D1's limit", () => {
   });
 
   it("keeps a page read itself well inside the limit", async () => {
-    await rebuildProductIndex(Array.from({ length: 200 }, () => product()), 1);
+    await rebuildProductIndex(
+      Array.from({ length: 200 }, () => product()),
+      1,
+    );
     db.reset();
     await readProductIndexPage({
       page: 4,
@@ -400,7 +449,9 @@ describe("a save writes only what changed", () => {
     const current = await readProductIndexFingerprints();
 
     const statements = productIndexStatements(catalogue.slice(0, 100), 2, current);
-    const deletes = statements.filter((s) => s.sql.startsWith("DELETE FROM product_index WHERE id"));
+    const deletes = statements.filter((s) =>
+      s.sql.startsWith("DELETE FROM product_index WHERE id"),
+    );
     expect(deletes.length).toBeGreaterThan(1);
     expect(deletes.reduce((n, s) => n + s.params.length, 0)).toBe(400);
     for (const statement of deletes) {
