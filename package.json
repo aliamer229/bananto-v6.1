@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
-    "build": "vite build",
+    "build": "vite build && node scripts/verify-cloudflare-bundle.mjs",
     "build:dev": "vite build --mode development",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run test && npm run build",
@@ -20,7 +20,8 @@
     "legacy:link:local": "node scripts/link-legacy-cloudflare.mjs --ensure-schema --apply",
     "legacy:link:remote": "node scripts/link-legacy-cloudflare.mjs --remote --ensure-schema --apply",
     "legacy:verify:remote": "node scripts/link-legacy-cloudflare.mjs --remote --verify-only",
-    "start": "node dist/server/index.mjs",
+    "start": "node dist/server/server.js",
+    "verify:cloudflare": "node scripts/verify-cloudflare-bundle.mjs",
     "check:overflow": "node scripts/check-horizontal-overflow.mjs",
     "verify:model": "node scripts/verify-nintendo-model.mjs",
     "repair:products": "node scripts/repair-products.mjs",
