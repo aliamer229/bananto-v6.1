@@ -146,10 +146,44 @@ for (const stage of [
       colorScheme: "light",
     });
     await context.addCookies([
-      { name: "bananto_theme", value: "cream", url: stage.base },
       { name: "bananto_lang", value: "ar", url: stage.base },
       { name: "bananto_lang_manual", value: "1", url: stage.base },
     ]);
+    // Force below-the-fold sections to mount so the full-page evidence covers
+    // every homepage surface. This changes only lazy-loading timing, never CSS.
+    await context.addInitScript(() => {
+      class ImmediateIntersectionObserver {
+        constructor(callback) {
+          this.callback = callback;
+          this.root = null;
+          this.rootMargin = "0px";
+          this.thresholds = [0];
+        }
+
+        observe(target) {
+          globalThis.queueMicrotask(() => {
+            this.callback(
+              [
+                {
+                  target,
+                  isIntersecting: true,
+                  intersectionRatio: 1,
+                },
+              ],
+              this,
+            );
+          });
+        }
+
+        unobserve() {}
+        disconnect() {}
+        takeRecords() {
+          return [];
+        }
+      }
+
+      globalThis.IntersectionObserver = ImmediateIntersectionObserver;
+    });
     const page = await context.newPage();
 
     await page.route("**/api/data?*", async (route) => {
@@ -179,11 +213,11 @@ for (const stage of [
       timeout: 90_000,
     });
     // The first viewport also pays Vite's cold compilation cost. Do not accept
-    // a shell-only screenshot as visual evidence: wait for the first catalogue
-    // heading that proves hydration and the mocked catalogue both completed.
+    // a shell-only screenshot: the final homepage heading proves hydration,
+    // mocked catalogue loading, and mounting of every lazy section completed.
     let contentReady = true;
     try {
-      await page.getByText("ألعاب نينتندو سويتش").first().waitFor({
+      await page.getByText("أحدث أخبار نينتندو").first().waitFor({
         state: "visible",
         timeout: 30_000,
       });
@@ -246,6 +280,9 @@ const after = report.filter((row) => row.stage === "after");
 const acceptance = {
   contentReady: after.every((row) => row.contentReady),
   noOverflow: after.every((row) => !row.overflow),
+  defaultTheme: after.every((row) => row.statusTheme === "cream"),
+  rtl: after.every((row) => row.direction === "rtl"),
+  cairoTypography: after.every((row) => row.bodyFont.includes("Cairo")),
   creamTokens: after.every(
     (row) =>
       row.tokens.page === "#f4f1e8" &&
