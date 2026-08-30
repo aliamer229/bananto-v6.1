@@ -115,6 +115,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   { key: "status", type: "string", target: "status", description: "الحالة (نشط، قادم، غير متوفر)" },
   { key: "developer", type: "string", target: "developer", description: "المطور" },
   { key: "publisher", type: "string", target: "publisher", description: "الناشر" },
+  { key: "franchise", type: "string", target: "seriesName", description: "اسم السلسلة (صيغة قديمة)" },
   { key: "players_count", type: "string", target: "numberOfPlayers", description: "عدد اللاعبين" },
   { key: "players", type: "string", target: "numberOfPlayers", description: "عدد اللاعبين" },
   { key: "player_count", type: "string", target: "numberOfPlayers", description: "عدد اللاعبين" },
@@ -514,6 +515,13 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
     description: "أنماط اللعب (تلفاز، محمول، طاولة)",
   },
   {
+    key: "supported_play_mode",
+    type: "array",
+    target: "nintendoPlayModes",
+    repeatable: true,
+    description: "أنماط اللعب (صيغة قديمة متكررة)",
+  },
+  {
     key: "nintendo_notes",
     type: "multiline",
     target: "nintendoNotes",
@@ -843,6 +851,12 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
   // DLC
   {
     key: "dlc",
+    type: "string",
+    target: "dlcSummary",
+    description: "ملخص الإضافات (صيغة قديمة للحقل المفرد)",
+  },
+  {
+    key: "dlc",
     type: "object",
     target: "dlc",
     repeatable: true,
@@ -850,6 +864,7 @@ export const GAME_IMPORT_SCHEMA: FieldDef[] = [
       title: { key: "title", type: "string", target: "name" },
       description: { key: "description", type: "multiline", target: "description" },
       image: { key: "image", type: "url", target: "coverUrl" },
+      release_date: { key: "release_date", type: "string", target: "releaseDate" },
     },
     description: "الإضافات",
   },

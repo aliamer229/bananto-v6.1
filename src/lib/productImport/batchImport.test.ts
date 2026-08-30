@@ -149,15 +149,14 @@ describe("buildBatchSchemaImport", () => {
   });
 });
 
-describe("the Nintendo path is unchanged", () => {
-  it("still builds its own payload from its own template", () => {
+describe("the Nintendo path validates commercial data", () => {
+  it("refuses a batch template that has no separate supplier costs", () => {
     const built = buildBatchGameImport(
       "schema_version=1\nname=Some Game\nplatform=switch1\nprice=25000\n",
       "cat_nintendo",
     );
-    expect(built.ok).toBe(true);
-    if (!built.ok) return;
-    expect(built.payload.isHidden).toBe(true);
-    expect(built.payload.batchImport).toBe(true);
+    expect(built.ok).toBe(false);
+    if (built.ok) return;
+    expect(built.reason).toMatch(/فئة طلب|التكاليف/);
   });
 });

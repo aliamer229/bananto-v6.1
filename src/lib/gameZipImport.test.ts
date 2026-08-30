@@ -20,6 +20,7 @@ import { sanitizeSlug, uniqueSlug } from "../routes/api/admin/products";
 const gameTemplate = (name: string, extra = "") => `
 schema_version=1
 name=${name}
+slug=super-smash-bros-ultimate
 platform=switch1
 price=25000
 cost=18000
@@ -243,6 +244,15 @@ describe("ZIP batch import", () => {
       if (!prepared.ok) continue;
       expect(prepared.payload["isHidden"]).toBe(true);
       expect(prepared.payload["batchImport"]).toBe(true);
+      expect(prepared.payload["options"].map((option: any) => option.name)).toEqual([
+        "حساب أوفلاين",
+        "حساب أونلاين",
+      ]);
+      expect(prepared.payload["types"].map((type: any) => type.name)).toEqual([
+        "حساب أوفلاين — عادي",
+        "حساب أونلاين — عادي",
+      ]);
+      expect(prepared.payload["types"].every((type: any) => type.price > type.cost)).toBe(true);
     }
   });
 

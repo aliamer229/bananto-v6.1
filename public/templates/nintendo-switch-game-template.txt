@@ -102,6 +102,9 @@ developer=
 # الناشر
 publisher=
 
+# اسم السلسلة (صيغة قديمة)
+franchise=
+
 # عدد اللاعبين
 players_count=
 
@@ -435,6 +438,14 @@ handheld_mode=
 
 # أنماط اللعب (تلفاز، محمول، طاولة)
 nintendo_play_modes=
+
+# أنماط اللعب (صيغة قديمة متكررة)
+supported_play_mode.1=
+supported_play_mode.2=
+supported_play_mode.3=
+supported_play_mode.4=
+supported_play_mode.5=
+supported_play_mode.6=
 
 # ملاحظات نينتندو
 nintendo_notes<<EOF
@@ -1502,37 +1513,46 @@ multiplayer_split_screen=
 # لاسلكي محلي
 multiplayer_local_wireless=
 
+# ملخص الإضافات (صيغة قديمة للحقل المفرد)
+dlc=
+
 # الإضافات
 dlc.1.title=
 dlc.1.description<<EOF
 
 EOF
 dlc.1.image=
+dlc.1.release_date=
 dlc.2.title=
 dlc.2.description<<EOF
 
 EOF
 dlc.2.image=
+dlc.2.release_date=
 dlc.3.title=
 dlc.3.description<<EOF
 
 EOF
 dlc.3.image=
+dlc.3.release_date=
 dlc.4.title=
 dlc.4.description<<EOF
 
 EOF
 dlc.4.image=
+dlc.4.release_date=
 dlc.5.title=
 dlc.5.description<<EOF
 
 EOF
 dlc.5.image=
+dlc.5.release_date=
 dlc.6.title=
 dlc.6.description<<EOF
 
 EOF
 dlc.6.image=
+dlc.6.release_date=
 
 # الأدلة
 guide.1.title=
