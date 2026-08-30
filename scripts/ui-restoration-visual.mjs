@@ -178,7 +178,19 @@ for (const stage of [
       waitUntil: "domcontentloaded",
       timeout: 90_000,
     });
-    await page.waitForTimeout(1800);
+    // The first viewport also pays Vite's cold compilation cost. Do not accept
+    // a shell-only screenshot as visual evidence: wait for the first catalogue
+    // heading that proves hydration and the mocked catalogue both completed.
+    let contentReady = true;
+    try {
+      await page.getByText("ألعاب نينتندو سويتش").first().waitFor({
+        state: "visible",
+        timeout: 30_000,
+      });
+    } catch {
+      contentReady = false;
+    }
+    await page.waitForTimeout(600);
     await page.evaluate(async () => {
       for (let y = 0; y < document.body.scrollHeight; y += 450) {
         window.scrollTo(0, y);
@@ -218,6 +230,7 @@ for (const stage of [
       url: page.url(),
       httpStatus: response?.status() ?? null,
       screenshot,
+      contentReady,
       ...metrics,
     });
     await context.close();
@@ -228,6 +241,7 @@ await browser.close();
 
 const after = report.filter((row) => row.stage === "after");
 const acceptance = {
+  contentReady: after.every((row) => row.contentReady),
   noOverflow: after.every((row) => !row.overflow),
   creamTokens: after.every(
     (row) =>
