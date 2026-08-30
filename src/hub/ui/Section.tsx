@@ -51,7 +51,7 @@ export function Section({
   return (
     <section id={id} className={cn("scroll-mt-28", SPACING[weight], className)}>
       <header
-        data-reveal="hidden"
+        data-reveal="shown"
         className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between"
       >
         <div className="min-w-0">

@@ -644,12 +644,8 @@ html {
   transition-delay: var(--reveal-delay, 0ms);
 }
 
-html[data-reveal-ready="true"] [data-reveal="hidden"] {
-  opacity: 0;
-  transform: translateY(16px);
-}
-
-html[data-reveal-ready="true"] [data-reveal="shown"] {
+[data-reveal="shown"],
+[data-reveal="hidden"] {
   opacity: 1;
   transform: none;
 }

@@ -9,7 +9,13 @@ import { cdnImage, buildSrcSet } from "@/lib/img";
 /* -------------------------------------------------------------------------- */
 
 /**
- * Opts a subtree into the shared scroll-reveal observer.
+ * Content wrapper used by the game hub.
+ *
+ * Game-detail content must never start hidden. Safari on iPad can miss
+ * IntersectionObserver callbacks after an anchor jump or restored scroll
+ * position, leaving the element transparent while it still consumes layout
+ * height. Rendering as shown makes the information and its geometry
+ * deterministic on every browser.
  *
  * Carries `min-w-0` because it is almost always a grid or flex item: without it
  * a single `truncate` (i.e. `white-space: nowrap`) anywhere in the subtree
@@ -27,7 +33,7 @@ export function Reveal({
 }) {
   return (
     <div
-      data-reveal="hidden"
+      data-reveal="shown"
       style={delay ? ({ "--reveal-delay": `${delay}ms` } as React.CSSProperties) : undefined}
       className={cn("min-w-0", className)}
     >
