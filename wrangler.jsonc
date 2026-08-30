@@ -1,0 +1,102 @@
+{
+  // Cloudflare Worker configuration for the Nintendo store.
+  // Deploy with:  bunx wrangler deploy
+  //
+  // Fill in `database_id` (D1) and `bucket_name` (R2) with the resources from
+  // your Cloudflare dashboard, then push secrets with:
+  //   bunx wrangler secret put SESSION_SECRET
+  //   bunx wrangler secret put ACCOUNT_ENC_KEY
+  //   bunx wrangler secret put IP_SALT
+  //   bunx wrangler secret put RATE_LIMIT_SALT
+  //   bunx wrangler secret put TELEGRAM_BOT_TOKEN
+  //   bunx wrangler secret put TELEGRAM_WEBHOOK_SECRET
+  //   bunx wrangler secret put DIAGNOSTIC_SECRET
+  //   bunx wrangler secret put CRON_SECRET
+  //   bunx wrangler secret put WASENDER_API_KEY
+  //   bunx wrangler secret put OTP_HASH_SECRET
+  //   bunx wrangler secret put LOVABLE_API_KEY
+  //   bunx wrangler secret put GOOGLE_CLIENT_ID
+  //   bunx wrangler secret put GOOGLE_CLIENT_SECRET
+  //   bunx wrangler secret put APPLE_CLIENT_ID
+  //   bunx wrangler secret put APPLE_TEAM_ID
+  //   bunx wrangler secret put APPLE_KEY_ID
+  //   bunx wrangler secret put APPLE_PRIVATE_KEY
+  // Owner identities are secrets too. Never commit their real values.
+  //   bunx wrangler secret put OWNER_EMAILS
+  //   bunx wrangler secret put OWNER_PHONES
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pixel-cart-cloud",
+  "main": "dist/server/server.js",
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "dist/client",
+    "binding": "ASSETS",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "d1_databases": [
+    {
+      "binding": "bananto",
+      "database_name": "bananto",
+      "database_id": "745b155e-b5f5-4e61-89e6-767279d837b2",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CHAT_REALTIME_DO",
+        "class_name": "ChatRealtimeDO",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ChatRealtimeDO"],
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BANANTO_BUCKET",
+      "bucket_name": "bananto",
+    },
+    {
+      "binding": "BANANTO_PRIVATE_BUCKET",
+      "bucket_name": "bananto-private",
+    },
+  ],
+  // Custom domains: Cloudflare manages the DNS records automatically and routes
+  // 100% of the traffic for these hostnames to this Worker (no Lovable hosting).
+  "routes": [
+    { "pattern": "banan.to", "custom_domain": true },
+    { "pattern": "www.banan.to", "custom_domain": true },
+  ],
+  "vars": {
+    "APP_ENV": "production",
+  },
+
+  "triggers": {
+    // Server-side delivery deadlines are minute-granular. The handler is
+    // idempotent because Cloudflare Cron has at-least-once delivery semantics.
+    "crons": ["* * * * *", "*/30 * * * *"],
+  },
+
+  "queues": {
+    "producers": [
+      {
+        "binding": "NOTIFICATIONS_QUEUE",
+        "queue": "banana-notifications",
+      },
+    ],
+    "consumers": [
+      {
+        "queue": "banana-notifications",
+        "max_batch_size": 10,
+        "max_batch_timeout": 30,
+      },
+    ],
+  },
+}
