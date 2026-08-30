@@ -29,23 +29,6 @@ const services = [
   },
 
   {
-    /*
-      No artwork of its own yet, so this one renders as a coloured card with its
-      badge and title — the image slot degrades to nothing rather than to a
-      broken frame.
-    */
-    id: "used_market",
-    badge: "مستعمل",
-    title: "سوق المستعمل",
-    subtitle: "قطع مستعملة ومسترجعة مفحوصة...",
-    bgColor: "bg-[#0F766E]",
-    borderColor: "border-[#0B534D]",
-    badgeColor: "#0B534D",
-    image: "",
-    isFullImage: false,
-  },
-
-  {
     id: "problems",
     badge: "حلول المشاكل",
     title: "حلول المشاكل",
@@ -204,7 +187,6 @@ export function StoreServices() {
           else if (service.id === "registration") linkTo = "/account_guides";
           else if (service.id === "add_game") linkTo = "/add_game";
           else if (service.id === "disc_trade") linkTo = "/disc_trade";
-          else if (service.id === "used_market") linkTo = "/used";
           else if (service.id === "faq") linkTo = "/faq";
           else if (service.id === "policy") linkTo = "/policy";
           else if (service.id === "support") linkTo = "/support";
