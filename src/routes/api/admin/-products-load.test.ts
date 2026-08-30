@@ -197,11 +197,7 @@ describe("GET /api/admin/products — the listing", () => {
     insert.run("store:products#001", json.slice(0, half), "now");
     insert.run("store:products#002", json.slice(half), "now");
     // An edit saved as an overlay row, and a deletion.
-    insert.run(
-      "store:product:prd_001",
-      JSON.stringify({ ...product(1), title: "Renamed" }),
-      "now",
-    );
+    insert.run("store:product:prd_001", JSON.stringify({ ...product(1), title: "Renamed" }), "now");
     insert.run("store:product:prd_002", JSON.stringify({ id: "prd_002", _deleted: true }), "now");
 
     const body = await (await get("?limit=50&sort=name&dir=asc")).json();
@@ -245,6 +241,25 @@ describe("GET /api/admin/products — the listing", () => {
       expect(db.log).toHaveLength(3);
       expect(db.log.some((sql) => /store_kv/.test(sql))).toBe(false);
     }
+  });
+
+  it("repairs a known gift-card category when an older projection omitted it", async () => {
+    await rebuildProductIndex([product(1)], 1);
+    const giftCard = product(2, {
+      categoryId: "legacy_custom_cards",
+      category: "legacy_custom_cards",
+      schemaId: "gift_card",
+      kind: "digital_code",
+      title: "Nintendo eShop $20",
+    });
+    db.raw
+      .prepare(`INSERT INTO store_kv (key, value, updated_at) VALUES (?, ?, ?)`)
+      .run("store:products", JSON.stringify([product(1), giftCard]), "now");
+
+    const body = await (await get("?category=cat_gift_cards")).json();
+    expect(body.bootstrapped).toBe(true);
+    expect(body.total).toBe(1);
+    expect(body.items.map((entry: { id: string }) => entry.id)).toEqual(["prd_002"]);
   });
 
   it("carries stage timings a slow request can be diagnosed from", async () => {
@@ -308,7 +323,10 @@ describe("acceptance: the requests the admin page actually makes", () => {
     ["search", "?search=Product%20007&page=1&limit=50"],
     ["hidden filter", "?hidden=1&page=1&limit=50"],
     ["unpriced filter", "?unpriced=1&page=1&limit=50"],
-    ["every filter at once", "?search=product&hidden=0&unpriced=0&performance=1&sort=price&dir=asc&page=1&limit=50"],
+    [
+      "every filter at once",
+      "?search=product&hidden=0&unpriced=0&performance=1&sort=price&dir=asc&page=1&limit=50",
+    ],
   ];
 
   it.each(cases)("%s answers 200 with a valid page", async (_label, query) => {
