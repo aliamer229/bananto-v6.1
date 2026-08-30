@@ -32,10 +32,13 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
       - name: Tests
+        if: always()
         run: bun run test
       - name: Lint
+        if: always()
         run: bun run lint
       - name: Production build
+        if: always()
         run: bun run build
 
   visual:
