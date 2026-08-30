@@ -13,6 +13,37 @@ import type { ProductSchema } from "./productImport/types";
 export type CategoryType =
   "game" | "hardware" | "amiibo" | "accessory" | "gift_card" | "used" | "bundle";
 
+/**
+ * Every category id that has existed in the storefront.
+ *
+ * The public catalogue deliberately accepts these aliases, so the admin D1
+ * projection must accept the same set when filtering. Without this shared
+ * list, selecting the store category `gift-cards` returned zero rows while the
+ * products themselves were indexed under `cat_gift_cards`.
+ */
+export const SECTION_CATEGORY_ALIASES: Record<CategoryType, readonly string[]> = {
+  game: ["nintendo-switch-games", "cat_nintendo", "nintendo_games", "cat_1", "games", "game"],
+  hardware: ["hardware", "cat_hardware", "consoles", "devices"],
+  amiibo: ["amiibo", "cat_amiibo", "figures", "collectibles"],
+  accessory: ["accessories", "cat_accessories", "accessory"],
+  gift_card: ["gift-cards", "gift_cards", "cat_gift_cards", "gift_card", "cards"],
+  used: ["used", "cat_used", "preowned"],
+  bundle: ["bundles", "cat_bundles", "bundle"],
+};
+
+/**
+ * Returns the complete alias family for a known section id. Unknown custom
+ * categories keep exact-match behaviour instead of being guessed as games.
+ */
+export function categoryFilterAliases(categoryId?: string): string[] {
+  const id = String(categoryId || "").trim().toLowerCase();
+  if (!id) return [];
+  for (const aliases of Object.values(SECTION_CATEGORY_ALIASES)) {
+    if (aliases.includes(id)) return [...aliases];
+  }
+  return [id];
+}
+
 export function resolveCategoryType(
   categoryId?: string,
   categoryTitle?: string,
@@ -22,45 +53,10 @@ export function resolveCategoryType(
   const cid = String(categoryId || "").trim().toLowerCase();
 
   // 1. Exact canonical category IDs / Slugs from database (Source of Truth)
-  if (
-    cid === "nintendo-switch-games" ||
-    cid === "cat_nintendo" ||
-    cid === "nintendo_games" ||
-    cid === "cat_1" ||
-    cid === "games" ||
-    cid === "game"
-  ) {
-    return "game";
-  }
-
-  if (cid === "hardware" || cid === "cat_hardware" || cid === "consoles" || cid === "devices") {
-    return "hardware";
-  }
-
-  if (cid === "accessories" || cid === "cat_accessories" || cid === "accessory") {
-    return "accessory";
-  }
-
-  if (cid === "amiibo" || cid === "cat_amiibo" || cid === "figures" || cid === "collectibles") {
-    return "amiibo";
-  }
-
-  if (
-    cid === "gift-cards" ||
-    cid === "gift_cards" ||
-    cid === "cat_gift_cards" ||
-    cid === "gift_card" ||
-    cid === "cards"
-  ) {
-    return "gift_card";
-  }
-
-  if (cid === "used" || cid === "cat_used" || cid === "preowned") {
-    return "used";
-  }
-
-  if (cid === "bundles" || cid === "cat_bundles" || cid === "bundle") {
-    return "bundle";
+  for (const [section, aliases] of Object.entries(SECTION_CATEGORY_ALIASES) as Array<
+    [CategoryType, readonly string[]]
+  >) {
+    if (aliases.includes(cid)) return section;
   }
 
   // 2. Category Title check (if custom category title is provided)
