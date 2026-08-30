@@ -69,6 +69,33 @@ describe("mapSupplierCosts", () => {
     expect(costs.offlineBase?.source).toContain("cost field");
   });
 
+  it("keeps a distinct corrected online cost instead of treating its selling price as cost", () => {
+    const costs = mapSupplierCosts([
+      { name: "Regular / Offline", optionId: "offline_account", price: 1_250, cost: 1_250 },
+      {
+        name: "Standard / Online",
+        optionId: "online_account",
+        price: 45_000,
+        cost: 37_250,
+        description: "Online supplier cost is stored separately",
+      },
+    ]);
+    expect(costs.onlineBase?.amount).toBe(37_250);
+    expect(costs.onlineBase?.source).toContain("cost field");
+  });
+
+  it("uses row order for base/extras when supplier edition names are misleading", () => {
+    const costs = mapSupplierCosts([
+      { name: "Regular", optionId: "offline_account", price: 1_750, cost: 1_750 },
+      { name: "Deluxe", optionId: "offline_account", price: 6_000, cost: 6_000 },
+      { name: "Complete", optionId: "online_account", price: 25_500, cost: 1_750 },
+      { name: "Ultimate", optionId: "online_account", price: 37_250, cost: 6_000 },
+    ]);
+    expect(costs.onlineBase?.amount).toBe(25_500);
+    expect(costs.onlineExtras?.amount).toBe(37_250);
+    expect(costs.unmapped).toEqual([]);
+  });
+
   it("leaves a tier undefined rather than borrowing from another", () => {
     const costs = mapSupplierCosts(TWO_ROW);
     expect(costs.offlineBase?.amount).toBe(1500);
@@ -117,6 +144,7 @@ describe("priceGame", () => {
     expect(online.price).toBeGreaterThan(25_000);
     // An offline band would have priced this below cost, which is the bug.
     expect(online.price).toBeGreaterThan(15_000);
+    expect(online.margin).toBeGreaterThanOrEqual(10_000);
   });
 
   it("prices extras above the base of the same account", () => {
@@ -177,10 +205,10 @@ describe("roundToStep", () => {
 
 describe("customer labels", () => {
   it("uses the store's Arabic wording, never the supplier's", () => {
-    expect(customerOptionName("offline")).toBe("مشترك");
-    expect(customerOptionName("online")).toBe("خاص بك");
-    expect(customerTypeName("offline", "base")).toBe("مشترك — اللعبة الأساسية");
-    expect(customerTypeName("online", "extras")).toBe("خاص بك — مع الإضافات");
+    expect(customerOptionName("offline")).toBe("حساب أوفلاين");
+    expect(customerOptionName("online")).toBe("حساب أونلاين");
+    expect(customerTypeName("offline", "base")).toBe("حساب أوفلاين — عادي");
+    expect(customerTypeName("online", "extras")).toBe("حساب أونلاين — مع الإضافات");
   });
 
   it("carries no supplier or Chinese wording", () => {

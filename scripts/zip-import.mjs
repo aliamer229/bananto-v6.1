@@ -28,13 +28,13 @@ import { createR2 } from "./lib/r2-store.mjs";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-const TEMPLATE_DIR = "import-sources/nintendo-2026-08";
 const WORK_DIR = "zip-import";
 
 const APPLY = process.argv.includes("--apply");
 const flag = (name, fallback) =>
   (process.argv.find((a) => a.startsWith(`--${name}=`)) ?? `--${name}=${fallback}`).split("=")[1];
 const num = (name, fallback) => Number(flag(name, fallback));
+const TEMPLATE_DIR = flag("dir", "import-sources/nintendo-2026-08");
 
 const BATCH_SIZE = num("batch", 5);
 const OFFSET = num("offset", 0);
@@ -565,6 +565,23 @@ for (let start = 0; start < slice.length; start += BATCH_SIZE) {
         if (filled(stored[field])) continue;
         patch[field] = value;
       }
+
+      /*
+        A hidden product is still under editorial review, so its commercial
+        shape may be repaired from the validated import. This is deliberately
+        scoped to the five pricing fields and to hidden products only: no
+        published price is changed and no media/detail field is overwritten.
+      */
+      if (stored.isHidden === true) {
+        const rebuilt = app.buildBatchGameImport(cleaned, category.id);
+        if (rebuilt.ok) {
+          for (const field of ["options", "types", "variants", "price", "cost"]) {
+            patch[field] = rebuilt.payload[field];
+          }
+        } else {
+          say(`  - commercial repair skipped: ${rebuilt.reason}`);
+        }
+      }
       const result = app.mergeProductUpdate(stored, patch);
       if (result.rejectedMedia.length) {
         totals.blocked += result.rejectedMedia.length;
@@ -733,3 +750,4 @@ writeFileSync(path.join(WORK_DIR, "run.json"), JSON.stringify({ totals, rows }, 
   from a few hundred image downloads to time out on their own.
 */
 process.exit(0);
+

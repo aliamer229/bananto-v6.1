@@ -17,6 +17,16 @@ import { parseProductImport } from "./productImport/parser";
 import { buildQualityReport, type QualityReport } from "./productImport/quality";
 import { applySchemaImportToForm } from "./productImport/toProductForm";
 import type { ProductSchema } from "./productImport/types";
+import { demandTierFor } from "./nintendoDemandTiers";
+import {
+  customerOptionName,
+  customerTypeName,
+  mapSupplierCosts,
+  priceGame,
+  type AccountKind,
+  type ContentKind,
+  type Platform,
+} from "./nintendoPricing";
 
 /** The state a brand new product form starts with. */
 export function createBlankProductForm(defaultCategoryId: string): Record<string, any> {
@@ -281,6 +291,72 @@ export function buildBatchGameImport(rawText: string, categoryId: string): Batch
   if (!form["titleEn"] && !form["title"]) {
     return { ok: false, reason: "الملف لا يحتوي اسم اللعبة (name=)" };
   }
+
+  const slug = String(form.slug ?? "").trim();
+  const demand = demandTierFor(slug);
+  if (!slug || demand.defaulted) {
+    return { ok: false, reason: `لا توجد فئة طلب موثقة للعبة: ${slug || form.title}` };
+  }
+
+  const platform: Platform | null =
+    form.platform === "switch1" ? "switch1" : form.platform === "switch2" ? "switch2" : null;
+  if (!platform) {
+    return { ok: false, reason: `منصة غير صالحة للتسعير: ${String(form.platform ?? "")}` };
+  }
+
+  const sourceTypes = Array.isArray(form.types) ? form.types : [];
+  const costs = mapSupplierCosts(sourceTypes);
+  const pricing = priceGame(costs, platform, demand.tier);
+  if (pricing.needsReview.length > 0 || pricing.productPrice === undefined || pricing.productCost === undefined) {
+    return { ok: false, reason: `التكاليف تحتاج مراجعة: ${pricing.needsReview.join("؛ ")}` };
+  }
+
+  const sourceTier = (account: AccountKind, content: ContentKind) => {
+    const rows = sourceTypes.filter((row: any) => row?.optionId === `${account}_account`);
+    return rows[content === "base" ? 0 : 1];
+  };
+
+  const options = (["offline", "online"] as const).map((account) => {
+    const current = Array.isArray(form.options)
+      ? form.options.find((option: any) => option?.id === `${account}_account`)
+      : undefined;
+    return {
+      ...current,
+      id: `${account}_account`,
+      name: customerOptionName(account),
+      description:
+        account === "offline"
+          ? "حساب مخصص للعب دون اتصال بعد إكمال خطوات التفعيل."
+          : "حساب يدعم تشغيل اللعبة مع الاتصال والميزات المتاحة أونلاين.",
+      stock: Number(current?.stock) || 9999,
+      isInfiniteStock: current?.isInfiniteStock !== false,
+    };
+  });
+
+  const types = pricing.tiers.map((tier) => {
+    const current = sourceTier(tier.account, tier.content);
+    return {
+      ...current,
+      id: `${tier.account}_${tier.content}`,
+      name: customerTypeName(tier.account, tier.content),
+      optionId: `${tier.account}_account`,
+      price: tier.price,
+      cost: tier.cost,
+      description:
+        tier.content === "extras"
+          ? "تشمل اللعبة الأساسية والمحتوى الإضافي المثبت في هذا الإصدار."
+          : "تشمل الإصدار العادي من اللعبة.",
+      internalNote: tier.reason,
+      stock: Number(current?.stock) || 9999,
+      isInfiniteStock: current?.isInfiniteStock !== false,
+    };
+  });
+
+  form.options = options;
+  form.types = types;
+  form.variants = types;
+  form.price = pricing.productPrice;
+  form.cost = pricing.productCost;
 
   return {
     ok: true,

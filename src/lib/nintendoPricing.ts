@@ -52,6 +52,7 @@ export interface TemplateType {
   optionId?: string;
   price?: number | null;
   cost?: number | null;
+  description?: string;
 }
 
 /**
@@ -85,6 +86,19 @@ const num = (v: unknown): number | null => {
  */
 export function mapSupplierCosts(types: readonly TemplateType[]): SupplierCosts {
   const out: SupplierCosts = { unmapped: [] };
+  const offlineAmounts = new Set<number>();
+  const rowsByAccount = {
+    offline: types.filter((type) => type.optionId === "offline_account"),
+    online: types.filter((type) => type.optionId === "online_account"),
+  };
+
+  for (const type of types) {
+    if (type.optionId !== "offline_account") continue;
+    const cost = num(type.cost);
+    const price = num(type.price);
+    if (cost !== null) offlineAmounts.add(cost);
+    if (price !== null) offlineAmounts.add(price);
+  }
 
   for (const type of types) {
     const account: AccountKind | null =
@@ -93,14 +107,36 @@ export function mapSupplierCosts(types: readonly TemplateType[]): SupplierCosts 
       out.unmapped.push(`${type.name ?? type.id ?? "?"} — no recognisable option`);
       continue;
     }
-    const content: ContentKind = isExtrasRow(type.name) ? "extras" : "base";
+    const accountRows = rowsByAccount[account];
+    const rowIndex = accountRows.indexOf(type);
+    /*
+      Supplier names are not edition semantics. In several sports templates
+      the first online row is called "Complete" while it is the base online
+      counterpart to the first offline row; a lone Wolfenstein row is called
+      "Deluxe" even though no second tier exists. The archive's stable contract
+      is row order per account: first = base, second = extras. Name matching is
+      only a fallback for a malformed row that was not present in that group.
+    */
+    const content: ContentKind =
+      rowIndex >= 0 ? (rowIndex === 0 ? "base" : "extras") : isExtrasRow(type.name) ? "extras" : "base";
 
     /*
-      Offline rows hold the same supplier number in both fields, so either will
-      do. Online rows hold the online figure in `price`; their `cost` is the
-      offline number copied across and is not read.
+      Most legacy rows copied the corresponding offline cost into online
+      `cost`, while putting the real online acquisition figure in `price`.
+      Newer corrected rows keep a distinct online acquisition figure in
+      `cost`. A distinct positive value is therefore authoritative; a value
+      duplicated on the offline side is the legacy copy and `price` is used.
     */
-    const amount = account === "offline" ? (num(type.cost) ?? num(type.price)) : num(type.price);
+    const parsedCost = num(type.cost);
+    const parsedPrice = num(type.price);
+    const useOnlineCost =
+      account === "online" && parsedCost !== null && !offlineAmounts.has(parsedCost);
+    const amount =
+      account === "offline"
+        ? (parsedCost ?? parsedPrice)
+        : useOnlineCost
+          ? parsedCost
+          : parsedPrice;
     if (amount === null) {
       out.unmapped.push(`${type.name ?? type.id ?? "?"} — no usable amount`);
       continue;
@@ -113,7 +149,7 @@ export function mapSupplierCosts(types: readonly TemplateType[]): SupplierCosts 
     }
     out[key] = {
       amount,
-      source: `${type.name ?? type.id ?? "?"} (${account === "offline" ? "cost" : "price"} field)`,
+      source: `${type.name ?? type.id ?? "?"} (${account === "offline" || useOnlineCost ? "cost" : "price"} field)`,
     };
   }
   return out;
@@ -258,12 +294,18 @@ export function priceGame(
     }
   }
 
+  if (Boolean(costs.offlineExtras) !== Boolean(costs.onlineExtras)) {
+    needsReview.push("extras — one account has an extra-content cost while the other does not");
+  }
+
   for (const [content, entry] of [
     ["base", costs.onlineBase],
     ["extras", costs.onlineExtras],
   ] as const) {
     if (!entry) continue;
-    const price = roundToStep(entry.amount * ONLINE_UPLIFT[tier]);
+    const percentagePrice = roundToStep(entry.amount * ONLINE_UPLIFT[tier]);
+    const minimumMarginPrice = roundToStep(entry.amount + 10_000);
+    const price = Math.max(percentagePrice, minimumMarginPrice);
     tiers.push({
       account: "online",
       content,
@@ -287,9 +329,9 @@ export function priceGame(
 
 /** Arabic labels. Supplier wording and Chinese text never reach a customer. */
 export const CUSTOMER_LABELS = {
-  offline: "مشترك",
-  online: "خاص بك",
-  base: "اللعبة الأساسية",
+  offline: "حساب أوفلاين",
+  online: "حساب أونلاين",
+  base: "عادي",
   extras: "مع الإضافات",
 } as const;
 
