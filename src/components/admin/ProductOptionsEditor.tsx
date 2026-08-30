@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Layers, Link as LinkIcon, Sparkles, Check, Info, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { normalizeNintendoAccountPricing } from "@/lib/nintendoPricing";
 import {
   resolveOptionStandardDescription,
   resolveTypeStandardDescription,
@@ -49,6 +50,24 @@ export function ProductOptionsEditor({
   baseCost = 0,
 }: ProductOptionsEditorProps) {
   const [activeTab, setActiveTab] = useState<"structure" | "preview">("structure");
+
+  /*
+   * Old catalogues called the same two account modes “shared/private”. Convert
+   * those labels and links as soon as the editor opens, retaining every price,
+   * cost and stock figure. The equality checks make this a one-shot migration
+   * for legacy records and a no-op for already canonical products.
+   */
+  React.useEffect(() => {
+    const normalized = normalizeNintendoAccountPricing({ options, types });
+    const normalizedOptions = normalized.options || [];
+    const normalizedTypes = normalized.types || [];
+    if (JSON.stringify(normalizedOptions) !== JSON.stringify(options)) {
+      onOptionsChange(normalizedOptions);
+    }
+    if (JSON.stringify(normalizedTypes) !== JSON.stringify(types)) {
+      onTypesChange(normalizedTypes);
+    }
+  }, [options, types, onOptionsChange, onTypesChange]);
 
   // Options handlers
   const addOption = (
