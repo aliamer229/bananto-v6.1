@@ -205,8 +205,10 @@ export function buildProductSavePayload(
   activeSchema?: { id?: string; kind?: string },
 ): Record<string, any> {
   const normalizedFormData = normalizeNintendoAccountPricing(formData);
-  const stableId = normalizedFormData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
-  const selectedCategoryId = normalizedFormData.categoryId || normalizedFormData.category || "cat_nintendo";
+  const stableId =
+    normalizedFormData.id || `prd_${safeRandomUUID().replace(/-/g, "").slice(0, 16)}`;
+  const selectedCategoryId =
+    normalizedFormData.categoryId || normalizedFormData.category || "cat_nintendo";
 
   const cleanedData = { ...normalizedFormData };
 
@@ -259,7 +261,11 @@ export function buildProductSavePayload(
     cost: Number(normalizedFormData.cost) || 0,
     stock: normalizedFormData.isInfiniteStock ? 999999 : Number(normalizedFormData.stock) || 0,
     displayOrder: Number(normalizedFormData.displayOrder) || 0,
-    image: normalizedFormData.coverImage || normalizedFormData.cartridgeImage || normalizedFormData.image || "",
+    image:
+      normalizedFormData.coverImage ||
+      normalizedFormData.cartridgeImage ||
+      normalizedFormData.image ||
+      "",
     banner: normalizedFormData.bannerImages?.[0] || normalizedFormData.banner || "",
     nintendoCardImage: normalizedFormData.nintendoCardImage || "",
     coverHiResImage: normalizedFormData.coverHiResImage || "",
@@ -309,7 +315,11 @@ export function buildBatchGameImport(rawText: string, categoryId: string): Batch
   const sourceTypes = Array.isArray(form.types) ? form.types : [];
   const costs = mapSupplierCosts(sourceTypes);
   const pricing = priceGame(costs, platform, demand.tier);
-  if (pricing.needsReview.length > 0 || pricing.productPrice === undefined || pricing.productCost === undefined) {
+  if (
+    pricing.needsReview.length > 0 ||
+    pricing.productPrice === undefined ||
+    pricing.productCost === undefined
+  ) {
     return { ok: false, reason: `التكاليف تحتاج مراجعة: ${pricing.needsReview.join("؛ ")}` };
   }
 
