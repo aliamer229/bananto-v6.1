@@ -29,7 +29,7 @@ interface AdvisorResult {
 
 async function gatherLiveStoreData() {
   const store = await getStore();
-  const orders = await listOrders().catch(() => []);
+  const orders: Awaited<ReturnType<typeof listOrders>> = await listOrders().catch(() => []);
 
   let reviews: any[] = [];
   if (getD1()) {

@@ -301,7 +301,8 @@ async function createContestFromCommand(chatId: number, from: any, text: string)
    ======================================================================== */
 
 async function sendAdminMenu(chatId: number): Promise<void> {
-  const requests = await listAllRechargeRequests({ limit: 100 }).catch(() => []);
+  const requests: Awaited<ReturnType<typeof listAllRechargeRequests>> =
+    await listAllRechargeRequests({ limit: 100 }).catch(() => []);
   const pending = requests.filter((request) => request.status === "pending");
   const origin = telegramPublicOrigin();
 
@@ -329,7 +330,8 @@ async function sendAdminMenu(chatId: number): Promise<void> {
 }
 
 async function sendPendingRequests(chatId: number): Promise<void> {
-  const requests = await listAllRechargeRequests({ limit: 100 }).catch(() => []);
+  const requests: Awaited<ReturnType<typeof listAllRechargeRequests>> =
+    await listAllRechargeRequests({ limit: 100 }).catch(() => []);
   const pending = requests.filter((request) => request.status === "pending").slice(0, 10);
 
   if (pending.length === 0) {

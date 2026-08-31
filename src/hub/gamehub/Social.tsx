@@ -204,7 +204,7 @@ export function ReviewsSection() {
             <Segmented
               size="sm"
               value={sort}
-              onChange={setSort}
+              onChange={(next) => setSort(next as ReviewSort)}
               ariaLabel={t("common.filter")}
               options={[
                 { id: "helpful", label: t("reviews.filterHelpful") },
@@ -445,7 +445,7 @@ export function CommunitySection() {
         <Segmented
           size="sm"
           value={tab}
-          onChange={setTab}
+          onChange={(next) => setTab(next as CommunityKind | "all")}
           ariaLabel={t("community.title")}
           options={[
             { id: "all" as const, label: t("common.all"), count: posts.length },

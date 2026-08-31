@@ -898,7 +898,7 @@ export function LanguagesSection() {
           size="sm"
           ariaLabel={t("languages.filterBy")}
           value={channel}
-          onChange={setChannel}
+          onChange={(next) => setChannel(next as LanguageChannel | "all")}
           options={[
             { id: "all", label: t("common.all"), count: languages.length },
             { id: "interface", label: t("languages.interface"), count: counts.interface },

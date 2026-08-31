@@ -361,7 +361,7 @@ export default function ProfileView() {
                 </div>
               </div>
               <button
-                onPointerDown={() => playSound(liteMotion ? "turn_off" : "turn_on", 0.8, true)}
+                onPointerDown={() => playSound(liteMotion ? "turn_off" : "turn_on", 0.8)}
                 onClick={() => {
                   const newState = !liteMotion;
                   setLiteMotion(newState);
@@ -398,7 +398,7 @@ export default function ProfileView() {
               </div>
 
               <button
-                onPointerDown={() => playSound(soundEnabled ? "turn_off" : "turn_on", 0.8, true)}
+                onPointerDown={() => playSound(soundEnabled ? "turn_off" : "turn_on", 0.8)}
                 onClick={() => {
                   const newState = !soundEnabled;
                   setSoundEnabled(newState);
@@ -456,7 +456,7 @@ export default function ProfileView() {
               </div>
 
               <button
-                onPointerDown={() => playSound(musicEnabled ? "turn_off" : "turn_on", 0.8, true)}
+                onPointerDown={() => playSound(musicEnabled ? "turn_off" : "turn_on", 0.8)}
                 onClick={() => {
                   const newState = !musicEnabled;
                   setMusicEnabled(newState);
