@@ -83,7 +83,17 @@ export class WaSenderProvider {
       });
 
       if (res.status === 200) {
-        const data = (await res.json().catch(() => ({}))) as Record<string, any>;
+        let data: Record<string, any> = {};
+        try {
+          if (typeof res.json === "function") {
+            data = (await res.json()) as Record<string, any>;
+          } else if (typeof res.text === "function") {
+            data = JSON.parse(await res.text()) as Record<string, any>;
+          }
+        } catch {
+          // A successful upstream response without a JSON body is still a
+          // successful send; only the optional provider message id is absent.
+        }
         return {
           success: true,
           status: 200,

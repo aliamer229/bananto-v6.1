@@ -20,7 +20,9 @@ describe("slugifyTitle", () => {
   });
 
   it("spells out the plus sign the way Nintendo's url keys do", () => {
-    expect(slugifyTitle("Mario + Rabbids Sparks of Hope")).toBe("mario-plus-rabbids-sparks-of-hope");
+    expect(slugifyTitle("Mario + Rabbids Sparks of Hope")).toBe(
+      "mario-plus-rabbids-sparks-of-hope",
+    );
   });
 });
 
@@ -45,12 +47,12 @@ describe("candidateKeys", () => {
   });
 
   it("keeps the console words when they are part of the game's name", () => {
-    expect(candidateKeys({ title: "Nintendo Switch Sports", platform: "Nintendo Switch" })).toContain(
-      "nintendo-switch-sports-switch",
-    );
-    expect(candidateKeys({ title: "Everybody 1-2-Switch!", platform: "Nintendo Switch" })).toContain(
-      "everybody-1-2-switch-switch",
-    );
+    expect(
+      candidateKeys({ title: "Nintendo Switch Sports", platform: "Nintendo Switch" }),
+    ).toContain("nintendo-switch-sports-switch");
+    expect(
+      candidateKeys({ title: "Everybody 1-2-Switch!", platform: "Nintendo Switch" }),
+    ).toContain("everybody-1-2-switch-switch");
   });
 
   it("drops the edition suffix rather than folding it into the name", () => {
@@ -74,7 +76,10 @@ describe("candidateKeys", () => {
   });
 
   it("tries the plus both spelled out and dropped", () => {
-    const keys = candidateKeys({ title: "Mario + Rabbids Sparks of Hope", platform: "Nintendo Switch" });
+    const keys = candidateKeys({
+      title: "Mario + Rabbids Sparks of Hope",
+      platform: "Nintendo Switch",
+    });
     expect(keys).toContain("mario-plus-rabbids-sparks-of-hope-switch");
     expect(keys).toContain("mario-rabbids-sparks-of-hope-switch");
   });
@@ -92,15 +97,27 @@ describe("candidateKeys", () => {
   it("still refuses a conflicting nsuid when the console generation differs", () => {
     const verdict = identityMatch(
       { title: "Metroid Prime 4: Beyond", platform: "Nintendo Switch 2", nsuid: "70010000104849" },
-      { platform: { label: "Nintendo Switch" }, name: "Metroid Prime™ 4: Beyond", nsuid: "70010000084766" },
+      {
+        platform: { label: "Nintendo Switch" },
+        name: "Metroid Prime™ 4: Beyond",
+        nsuid: "70010000084766",
+      },
     );
     expect(verdict.ok).toBe(false);
   });
 
   it("treats a note stored in the nsuid field as no nsuid at all", () => {
     const verdict = identityMatch(
-      { title: "Mario Tennis Fever", platform: "Nintendo Switch 2", nsuid: "See regional Nintendo eShop listing" },
-      { platform: { label: "Nintendo Switch 2" }, name: "Mario Tennis™ Fever", nsuid: "70010000105869" },
+      {
+        title: "Mario Tennis Fever",
+        platform: "Nintendo Switch 2",
+        nsuid: "See regional Nintendo eShop listing",
+      },
+      {
+        platform: { label: "Nintendo Switch 2" },
+        name: "Mario Tennis™ Fever",
+        nsuid: "70010000105869",
+      },
     );
     expect(verdict.ok).toBe(true);
     expect(verdict.nsuidConflict).toBeUndefined();
@@ -151,14 +168,20 @@ describe("identityMatch", () => {
   });
 
   it("accepts a title match once the platform generation agrees", () => {
-    expect(identityMatch({ title: "Pikmin 4", platform: "Nintendo Switch" }, { ...switch1, name: "Pikmin™ 4" }).ok).toBe(
-      true,
-    );
+    expect(
+      identityMatch(
+        { title: "Pikmin 4", platform: "Nintendo Switch" },
+        { ...switch1, name: "Pikmin™ 4" },
+      ).ok,
+    ).toBe(true);
   });
 
   it("keeps the Switch 2 edition off the Switch 1 page", () => {
     const verdict = identityMatch(
-      { title: "Metroid Prime 4: Beyond – Nintendo Switch 2 Edition", platform: "Nintendo Switch 2" },
+      {
+        title: "Metroid Prime 4: Beyond – Nintendo Switch 2 Edition",
+        platform: "Nintendo Switch 2",
+      },
       { ...switch1, name: "Metroid Prime™ 4: Beyond" },
     );
     expect(verdict.ok).toBe(false);
@@ -167,7 +190,10 @@ describe("identityMatch", () => {
 
   it("matches the Switch 2 edition against its own page", () => {
     const verdict = identityMatch(
-      { title: "Metroid Prime 4: Beyond – Nintendo Switch 2 Edition", platform: "Nintendo Switch 2" },
+      {
+        title: "Metroid Prime 4: Beyond – Nintendo Switch 2 Edition",
+        platform: "Nintendo Switch 2",
+      },
       { ...switch2, name: "Metroid Prime™ 4: Beyond – Nintendo Switch™ 2 Edition" },
     );
     expect(verdict.ok).toBe(true);
@@ -183,10 +209,16 @@ describe("identityMatch", () => {
 
   it("refuses a sequel when the product is the original", () => {
     expect(
-      identityMatch({ title: "Pikmin", platform: "Nintendo Switch" }, { ...switch1, name: "Pikmin™ 4" }).ok,
+      identityMatch(
+        { title: "Pikmin", platform: "Nintendo Switch" },
+        { ...switch1, name: "Pikmin™ 4" },
+      ).ok,
     ).toBe(false);
     expect(
-      identityMatch({ title: "Persona 5", platform: "Nintendo Switch" }, { ...switch1, name: "Persona 5 Royal" }).ok,
+      identityMatch(
+        { title: "Persona 5", platform: "Nintendo Switch" },
+        { ...switch1, name: "Persona 5 Royal" },
+      ).ok,
     ).toBe(false);
   });
 
@@ -201,7 +233,10 @@ describe("identityMatch", () => {
 
   it("refuses a different game with a similar name", () => {
     expect(
-      identityMatch({ title: "Pikmin 4", platform: "Nintendo Switch" }, { ...switch1, name: "Pikmin™ 3 Deluxe" }).ok,
+      identityMatch(
+        { title: "Pikmin 4", platform: "Nintendo Switch" },
+        { ...switch1, name: "Pikmin™ 3 Deluxe" },
+      ).ok,
     ).toBe(false);
   });
 });
@@ -249,7 +284,7 @@ describe("metadataFrom", () => {
       supportedLanguages: ["American English", "French"],
       numberOfPlayers: { system: { min: 1, max: 2 } },
       playModes: [{ code: "TV_MODE", label: "TV mode" }],
-      nsoFeatures: [{ code: "SAVE_DATA_CLOUD" }],
+      nsoFeatures: [{ code: "SAVE_DATA_CLOUD" }, { code: "ONLINE_PLAY" }],
       softwareDetails: { romSizes: [{ totalRomSize: "12086935552" }] },
       tags: { genres: [{ label: "Action" }] },
       contentRating: { label: "Everyone 10+" },
@@ -266,6 +301,7 @@ describe("metadataFrom", () => {
     expect(md.tvMode).toBe(true);
     expect(md.handheldMode).toBe(false);
     expect(md.nintendoCloudSaves).toBe(true);
+    expect(md.nintendoOnlineRequired).toBe(true);
     expect(md.arabicSupport).toBe(false);
 
     // Absent on the page means absent here — never an empty string or a guess.
@@ -276,7 +312,10 @@ describe("metadataFrom", () => {
 
   it("puts the Switch 2 compatibility caption in the Nintendo notes, not the device list", () => {
     const md = metadataFrom({
-      compatibility: { status: "PLAYABLE", caption: "Supported – Game behavior is consistent with Nintendo Switch." },
+      compatibility: {
+        status: "PLAYABLE",
+        caption: "Supported – Game behavior is consistent with Nintendo Switch.",
+      },
     });
     expect(md.nintendoNotes).toMatch(/^Supported/);
     expect("compatibility" in md).toBe(false);
@@ -301,8 +340,14 @@ describe("metadataFrom", () => {
       { totalRomSize: "28292677632", platform: "HAC" },
       { totalRomSize: "29696720896", platform: "BEE" },
     ];
-    const one = metadataFrom({ platform: { code: "NINTENDO_SWITCH" }, softwareDetails: { romSizes } });
-    const two = metadataFrom({ platform: { code: "NINTENDO_SWITCH_2" }, softwareDetails: { romSizes } });
+    const one = metadataFrom({
+      platform: { code: "NINTENDO_SWITCH" },
+      softwareDetails: { romSizes },
+    });
+    const two = metadataFrom({
+      platform: { code: "NINTENDO_SWITCH_2" },
+      softwareDetails: { romSizes },
+    });
     expect(one.downloadSizeGb).toBe(26.35);
     expect(two.downloadSizeGb).toBe(27.66);
   });
@@ -354,7 +399,9 @@ describe("familyFacts", () => {
   });
 
   it("does not call a game exclusive just because no upgrade pack is listed", () => {
-    const facts = familyFacts({ name: "Donkey Kong™ Bananza" }, [{ name: "Donkey Kong™ Bananza - Digital Deluxe" }]);
+    const facts = familyFacts({ name: "Donkey Kong™ Bananza" }, [
+      { name: "Donkey Kong™ Bananza - Digital Deluxe" },
+    ]);
     expect("switch2Exclusive" in facts).toBe(false);
     expect("switch2Enhanced" in facts).toBe(false);
     expect("switch2UpgradePrice" in facts).toBe(false);

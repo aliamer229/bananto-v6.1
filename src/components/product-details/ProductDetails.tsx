@@ -99,7 +99,17 @@ function DetailsBody({
   const addToCart = useCartStore((s) => s.add);
   const navigate = useNavigate();
 
-  const [optionId, setOptionId] = useState(view.options[0]?.id ?? "");
+  /*
+    Gift-card rows created before the schema migration often retain a legacy
+    first option with an old price/image.  Auto-selecting that option changed a
+    7,500 IQD $5 card into 7,000 IQD on the details page even though the admin,
+    listing and canonical product price all agreed.  A gift card therefore
+    opens on its product-level denomination and artwork; a customer can still
+    choose a real option explicitly when one is offered.
+  */
+  const [optionId, setOptionId] = useState(
+    view.schema.id === "gift_card" ? "" : (view.options[0]?.id ?? ""),
+  );
   const [variantName, setVariantName] = useState("");
   const [quantity, setQuantity] = useState(1);
 

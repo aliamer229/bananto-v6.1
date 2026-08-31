@@ -84,9 +84,7 @@ export async function fetchBinary(url, { timeoutMs = 45_000, retries = 2 } = {})
 }
 
 function nextData(html) {
-  const m = html.match(
-    /<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/,
-  );
+  const m = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
   if (!m) return null;
   try {
     return JSON.parse(m[1]);
@@ -229,7 +227,11 @@ export function metadataFrom(product) {
 
   const langs = Array.isArray(product.supportedLanguages) ? product.supportedLanguages : [];
   put("supportedLanguages", langs);
-  if (langs.length) put("arabicSupport", langs.some((l) => /arabic/i.test(String(l))));
+  if (langs.length)
+    put(
+      "arabicSupport",
+      langs.some((l) => /arabic/i.test(String(l))),
+    );
 
   const description = htmlToText(product['description({"html":true})'] ?? product.description);
   put("description", description);
@@ -255,7 +257,10 @@ export function metadataFrom(product) {
   }
 
   const nso = (product.nsoFeatures ?? []).map((f) => String(f?.code ?? ""));
-  if (product.nsoFeatures) put("nintendoCloudSaves", nso.includes("SAVE_DATA_CLOUD"));
+  if (product.nsoFeatures) {
+    put("nintendoCloudSaves", nso.includes("SAVE_DATA_CLOUD"));
+    put("nintendoOnlineRequired", nso.includes("ONLINE_PLAY"));
+  }
 
   /*
     A cross-generation title carries a rom size for each console: HAC is the
@@ -263,7 +268,9 @@ export function metadataFrom(product) {
     Metroid Prime 4 is 26.35 GB on one and 27.66 GB on the other. Taking the
     first row would put the wrong download size on one of the two editions.
   */
-  const wantRom = isSwitch2(product.platform?.code ?? product.platform?.label ?? "") ? "BEE" : "HAC";
+  const wantRom = isSwitch2(product.platform?.code ?? product.platform?.label ?? "")
+    ? "BEE"
+    : "HAC";
   const romSizes = product.softwareDetails?.romSizes ?? [];
   const rom =
     romSizes.find((r) => r?.totalRomSize && r.platform === wantRom) ??
@@ -308,7 +315,10 @@ const bareTitle = (title) =>
       .replace(/[™®©]/g, "")
       .replace(/[-–—:]\s*nintendo\s*switch\s*2\s*edition.*$/i, "")
       .replace(/\bnintendo\s*switch\s*2\s*edition\b/gi, "")
-      .replace(/\b(standard|deluxe|digital|physical|complete|definitive|gold|ultimate)\s+edition\b/gi, "")
+      .replace(
+        /\b(standard|deluxe|digital|physical|complete|definitive|gold|ultimate)\s+edition\b/gi,
+        "",
+      )
       .replace(/\bswitch\s*2\b/gi, "")
       .replace(/\bnintendo\s*switch\b/gi, ""),
   );
@@ -386,7 +396,6 @@ export function apolloProducts(html) {
   return { nodes, state };
 }
 
-
 /**
  * Scores a candidate node against the stored product.
  *
@@ -430,9 +439,14 @@ export function identityMatch(doc, node) {
   if (want !== got) return { ok: false, reason: `title "${node.name}" is not "${doc.title}"` };
 
   const wantTwo = isSwitch2(`${doc.platform ?? ""} ${doc.title ?? ""} ${doc.slug ?? ""}`);
-  const gotTwo = isSwitch2(`${node.platform?.label ?? node.platform?.code ?? ""} ${node.name ?? ""}`);
+  const gotTwo = isSwitch2(
+    `${node.platform?.label ?? node.platform?.code ?? ""} ${node.name ?? ""}`,
+  );
   if (wantTwo !== gotTwo) {
-    return { ok: false, reason: `platform generation differs (stored ${wantTwo ? "Switch 2" : "Switch"}, page ${gotTwo ? "Switch 2" : "Switch"})` };
+    return {
+      ok: false,
+      reason: `platform generation differs (stored ${wantTwo ? "Switch 2" : "Switch"}, page ${gotTwo ? "Switch 2" : "Switch"})`,
+    };
   }
   /*
     A stored nsuid that disagrees with the page is usually a regional id — the
@@ -484,7 +498,9 @@ export async function resolveProduct(doc, seen = new Set()) {
 
     const { nodes, state } = apolloProducts(body);
     const own = nodes.find((n) => String(n.urlKey ?? "") === key);
-    const ownVerdict = own ? identityMatch(doc, own) : { ok: false, reason: "the page has no node for this url key" };
+    const ownVerdict = own
+      ? identityMatch(doc, own)
+      : { ok: false, reason: "the page has no node for this url key" };
 
     // A sibling worth hopping to: it matches, and it is more of a product than
     // whatever this page is about — an nsuid where the page's own node has none.
@@ -499,7 +515,16 @@ export async function resolveProduct(doc, seen = new Set()) {
     );
     if (better) {
       tried.push(`${key} → ${status}, hopping to the software listing ${better.urlKey}`);
-      const hop = await resolveProduct({ ...doc, slug: "", nintendoEshopUrl: `${STORE}/${better.urlKey}/`, eshopUrl: "", officialUrl: "" }, seen);
+      const hop = await resolveProduct(
+        {
+          ...doc,
+          slug: "",
+          nintendoEshopUrl: `${STORE}/${better.urlKey}/`,
+          eshopUrl: "",
+          officialUrl: "",
+        },
+        seen,
+      );
       if (hop.product) return { ...hop, tried: [...tried, ...hop.tried] };
       tried.push(...hop.tried);
     }
@@ -522,10 +547,23 @@ export async function resolveProduct(doc, seen = new Set()) {
 
     // The right edition may be a different member of the family on this page.
     const sibling = nodes.find(
-      (n) => n.urlKey && String(n.urlKey) !== key && !seen.has(String(n.urlKey)) && identityMatch(doc, n).ok,
+      (n) =>
+        n.urlKey &&
+        String(n.urlKey) !== key &&
+        !seen.has(String(n.urlKey)) &&
+        identityMatch(doc, n).ok,
     );
     if (sibling) {
-      const hop = await resolveProduct({ ...doc, slug: "", nintendoEshopUrl: `${STORE}/${sibling.urlKey}/`, eshopUrl: "", officialUrl: "" }, seen);
+      const hop = await resolveProduct(
+        {
+          ...doc,
+          slug: "",
+          nintendoEshopUrl: `${STORE}/${sibling.urlKey}/`,
+          eshopUrl: "",
+          officialUrl: "",
+        },
+        seen,
+      );
       if (hop.product) return { ...hop, tried: [...tried, ...hop.tried] };
       tried.push(...hop.tried);
     }

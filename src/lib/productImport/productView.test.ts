@@ -142,4 +142,24 @@ describe("product view model", () => {
       buildProductView({ id: "g1", category: "cat_nintendo", kind: "account" }, "ar"),
     ).toBeNull();
   });
+
+  it("opens a gift card gallery on its denomination artwork", () => {
+    const view = buildProductView(
+      {
+        id: "gc-5",
+        category: "cat_gift_cards",
+        schemaId: "gift_card",
+        title: "Nintendo eShop Gift Card $5",
+        price: 7500,
+        cardArtwork: "https://assets.example/cards/toad-5.webp",
+        mainImage: "https://assets.example/cards/legacy-wrong-card.webp",
+        regionBanner: "https://assets.example/cards/usa-region-banner.webp",
+      },
+      "en",
+    );
+    expect(view).not.toBeNull();
+    expect(view!.images[0]).toBe("https://assets.example/cards/toad-5.webp");
+    expect(view!.images).not.toContain("https://assets.example/cards/usa-region-banner.webp");
+    expect(view!.price).toBe(7500);
+  });
 });

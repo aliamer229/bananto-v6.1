@@ -292,7 +292,6 @@ const IDENTITY_FIELDS: { target: string; key: string }[] = [
   { target: "countryOfOrigin", key: "product.countryOfOrigin" },
 ];
 
-
 /* ------------------------------- builders --------------------------------- */
 
 const bool = (v: unknown): boolean | null => (typeof v === "boolean" ? v : null);
@@ -506,7 +505,14 @@ const BLOCK_OWNED_TARGETS: Record<string, readonly string[]> = {
 
 /** Normalized key for spec de-duplication: case and separators do not count. */
 function specIdentity(label: string, value: string): string {
-  return `${label}`.trim().toLowerCase().replace(/[\s_-]+/g, "") + "\u0000" + value.trim().toLowerCase();
+  return (
+    `${label}`
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "") +
+    "\u0000" +
+    value.trim().toLowerCase()
+  );
 }
 
 export function buildProductView(
@@ -595,7 +601,23 @@ export function buildProductView(
     two products with the same fields always present them the same way, and a
     banner never opens a product gallery.
   */
+  /*
+    A gift card's denomination artwork is the product, not just another gallery
+    frame.  Legacy rows can still carry a different `mainImage` (or an old
+    option image), so the generic non-game gallery order made the details page
+    open on a picture that did not match the card shown in admin/the listing.
+
+    Keep the general gallery contract for every other schema, but pin
+    `cardArtwork` to the first frame for gift cards.  `regionBanner` is
+    deliberately not admitted here: it describes the account region and is a
+    section illustration, not the denomination artwork a customer buys.
+  */
+  const canonicalGiftCardArtwork =
+    schema.id === "gift_card" && isUsableImageUrl(p["cardArtwork"])
+      ? [String(p["cardArtwork"]).trim()]
+      : [];
   const images = [
+    ...canonicalGiftCardArtwork,
     ...productGalleryImages(p),
     ...(isUsableImageUrl(p["image"]) ? [String(p["image"]).trim()] : []),
   ].filter((url, index, all) => url && all.indexOf(url) === index);

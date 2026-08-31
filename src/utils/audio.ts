@@ -23,7 +23,7 @@ export type SoundEffect =
 
 let audioCtx: AudioContext | null = null;
 
-function getAudioContext(): AudioContext | null {
+export function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!audioCtx) {
     const AudioContextClass =
@@ -32,10 +32,23 @@ function getAudioContext(): AudioContext | null {
       audioCtx = new AudioContextClass();
     }
   }
-  if (audioCtx && audioCtx.state === "suspended") {
-    audioCtx.resume().catch(() => {});
-  }
   return audioCtx;
+}
+
+/**
+ * Resume only after a user gesture.  Do not cache a failed unlock: iOS can
+ * leave the context suspended without rejecting, so every later gesture must
+ * be allowed to try again.
+ */
+export async function resumeAudioContext(): Promise<void> {
+  const ctx = getAudioContext();
+  if (!ctx || ctx.state !== "suspended") return;
+  try {
+    await ctx.resume();
+  } catch {
+    // A later gesture may succeed; callers should never fail because audio is
+    // unavailable or blocked by the browser.
+  }
 }
 
 export function preloadSound(_name: string): void {
@@ -58,6 +71,7 @@ export function playSound(sound: SoundEffect = "select", volume = 0.25): void {
 
   const ctx = getAudioContext();
   if (!ctx) return;
+  if (ctx.state === "suspended") void resumeAudioContext();
 
   try {
     const now = ctx.currentTime;

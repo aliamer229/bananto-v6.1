@@ -115,7 +115,15 @@ export const Route = createFileRoute("/api/admin/products")({
                 return json({ error: "Product not found", code: "NOT_FOUND" }, { status: 404 });
               }
               console.log(`[admin_products.full] reqId=${reqId} by=id ms=${mark.full}`);
-              return json({ success: true, product });
+              return json({
+                success: true,
+                product,
+                // The listing is paginated by section, so a game-page slice
+                // cannot also contain the hardware rows its editor needs.
+                // Return the small canonical device list with the full product
+                // request instead of making the selector depend on table state.
+                hardwareProducts: hardwareProducts(products, store.categories || []),
+              });
             }
 
             if (slug) {
