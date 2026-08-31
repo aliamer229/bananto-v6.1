@@ -23,6 +23,12 @@ on:
       products:
         description: "Optional comma-separated product ids (overrides offset/limit)"
         default: ""
+  push:
+    branches: [codex/product-catalogue-repair]
+    paths:
+      - .github/workflows/research-import.yml
+      - scripts/research-import.mjs
+      - scripts/lib/nintendo-store.mjs
 permissions:
   contents: read
 
@@ -48,6 +54,7 @@ jobs:
         run: echo "::add-mask::$ACCOUNT_ID"
       - name: Research and import
         env:
+          EVENT_NAME: ${{ github.event_name }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           APPLY: ${{ inputs.apply }}
@@ -55,9 +62,16 @@ jobs:
           LIMIT: ${{ inputs.limit }}
           PRODUCTS: ${{ inputs.products }}
         run: |
-          args="--offset=${OFFSET:-0} --limit=${LIMIT:-25}"
-          [ "$APPLY" = "true" ] && args="$args --apply"
-          [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          if [ "$EVENT_NAME" = "push" ]; then
+            # A branch push is always a read-only full-catalogue research pass.
+            # Production writes remain possible only through the explicit
+            # workflow_dispatch apply checkbox.
+            args="--offset=0 --limit=200"
+          else
+            args="--offset=${OFFSET:-0} --limit=${LIMIT:-25}"
+            [ "$APPLY" = "true" ] && args="$args --apply"
+            [ -n "$PRODUCTS" ] && args="$args --products=$PRODUCTS"
+          fi
           node scripts/research-import.mjs $args
       - name: Upload the report
         if: always()
