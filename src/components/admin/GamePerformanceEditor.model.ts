@@ -82,3 +82,63 @@ export function defaultSwitch2Performance(hardwareProducts: Record_[] = []): Dev
     modes: [],
   };
 }
+
+/**
+ * Every Nintendo game is playable on Nintendo Switch 2, including compatible
+ * Switch 1 titles. Keep one Switch 2 row attached to the form and bind it to
+ * the real hardware product when that row is available. Existing verified
+ * measurements are preserved; only a missing device identity is repaired.
+ */
+export function ensureSwitch2Performance(
+  records: DevicePerformance[],
+  hardwareProducts: Record_[] = [],
+): DevicePerformance[] {
+  const canonical = defaultSwitch2Performance(hardwareProducts);
+  const switch2Index = records.findIndex(
+    (record) => slugifyDevice(record.deviceSlug || record.device) === "nintendo-switch-2",
+  );
+
+  if (switch2Index >= 0) {
+    const current = records[switch2Index]!;
+    const hardwareId = canonical.hardwareId || current.hardwareId;
+    const deviceModel = canonical.deviceModel || current.deviceModel;
+    const alreadyBound =
+      current.device === canonical.device &&
+      current.deviceSlug === canonical.deviceSlug &&
+      current.hardwareId === hardwareId &&
+      current.deviceModel === deviceModel;
+    if (alreadyBound) return records;
+
+    return records.map((record, index) =>
+      index === switch2Index
+        ? {
+            ...record,
+            device: canonical.device,
+            deviceSlug: canonical.deviceSlug,
+            hardwareId,
+            deviceModel,
+          }
+        : record,
+    );
+  }
+
+  const unidentifiedIndex = records.findIndex(
+    (record) => !slugifyDevice(record.deviceSlug || record.device),
+  );
+  if (unidentifiedIndex >= 0) {
+    return records.map((record, index) =>
+      index === unidentifiedIndex
+        ? {
+            ...canonical,
+            ...record,
+            device: canonical.device,
+            deviceSlug: canonical.deviceSlug,
+            hardwareId: canonical.hardwareId,
+            deviceModel: canonical.deviceModel,
+          }
+        : record,
+    );
+  }
+
+  return [...records, canonical];
+}

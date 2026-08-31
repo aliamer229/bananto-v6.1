@@ -99,17 +99,7 @@ function DetailsBody({
   const addToCart = useCartStore((s) => s.add);
   const navigate = useNavigate();
 
-  /*
-    Gift-card rows created before the schema migration often retain a legacy
-    first option with an old price/image.  Auto-selecting that option changed a
-    7,500 IQD $5 card into 7,000 IQD on the details page even though the admin,
-    listing and canonical product price all agreed.  A gift card therefore
-    opens on its product-level denomination and artwork; a customer can still
-    choose a real option explicitly when one is offered.
-  */
-  const [optionId, setOptionId] = useState(
-    view.schema.id === "gift_card" ? "" : (view.options[0]?.id ?? ""),
-  );
+  const [optionId, setOptionId] = useState(view.options[0]?.id ?? "");
   const [variantName, setVariantName] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -142,20 +132,18 @@ function DetailsBody({
     */
     const variantImage = selectedVariant?.image || selectedOption?.image || "";
     const itemImage = variantImage || resolvePurchaseImage(product).url;
-    addToCart(
-      {
-        productId: String(product["id"] ?? ""),
-        title: view.title,
-        image: itemImage,
-        price: effectivePrice,
-        kind: (view.schema.kind as ProductKind) ?? "accessory",
-        requiresAddress: true,
-        ...(labelParts.length
-          ? { offerKind: labelParts.join(" / "), offerLabel: labelParts.join(" / ") }
-          : {}),
-      },
+    addToCart({
+      productId: String(product["id"] ?? ""),
+      title: view.title,
+      image: itemImage,
+      price: effectivePrice,
       quantity,
-    );
+      kind: (view.schema.kind as ProductKind) ?? "accessory",
+      requiresAddress: true,
+      ...(labelParts.length
+        ? { offerKind: labelParts.join(" / "), offerLabel: labelParts.join(" / ") }
+        : {}),
+    });
     showAddToCartToast({
       title: t("product.addedToCart") || "أُضيف إلى السلة",
       message: `${quantity > 1 ? `${quantity} × ` : ""}${view.title}${labelParts.length ? ` (${labelParts.join(" / ")})` : ""}`,

@@ -762,7 +762,7 @@ export function buildProductView(
       : toSteps(p["redemptionGuide"] ?? p["activationGuide"] ?? p["usageGuide"]),
     usageUrl: str(p["redemptionUrl"] ?? ""),
     usageTerms: str(p["usageTerms"] ?? ""),
-    options: list<Record_>(p["options"])
+    options: (schema.id === "gift_card" ? [] : list<Record_>(p["options"]))
       .map((o, index) => {
         const item: OptionItem = {
           id: str(o["id"]) || `option-${index + 1}`,
@@ -783,9 +783,11 @@ export function buildProductView(
         return item;
       })
       .filter((o) => o.name),
-    variants: (list<Record_>(p["variants"]).length > 0
-      ? list<Record_>(p["variants"])
-      : list<Record_>(p["types"])
+    variants: (schema.id === "gift_card"
+      ? []
+      : list<Record_>(p["variants"]).length > 0
+        ? list<Record_>(p["variants"])
+        : list<Record_>(p["types"])
     )
       .map((v) => {
         const item: VariantItem = { name: str(v["name"]) };

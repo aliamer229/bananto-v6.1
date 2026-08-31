@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildHardwareChoices, defaultSwitch2Performance } from "./GamePerformanceEditor.model";
+import {
+  buildHardwareChoices,
+  defaultSwitch2Performance,
+  ensureSwitch2Performance,
+} from "./GamePerformanceEditor.model";
 
 describe("GamePerformanceEditor hardware choices", () => {
   it("always exposes Nintendo Switch 2 when the paginated admin page has no hardware rows", () => {
@@ -47,5 +51,47 @@ describe("GamePerformanceEditor hardware choices", () => {
     });
     expect(record.handheld).toBeUndefined();
     expect(record.tv).toBeUndefined();
+  });
+
+  it("adds Nintendo Switch 2 to a Switch 1 game without removing its existing record", () => {
+    const records = ensureSwitch2Performance(
+      [{ device: "Nintendo Switch", deviceSlug: "nintendo-switch" }],
+      [{ id: "hw-switch-2", title: "Nintendo Switch 2", slug: "nintendo-switch-2" }],
+    );
+    expect(records).toHaveLength(2);
+    expect(records[0]).toMatchObject({ deviceSlug: "nintendo-switch" });
+    expect(records[1]).toMatchObject({
+      device: "Nintendo Switch 2",
+      deviceSlug: "nintendo-switch-2",
+      hardwareId: "hw-switch-2",
+      informationStatus: "not_published",
+    });
+  });
+
+  it("binds an existing Switch 2 record to the real hardware row and preserves metrics", () => {
+    const records = ensureSwitch2Performance(
+      [
+        {
+          device: "Nintendo Switch 2",
+          deviceSlug: "nintendo-switch-2",
+          handheld: { supported: true, resolution: "1080p", fps: "60" },
+          verificationStatus: "official",
+        },
+      ],
+      [
+        {
+          id: "prd_acf4c89908764c62",
+          title: "Nintendo Switch 2",
+          slug: "nintendo-switch-2",
+          model: "Nintendo Switch 2",
+        },
+      ],
+    );
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      hardwareId: "prd_acf4c89908764c62",
+      verificationStatus: "official",
+      handheld: { supported: true, resolution: "1080p", fps: "60" },
+    });
   });
 });

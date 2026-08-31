@@ -154,6 +154,21 @@ describe("product view model", () => {
         cardArtwork: "https://assets.example/cards/toad-5.webp",
         mainImage: "https://assets.example/cards/legacy-wrong-card.webp",
         regionBanner: "https://assets.example/cards/usa-region-banner.webp",
+        options: [
+          {
+            id: "legacy-delivery",
+            name: "USA Digital Code",
+            price: 7000,
+            image: "https://assets.example/cards/legacy-wrong-card.webp",
+          },
+        ],
+        types: [
+          {
+            name: "5 USD — USA",
+            price: 7000,
+            image: "https://assets.example/cards/legacy-wrong-card.webp",
+          },
+        ],
       },
       "en",
     );
@@ -161,5 +176,7 @@ describe("product view model", () => {
     expect(view!.images[0]).toBe("https://assets.example/cards/toad-5.webp");
     expect(view!.images).not.toContain("https://assets.example/cards/usa-region-banner.webp");
     expect(view!.price).toBe(7500);
+    expect(view!.options).toEqual([]);
+    expect(view!.variants).toEqual([]);
   });
 });

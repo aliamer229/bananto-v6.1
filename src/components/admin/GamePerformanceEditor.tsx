@@ -10,6 +10,7 @@ import {
 import {
   buildHardwareChoices,
   defaultSwitch2Performance,
+  ensureSwitch2Performance,
   SWITCH_2_CHOICE,
 } from "./GamePerformanceEditor.model";
 
@@ -189,8 +190,9 @@ export function GamePerformanceEditor({
   const hardwareChoices = buildHardwareChoices(hardwareProducts, records);
 
   useEffect(() => {
-    if (records.length === 0) onChange([defaultSwitch2Performance(hardwareProducts)]);
-  }, [records.length, hardwareProducts, onChange]);
+    const ensured = ensureSwitch2Performance(records, hardwareProducts);
+    if (ensured !== records) onChange(ensured);
+  }, [records, hardwareProducts, onChange]);
 
   const update = (index: number, patch: Partial<DevicePerformance>) =>
     onChange(
