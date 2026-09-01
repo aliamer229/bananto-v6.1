@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "batch": 1,
-  "apply": true,
+  "apply": false,
   "reviewedAt": "2026-09-01",
   "clearFields": [
     "characterName",
@@ -52,9 +52,9 @@
     {
       "id": "prd_5ba181a080d14238",
       "expected": {
-        "documentSha256": "9f87e9fe443be6bf91aefa7ebd56f64ad989ced7fa065b457bffe8f0a1a22754",
-        "title": "Star Wars Outlaws",
-        "slug": "star-wars-outlaws-switch-2",
+        "documentSha256": "26f813703e04ad1df6003ebf65d434bacda85f9df7ae129651e014c80d9b542c",
+        "title": "Star Wars Outlaws Gold Edition",
+        "slug": "star-wars-outlaws-gold-edition-switch-2",
         "platform": "switch2",
         "price": 14750,
         "cost": 1250,
@@ -234,10 +234,10 @@
     {
       "id": "prd_07de8f47fbf44b28",
       "expected": {
-        "documentSha256": "1c088c405ff87e1de5c662c4d32d2f1ebcd766c1da4f5269e72f80aff3757b7d",
+        "documentSha256": "d9a53e992729ef1c48f66ef08dcf2014f15a9b65392d8cf9117b99d423186330",
         "title": "Dead by Daylight",
-        "slug": "dead-by-daylight-switch-2",
-        "platform": "switch2",
+        "slug": "dead-by-daylight-switch",
+        "platform": "switch1",
         "price": 14750,
         "cost": 1250,
         "optionCount": 2,
@@ -415,9 +415,9 @@
     {
       "id": "prd_6f3eaa73a1d14946",
       "expected": {
-        "documentSha256": "f7216d8470476e4c393e44351f28dcd5cae144e3eb4eab25efc3a9ad4ca25386",
-        "title": "Devil May Cry 5 Special Edition",
-        "slug": "devil-may-cry-5-special-edition-switch-2",
+        "documentSha256": "7d4c19924fb38bc8c400181ec5fafefc85393a4e4d097da02e63c76f97eb375a",
+        "title": "Devil May Cry 5 Devil Hunter Edition",
+        "slug": "devil-may-cry-5-devil-hunter-edition-switch-2",
         "platform": "switch2",
         "price": 10250,
         "cost": 1500,
@@ -591,7 +591,7 @@
     {
       "id": "prd_073b4bb198534514",
       "expected": {
-        "documentSha256": "d6248b68cad74db7062befd9fa089aee45feced2af8916a6a86e8ac8aebda29e",
+        "documentSha256": "bb59f24dbb56797f352d38a2b501cf1e610b4c0f8db8a5f365bdd207f12ea0d0",
         "title": "Tomb Raider: Definitive Edition",
         "slug": "tomb-raider-definitive-edition-switch-1",
         "platform": "switch1",
@@ -756,7 +756,7 @@
     {
       "id": "prd_7cb47defb1ff4c61",
       "expected": {
-        "documentSha256": "7f04dce39433b7c4d58d207d6181d55ce37563480b0f84eb36eca5bceef283c7",
+        "documentSha256": "0fab366620ad994ad91ac9a68914045a47aca0404e075a8766034feee819a6c2",
         "title": "Cuphead",
         "slug": "cuphead-switch",
         "platform": "switch1",
