@@ -20,6 +20,17 @@ on:
       - src/lib/gameImportForm.ts
       - src/lib/gameZipImport.test.ts
       - .github/workflows/reviewed-catalogue-update.yml
+  pull_request:
+    paths:
+      - data/reviewed-catalogue-batch-01.json
+      - scripts/reviewed-catalogue-update.mjs
+      - scripts/reviewed-catalogue-update.test.mjs
+      - scripts/lib/reviewed-catalogue-update.mjs
+      - scripts/lib/reviewed-catalogue-entry.ts
+      - scripts/lib/media-pipeline.mjs
+      - src/lib/gameImportForm.ts
+      - src/lib/gameZipImport.test.ts
+      - .github/workflows/reviewed-catalogue-update.yml
 
 permissions:
   contents: read
