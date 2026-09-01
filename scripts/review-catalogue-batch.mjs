@@ -13,28 +13,27 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
-import {
-  fetchText,
-  metadataFrom,
-  parseStorePage,
-} from "./lib/nintendo-store.mjs";
+import { fetchText, metadataFrom, parseStorePage } from "./lib/nintendo-store.mjs";
 import { candidatesFor, validateCandidate } from "./lib/media-candidates.mjs";
 
 const DB_NAME = "bananto";
 const CONFIG = "wrangler.jsonc";
 const OUT = "catalogue-review-batch";
 const manifest = JSON.parse(readFileSync("data/catalogue-review-batch.json", "utf8"));
-const products = Array.isArray(manifest.products)
+const discoverNext = manifest.discoverNext === true;
+let products = Array.isArray(manifest.products)
   ? manifest.products.map((entry) =>
       typeof entry === "string" ? { id: entry, nintendoUrl: "" } : entry,
     )
   : [];
 const ids = products.map((entry) => String(entry?.id || ""));
-if (!ids.length || ids.length > 5 || new Set(ids).size !== ids.length) {
+if (!discoverNext && (!ids.length || ids.length > 5 || new Set(ids).size !== ids.length)) {
   throw new Error("The review manifest must contain one to five distinct product ids.");
 }
-for (const entry of products) {
-  if (!/^https:\/\/www\.nintendo\.com\/us\/store\/products\/[a-z0-9-]+\/$/.test(entry.nintendoUrl)) {
+for (const entry of discoverNext ? [] : products) {
+  if (
+    !/^https:\/\/www\.nintendo\.com\/us\/store\/products\/[a-z0-9-]+\/$/.test(entry.nintendoUrl)
+  ) {
     throw new Error(`Missing canonical Nintendo URL for ${entry.id}.`);
   }
 }
@@ -80,10 +79,16 @@ function loadCatalogue() {
       .filter((doc) => doc?.id)
       .map((doc) => [String(doc.id), doc]),
   );
-  for (const id of ids) {
-    const row = d1(`SELECT value FROM store_kv WHERE key = ${esc(`store:product:${id}`)}`)?.[0];
-    if (!row) continue;
-    const doc = JSON.parse(row.value);
+  const overlays = d1("SELECT key, value FROM store_kv WHERE key LIKE 'store:product:%'");
+  for (const row of overlays) {
+    let doc;
+    try {
+      doc = JSON.parse(String(row.value || ""));
+    } catch {
+      continue;
+    }
+    const id = String(doc?.id || String(row.key || "").replace(/^store:product:/, ""));
+    if (!id) continue;
     if (doc?._deleted) live.delete(id);
     else if (doc?.id) live.set(String(doc.id), doc);
   }
@@ -245,6 +250,22 @@ async function captureOfficial(entry) {
 
 mkdirSync(path.join(OUT, "products"), { recursive: true });
 const catalogue = loadCatalogue();
+if (discoverNext) {
+  const reviewed = new Set(
+    (Array.isArray(manifest.reviewedIds) ? manifest.reviewedIds : []).map(String),
+  );
+  products = [...catalogue.values()]
+    .filter(
+      (doc) =>
+        String(doc?.categoryId || doc?.category || "").toLowerCase() === "nintendo-switch-games" &&
+        !reviewed.has(String(doc.id)),
+    )
+    .slice(0, 5)
+    .map((doc) => ({ id: String(doc.id), nintendoUrl: "" }));
+  if (!products.length || products.length > 5) {
+    throw new Error("Discovery must resolve one to five unreviewed games.");
+  }
+}
 const report = { generatedAt: new Date().toISOString(), readOnly: true, products: [] };
 for (const entry of products) {
   const id = String(entry.id);
@@ -257,7 +278,7 @@ for (const entry of products) {
     slug: doc.slug,
     keyCount: Object.keys(doc).length,
     media: await captureMedia(doc),
-    official: await captureOfficial(entry),
+    official: discoverNext ? null : await captureOfficial(entry),
   });
 }
 writeFileSync(path.join(OUT, "report.json"), JSON.stringify(report, null, 2) + "\n");
@@ -274,13 +295,17 @@ for (const product of report.products) {
       `- ${media.role}[${media.index}]: ${media.fetch}${media.width ? ` · ${media.width}×${media.height} · ${media.shape}` : ""} · \`${media.source}\``,
     );
   }
-  lines.push(
-    `- Nintendo: **${product.official.title || "(title unavailable)"}** · \`${product.official.urlKey}\` · ${product.official.nsuid || "no NSUID"}`,
-  );
-  for (const media of product.official.media) {
+  if (product.official) {
     lines.push(
-      `- official ${media.role}[${media.index}]: ${media.ok ? "ok" : "failed"}${media.width ? ` · ${media.width}×${media.height} · ${media.shapeOk ? "role-ok" : "wrong-role"}` : ""} · \`${media.source}\``,
+      `- Nintendo: **${product.official.title || "(title unavailable)"}** · \`${product.official.urlKey}\` · ${product.official.nsuid || "no NSUID"}`,
     );
+    for (const media of product.official.media) {
+      lines.push(
+        `- official ${media.role}[${media.index}]: ${media.ok ? "ok" : "failed"}${media.width ? ` · ${media.width}×${media.height} · ${media.shapeOk ? "role-ok" : "wrong-role"}` : ""} · \`${media.source}\``,
+      );
+    }
+  } else {
+    lines.push("- Nintendo: discovery pass; canonical URL not fetched yet.");
   }
   lines.push("");
 }

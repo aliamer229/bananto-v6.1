@@ -8,12 +8,17 @@ on:
       - data/catalogue-review-batch.json
       - scripts/review-catalogue-batch.mjs
       - .github/workflows/review-catalogue-batch.yml
+  pull_request:
+    paths:
+      - data/catalogue-review-batch.json
+      - scripts/review-catalogue-batch.mjs
+      - .github/workflows/review-catalogue-batch.yml
 
 permissions:
   contents: read
 
 concurrency:
-  group: review-catalogue-batch
+  group: review-catalogue-batch-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
