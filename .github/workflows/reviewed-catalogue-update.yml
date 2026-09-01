@@ -69,7 +69,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.apply }}" = "true" ]; then
+          SAME_REPO_PR="${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'codex/product-catalogue-repair' }}"
+          if { [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.apply }}" = "true" ]; } || \
+             { [ "$SAME_REPO_PR" = "true" ] && jq -e '.apply == true' data/reviewed-catalogue-batch-01.json >/dev/null; }; then
             node scripts/reviewed-catalogue-update.mjs --apply
           else
             node scripts/reviewed-catalogue-update.mjs

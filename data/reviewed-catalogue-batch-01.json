@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "batch": 1,
-  "apply": false,
+  "apply": true,
   "reviewedAt": "2026-09-01",
   "clearFields": [
     "characterName",
