@@ -1,0 +1,46 @@
+name: Review catalogue batch (read-only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/product-catalogue-repair]
+    paths:
+      - data/catalogue-review-batch.json
+      - scripts/review-catalogue-batch.mjs
+      - .github/workflows/review-catalogue-batch.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: review-catalogue-batch
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Mask identifiers
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "::add-mask::$ACCOUNT_ID"
+      - name: Read production documents and media
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/review-catalogue-batch.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: catalogue-review-batch
+          path: catalogue-review-batch/
+          if-no-files-found: error
+          retention-days: 90
