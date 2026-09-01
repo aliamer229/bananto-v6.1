@@ -13,13 +13,30 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
+import {
+  fetchText,
+  metadataFrom,
+  parseStorePage,
+} from "./lib/nintendo-store.mjs";
+import { candidatesFor, validateCandidate } from "./lib/media-candidates.mjs";
+
 const DB_NAME = "bananto";
 const CONFIG = "wrangler.jsonc";
 const OUT = "catalogue-review-batch";
 const manifest = JSON.parse(readFileSync("data/catalogue-review-batch.json", "utf8"));
-const ids = Array.isArray(manifest.products) ? manifest.products.map(String) : [];
+const products = Array.isArray(manifest.products)
+  ? manifest.products.map((entry) =>
+      typeof entry === "string" ? { id: entry, nintendoUrl: "" } : entry,
+    )
+  : [];
+const ids = products.map((entry) => String(entry?.id || ""));
 if (!ids.length || ids.length > 5 || new Set(ids).size !== ids.length) {
   throw new Error("The review manifest must contain one to five distinct product ids.");
+}
+for (const entry of products) {
+  if (!/^https:\/\/www\.nintendo\.com\/us\/store\/products\/[a-z0-9-]+\/$/.test(entry.nintendoUrl)) {
+    throw new Error(`Missing canonical Nintendo URL for ${entry.id}.`);
+  }
 }
 
 const WRANGLER = existsSync("node_modules/.bin/wrangler")
@@ -161,10 +178,76 @@ async function captureMedia(doc) {
   return rows;
 }
 
+async function captureOfficial(entry) {
+  const response = await fetchText(entry.nintendoUrl);
+  if (!response.body) {
+    throw new Error(`Nintendo page failed for ${entry.id}: HTTP ${response.status}`);
+  }
+  const urlKey = new URL(entry.nintendoUrl).pathname.match(/\/products\/([^/]+)/)?.[1] || "";
+  const parsed = parseStorePage(response.body, { urlKey });
+  if (!parsed?.product) throw new Error(`Nintendo product payload not found for ${entry.id}.`);
+
+  const product = parsed.product;
+  const official = {
+    url: entry.nintendoUrl,
+    urlKey: parsed.urlKey,
+    title: product.name || product.title || "",
+    platform: product.platform || null,
+    productCode: product.productCode || "",
+    nsuid: product.nsuid || "",
+    applicationId: product.applicationId || "",
+    metadata: metadataFrom(product),
+    media: [],
+  };
+  const officialDir = path.join(OUT, "official-media", entry.id);
+  mkdirSync(officialDir, { recursive: true });
+
+  for (const [role, candidates] of Object.entries(candidatesFor(product))) {
+    for (let index = 0; index < candidates.length; index++) {
+      const candidate = candidates[index];
+      const checked = await validateCandidate(candidate, role, sharp);
+      const row = {
+        role,
+        index,
+        source: candidate.url,
+        provenance: candidate.provenance,
+        ok: checked.ok,
+        shapeOk: checked.shapeOk ?? false,
+        width: checked.width ?? null,
+        height: checked.height ?? null,
+        shape: checked.shape ?? null,
+        reason: checked.reason || "",
+      };
+      official.media.push(row);
+      if (!checked.ok || !checked.shapeOk || !checked.buffer) continue;
+      const extension =
+        {
+          "image/jpeg": "jpg",
+          "image/png": "png",
+          "image/gif": "gif",
+          "image/webp": "webp",
+          "image/avif": "avif",
+          "image/bmp": "bmp",
+          "image/svg+xml": "svg",
+        }[checked.sniffed] || "bin";
+      const filename = `${role}-${String(index + 1).padStart(2, "0")}.${extension}`;
+      writeFileSync(path.join(officialDir, filename), checked.buffer);
+      row.artifact = `official-media/${entry.id}/${filename}`;
+    }
+  }
+
+  writeFileSync(
+    path.join(OUT, "products", `${entry.id}.official.json`),
+    JSON.stringify(official, null, 2) + "\n",
+  );
+  return official;
+}
+
 mkdirSync(path.join(OUT, "products"), { recursive: true });
 const catalogue = loadCatalogue();
 const report = { generatedAt: new Date().toISOString(), readOnly: true, products: [] };
-for (const id of ids) {
+for (const entry of products) {
+  const id = String(entry.id);
   const doc = catalogue.get(id);
   if (!doc) throw new Error(`Product not found: ${id}`);
   writeFileSync(path.join(OUT, "products", `${id}.json`), JSON.stringify(doc, null, 2) + "\n");
@@ -174,6 +257,7 @@ for (const id of ids) {
     slug: doc.slug,
     keyCount: Object.keys(doc).length,
     media: await captureMedia(doc),
+    official: await captureOfficial(entry),
   });
 }
 writeFileSync(path.join(OUT, "report.json"), JSON.stringify(report, null, 2) + "\n");
@@ -188,6 +272,14 @@ for (const product of report.products) {
   for (const media of product.media) {
     lines.push(
       `- ${media.role}[${media.index}]: ${media.fetch}${media.width ? ` · ${media.width}×${media.height} · ${media.shape}` : ""} · \`${media.source}\``,
+    );
+  }
+  lines.push(
+    `- Nintendo: **${product.official.title || "(title unavailable)"}** · \`${product.official.urlKey}\` · ${product.official.nsuid || "no NSUID"}`,
+  );
+  for (const media of product.official.media) {
+    lines.push(
+      `- official ${media.role}[${media.index}]: ${media.ok ? "ok" : "failed"}${media.width ? ` · ${media.width}×${media.height} · ${media.shapeOk ? "role-ok" : "wrong-role"}` : ""} · \`${media.source}\``,
     );
   }
   lines.push("");
