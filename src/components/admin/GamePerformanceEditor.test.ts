@@ -41,6 +41,22 @@ describe("GamePerformanceEditor hardware choices", () => {
     );
   });
 
+  it("keeps a persisted hardware id selected while the hardware list is loading", () => {
+    const choices = buildHardwareChoices(
+      [],
+      [
+        {
+          hardwareId: "prd_acf4c89908764c62",
+          device: "Nintendo Switch 2",
+          deviceSlug: "nintendo-switch-2",
+        },
+      ],
+    );
+    expect(choices.filter((choice) => choice.slug === "nintendo-switch-2")).toEqual([
+      expect.objectContaining({ id: "prd_acf4c89908764c62" }),
+    ]);
+  });
+
   it("auto-selects Nintendo Switch 2 without inventing performance numbers", () => {
     const record = defaultSwitch2Performance([]);
     expect(record).toMatchObject({
@@ -93,5 +109,24 @@ describe("GamePerformanceEditor hardware choices", () => {
       verificationStatus: "official",
       handheld: { supported: true, resolution: "1080p", fps: "60" },
     });
+  });
+
+  it("repairs an old empty available row without inventing resolution or FPS", () => {
+    const records = ensureSwitch2Performance([
+      {
+        device: "Nintendo Switch 2",
+        deviceSlug: "nintendo-switch-2",
+        informationStatus: "available",
+        handheld: { supported: true },
+        tv: { supported: true },
+      },
+    ]);
+    expect(records[0]).toMatchObject({
+      informationStatus: "not_published",
+      verificationStatus: "unverified",
+      sourceName: "Nintendo Switch 2 compatibility review",
+    });
+    expect(records[0]?.handheld?.resolution).toBeUndefined();
+    expect(records[0]?.tv?.fps).toBeUndefined();
   });
 });

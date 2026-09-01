@@ -85,36 +85,51 @@ if (body.d1 !== undefined || body.productsRead !== undefined) {
 }
 
 /*
-  The home page is checked separately from the API. A Worker can answer
-  `/api/health` perfectly while the server-rendered page throws, and the page is
-  what a customer sees.
+  Public pages are checked separately from the API. A Worker can answer
+  `/api/health` perfectly while an omitted file route serves the application's
+  own 404 page. Policy and wallet are linked from the storefront and therefore
+  form part of the release gate, not a manual post-deploy check.
 */
-let homeOk = false;
-try {
-  const res = await fetch(`${ORIGIN}/`, {
-    headers: { "user-agent": "bananto-deploy-verify" },
-    redirect: "follow",
-  });
-  const text = await res.text();
-  homeOk = res.ok && !/حدث خطأ غير متوقع|Internal Server Error/i.test(text);
-  say(
-    `- \`/\` → HTTP ${res.status}, ${text.length} bytes${
-      res.status === 403 ? " (bot protection — not a deploy failure)" : ""
-    }`,
-  );
-  // A challenge page is the edge protecting the site, not the site being broken.
-  if (res.status === 403) homeOk = true;
-} catch (error) {
-  say(`- \`/\` → unreachable: ${String(error?.message || error)}`);
+const PAGE_PATHS = (process.env.VERIFY_PATHS || "/,/policy,/wallet")
+  .split(",")
+  .map((path) => path.trim())
+  .filter(Boolean);
+let pagesOk = true;
+for (const path of PAGE_PATHS) {
+  try {
+    const res = await fetch(`${ORIGIN}${path}`, {
+      headers: { "user-agent": "bananto-deploy-verify" },
+      redirect: "follow",
+    });
+    const text = await res.text();
+    const application404 =
+      /<h1[^>]*>\s*404\s*<\/h1>|Page not found|Page you're looking for doesn't exist/i.test(text);
+    let pageOk = res.ok && !application404 && !/حدث خطأ غير متوقع|Internal Server Error/i.test(text);
+    // A challenge page is the edge protecting the site, not the site being broken.
+    if (res.status === 403) pageOk = true;
+    pagesOk = pagesOk && pageOk;
+    say(
+      `- \`${path}\` → HTTP ${res.status}, ${text.length} bytes${
+        res.status === 403
+          ? " (bot protection — not a deploy failure)"
+          : application404
+            ? " (application 404)"
+            : ""
+      }`,
+    );
+  } catch (error) {
+    pagesOk = false;
+    say(`- \`${path}\` → unreachable: ${String(error?.message || error)}`);
+  }
 }
 
 const healthy = health?.ok === true && body.status === "OK";
 say();
-say(healthy && homeOk ? `**verified: the deployed site is healthy**` : `**FAILED**`);
+say(healthy && pagesOk ? `**verified: the deployed site is healthy**` : `**FAILED**`);
 
 writeFileSync("deployment-verification.md", lines.join("\n") + "\n");
 
-if (!healthy || !homeOk) {
+if (!healthy || !pagesOk) {
   console.error("deployment verification failed");
   process.exit(1);
 }

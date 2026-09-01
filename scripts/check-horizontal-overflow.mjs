@@ -40,9 +40,18 @@ const BASE = args.base ?? process.env.BASE_URL ?? "http://localhost:3000";
 const WIDTHS = (args.widths ?? "320,360,375,390,430,768").split(",").map(Number);
 const PATHS = (
   args.paths ??
-  ["/", "/games", "/category/nintendo-switch-games", "/bundles", "/cart", "/faq", "/support"].join(
-    ",",
-  )
+  [
+    "/",
+    "/games",
+    "/category/nintendo-switch-games",
+    "/product/prd_5ba181a080d14238",
+    "/bundles",
+    "/cart",
+    "/wallet",
+    "/policy",
+    "/faq",
+    "/support",
+  ].join(",")
 ).split(",");
 const SETTLE = Number(args.settle ?? 5000);
 /**

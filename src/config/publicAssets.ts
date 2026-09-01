@@ -59,6 +59,7 @@ export const UI_SOUND_MAP: Record<string, string> = {
   load: `${ASSET_BASE_URL}/Audio/Ui/loading.webm`,
   bumper_end: `${ASSET_BASE_URL}/Audio/Ui/bumper_end.webm`,
   confirm: `${ASSET_BASE_URL}/Audio/Ui/bumper_end.webm`,
+  success: `${ASSET_BASE_URL}/Audio/Ui/bumper_end.webm`,
   action: `${ASSET_BASE_URL}/Audio/Ui/bumper_end.webm`,
   send_message: `${ASSET_BASE_URL}/Audio/Ui/klick.webm`,
 };

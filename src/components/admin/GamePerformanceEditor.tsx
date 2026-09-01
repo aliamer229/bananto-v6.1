@@ -11,7 +11,6 @@ import {
   buildHardwareChoices,
   defaultSwitch2Performance,
   ensureSwitch2Performance,
-  SWITCH_2_CHOICE,
 } from "./GamePerformanceEditor.model";
 
 type Record_ = Record<string, any>;
@@ -201,26 +200,8 @@ export function GamePerformanceEditor({
       ),
     );
   const add = () => {
-    const preferred =
-      hardwareChoices.find(
-        (hardware) => slugifyDevice(hardware.slug || hardware.title) === "nintendo-switch-2",
-      ) || SWITCH_2_CHOICE;
-    onChange([
-      ...records,
-      {
-        device: String(preferred?.title || preferred?.name || ""),
-        deviceSlug: slugifyDevice(preferred?.slug || preferred?.title || ""),
-        hardwareId:
-          preferred?.id && !String(preferred.id).startsWith("slug:")
-            ? String(preferred.id)
-            : undefined,
-        deviceModel: String(preferred?.model || preferred?.modelNumber || ""),
-        informationStatus: "available",
-        handheld: { supported: true },
-        tv: { supported: true },
-        modes: [],
-      },
-    ]);
+    if (records.some((record) => record.deviceSlug === "nintendo-switch-2")) return;
+    onChange([...records, defaultSwitch2Performance(hardwareProducts)]);
   };
 
   return (

@@ -41,8 +41,8 @@ export function HubNav({ items }: { items: NavItem[] }) {
   }, [active]);
 
   return (
-    <div className="sticky top-0 z-30 border-b border-white/[0.06] bg-ink-900/90 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 lg:px-6">
+    <div className="sticky top-0 z-30 w-full min-w-0 max-w-full border-b border-white/[0.06] bg-ink-900/90 backdrop-blur-xl">
+      <div className="mx-auto flex w-full min-w-0 max-w-6xl items-center gap-3 px-4 lg:px-6">
         <div
           ref={railRef}
           className="no-scrollbar flex flex-1 gap-1 overflow-x-auto py-2.5"

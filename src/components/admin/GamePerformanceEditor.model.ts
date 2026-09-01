@@ -41,19 +41,23 @@ export function buildHardwareChoices(
     const id = hardware.id == null ? `slug:${slug}` : String(hardware.id);
     if (title && slug) add({ ...hardware, id, title, slug });
   }
-  add(SWITCH_2_CHOICE);
 
+  // Keep a persisted hardware id selectable while the hardware request is
+  // still loading. Adding the slug-only fallback before records used to hide
+  // this option (same slug), leaving the <select> with a value that had no
+  // matching <option> and therefore looked empty.
   for (const record of records) {
     const slug = record.deviceSlug || slugifyDevice(record.device);
     if (!slug || seen.has(slug)) continue;
     add({
-      id: `slug:${slug}`,
+      id: record.hardwareId || `slug:${slug}`,
       title: record.device || slug,
       slug,
       model: record.deviceModel || "",
       canonical: true,
     });
   }
+  add(SWITCH_2_CHOICE);
   return choices;
 }
 
@@ -102,11 +106,47 @@ export function ensureSwitch2Performance(
     const current = records[switch2Index]!;
     const hardwareId = canonical.hardwareId || current.hardwareId;
     const deviceModel = canonical.deviceModel || current.deviceModel;
+    const hasKnownMode =
+      current.handheld?.supported === false ||
+      current.tv?.supported === false ||
+      Boolean(
+        current.handheld?.resolution ||
+          current.handheld?.outputResolution ||
+          current.handheld?.fps ||
+          current.tv?.resolution ||
+          current.tv?.outputResolution ||
+          current.tv?.fps ||
+          current.modes?.some(
+            (mode) =>
+              mode.handheldResolution || mode.handheldFps || mode.tvResolution || mode.tvFps,
+          ),
+      );
+    const needsHonestUnknownState = current.informationStatus === "available" && !hasKnownMode;
+    const needsUnknownMetadata =
+      current.informationStatus === "not_published" ||
+      current.informationStatus === "not_tested" ||
+      needsHonestUnknownState;
+    const repairedStatus = needsHonestUnknownState
+      ? canonical.informationStatus
+      : current.informationStatus;
+    const unavailableReason = needsUnknownMetadata
+      ? current.unavailableReason || canonical.unavailableReason
+      : current.unavailableReason;
+    const sourceName = needsUnknownMetadata
+      ? current.sourceName || canonical.sourceName
+      : current.sourceName;
+    const verificationStatus = needsUnknownMetadata
+      ? current.verificationStatus || canonical.verificationStatus
+      : current.verificationStatus;
     const alreadyBound =
       current.device === canonical.device &&
       current.deviceSlug === canonical.deviceSlug &&
       current.hardwareId === hardwareId &&
-      current.deviceModel === deviceModel;
+      current.deviceModel === deviceModel &&
+      current.informationStatus === repairedStatus &&
+      current.unavailableReason === unavailableReason &&
+      current.sourceName === sourceName &&
+      current.verificationStatus === verificationStatus;
     if (alreadyBound) return records;
 
     return records.map((record, index) =>
@@ -117,6 +157,10 @@ export function ensureSwitch2Performance(
             deviceSlug: canonical.deviceSlug,
             hardwareId,
             deviceModel,
+            informationStatus: repairedStatus,
+            unavailableReason,
+            sourceName,
+            verificationStatus,
           }
         : record,
     );

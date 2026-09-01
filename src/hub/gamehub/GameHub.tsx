@@ -85,11 +85,11 @@ export function GameHub({
 
   return (
     <HubShell game={game} onNavigateGuide={onNavigateGuide}>
-      <article>
+      <article className="w-full min-w-0 max-w-full">
         <Hero />
         <HubNav items={navItems} />
 
-        <div className="mx-auto max-w-6xl px-4 lg:px-6">
+        <div className="mx-auto w-full min-w-0 max-w-6xl px-4 lg:px-6">
           {/* 1 — Nintendo: the platform this storefront exists for. */}
           <NintendoSection />
           <Switch2Section />
