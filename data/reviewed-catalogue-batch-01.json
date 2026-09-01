@@ -1,0 +1,945 @@
+{
+  "schemaVersion": 1,
+  "batch": 1,
+  "apply": false,
+  "reviewedAt": "2026-09-01",
+  "clearFields": [
+    "characterName",
+    "amiiboSeries",
+    "figureType",
+    "inGameUnlock",
+    "compatibleGames",
+    "boxCondition",
+    "releaseWave",
+    "rarity",
+    "accessoryType",
+    "compatibleDevices",
+    "brand",
+    "material",
+    "availableColors",
+    "keyFeatures",
+    "cardValue",
+    "region",
+    "cardType",
+    "deliveryMethod",
+    "redemptionGuide",
+    "redemptionSteps",
+    "validity",
+    "usedType",
+    "conditionGrade",
+    "packaging",
+    "guaranteeStatus",
+    "conditionNotes",
+    "accountType",
+    "badge",
+    "bundleGamesSummary",
+    "boxContents",
+    "boxContentsList",
+    "boxContentsText",
+    "hardwareModel",
+    "colorEdition",
+    "storageCapacity",
+    "screenSpecs",
+    "batteryLife",
+    "warrantyCondition",
+    "connectivity",
+    "metacriticRating",
+    "opencriticRating",
+    "userScore",
+    "perfHdr"
+  ],
+  "products": [
+    {
+      "id": "prd_5ba181a080d14238",
+      "expected": {
+        "documentSha256": "9f87e9fe443be6bf91aefa7ebd56f64ad989ced7fa065b457bffe8f0a1a22754",
+        "title": "Star Wars Outlaws",
+        "slug": "star-wars-outlaws-switch-2",
+        "platform": "switch2",
+        "price": 14750,
+        "cost": 1250,
+        "optionCount": 2,
+        "typeCount": 2,
+        "isHidden": true
+      },
+      "official": {
+        "url": "https://www.nintendo.com/us/store/products/star-wars-outlaws-gold-edition-switch-2/",
+        "title": "Star Wars Outlaws Gold Edition",
+        "platform": "Nintendo Switch 2",
+        "nsuid": "70010000095790",
+        "productCode": "BEEPAAHFA",
+        "titleId": "0400fed0215a4000"
+      },
+      "patch": {
+        "title": "Star Wars Outlaws Gold Edition",
+        "titleEn": "Star Wars Outlaws Gold Edition",
+        "titleAr": "ستار وورز أوتلاوز — الإصدار الذهبي",
+        "slug": "star-wars-outlaws-gold-edition-switch-2",
+        "platform": "switch2",
+        "edition": "Gold Edition",
+        "description_ar": "عِش مغامرة خارج عن القانون في عالم Star Wars مع Kay Vess ورفيقها Nix. يضم الإصدار الذهبي اللعبة الأساسية وحزمة الموسم، بما فيها قصتا Wild Card وA Pirate’s Fortune ومهمة Jabba’s Gambit وحزم الشخصيات والمظاهر المذكورة في صفحة Nintendo الرسمية.",
+        "description_short": "مغامرة عالم مفتوح على Nintendo Switch 2 تضم اللعبة الأساسية وحزمة الموسم كاملة.",
+        "tagline": "Live the high-stakes life of an outlaw across the Star Wars underworld.",
+        "seriesName": "Star Wars",
+        "studioName": "Ubisoft / Massive Entertainment",
+        "compatibility": ["Nintendo Switch 2"],
+        "gameIsOffline": true,
+        "gameIsOnline": false,
+        "gameLanguageLocked": false,
+        "mpLocalPlayers": 1,
+        "mpOnlinePlayers": 0,
+        "mpCoop": false,
+        "mpCompetitive": false,
+        "mpLocalWireless": false,
+        "mpSplitScreen": false,
+        "nintendoGameKeyCard": true,
+        "nintendoPhysicalNeedsDownload": true,
+        "switch2Enhanced": true,
+        "switch2Exclusive": false,
+        "features": [
+          "Open-world planets and space travel",
+          "Syndicate reputation system",
+          "Nix companion interactions",
+          "Touch controls for menus and selected minigames",
+          "Gyroscope-assisted aiming and motion controls",
+          "Both Wild Card and A Pirate’s Fortune story packs"
+        ],
+        "fitFor": [
+          "Players who want a single-player open-world Star Wars adventure",
+          "Players who enjoy stealth, blaster combat, exploration, and faction choices",
+          "Players who want the complete Gold Edition package on Switch 2"
+        ],
+        "notFitFor": [
+          "Players looking for multiplayer or local co-op",
+          "Players who cannot download the physical Game-Key Card installation",
+          "Players expecting a locked 60 FPS performance mode"
+        ],
+        "gameplayPillars": [
+          {
+            "title": "Scoundrel freedom",
+            "description": "Use stealth, blasters, gadgets, and Nix to approach dangerous jobs."
+          },
+          {
+            "title": "Syndicate reputation",
+            "description": "Choices and contracts affect Kay’s standing with criminal factions."
+          },
+          {
+            "title": "Planetary exploration",
+            "description": "Travel through cities, cantinas, wilderness, and space aboard the Trailblazer."
+          },
+          {
+            "title": "Gold Edition content",
+            "description": "Includes both official story packs and the Season Pass bonus content listed by Nintendo."
+          }
+        ],
+        "worldSummary": "Kay Vess and Nix cross the galactic underworld while building a crew, navigating rival syndicates, and preparing a major heist.",
+        "editionsList": [
+          {
+            "name": "Gold Edition",
+            "contents": [
+              { "label": "Base game" },
+              { "label": "Wild Card story pack" },
+              { "label": "A Pirate’s Fortune story pack" },
+              { "label": "Jabba’s Gambit mission" },
+              { "label": "Kessel Runner character pack" },
+              { "label": "Hunter’s Legacy bundle" },
+              { "label": "Cartel Ronin bundle" }
+            ]
+          }
+        ],
+        "faq": [
+          {
+            "q": "What edition is this?",
+            "a": "This is the Gold Edition; it includes the base game and the Season Pass content listed by Nintendo."
+          },
+          {
+            "q": "Does it support multiplayer?",
+            "a": "No. Nintendo lists one player and the game is a single-player adventure."
+          },
+          {
+            "q": "What is the official Switch 2 frame-rate target?",
+            "a": "Ubisoft states a target of up to 30 FPS in both TV and handheld modes; no exact rendering resolution is published."
+          },
+          {
+            "q": "Does the physical copy contain the full game on the card?",
+            "a": "No. Ubisoft confirms it is a Nintendo Game-Key Card and requires an internet download for installation."
+          },
+          {
+            "q": "Can progress move from another platform?",
+            "a": "Yes. Ubisoft confirms cross-progression through Ubisoft Connect."
+          }
+        ],
+        "timeline": [
+          {
+            "date": "2025-09-04",
+            "kind": "release",
+            "title": "Nintendo Switch 2 release",
+            "detail": "Gold Edition launched for Nintendo Switch 2."
+          },
+          {
+            "date": "2025-09-07",
+            "kind": "update",
+            "title": "Official Switch 2 FAQ",
+            "detail": "Ubisoft documented performance, controls, installation, story packs, and cross-progression."
+          }
+        ],
+        "guides": [
+          {
+            "title": "Nintendo Switch 2 release FAQ",
+            "summary": "Official answers for performance, installation, controls, content, and cross-progression.",
+            "url": "https://www.ubisoft.com/en-us/game/star-wars/outlaws/news-updates/1kKhQ1Heps7YmSJdFiV87L/switch-2-release-faq"
+          }
+        ],
+        "sources": [
+          {
+            "name": "Nintendo eShop (US)",
+            "url": "https://www.nintendo.com/us/store/products/star-wars-outlaws-gold-edition-switch-2/"
+          },
+          {
+            "name": "Ubisoft Switch 2 Release FAQ",
+            "url": "https://www.ubisoft.com/en-us/game/star-wars/outlaws/news-updates/1kKhQ1Heps7YmSJdFiV87L/switch-2-release-faq"
+          }
+        ],
+        "perfResolutionDocked": "Not published by Ubisoft",
+        "perfResolutionHandheld": "Not published by Ubisoft",
+        "perfFps": "Up to 30",
+        "perfNotes": "Ubisoft publishes an up-to-30-FPS target for TV and handheld modes but does not publish exact rendering resolutions.",
+        "devicePerformance": [
+          {
+            "device": "Nintendo Switch 2",
+            "deviceSlug": "nintendo-switch-2",
+            "deviceModel": "Nintendo Switch 2",
+            "informationStatus": "available",
+            "handheld": {
+              "supported": true,
+              "resolution": "Not published by Ubisoft",
+              "fps": "Up to 30",
+              "mode": "Handheld"
+            },
+            "tv": {
+              "supported": true,
+              "resolution": "Not published by Ubisoft",
+              "fps": "Up to 30",
+              "mode": "TV"
+            },
+            "sourceName": "Ubisoft Switch 2 Release FAQ",
+            "sourceUrl": "https://www.ubisoft.com/en-us/game/star-wars/outlaws/news-updates/1kKhQ1Heps7YmSJdFiV87L/switch-2-release-faq",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01",
+            "performanceNotes": "Official target is up to 30 FPS in both TV and handheld modes; exact resolution is not published."
+          }
+        ]
+      }
+    },
+    {
+      "id": "prd_07de8f47fbf44b28",
+      "expected": {
+        "documentSha256": "1c088c405ff87e1de5c662c4d32d2f1ebcd766c1da4f5269e72f80aff3757b7d",
+        "title": "Dead by Daylight",
+        "slug": "dead-by-daylight-switch-2",
+        "platform": "switch2",
+        "price": 14750,
+        "cost": 1250,
+        "optionCount": 2,
+        "typeCount": 4,
+        "isHidden": true
+      },
+      "official": {
+        "url": "https://www.nintendo.com/us/store/products/dead-by-daylight-switch/",
+        "title": "Dead by Daylight",
+        "platform": "Nintendo Switch",
+        "nsuid": "70010000016124",
+        "productCode": "HACPASR5A",
+        "titleId": "01004c400cf96000"
+      },
+      "patch": {
+        "title": "Dead by Daylight",
+        "titleEn": "Dead by Daylight",
+        "titleAr": "ديد باي دايلايت",
+        "slug": "dead-by-daylight-switch",
+        "platform": "switch1",
+        "edition": "Standard Edition",
+        "description_ar": "لعبة رعب جماعية غير متناظرة عبر الإنترنت: أربعة ناجين يحاولون إصلاح المولدات والهرب، بينما يطاردهم لاعب خامس بدور القاتل. إصدار Nintendo الرسمي هو إصدار Switch، ولا توجد حالياً نسخة ترقية مستقلة لـ Switch 2 بحسب دعم Behaviour.",
+        "description_short": "مواجهات رعب 4 ضد 1 عبر الإنترنت بين ناجين وقاتل، مع اللعب المشترك والتقدم المشترك.",
+        "tagline": "Death Is Not an Escape.",
+        "seriesName": "Dead by Daylight",
+        "studioName": "Behaviour Interactive",
+        "compatibility": ["Nintendo Switch", "Nintendo Switch 2"],
+        "gameIsOffline": false,
+        "gameIsOnline": true,
+        "gameLanguageLocked": false,
+        "mpLocalPlayers": 1,
+        "mpOnlinePlayers": 5,
+        "mpCoop": true,
+        "mpCompetitive": true,
+        "mpLocalWireless": false,
+        "mpSplitScreen": false,
+        "nintendoGameKeyCard": false,
+        "nintendoPhysicalNeedsDownload": false,
+        "switch2Enhanced": false,
+        "switch2Exclusive": false,
+        "features": [
+          "Asymmetrical online 4v1 matches",
+          "Cross-play with supported PC and console platforms",
+          "Cross-progression through a Behaviour Account",
+          "Distinct Killer powers and Survivor perks",
+          "Ongoing licensed and original chapters"
+        ],
+        "fitFor": [
+          "Players who enjoy competitive online horror",
+          "Groups who want cross-platform matchmaking",
+          "Players who like perk builds and live-service progression"
+        ],
+        "notFitFor": [
+          "Players without a stable internet connection and Nintendo Switch Online",
+          "Players looking for offline play or local split-screen",
+          "Players expecting a dedicated Switch 2 upgrade"
+        ],
+        "gameplayPillars": [
+          {
+            "title": "Four Survivors",
+            "description": "Repair generators, rescue teammates, and escape while managing limited information."
+          },
+          {
+            "title": "One Killer",
+            "description": "Track, chase, down, and sacrifice Survivors using a distinct power."
+          },
+          {
+            "title": "Perks and progression",
+            "description": "Build character loadouts and adapt tactics across changing Trials."
+          },
+          {
+            "title": "Cross-platform community",
+            "description": "Nintendo Switch participates in official cross-play and cross-progression, with documented Switch restrictions."
+          }
+        ],
+        "worldSummary": "Trials take place inside the Entity’s Fog, where Survivors and Killers repeat unpredictable hunts across themed realms.",
+        "editionsList": [{ "name": "Standard Edition" }],
+        "faq": [
+          {
+            "q": "Is this a native Nintendo Switch 2 edition?",
+            "a": "No. Behaviour states there are currently no plans for a Switch 2 upgrade; this catalogue entry is the Nintendo Switch version running through compatibility."
+          },
+          {
+            "q": "Is an internet connection required?",
+            "a": "Yes. The game is online multiplayer and Nintendo lists Nintendo Switch Online as required."
+          },
+          {
+            "q": "How many players are in a match?",
+            "a": "Up to five online players: four Survivors and one Killer."
+          },
+          {
+            "q": "Does Nintendo Switch support cross-play?",
+            "a": "Yes, when platforms are on compatible game versions."
+          },
+          {
+            "q": "Does Nintendo Switch support cross-progression?",
+            "a": "Yes through a Behaviour Account, with platform-specific restrictions for Auric Cells and DLC transfer direction."
+          }
+        ],
+        "timeline": [
+          { "date": "2019-09-24", "kind": "release", "title": "Nintendo Switch release" },
+          {
+            "date": "2024-07-22",
+            "kind": "update",
+            "title": "Expanded cross-progression",
+            "detail": "Behaviour enabled the current cross-progression program across participating platforms."
+          },
+          {
+            "date": "2025-09-18",
+            "kind": "update",
+            "title": "Switch support and update timing FAQ",
+            "detail": "Behaviour confirmed continued Switch support and no current Switch 2 upgrade plan."
+          }
+        ],
+        "guides": [
+          {
+            "title": "Cross-Progression FAQ",
+            "summary": "Official setup, supported platforms, and Nintendo Switch restrictions.",
+            "url": "https://support.deadbydaylight.com/hc/en-us/articles/28143341034644-Cross-Progression-FAQ"
+          },
+          {
+            "title": "Cross-play platforms",
+            "summary": "Official list of platforms included in cross-play.",
+            "url": "https://support.deadbydaylight.com/hc/en-us/articles/360047727671-Which-platforms-are-included-in-cross-play"
+          }
+        ],
+        "sources": [
+          {
+            "name": "Nintendo eShop (US)",
+            "url": "https://www.nintendo.com/us/store/products/dead-by-daylight-switch/"
+          },
+          {
+            "name": "Behaviour Cross-Progression FAQ",
+            "url": "https://support.deadbydaylight.com/hc/en-us/articles/28143341034644-Cross-Progression-FAQ"
+          },
+          {
+            "name": "Behaviour Cross-play Support",
+            "url": "https://support.deadbydaylight.com/hc/en-us/articles/360047727671-Which-platforms-are-included-in-cross-play"
+          },
+          {
+            "name": "Behaviour Nintendo Switch Release Timing FAQ",
+            "url": "https://support.deadbydaylight.com/hc/en-us/articles/41351715602580-FAQ-for-Nintendo-Switch-Release-Time-Changes"
+          }
+        ],
+        "perfResolutionDocked": "",
+        "perfResolutionHandheld": "",
+        "perfFps": "",
+        "perfNotes": "Nintendo and Behaviour do not publish verified game-specific resolution or FPS figures for this Switch build or its Switch 2 compatibility mode.",
+        "devicePerformance": [
+          {
+            "device": "Nintendo Switch",
+            "deviceSlug": "nintendo-switch",
+            "deviceModel": "Nintendo Switch",
+            "informationStatus": "not_published",
+            "unavailableReason": "Official sources do not publish verified game-specific Nintendo Switch resolution and FPS figures.",
+            "sourceName": "Nintendo eShop (US)",
+            "sourceUrl": "https://www.nintendo.com/us/store/products/dead-by-daylight-switch/",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01"
+          },
+          {
+            "device": "Nintendo Switch 2",
+            "deviceSlug": "nintendo-switch-2",
+            "deviceModel": "Nintendo Switch 2",
+            "informationStatus": "not_published",
+            "unavailableReason": "The Switch game is supported on Switch 2 with consistent behavior, but Behaviour publishes no dedicated upgrade or verified resolution/FPS profile.",
+            "sourceName": "Behaviour Nintendo Switch Release Timing FAQ",
+            "sourceUrl": "https://support.deadbydaylight.com/hc/en-us/articles/41351715602580-FAQ-for-Nintendo-Switch-Release-Time-Changes",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01"
+          }
+        ]
+      }
+    },
+    {
+      "id": "prd_6f3eaa73a1d14946",
+      "expected": {
+        "documentSha256": "f7216d8470476e4c393e44351f28dcd5cae144e3eb4eab25efc3a9ad4ca25386",
+        "title": "Devil May Cry 5 Special Edition",
+        "slug": "devil-may-cry-5-special-edition-switch-2",
+        "platform": "switch2",
+        "price": 10250,
+        "cost": 1500,
+        "optionCount": 2,
+        "typeCount": 2,
+        "isHidden": true
+      },
+      "official": {
+        "url": "https://www.nintendo.com/us/store/products/devil-may-cry-5-devil-hunter-edition-switch-2/",
+        "title": "Devil May Cry 5 Devil Hunter Edition",
+        "platform": "Nintendo Switch 2",
+        "nsuid": "70010000113876",
+        "productCode": "BEEPABQBA",
+        "titleId": "0400a2b026600000"
+      },
+      "patch": {
+        "title": "Devil May Cry 5 Devil Hunter Edition",
+        "titleEn": "Devil May Cry 5 Devil Hunter Edition",
+        "titleAr": "ديفل ماي كراي 5 — إصدار ديفل هنتر",
+        "slug": "devil-may-cry-5-devil-hunter-edition-switch-2",
+        "platform": "switch2",
+        "edition": "Devil Hunter Edition",
+        "description_ar": "نسخة Nintendo Switch 2 الرسمية من لعبة الأكشن السريعة Devil May Cry 5. تقدم قتال السيوف والأسلحة النارية وشخصيات متعددة بأساليب مختلفة، وتؤكد Nintendo وCapcom تشغيلها بمعدل 60 إطاراً في الثانية في وضعي التلفاز والمحمول.",
+        "description_short": "أكشن سريع وأسلوب قتال استعراضي على Switch 2 بمعدل 60 FPS في وضعي التلفاز والمحمول.",
+        "tagline": "Devil May Cry 5 brings stylish action to Nintendo Switch 2.",
+        "seriesName": "Devil May Cry",
+        "studioName": "CAPCOM",
+        "compatibility": ["Nintendo Switch 2"],
+        "gameIsOffline": true,
+        "gameIsOnline": false,
+        "gameLanguageLocked": false,
+        "mpLocalPlayers": 1,
+        "mpOnlinePlayers": 0,
+        "mpCoop": false,
+        "mpCompetitive": false,
+        "mpLocalWireless": false,
+        "mpSplitScreen": false,
+        "nintendoGameKeyCard": true,
+        "nintendoPhysicalNeedsDownload": true,
+        "switch2Enhanced": true,
+        "switch2Exclusive": false,
+        "features": [
+          "60 FPS in both TV and handheld modes",
+          "Multiple playable characters with distinct combat styles",
+          "Sword-and-gun stylish action combat",
+          "Additional Devil Hunter Edition content",
+          "Complete In-game Unlock Bundle available as DLC"
+        ],
+        "fitFor": [
+          "Players who enjoy technical character-action combat",
+          "Players who replay missions to improve style ranks",
+          "Players who want a portable 60 FPS Devil May Cry 5 release"
+        ],
+        "notFitFor": [
+          "Players looking for multiplayer or local co-op",
+          "Players who expect the Nintendo SKU to be titled Special Edition",
+          "Players who cannot download a Game-Key Card installation"
+        ],
+        "gameplayPillars": [
+          {
+            "title": "Three distinct hunters",
+            "description": "Dante, Nero, and V use different weapons, abilities, and combat systems."
+          },
+          {
+            "title": "Style-driven combat",
+            "description": "Varied attacks and precise execution raise the style rank."
+          },
+          {
+            "title": "Demonic campaign",
+            "description": "Story missions combine exploration, cinematic encounters, and large boss battles."
+          },
+          {
+            "title": "Portable performance",
+            "description": "Nintendo and Capcom officially state 60 FPS in TV and handheld modes."
+          }
+        ],
+        "worldSummary": "Demon hunters converge on Red Grave City as a massive demonic invasion grows around the Qliphoth tree.",
+        "editionsList": [
+          {
+            "name": "Devil Hunter Edition",
+            "contents": [
+              { "label": "Base game" },
+              { "label": "Additional content included with this Nintendo Switch 2 edition" }
+            ]
+          }
+        ],
+        "faq": [
+          {
+            "q": "Is this the Special Edition?",
+            "a": "The official Nintendo Switch 2 product title is Devil May Cry 5 Devil Hunter Edition; the catalogue has been corrected to that SKU identity."
+          },
+          {
+            "q": "What frame rate does it support?",
+            "a": "Nintendo and Capcom state 60 FPS in both TV and handheld modes."
+          },
+          {
+            "q": "What resolution does it use?",
+            "a": "The official sources reviewed do not publish exact rendering or output resolutions."
+          },
+          {
+            "q": "When did it release?",
+            "a": "The digital version released June 23, 2026; Capcom lists the physical version for August 28, 2026."
+          },
+          {
+            "q": "Is it multiplayer?",
+            "a": "Nintendo lists one player; this is a single-player action game."
+          }
+        ],
+        "timeline": [
+          { "date": "2026-06-10", "kind": "announcement", "title": "Capcom launch announcement" },
+          { "date": "2026-06-23", "kind": "release", "title": "Digital release" },
+          {
+            "date": "2026-08-28",
+            "kind": "release",
+            "title": "Physical release",
+            "detail": "Physical release date published by Capcom."
+          }
+        ],
+        "guides": [
+          {
+            "title": "Official Nintendo product information",
+            "summary": "Official performance, player count, languages, storage, and release data.",
+            "url": "https://www.nintendo.com/au/games/nintendo-switch-2/devil-may-cry-5-devil-hunter-edition/"
+          }
+        ],
+        "sources": [
+          {
+            "name": "Nintendo eShop (US)",
+            "url": "https://www.nintendo.com/us/store/products/devil-may-cry-5-devil-hunter-edition-switch-2/"
+          },
+          {
+            "name": "Nintendo Australia",
+            "url": "https://www.nintendo.com/au/games/nintendo-switch-2/devil-may-cry-5-devil-hunter-edition/"
+          },
+          {
+            "name": "CAPCOM launch announcement",
+            "url": "https://www.capcom.co.jp/ir/english/news/html/260610b.html"
+          }
+        ],
+        "perfResolutionDocked": "Not published by CAPCOM",
+        "perfResolutionHandheld": "Not published by CAPCOM",
+        "perfFps": "60",
+        "perfNotes": "Nintendo and CAPCOM publish 60 FPS in TV and handheld modes; exact resolutions are not published.",
+        "devicePerformance": [
+          {
+            "device": "Nintendo Switch 2",
+            "deviceSlug": "nintendo-switch-2",
+            "deviceModel": "Nintendo Switch 2",
+            "informationStatus": "available",
+            "handheld": {
+              "supported": true,
+              "resolution": "Not published by CAPCOM",
+              "fps": "60",
+              "mode": "Handheld"
+            },
+            "tv": {
+              "supported": true,
+              "resolution": "Not published by CAPCOM",
+              "fps": "60",
+              "mode": "TV"
+            },
+            "sourceName": "Nintendo Australia",
+            "sourceUrl": "https://www.nintendo.com/au/games/nintendo-switch-2/devil-may-cry-5-devil-hunter-edition/",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01",
+            "performanceNotes": "Officially stated 60 FPS in both TV and handheld modes; exact resolution is not published."
+          }
+        ]
+      }
+    },
+    {
+      "id": "prd_073b4bb198534514",
+      "expected": {
+        "documentSha256": "d6248b68cad74db7062befd9fa089aee45feced2af8916a6a86e8ac8aebda29e",
+        "title": "Tomb Raider: Definitive Edition",
+        "slug": "tomb-raider-definitive-edition-switch-1",
+        "platform": "switch1",
+        "price": 8500,
+        "cost": 1250,
+        "optionCount": 2,
+        "typeCount": 2,
+        "isHidden": true
+      },
+      "official": {
+        "url": "https://www.nintendo.com/us/store/products/tomb-raider-definitive-edition-switch/",
+        "title": "Tomb Raider: Definitive Edition",
+        "platform": "Nintendo Switch",
+        "nsuid": "70010000091961",
+        "productCode": "HACPBM9LA",
+        "titleId": "0100092021c80000"
+      },
+      "patch": {
+        "titleEn": "Tomb Raider: Definitive Edition",
+        "titleAr": "تومب رايدر: الإصدار النهائي",
+        "edition": "Definitive Edition",
+        "description_ar": "رحلة نشأة Lara Croft من شابة قليلة الخبرة إلى ناجية صلبة على جزيرة خطرة. تجمع اللعبة بين الاستكشاف والتسلق والقتال وتطوير الأسلحة، ويضم إصدار Nintendo طور القصة واللعب الجماعي عبر الإنترنت حتى ثمانية لاعبين.",
+        "description_short": "مغامرة سينمائية تروي نشأة Lara Croft، مع استكشاف وقتال وطور جماعي عبر الإنترنت.",
+        "seriesName": "Tomb Raider",
+        "studioName": "Aspyr / Crystal Dynamics",
+        "compatibility": ["Nintendo Switch", "Nintendo Switch 2"],
+        "gameIsOffline": true,
+        "gameIsOnline": true,
+        "gameLanguageLocked": false,
+        "mpLocalPlayers": 1,
+        "mpOnlinePlayers": 8,
+        "mpCoop": false,
+        "mpCompetitive": true,
+        "mpLocalWireless": false,
+        "mpSplitScreen": false,
+        "nintendoGameKeyCard": false,
+        "nintendoPhysicalNeedsDownload": false,
+        "switch2Enhanced": true,
+        "switch2Exclusive": false,
+        "features": [
+          "Cinematic origin story for Lara Croft",
+          "Exploration, traversal, survival, and combat",
+          "Weapon and gear upgrades",
+          "Online multiplayer for up to eight players",
+          "TressFX 1.0 update available on Nintendo Switch 2"
+        ],
+        "fitFor": [
+          "Players who enjoy cinematic action-adventure campaigns",
+          "Fans of exploration, traversal, and survival combat",
+          "Players who also want the included online multiplayer modes"
+        ],
+        "notFitFor": [
+          "Younger players due to the Mature rating",
+          "Players seeking local co-op or split-screen",
+          "Players expecting officially published resolution and FPS specifications"
+        ],
+        "gameplayPillars": [
+          {
+            "title": "Survival and exploration",
+            "description": "Cross dangerous terrain, solve environmental challenges, and search the island."
+          },
+          {
+            "title": "Traversal",
+            "description": "Climbing tools and movement abilities open new routes."
+          },
+          {
+            "title": "Combat and upgrades",
+            "description": "Improve weapons and equipment while facing human and supernatural threats."
+          },
+          {
+            "title": "Definitive presentation",
+            "description": "This release presents the rebuilt Definitive Edition and later received TressFX 1.0 on Switch 2."
+          }
+        ],
+        "worldSummary": "Lara is stranded on Yamatai, an island shaped by violent storms, hostile scavengers, ancient ruins, and a deadly secret.",
+        "editionsList": [{ "name": "Definitive Edition" }],
+        "faq": [
+          {
+            "q": "When did this Nintendo release launch?",
+            "a": "Nintendo lists November 18, 2025."
+          },
+          {
+            "q": "Is online multiplayer included?",
+            "a": "Yes. Nintendo lists online play for up to eight players and Nintendo Switch Online is required for online features."
+          },
+          {
+            "q": "Does it run on Nintendo Switch 2?",
+            "a": "Yes. Nintendo lists it as supported with behavior consistent with Switch."
+          },
+          {
+            "q": "Is there a Switch 2 enhancement?",
+            "a": "Aspyr added TressFX 1.0 on May 20, 2026 and states it is out on Nintendo Switch 2."
+          },
+          {
+            "q": "What are the official resolution and FPS values?",
+            "a": "The reviewed Nintendo and Aspyr sources do not publish exact verified figures, so none are inferred."
+          }
+        ],
+        "timeline": [
+          { "date": "2025-11-18", "kind": "release", "title": "Nintendo Switch release" },
+          {
+            "date": "2026-05-20",
+            "kind": "update",
+            "title": "TressFX 1.0 update",
+            "detail": "Aspyr added TressFX 1.0 on Nintendo Switch 2."
+          }
+        ],
+        "patchNotes": [
+          {
+            "version": "TressFX 1.0 update",
+            "date": "2026-05-20",
+            "body": "Aspyr added TressFX 1.0; the update is available on Nintendo Switch 2."
+          }
+        ],
+        "guides": [
+          {
+            "title": "TressFX update",
+            "summary": "Official Aspyr confirmation of the Switch 2 TressFX 1.0 update.",
+            "url": "https://support.aspyr.com/hc/en-us/articles/45979963403277-Tomb-Raider-Definitive-Edition-TressFX-update"
+          }
+        ],
+        "sources": [
+          {
+            "name": "Nintendo eShop (US)",
+            "url": "https://www.nintendo.com/us/store/products/tomb-raider-definitive-edition-switch/"
+          },
+          {
+            "name": "Aspyr TressFX update",
+            "url": "https://support.aspyr.com/hc/en-us/articles/45979963403277-Tomb-Raider-Definitive-Edition-TressFX-update"
+          }
+        ],
+        "perfResolutionDocked": "",
+        "perfResolutionHandheld": "",
+        "perfFps": "",
+        "perfNotes": "Official Nintendo and Aspyr sources reviewed do not publish exact verified resolution or FPS figures.",
+        "devicePerformance": [
+          {
+            "device": "Nintendo Switch",
+            "deviceSlug": "nintendo-switch",
+            "deviceModel": "Nintendo Switch",
+            "informationStatus": "not_published",
+            "unavailableReason": "Nintendo does not publish game-specific resolution and FPS figures for this release.",
+            "sourceName": "Nintendo eShop (US)",
+            "sourceUrl": "https://www.nintendo.com/us/store/products/tomb-raider-definitive-edition-switch/",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01"
+          },
+          {
+            "device": "Nintendo Switch 2",
+            "deviceSlug": "nintendo-switch-2",
+            "deviceModel": "Nintendo Switch 2",
+            "informationStatus": "not_published",
+            "unavailableReason": "Aspyr confirms the TressFX 1.0 enhancement, but does not publish exact resolution or FPS figures.",
+            "sourceName": "Aspyr TressFX update",
+            "sourceUrl": "https://support.aspyr.com/hc/en-us/articles/45979963403277-Tomb-Raider-Definitive-Edition-TressFX-update",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01"
+          }
+        ]
+      }
+    },
+    {
+      "id": "prd_7cb47defb1ff4c61",
+      "expected": {
+        "documentSha256": "7f04dce39433b7c4d58d207d6181d55ce37563480b0f84eb36eca5bceef283c7",
+        "title": "Cuphead",
+        "slug": "cuphead-switch",
+        "platform": "switch1",
+        "price": 8500,
+        "cost": 1250,
+        "optionCount": 2,
+        "typeCount": 4,
+        "isHidden": true
+      },
+      "official": {
+        "url": "https://www.nintendo.com/us/store/products/cuphead-switch/",
+        "title": "Cuphead",
+        "platform": "Nintendo Switch",
+        "nsuid": "70010000016330",
+        "productCode": "HACPASVUA",
+        "titleId": "0100a5c00d162000"
+      },
+      "patch": {
+        "titleEn": "Cuphead",
+        "titleAr": "كابهيد",
+        "edition": "Standard Edition",
+        "description_ar": "لعبة أكشن وتصويب كلاسيكية تركز على معارك الزعماء، برسوم مرسومة يدوياً وخلفيات مائية وتسجيلات جاز أصلية مستوحاة من رسوم الثلاثينيات. يمكن لعبها فردياً أو بتعاون محلي للاعبين على الجهاز نفسه.",
+        "description_short": "أكشن مرسوم يدوياً يركز على الزعماء الصعبين ويدعم التعاون المحلي للاعبين.",
+        "seriesName": "Cuphead",
+        "studioName": "Studio MDHR",
+        "compatibility": ["Nintendo Switch", "Nintendo Switch 2"],
+        "gameIsOffline": true,
+        "gameIsOnline": false,
+        "gameLanguageLocked": false,
+        "mpLocalPlayers": 2,
+        "mpOnlinePlayers": 0,
+        "mpCoop": true,
+        "mpCompetitive": false,
+        "mpLocalWireless": false,
+        "mpSplitScreen": false,
+        "nintendoGameKeyCard": false,
+        "nintendoPhysicalNeedsDownload": false,
+        "switch2Enhanced": false,
+        "switch2Exclusive": false,
+        "features": [
+          "Traditional hand-drawn cel animation",
+          "Watercolor backgrounds and original jazz recordings",
+          "Boss-focused run-and-gun action",
+          "Single-player or two-player local co-op",
+          "The Delicious Last Course expansion available separately"
+        ],
+        "fitFor": [
+          "Players who enjoy difficult pattern-based boss fights",
+          "Players who value hand-crafted art and music",
+          "Two players looking for same-system local co-op"
+        ],
+        "notFitFor": [
+          "Players who strongly dislike repeated attempts and high difficulty",
+          "Players looking for online co-op",
+          "Players looking for split-screen or local wireless play"
+        ],
+        "gameplayPillars": [
+          {
+            "title": "Boss battles",
+            "description": "Learn attack patterns, react precisely, and refine loadouts across repeated attempts."
+          },
+          {
+            "title": "Run-and-gun stages",
+            "description": "Platforming stages complement the boss-focused campaign."
+          },
+          {
+            "title": "Weapons, charms, and supers",
+            "description": "Different equipment supports different strategies."
+          },
+          {
+            "title": "Local co-op",
+            "description": "Cuphead and Mugman can complete the adventure together on one Nintendo Switch system."
+          }
+        ],
+        "worldSummary": "Cuphead and Mugman travel across the Inkwell Isles collecting soul contracts after losing a dangerous wager with the Devil.",
+        "dlc": [
+          {
+            "name": "Cuphead - The Delicious Last Course",
+            "description": "Adds Ms. Chalice, a new island, new bosses, weapons, charms, and secrets; the base game is required."
+          }
+        ],
+        "editionsList": [
+          { "name": "Standard Edition" },
+          { "name": "Base game + The Delicious Last Course DLC" }
+        ],
+        "faq": [
+          {
+            "q": "Does Cuphead support co-op on Nintendo Switch?",
+            "a": "Yes. Studio MDHR and Nintendo confirm local co-op for two players on the same system."
+          },
+          {
+            "q": "Does it support online co-op?",
+            "a": "No official online multiplayer mode is listed for this Nintendo Switch release."
+          },
+          {
+            "q": "Is the screen split in co-op?",
+            "a": "No. Both players share the same game view; this is local co-op, not split-screen."
+          },
+          {
+            "q": "Is The Delicious Last Course included in the base game?",
+            "a": "It is a separate DLC and requires the original Cuphead game."
+          },
+          {
+            "q": "Does it work on Nintendo Switch 2?",
+            "a": "Nintendo lists it as supported with behavior consistent with Nintendo Switch."
+          }
+        ],
+        "timeline": [
+          {
+            "date": "2019-04-18",
+            "kind": "release",
+            "title": "Nintendo Switch release and free content update"
+          },
+          { "date": "2022-06-30", "kind": "dlc", "title": "The Delicious Last Course released" }
+        ],
+        "patchNotes": [
+          {
+            "version": "2019 free content update",
+            "date": "2019-04-18",
+            "body": "Added Mugman character selection, animated cinematics, additional localization, new animation and art, bug fixes, and tweaks."
+          }
+        ],
+        "soundtrack": [
+          {
+            "title": "Original jazz soundtrack information",
+            "url": "https://studiomdhr.com/cuphead-is-coming-to-nintendo-switch-plus-new-free-content-for-everyone/"
+          }
+        ],
+        "guides": [
+          {
+            "title": "Nintendo Switch release and local co-op",
+            "summary": "Official release details, co-op support, localization, and free update content.",
+            "url": "https://studiomdhr.com/cuphead-is-coming-to-nintendo-switch-plus-new-free-content-for-everyone/"
+          },
+          {
+            "title": "The Delicious Last Course",
+            "summary": "Official DLC content and access requirements.",
+            "url": "https://studiomdhr.com/the-delicious-last-course-is-served-out-now-on-all-platforms/"
+          }
+        ],
+        "sources": [
+          {
+            "name": "Nintendo eShop (US)",
+            "url": "https://www.nintendo.com/us/store/products/cuphead-switch/"
+          },
+          {
+            "name": "Studio MDHR Nintendo Switch announcement",
+            "url": "https://studiomdhr.com/cuphead-is-coming-to-nintendo-switch-plus-new-free-content-for-everyone/"
+          },
+          {
+            "name": "Studio MDHR Delicious Last Course release",
+            "url": "https://studiomdhr.com/the-delicious-last-course-is-served-out-now-on-all-platforms/"
+          }
+        ],
+        "perfResolutionDocked": "",
+        "perfResolutionHandheld": "",
+        "perfFps": "",
+        "perfNotes": "Nintendo and Studio MDHR do not publish exact verified Nintendo Switch or Switch 2 compatibility resolution/FPS figures in the reviewed sources.",
+        "devicePerformance": [
+          {
+            "device": "Nintendo Switch",
+            "deviceSlug": "nintendo-switch",
+            "deviceModel": "Nintendo Switch",
+            "informationStatus": "not_published",
+            "unavailableReason": "Official sources reviewed do not publish exact game-specific Nintendo Switch resolution and FPS figures.",
+            "sourceName": "Nintendo eShop (US)",
+            "sourceUrl": "https://www.nintendo.com/us/store/products/cuphead-switch/",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01"
+          },
+          {
+            "device": "Nintendo Switch 2",
+            "deviceSlug": "nintendo-switch-2",
+            "deviceModel": "Nintendo Switch 2",
+            "informationStatus": "not_published",
+            "unavailableReason": "Nintendo lists compatible behavior, but does not publish a dedicated Switch 2 resolution or FPS profile.",
+            "sourceName": "Nintendo eShop (US)",
+            "sourceUrl": "https://www.nintendo.com/us/store/products/cuphead-switch/",
+            "verificationStatus": "official",
+            "verifiedAt": "2026-09-01"
+          }
+        ]
+      }
+    }
+  ]
+}
