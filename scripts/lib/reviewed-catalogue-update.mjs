@@ -168,10 +168,22 @@ export function mediaEntries(value) {
 export function mergeOnlyRequestedMedia(current, candidatePatch, requestedRoles) {
   const patch = {};
   for (const role of requestedRoles) {
-    if (candidatePatch?.[role] !== undefined) patch[role] = candidatePatch[role];
+    if (candidatePatch?.[role] !== undefined) {
+      patch[role] = candidatePatch[role];
+      continue;
+    }
+    // Normalize placeholder-only values such as [""] so the storefront does
+    // not render or count a broken image. A non-empty admin reference is kept
+    // even when the health probe failed, because a transient network failure
+    // is not enough evidence to discard a manually curated asset.
+    if (mediaEntries(current?.[role]).length === 0) {
+      patch[role] = LIST_MEDIA_ROLES.has(role) ? [] : "";
+    }
   }
   // The returned object deliberately contains no other role. Spreading it over
   // the current document therefore preserves every verified admin asset.
   void current;
   return patch;
 }
+
+const LIST_MEDIA_ROLES = new Set(["bannerImages", "galleryImages"]);

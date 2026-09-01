@@ -100,6 +100,15 @@ describe("reviewed catalogue update guard", () => {
     expect(next.galleryImages).toEqual([{ url: "/api/admin-shot.webp" }]);
   });
 
+  it("removes placeholder-only image lists without discarding an admin URL", () => {
+    expect(mergeOnlyRequestedMedia({ bannerImages: [""] }, {}, ["bannerImages"])).toEqual({
+      bannerImages: [],
+    });
+    expect(
+      mergeOnlyRequestedMedia({ coverImage: "/api/admin-cover.webp" }, {}, ["coverImage"]),
+    ).toEqual({});
+  });
+
   it("rejects any reviewed patch that tries to edit pricing", () => {
     expect(() =>
       buildReviewedProduct({
