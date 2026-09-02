@@ -11,7 +11,7 @@ on:
   push:
     branches: [codex/product-catalogue-repair]
     paths:
-      - data/reviewed-catalogue-batch-01.json
+      - data/reviewed-catalogue-batch-*.json
       - scripts/reviewed-catalogue-update.mjs
       - scripts/reviewed-catalogue-update.test.mjs
       - scripts/lib/reviewed-catalogue-update.mjs
@@ -22,7 +22,7 @@ on:
       - .github/workflows/reviewed-catalogue-update.yml
   pull_request:
     paths:
-      - data/reviewed-catalogue-batch-01.json
+      - data/reviewed-catalogue-batch-*.json
       - scripts/reviewed-catalogue-update.mjs
       - scripts/reviewed-catalogue-update.test.mjs
       - scripts/lib/reviewed-catalogue-update.mjs
@@ -60,21 +60,25 @@ jobs:
           echo "::add-mask::$DATABASE_ID"
       - name: Validate guarded update code
         run: |
+          MANIFEST="$(find data -maxdepth 1 -name 'reviewed-catalogue-batch-*.json' -print | sort -V | tail -n 1)"
+          test -n "$MANIFEST"
           bun x vitest run scripts/reviewed-catalogue-update.test.mjs src/lib/gameZipImport.test.ts
           node --check scripts/reviewed-catalogue-update.mjs
-          node -e "JSON.parse(require('node:fs').readFileSync('data/reviewed-catalogue-batch-01.json', 'utf8'))"
+          MANIFEST="$MANIFEST" node -e "JSON.parse(require('node:fs').readFileSync(process.env.MANIFEST, 'utf8'))"
       - name: Run reviewed batch
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
         run: |
+          MANIFEST="$(find data -maxdepth 1 -name 'reviewed-catalogue-batch-*.json' -print | sort -V | tail -n 1)"
+          test -n "$MANIFEST"
           SAME_REPO_PR="${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'codex/product-catalogue-repair' }}"
           if { [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.apply }}" = "true" ]; } || \
-             { [ "$SAME_REPO_PR" = "true" ] && jq -e '.apply == true' data/reviewed-catalogue-batch-01.json >/dev/null; }; then
-            node scripts/reviewed-catalogue-update.mjs --apply
+             { [ "$SAME_REPO_PR" = "true" ] && jq -e '.apply == true' "$MANIFEST" >/dev/null; }; then
+            node scripts/reviewed-catalogue-update.mjs --manifest="$MANIFEST" --apply
           else
-            node scripts/reviewed-catalogue-update.mjs
+            node scripts/reviewed-catalogue-update.mjs --manifest="$MANIFEST"
           fi
       - uses: actions/upload-artifact@v4
         if: always()
