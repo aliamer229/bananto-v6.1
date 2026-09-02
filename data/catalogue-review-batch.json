@@ -10,23 +10,23 @@
   "products": [
     {
       "id": "prd_4241c51108d849b2",
-      "officialUrl": "https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/"
+      "nintendoUrl": "https://www.nintendo.com/us/store/products/nintendo-switch-sports-switch/"
     },
     {
       "id": "prd_481cc6fd338e4617",
-      "officialUrl": "https://www.nintendo.com/us/store/products/luigis-mansion-3-switch/"
+      "nintendoUrl": "https://www.nintendo.com/us/store/products/luigis-mansion-3-switch/"
     },
     {
       "id": "prd_b9c50887a24849fa",
-      "officialUrl": "https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/"
+      "nintendoUrl": "https://www.nintendo.com/us/store/products/super-smash-bros-ultimate-switch/"
     },
     {
       "id": "prd_028b26bf1f5d4e0b",
-      "officialUrl": "https://www.nintendo.com/us/store/products/super-mario-rpg-switch/"
+      "nintendoUrl": "https://www.nintendo.com/us/store/products/super-mario-rpg-switch/"
     },
     {
       "id": "prd_08ac1190a4d44318",
-      "officialUrl": "https://www.nintendo.com/us/store/products/mario-vs-donkey-kong-switch/"
+      "nintendoUrl": "https://www.nintendo.com/us/store/products/mario-vs-donkey-kong-switch/"
     }
   ]
 }
