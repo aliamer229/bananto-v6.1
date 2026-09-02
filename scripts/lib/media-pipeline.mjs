@@ -41,22 +41,28 @@ const slugForKey = (role, index) =>
 
 /**
  * @param identity  {title, platform, slug, nsuid} — enough to resolve the game
- * @param deps      {sharp, r2, apply, log}
+ * @param deps      {sharp, r2, apply, log, roles} — roles defaults to every
+ *                   media role; a repair can request only missing/dead roles
+ *                   so verified admin artwork is neither uploaded nor replaced
  * @returns {Promise<{patch: object, report: object[], unresolved: string[], stored: number, failed: number}>}
  */
-export async function buildMedia(identity, { sharp, r2, apply = false, log = () => {} }) {
+export async function buildMedia(
+  identity,
+  { sharp, r2, apply = false, log = () => {}, roles = ROLES },
+) {
   const report = [];
   const unresolved = [];
   const patch = {};
   let stored = 0;
   let failed = 0;
 
+  const requested = ROLES.filter((role) => roles.includes(role));
   const resolved = await resolveProduct(identity);
   if (!resolved.product) {
     return {
       patch,
       report,
-      unresolved: [...ROLES],
+      unresolved: [...requested],
       stored: 0,
       failed: 0,
       note: `no Nintendo store page resolved (${resolved.tried.join("; ")})`,
@@ -69,7 +75,8 @@ export async function buildMedia(identity, { sharp, r2, apply = false, log = () 
   let wrapBuffer = null;
   let frontBuffer = null;
   let wrapNote = "";
-  const tdbId = gameTdbId(product.productCode);
+  const wantsSleeve = requested.includes("cartridgeImage") || requested.includes("coverHiResImage");
+  const tdbId = wantsSleeve ? gameTdbId(product.productCode) : "";
   if (tdbId) {
     const wrap = await fetchWrap(tdbId);
     if (wrap) {
@@ -89,14 +96,26 @@ export async function buildMedia(identity, { sharp, r2, apply = false, log = () 
       out = await sharp(buffer).webp({ quality: 90 }).toBuffer();
     } catch (err) {
       failed++;
-      report.push({ role, ok: false, reason: `conversion failed: ${String(err).slice(0, 60)}`, source: sourceUrl });
+      report.push({
+        role,
+        ok: false,
+        reason: `conversion failed: ${String(err).slice(0, 60)}`,
+        source: sourceUrl,
+      });
       return null;
     }
-    const meta = await sharp(out).metadata().catch(() => ({}));
+    const meta = await sharp(out)
+      .metadata()
+      .catch(() => ({}));
     const hash = createHash("sha256").update(out).digest("hex").slice(0, 16);
     const taken = accepted.get(hash);
     if (taken) {
-      report.push({ role, ok: false, reason: `identical bytes already used for ${taken}`, source: sourceUrl });
+      report.push({
+        role,
+        ok: false,
+        reason: `identical bytes already used for ${taken}`,
+        source: sourceUrl,
+      });
       return null;
     }
     const key = `files/products/${identity.id}/${slugForKey(role, index)}-${hash}.webp`;
@@ -124,18 +143,24 @@ export async function buildMedia(identity, { sharp, r2, apply = false, log = () 
   };
 
   /* ---- roles the sleeve answers ---- */
-  if (wrapBuffer) {
+  if (wrapBuffer && requested.includes("coverHiResImage")) {
     const wrapRef = await put("coverHiResImage", wrapBuffer, 0, wrapNote, wrapNote);
     if (wrapRef) patch.coverHiResImage = wrapRef;
   }
-  if (frontBuffer) {
-    const frontRef = await put("cartridgeImage", frontBuffer, 0, `front panel of the ${wrapNote}`, wrapNote);
+  if (frontBuffer && requested.includes("cartridgeImage")) {
+    const frontRef = await put(
+      "cartridgeImage",
+      frontBuffer,
+      0,
+      `front panel of the ${wrapNote}`,
+      wrapNote,
+    );
     if (frontRef) patch.cartridgeImage = frontRef;
   }
 
   /* ---- roles the eShop answers ---- */
   const candidates = candidatesFor(product);
-  for (const role of ROLES) {
+  for (const role of requested) {
     if (patch[role]) continue;
     const list = candidates[role] ?? [];
     const kept = [];
@@ -151,7 +176,14 @@ export async function buildMedia(identity, { sharp, r2, apply = false, log = () 
       }
       const ref = await put(role, v.buffer, i + 1, candidate.provenance, candidate.url);
       if (!ref) continue;
-      kept.push(LIST_ROLES.has(role) ? { url: ref, alt: `${identity.title ?? ""} ${role === "galleryImages" ? "screenshot" : "banner"} ${i + 1}` } : ref);
+      kept.push(
+        LIST_ROLES.has(role)
+          ? {
+              url: ref,
+              alt: `${identity.title ?? ""} ${role === "galleryImages" ? "screenshot" : "banner"} ${i + 1}`,
+            }
+          : ref,
+      );
       if (!LIST_ROLES.has(role)) break;
     }
     if (!kept.length) {

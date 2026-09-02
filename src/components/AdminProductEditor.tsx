@@ -80,7 +80,7 @@ import { GamePerformanceEditor } from "./admin/GamePerformanceEditor";
 import { HardwareAdminEditor } from "./admin/HardwareAdminEditor";
 import { SchemaAdminEditor } from "./admin/SchemaAdminEditor";
 import { useCurrency } from "../context/CurrencyContext";
-import { productSupportsSwitch2, validateGameDevicePerformance } from "@/lib/devicePerformance";
+import { validateGameDevicePerformance } from "@/lib/devicePerformance";
 
 export type CategoryDefinition = {
   type: CategoryType;
@@ -1458,7 +1458,9 @@ export default function AdminProductEditor({
           <GamePerformanceEditor
             value={formData.devicePerformance}
             platform={formData.platform}
-            requiresSwitch2={productSupportsSwitch2(formData)}
+            // Every game in this catalogue is intended to run on Nintendo
+            // Switch 2, including backward-compatible Switch releases.
+            requiresSwitch2
             hardwareProducts={hardwareProducts}
             onChange={(records) => handleChange("devicePerformance", records)}
           />

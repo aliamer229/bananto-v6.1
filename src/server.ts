@@ -48,7 +48,7 @@ export default {
     }
 
     try {
-      return await fetchHandler(request, { context: { env, ctx } });
+      return await fetchHandler(request);
     } catch (error: any) {
       console.error("[worker:fetch_error]", error?.stack || error);
       return new Response("Internal Server Error", {

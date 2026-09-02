@@ -138,7 +138,7 @@ function ProductPage() {
         <CurrencyProvider>
           <UserProvider>
             <NotificationProvider>
-              <div className="relative min-h-screen bg-[rgb(var(--bg))] text-[rgb(var(--text))]">
+              <div className="relative min-h-screen w-full min-w-0 max-w-full bg-[rgb(var(--bg))] text-[rgb(var(--text))]">
                 <GameHub
                   game={game}
                   onNavigateGuide={(slug) => {

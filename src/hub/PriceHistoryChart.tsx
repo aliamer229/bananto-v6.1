@@ -132,7 +132,7 @@ export default function PriceHistoryChart({ history, defaultWindow = "6m", compa
         <Segmented
           size="sm"
           value={window_}
-          onChange={setWindow}
+          onChange={(next) => setWindow(next as HistoryWindow)}
           ariaLabel={t("history.title")}
           options={HISTORY_WINDOWS.map((w) => ({
             id: w.id,

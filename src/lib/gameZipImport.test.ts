@@ -53,6 +53,40 @@ type.2.stock=2
 type.2.is_infinite_stock=false
 ${extra}`;
 
+describe("blank game form isolation", () => {
+  it("does not seed facts from unrelated product schemas", () => {
+    const form = createBlankProductForm("nintendo-switch-games");
+    for (const field of [
+      "characterName",
+      "amiiboSeries",
+      "figureType",
+      "inGameUnlock",
+      "compatibleGames",
+      "accessoryType",
+      "compatibleDevices",
+      "brand",
+      "material",
+      "availableColors",
+      "keyFeatures",
+      "cardValue",
+      "region",
+      "cardType",
+      "deliveryMethod",
+      "validity",
+      "usedType",
+      "conditionGrade",
+      "packaging",
+      "guaranteeStatus",
+      "conditionNotes",
+      "accountType",
+      "badge",
+      "bundleGamesSummary",
+    ]) {
+      expect(form[field], field).toBe("");
+    }
+  });
+});
+
 /** Raw-deflate a byte range with the platform compressor, as `zip(1)` would. */
 async function deflate(bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> {
   const source = new ReadableStream<BufferSource>({

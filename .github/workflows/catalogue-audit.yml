@@ -13,7 +13,7 @@ on:
         description: "R2 existence-probe budget"
         default: "300"
   push:
-    branches: [claude/nintendo-product-template-schema-6dtvza]
+    branches: [codex/product-catalogue-repair]
     paths:
       - .github/workflows/catalogue-audit.yml
       - scripts/catalogue-audit.mjs

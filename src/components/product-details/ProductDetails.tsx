@@ -132,20 +132,18 @@ function DetailsBody({
     */
     const variantImage = selectedVariant?.image || selectedOption?.image || "";
     const itemImage = variantImage || resolvePurchaseImage(product).url;
-    addToCart(
-      {
-        productId: String(product["id"] ?? ""),
-        title: view.title,
-        image: itemImage,
-        price: effectivePrice,
-        kind: (view.schema.kind as ProductKind) ?? "accessory",
-        requiresAddress: true,
-        ...(labelParts.length
-          ? { offerKind: labelParts.join(" / "), offerLabel: labelParts.join(" / ") }
-          : {}),
-      },
+    addToCart({
+      productId: String(product["id"] ?? ""),
+      title: view.title,
+      image: itemImage,
+      price: effectivePrice,
       quantity,
-    );
+      kind: (view.schema.kind as ProductKind) ?? "accessory",
+      requiresAddress: true,
+      ...(labelParts.length
+        ? { offerKind: labelParts.join(" / "), offerLabel: labelParts.join(" / ") }
+        : {}),
+    });
     showAddToCartToast({
       title: t("product.addedToCart") || "أُضيف إلى السلة",
       message: `${quantity > 1 ? `${quantity} × ` : ""}${view.title}${labelParts.length ? ` (${labelParts.join(" / ")})` : ""}`,

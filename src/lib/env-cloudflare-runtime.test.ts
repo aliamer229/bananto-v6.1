@@ -9,8 +9,8 @@ describe("Cloudflare environment fallback", () => {
 
   it("keeps bindings available when AsyncLocalStorage is not implemented", async () => {
     vi.resetModules();
-    vi.doMock("node:async_hooks", () => ({
-      AsyncLocalStorage: class {
+    vi.doMock("node:async_hooks", () => {
+      class UnsupportedAsyncLocalStorage {
         enterWith() {
           throw new Error("asyncLocalStorage.enterWith() is not implemented");
         }
@@ -18,8 +18,12 @@ describe("Cloudflare environment fallback", () => {
         getStore() {
           throw new Error("asyncLocalStorage.getStore() is not implemented");
         }
-      },
-    }));
+      }
+      return {
+        default: { AsyncLocalStorage: UnsupportedAsyncLocalStorage },
+        AsyncLocalStorage: UnsupportedAsyncLocalStorage,
+      };
+    });
 
     const { getEnv, publishEnv } = await import("./env.server");
     const database = { prepare: vi.fn() };

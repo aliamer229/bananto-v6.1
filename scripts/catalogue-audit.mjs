@@ -23,7 +23,9 @@ const TEMPLATE_DIR = "import-sources/nintendo-2026-08";
 const SCHEMA_FILE = "src/lib/gameImportSchema.ts";
 
 const num = (name, fallback) =>
-  Number((process.argv.find((a) => a.startsWith(`--${name}=`)) ?? `--${name}=${fallback}`).split("=")[1]);
+  Number(
+    (process.argv.find((a) => a.startsWith(`--${name}=`)) ?? `--${name}=${fallback}`).split("=")[1],
+  );
 const PROBE_BUDGET = num("probes", 300);
 
 /* ------------------------------------------------------------------ safety */
@@ -88,9 +90,12 @@ function d1(sql, { allowFail = false } = {}) {
   queries++;
   process.stderr.write(`[q${queries}] ${s.slice(0, 55).replace(/\s+/g, " ")}\n`);
   const parsed = parseJson(
-    wrangler(["d1", "execute", DB_NAME, "--remote", "--json", "--yes", "--config", CONFIG, "--command", s], {
-      allowFail,
-    }),
+    wrangler(
+      ["d1", "execute", DB_NAME, "--remote", "--json", "--yes", "--config", CONFIG, "--command", s],
+      {
+        allowFail,
+      },
+    ),
   );
   const first = Array.isArray(parsed) ? parsed[0] : parsed;
   return first?.results ?? [];
@@ -103,7 +108,9 @@ function canonicalTargets() {
   const targets = new Set();
   for (const m of src.matchAll(/target:\s*"([^"]+)"/g)) targets.add(m[1]);
   if (targets.size < 150) {
-    throw new Error(`only ${targets.size} targets parsed from ${SCHEMA_FILE} — mapping changed shape`);
+    throw new Error(
+      `only ${targets.size} targets parsed from ${SCHEMA_FILE} — mapping changed shape`,
+    );
   }
   return targets;
 }
@@ -114,28 +121,77 @@ const has = (f) => TARGETS.has(f);
 const GROUPS = {
   identity: ["title", "titleAr", "slug", "platform", "edition", "region", "category", "kind"],
   basic: [
-    "developer", "publisher", "releaseDate", "genres", "ageRating", "numberOfPlayers",
-    "supportedLanguages", "languagesAudio", "languagesText", "size", "downloadSizeGb", "youtubeTrailer",
+    "developer",
+    "publisher",
+    "releaseDate",
+    "genres",
+    "ageRating",
+    "numberOfPlayers",
+    "supportedLanguages",
+    "languagesAudio",
+    "languagesText",
+    "size",
+    "downloadSizeGb",
+    "youtubeTrailer",
   ],
   pricing: ["price", "cost", "stock", "isInfiniteStock", "options", "types"],
-  media: ["cartridgeImage", "nintendoCardImage", "coverImage", "coverHiResImage", "bannerImages", "galleryImages"],
+  media: [
+    "cartridgeImage",
+    "nintendoCardImage",
+    "coverImage",
+    "coverHiResImage",
+    "bannerImages",
+    "galleryImages",
+  ],
   nintendo: [
-    "nintendoNotes", "nintendoPlayModes", "nintendoCloudSaves", "nintendoOnlineRequired",
-    "nintendoGameKeyCard", "tvMode", "tabletopMode", "handheldMode",
+    "nintendoNotes",
+    "nintendoPlayModes",
+    "nintendoCloudSaves",
+    "nintendoOnlineRequired",
+    "nintendoGameKeyCard",
+    "tvMode",
+    "tabletopMode",
+    "handheldMode",
   ],
   switch2: ["switch2Enhanced", "switch2Exclusive", "switch2UpgradePrice", "switch2Features"],
   performance: ["devicePerformance", "perfResolutionHandheld", "perfResolutionDocked", "perfFps"],
   detail: [
-    "tagline", "fitFor", "notFitFor", "gameplayPillars", "worldSummary", "storyChapters",
-    "editionsList", "dlc", "guides", "faq", "verdictScore", "verdictPros", "verdictCons",
-    "reviews", "timeline", "patchNotes", "soundtrack", "seriesName", "seriesEntries",
-    "studioName", "sources", "features", "completionMain", "playTimeMain",
-    "mpLocalPlayers", "mpOnlinePlayers", "mpCoop", "storageNotes",
+    "tagline",
+    "fitFor",
+    "notFitFor",
+    "gameplayPillars",
+    "worldSummary",
+    "storyChapters",
+    "editionsList",
+    "dlc",
+    "guides",
+    "faq",
+    "verdictScore",
+    "verdictPros",
+    "verdictCons",
+    "reviews",
+    "timeline",
+    "patchNotes",
+    "soundtrack",
+    "seriesName",
+    "seriesEntries",
+    "studioName",
+    "sources",
+    "features",
+    "completionMain",
+    "playTimeMain",
+    "mpLocalPlayers",
+    "mpOnlinePlayers",
+    "mpCoop",
+    "storageNotes",
   ],
 };
 for (const [group, fields] of Object.entries(GROUPS)) {
   const unknown = fields.filter((f) => !has(f));
-  if (unknown.length) throw new Error(`group ${group} names fields the schema does not define: ${unknown.join(", ")}`);
+  if (unknown.length)
+    throw new Error(
+      `group ${group} names fields the schema does not define: ${unknown.join(", ")}`,
+    );
 }
 
 /* ------------------------------------------------------------------ helpers */
@@ -229,7 +285,8 @@ const numbered = chunkKeys
 let raw = "";
 for (const key of numbered.length ? numbered : ["store:products"]) {
   process.stderr.write(`[chunk] ${key}\n`);
-  raw += d1(`SELECT value FROM store_kv WHERE key = '${key.replace(/'/g, "''")}'`)?.[0]?.value ?? "";
+  raw +=
+    d1(`SELECT value FROM store_kv WHERE key = '${key.replace(/'/g, "''")}'`)?.[0]?.value ?? "";
 }
 const live = new Map();
 for (const p of JSON.parse(raw || "[]")) if (p?.id) live.set(String(p.id), p);
@@ -248,10 +305,13 @@ const indexRows = d1("SELECT id, slug, title FROM product_index");
 const indexed = new Set(indexRows.map((r) => String(r.id)));
 
 const perfBy = new Map();
-for (const r of d1("SELECT game_id, COUNT(*) AS n FROM game_device_performance WHERE active = 1 GROUP BY game_id"))
+for (const r of d1(
+  "SELECT game_id, COUNT(*) AS n FROM game_device_performance WHERE active = 1 GROUP BY game_id",
+))
   perfBy.set(String(r.game_id), Number(r.n));
 const aliasBy = new Map();
-for (const r of d1("SELECT game_id, alias, normalized FROM game_aliases", { allowFail: true }) ?? []) {
+for (const r of d1("SELECT game_id, alias, normalized FROM game_aliases", { allowFail: true }) ??
+  []) {
   aliasBy.set(String(r.normalized ?? r.alias).toLowerCase(), String(r.game_id));
 }
 
@@ -273,8 +333,16 @@ const tally = (get) => {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]);
 };
 say(`- Live products: **${live.size}**`);
-say(`- \`kind\` values: ${tally((d) => d.kind).map(([k, n]) => `\`${k}\` ${n}`).join(", ")}`);
-say(`- \`category\` values: ${tally((d) => d.category ?? d.categoryId).map(([k, n]) => `\`${k}\` ${n}`).join(", ")}`);
+say(
+  `- \`kind\` values: ${tally((d) => d.kind)
+    .map(([k, n]) => `\`${k}\` ${n}`)
+    .join(", ")}`,
+);
+say(
+  `- \`category\` values: ${tally((d) => d.category ?? d.categoryId)
+    .map(([k, n]) => `\`${k}\` ${n}`)
+    .join(", ")}`,
+);
 
 /** A game is decided by its category; hardware, amiibo and gift cards are not. */
 const isGame = (doc) => {
@@ -312,7 +380,7 @@ for (const [id, doc] of games) {
   const perField = {};
   const tally = emptyTally();
 
-  const applicable = (group, field) => {
+  const applicable = (group, _field) => {
     if (group === "switch2" && platform !== "switch2") return false;
     return true;
   };
@@ -358,7 +426,12 @@ for (const [id, doc] of games) {
           const good = entries.filter((e) => {
             const hh = e?.handheld ?? {};
             const tv = e?.tv ?? {};
-            return filled(hh.resolution ?? hh.outputResolution) || filled(hh.fps) || filled(tv.resolution) || filled(tv.fps);
+            return (
+              filled(hh.resolution ?? hh.outputResolution) ||
+              filled(hh.fps) ||
+              filled(tv.resolution) ||
+              filled(tv.fps)
+            );
           });
           verdict = good.length ? "COMPLETE" : "INCOMPLETE";
         }
@@ -370,11 +443,19 @@ for (const [id, doc] of games) {
     }
   }
 
-  const scoreable = tally.COMPLETE + tally.INCOMPLETE + tally.BROKEN_REFERENCE + tally.WRONG_ROLE + tally.NEEDS_RESEARCH;
+  const scoreable =
+    tally.COMPLETE +
+    tally.INCOMPLETE +
+    tally.BROKEN_REFERENCE +
+    tally.WRONG_ROLE +
+    tally.NEEDS_RESEARCH;
   const score = scoreable ? Math.round((tally.COMPLETE / scoreable) * 100) : 0;
   const gaps = Object.entries(perField)
     .filter(([, v]) => v !== "COMPLETE" && v !== "NOT_APPLICABLE")
-    .map(([f, v]) => `${f}:${v === "NEEDS_RESEARCH" ? "R" : v === "BROKEN_REFERENCE" ? "B" : v === "WRONG_ROLE" ? "W" : "I"}`);
+    .map(
+      ([f, v]) =>
+        `${f}:${v === "NEEDS_RESEARCH" ? "R" : v === "BROKEN_REFERENCE" ? "B" : v === "WRONG_ROLE" ? "W" : "I"}`,
+    );
 
   for (const k of Object.keys(TOTALS)) TOTALS[k] += tally[k];
   rows.push({
@@ -405,7 +486,9 @@ for (const r of rows) {
 }
 say("```");
 say();
-say("### Gaps per product (R = needs research, B = broken reference, W = wrong role, I = incomplete)");
+say(
+  "### Gaps per product (R = needs research, B = broken reference, W = wrong role, I = incomplete)",
+);
 say();
 for (const r of rows) {
   say(`- \`${r.id}\` **${r.title.slice(0, 44)}** (${r.score}%) — ${r.gaps.join(" ") || "no gaps"}`);
@@ -416,18 +499,99 @@ say();
 say(`- Total existing Nintendo games: **${rows.length}**`);
 say(`- Fully complete (100%): **${rows.filter((r) => r.score === 100).length}**`);
 say(`- Incomplete: **${rows.filter((r) => r.score < 100).length}**`);
-say(`- With at least one broken image reference: **${rows.filter((r) => r.tally.BROKEN_REFERENCE > 0).length}**`);
-say(`- With an image role reused from another role: **${rows.filter((r) => r.tally.WRONG_ROLE > 0).length}**`);
-say(`- Missing a Front Box Cover: **${rows.filter((r) => r.gaps.includes("cartridgeImage:R")).length}** (present but reused from another role: ${rows.filter((r) => r.gaps.includes("cartridgeImage:W")).length})`);
-say(`- Missing a Square Card Image: **${rows.filter((r) => r.gaps.includes("nintendoCardImage:R")).length}** (present but reused from another role: ${rows.filter((r) => r.gaps.includes("nintendoCardImage:W")).length})`);
-say(`- Missing a Cover Image: **${rows.filter((r) => r.gaps.includes("coverImage:R")).length}** (present but reused from another role: ${rows.filter((r) => r.gaps.includes("coverImage:W")).length})`);
+say(
+  `- With at least one broken image reference: **${rows.filter((r) => r.tally.BROKEN_REFERENCE > 0).length}**`,
+);
+say(
+  `- With an image role reused from another role: **${rows.filter((r) => r.tally.WRONG_ROLE > 0).length}**`,
+);
+say(
+  `- Missing a Front Box Cover: **${rows.filter((r) => r.gaps.includes("cartridgeImage:R")).length}** (present but reused from another role: ${rows.filter((r) => r.gaps.includes("cartridgeImage:W")).length})`,
+);
+say(
+  `- Missing a Square Card Image: **${rows.filter((r) => r.gaps.includes("nintendoCardImage:R")).length}** (present but reused from another role: ${rows.filter((r) => r.gaps.includes("nintendoCardImage:W")).length})`,
+);
+say(
+  `- Missing a Cover Image: **${rows.filter((r) => r.gaps.includes("coverImage:R")).length}** (present but reused from another role: ${rows.filter((r) => r.gaps.includes("coverImage:W")).length})`,
+);
 say(`- No performance in the document: **${rows.filter((r) => r.perfDoc === 0).length}**`);
-say(`- Performance in the document but not in the relational table: **${rows.filter((r) => r.perfDoc > 0 && r.perfTable === 0).length}**`);
-say(`- Live but absent from \`product_index\`: **${rows.filter((r) => !r.indexed).length}** — ${rows.filter((r) => !r.indexed).map((r) => r.slug).join(", ") || "none"}`);
+say(
+  `- Performance in the document but not in the relational table: **${rows.filter((r) => r.perfDoc > 0 && r.perfTable === 0).length}**`,
+);
+say(
+  `- Live but absent from \`product_index\`: **${rows.filter((r) => !r.indexed).length}** — ${
+    rows
+      .filter((r) => !r.indexed)
+      .map((r) => r.slug)
+      .join(", ") || "none"
+  }`,
+);
 say(`- Hidden: **${rows.filter((r) => r.hidden).length}**`);
 say();
-say(`Field verdicts across all games: ${Object.entries(TOTALS).map(([k, v]) => `${k} ${v}`).join(" · ")}`);
-say(`R2 probes used: ${probes}/${PROBE_BUDGET}${probes >= PROBE_BUDGET ? " — **budget spent, some media unverified**" : ""}`);
+say(
+  `Field verdicts across all games: ${Object.entries(TOTALS)
+    .map(([k, v]) => `${k} ${v}`)
+    .join(" · ")}`,
+);
+say(
+  `R2 probes used: ${probes}/${PROBE_BUDGET}${probes >= PROBE_BUDGET ? " — **budget spent, some media unverified**" : ""}`,
+);
+say();
+
+/* ------------------------------------------------------- Report C: gift cards */
+
+const giftCards = [...live.values()].filter((doc) => {
+  const cat =
+    `${doc?.categoryId ?? ""} ${doc?.category ?? ""} ${doc?.schemaId ?? ""}`.toLowerCase();
+  return /gift/.test(cat);
+});
+
+const compactUrl = (value) => {
+  const text = String(value ?? "").trim();
+  return text.length > 96 ? `${text.slice(0, 93)}…` : text || "—";
+};
+const priceRows = (value) =>
+  (Array.isArray(value) ? value : [])
+    .map((entry, index) => {
+      if (!entry || typeof entry !== "object") return null;
+      return `${entry.name ?? entry.id ?? `#${index + 1}`}:${entry.price ?? "—"}`;
+    })
+    .filter(Boolean);
+
+say("## REPORT C — Nintendo gift-card storefront contract");
+say();
+say(`Gift-card products: **${giftCards.length}**.`);
+say();
+say(
+  "| id | title | canonical price | option/type prices | card artwork | generic main/cover | region banner |",
+);
+say("| --- | --- | ---: | --- | --- | --- | --- |");
+for (const doc of giftCards.sort((a, b) => String(a.title).localeCompare(String(b.title)))) {
+  const nested = [...priceRows(doc.options), ...priceRows(doc.variants), ...priceRows(doc.types)];
+  say(
+    `| \`${doc.id}\` | ${String(doc.title ?? doc.name ?? "").replace(/\|/g, "\\|")} | ${doc.price ?? "—"} | ${nested.join(" · ") || "—"} | ${compactUrl(doc.cardArtwork)} | ${compactUrl(doc.mainImage ?? doc.coverImage ?? doc.image)} | ${compactUrl(doc.regionBanner)} |`,
+  );
+}
+say();
+
+/* --------------------------------------------------------- Report D: hardware */
+
+const hardware = [...live.values()].filter((doc) => {
+  const cat =
+    `${doc?.categoryId ?? ""} ${doc?.category ?? ""} ${doc?.schemaId ?? ""}`.toLowerCase();
+  return /hardware|console|device/.test(cat) && !/game/.test(cat);
+});
+say("## REPORT D — hardware identities available to game performance");
+say();
+say(`Hardware products: **${hardware.length}**.`);
+say();
+say("| id | title | slug | category | schema | model |");
+say("| --- | --- | --- | --- | --- | --- |");
+for (const doc of hardware.sort((a, b) => String(a.title).localeCompare(String(b.title)))) {
+  say(
+    `| \`${doc.id}\` | ${String(doc.title ?? doc.name ?? "").replace(/\|/g, "\\|")} | \`${doc.slug ?? ""}\` | \`${doc.categoryId ?? doc.category ?? ""}\` | \`${doc.schemaId ?? ""}\` | ${doc.model ?? doc.modelNumber ?? "—"} |`,
+  );
+}
 say();
 
 /* ------------------------------------------------------------------ Report B */
@@ -442,7 +606,11 @@ for (const [id, doc] of live) {
   byTitlePlatform.set(`${normalizeTitle(doc.title)}|${normalizePlatform(doc.platform)}`, id);
 }
 
-const files = existsSync(TEMPLATE_DIR) ? readdirSync(TEMPLATE_DIR).filter((f) => f.endsWith(".txt")).sort() : [];
+const files = existsSync(TEMPLATE_DIR)
+  ? readdirSync(TEMPLATE_DIR)
+      .filter((f) => f.endsWith(".txt"))
+      .sort()
+  : [];
 const parseTemplate = (text) => {
   const out = {};
   for (const line of text.split(/\r?\n/)) {
@@ -484,11 +652,7 @@ for (const file of files) {
   const other = platform === "switch2" ? "switch1" : "switch2";
   const crossPlatform = !matchId && byTitlePlatform.has(`${nt}|${other}`);
 
-  const action = matchId
-    ? "UPDATE_EXISTING"
-    : crossPlatform
-      ? "MANUAL_REVIEW"
-      : "CREATE_NEW";
+  const action = matchId ? "UPDATE_EXISTING" : crossPlatform ? "MANUAL_REVIEW" : "CREATE_NEW";
   bRows.push({ file, title, platform, slug, matchId, how, action, crossPlatform });
 }
 
@@ -500,19 +664,27 @@ for (const r of bRows) {
 say("```");
 say();
 for (const r of bRows.filter((x) => x.action !== "CREATE_NEW")) {
-  say(`- **${r.action}** \`${r.file}\` → ${r.matchId ? `\`${r.matchId}\` via ${r.how}` : `same title on ${r.platform === "switch2" ? "switch1" : "switch2"} — separate edition, needs a human`}`);
+  say(
+    `- **${r.action}** \`${r.file}\` → ${r.matchId ? `\`${r.matchId}\` via ${r.how}` : `same title on ${r.platform === "switch2" ? "switch1" : "switch2"} — separate edition, needs a human`}`,
+  );
 }
 say();
 say("### Totals");
 say();
 say(`- Total TXT files: **${bRows.length}**`);
 say(`- Unique canonical slugs: **${new Set(bRows.map((r) => r.slug)).size}**`);
-say(`- Matched to an existing product (UPDATE_EXISTING): **${bRows.filter((r) => r.action === "UPDATE_EXISTING").length}**`);
+say(
+  `- Matched to an existing product (UPDATE_EXISTING): **${bRows.filter((r) => r.action === "UPDATE_EXISTING").length}**`,
+);
 say(`- Genuinely new (CREATE_NEW): **${bRows.filter((r) => r.action === "CREATE_NEW").length}**`);
-say(`- Manual review (same title, other platform): **${bRows.filter((r) => r.action === "MANUAL_REVIEW").length}**`);
+say(
+  `- Manual review (same title, other platform): **${bRows.filter((r) => r.action === "MANUAL_REVIEW").length}**`,
+);
 const dupSlugs = [...new Set(bRows.map((r) => r.slug).filter((s, i, a) => a.indexOf(s) !== i))];
 say(`- Duplicate slugs inside the ZIP: **${dupSlugs.length}** ${dupSlugs.join(", ")}`);
-say(`- Switch 1 / Switch 2 split: ${bRows.filter((r) => r.platform === "switch1").length} / ${bRows.filter((r) => r.platform === "switch2").length}`);
+say(
+  `- Switch 1 / Switch 2 split: ${bRows.filter((r) => r.platform === "switch1").length} / ${bRows.filter((r) => r.platform === "switch2").length}`,
+);
 say();
 say(`_Queries: ${queries}, all read-only. Nothing was written._`);
 

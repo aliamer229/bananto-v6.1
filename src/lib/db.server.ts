@@ -531,10 +531,12 @@ const ALL_ROWS_SQL = `SELECT key, value FROM store_kv WHERE key = 'store' OR key
 async function loadStore(options?: { skipProducts?: boolean }): Promise<StoreDoc> {
   const skipProducts = options?.skipProducts === true;
   if (await d1Ready()) {
+    const storeRowsPromise: Promise<Array<{ key: string; value: string }>> = d1RawAll<{
+      key: string;
+      value: string;
+    }>(skipProducts ? NON_PRODUCT_ROWS_SQL : ALL_ROWS_SQL).catch(() => []);
     const [allStoreRows, rev] = await Promise.all([
-      d1RawAll<{ key: string; value: string }>(
-        skipProducts ? NON_PRODUCT_ROWS_SQL : ALL_ROWS_SQL,
-      ).catch(() => []),
+      storeRowsPromise,
       readStoreRev(),
     ]);
     storeRev = rev;
@@ -2452,7 +2454,7 @@ export async function searchMessagesInThread(
   const cleanQ = normalizeSearchText(query);
   if (!cleanQ) return [];
 
-  let rows = [];
+  let rows: ChatMessage[] = [];
   if (await d1Ready()) {
     // If we have D1, we can just grab the docs, we don't need to load the whole JSON into memory array first,
     // but without FTS we still have to parse and search in JS.

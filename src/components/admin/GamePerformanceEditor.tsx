@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Plus, Trash2, Tv, Smartphone, ShieldCheck } from "lucide-react";
 
 import {
@@ -6,6 +7,11 @@ import {
   type DevicePerformance,
   type DeviceModePerformance,
 } from "@/lib/devicePerformance";
+import {
+  buildHardwareChoices,
+  defaultSwitch2Performance,
+  ensureSwitch2Performance,
+} from "./GamePerformanceEditor.model";
 
 type Record_ = Record<string, any>;
 
@@ -180,6 +186,12 @@ export function GamePerformanceEditor({
     .filter(Boolean) as DevicePerformance[];
   const switch2Required =
     requiresSwitch2 ?? ["switch2", "both"].includes(String(platform || "").toLowerCase());
+  const hardwareChoices = buildHardwareChoices(hardwareProducts, records);
+
+  useEffect(() => {
+    const ensured = ensureSwitch2Performance(records, hardwareProducts);
+    if (ensured !== records) onChange(ensured);
+  }, [records, hardwareProducts, onChange]);
 
   const update = (index: number, patch: Partial<DevicePerformance>) =>
     onChange(
@@ -188,23 +200,8 @@ export function GamePerformanceEditor({
       ),
     );
   const add = () => {
-    const preferred =
-      hardwareProducts.find(
-        (hardware) => slugifyDevice(hardware.slug || hardware.title) === "nintendo-switch-2",
-      ) || hardwareProducts[0];
-    onChange([
-      ...records,
-      {
-        device: String(preferred?.title || preferred?.name || ""),
-        deviceSlug: slugifyDevice(preferred?.slug || preferred?.title || ""),
-        hardwareId: preferred?.id ? String(preferred.id) : undefined,
-        deviceModel: String(preferred?.model || preferred?.modelNumber || ""),
-        informationStatus: "available",
-        handheld: { supported: true },
-        tv: { supported: true },
-        modes: [],
-      },
-    ]);
+    if (records.some((record) => record.deviceSlug === "nintendo-switch-2")) return;
+    onChange([...records, defaultSwitch2Performance(hardwareProducts)]);
   };
 
   return (
@@ -232,12 +229,6 @@ export function GamePerformanceEditor({
           Nintendo Switch 2 performance information is required before saving.
         </div>
       ) : null}
-      {!hardwareProducts.length ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-          Add a Hardware Product first; device choices are loaded from the hardware database.
-        </p>
-      ) : null}
-
       <div className="mt-5 space-y-5">
         {records.map((record, index) => {
           const isRequired = switch2Required && record.deviceSlug === "nintendo-switch-2";
@@ -252,14 +243,19 @@ export function GamePerformanceEditor({
                     Device {isRequired ? <span className="text-red-500">*</span> : null}
                   </span>
                   <select
-                    value={record.hardwareId || ""}
+                    value={
+                      record.hardwareId ||
+                      (record.deviceSlug ? `slug:${record.deviceSlug}` : "slug:nintendo-switch-2")
+                    }
                     onChange={(event) => {
-                      const hardware = hardwareProducts.find(
+                      const hardware = hardwareChoices.find(
                         (item) => String(item.id) === event.target.value,
                       );
                       if (!hardware) return;
                       update(index, {
-                        hardwareId: String(hardware.id),
+                        hardwareId: String(hardware.id).startsWith("slug:")
+                          ? undefined
+                          : String(hardware.id),
                         device: String(hardware.title || hardware.name || ""),
                         deviceSlug: slugifyDevice(hardware.slug || hardware.title || ""),
                         deviceModel: String(hardware.model || hardware.modelNumber || ""),
@@ -268,7 +264,7 @@ export function GamePerformanceEditor({
                     className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select Hardware Product</option>
-                    {hardwareProducts.map((hardware) => (
+                    {hardwareChoices.map((hardware) => (
                       <option key={String(hardware.id)} value={String(hardware.id)}>
                         {String(hardware.title || hardware.name)}
                         {hardware.model ? ` — ${hardware.model}` : ""}

@@ -129,7 +129,7 @@ export function Hero() {
   const stats = buildQuickStats(game, t);
 
   return (
-    <header className="hero-dark relative isolate overflow-hidden bg-ink-950">
+    <header className="hero-dark relative isolate w-full min-w-0 max-w-full overflow-hidden bg-ink-950">
       {/* ---- Backdrop stack: the art itself, blurred, then only as much wash
            as the type needs. A flat black plate is what made this look cheap. ---- */}
       <motion.div
@@ -167,7 +167,7 @@ export function Hero() {
       />
 
       <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-8 sm:pb-12 sm:pt-12 lg:px-6">
-        <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)] lg:gap-12">
+        <div className="grid min-w-0 grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,auto)_minmax(0,1fr)] lg:gap-12">
           {/* ================= Product ================= */}
           <div className="flex flex-col items-center justify-center min-h-[360px] sm:min-h-[440px] w-full max-w-full overflow-hidden">
             <CaseStage

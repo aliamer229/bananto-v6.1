@@ -53,7 +53,7 @@ export function VideosSection() {
           <Segmented
             size="sm"
             value={kind}
-            onChange={setKind}
+            onChange={(next) => setKind(next as VideoKind | "all")}
             ariaLabel={t("media.title")}
             options={[
               { id: "all" as const, label: t("common.all"), count: videos.length },
@@ -176,7 +176,7 @@ export function GallerySection() {
           <Segmented
             size="sm"
             value={category}
-            onChange={setCategory}
+            onChange={(next) => setCategory(next as ImageCategory | "all")}
             ariaLabel={t("media.gallery")}
             options={[
               { id: "all" as const, label: t("media.categoryAll"), count: images.length },

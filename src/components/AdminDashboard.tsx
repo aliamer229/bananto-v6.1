@@ -1775,6 +1775,7 @@ function ListingsView({
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [editorHardwareProducts, setEditorHardwareProducts] = useState<any[]>([]);
   const [isOpeningEditor, setIsOpeningEditor] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [onlyUnpriced, setOnlyUnpriced] = useState(false);
@@ -1823,7 +1824,7 @@ function ListingsView({
     Boolean(initialCategoryId) &&
     resolveCategoryType(initialCategoryId || undefined, sectionCategory?.title) === "game";
 
-  const hardwareProducts = (products || []).filter((product: any) => {
+  const listedHardwareProducts = (products || []).filter((product: any) => {
     const categoryId =
       typeof product.category === "string"
         ? product.category
@@ -1836,6 +1837,13 @@ function ListingsView({
       "hardware"
     );
   });
+  const hardwareProducts = React.useMemo(() => {
+    const byId = new Map<string, any>();
+    for (const product of [...editorHardwareProducts, ...listedHardwareProducts]) {
+      if (product?.id != null) byId.set(String(product.id), product);
+    }
+    return [...byId.values()];
+  }, [editorHardwareProducts, listedHardwareProducts]);
 
   /*
     The search box, the chips, the column headers and the pager all describe one
@@ -1996,6 +2004,7 @@ function ListingsView({
         );
         return;
       }
+      setEditorHardwareProducts(Array.isArray(data.hardwareProducts) ? data.hardwareProducts : []);
       setEditingProduct(data.product);
     } catch (err: any) {
       toast.error(`تعذر تحميل المنتج: ${err?.message || "خطأ في الشبكة"}`, { duration: 8000 });

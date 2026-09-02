@@ -115,8 +115,16 @@ const parseJson = (raw) => {
 function d1(sql) {
   const parsed = parseJson(
     wrangler([
-      "d1", "execute", DB_NAME, "--remote", "--json", "--yes", "--config", CONFIG,
-      "--command", assertRead(sql),
+      "d1",
+      "execute",
+      DB_NAME,
+      "--remote",
+      "--json",
+      "--yes",
+      "--config",
+      CONFIG,
+      "--command",
+      assertRead(sql),
     ]),
   );
   return (Array.isArray(parsed) ? parsed[0] : parsed)?.results ?? [];
@@ -132,7 +140,18 @@ function writeOverlay(id, doc) {
     ` ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`;
   return (
     wrangler(
-      ["d1", "execute", DB_NAME, "--remote", "--json", "--yes", "--config", CONFIG, "--command", sql],
+      [
+        "d1",
+        "execute",
+        DB_NAME,
+        "--remote",
+        "--json",
+        "--yes",
+        "--config",
+        CONFIG,
+        "--command",
+        sql,
+      ],
       { allowFail: true },
     ) !== null
   );
@@ -266,7 +285,9 @@ async function refIsDead(value) {
 
 say(`# Research and gallery import — ${APPLY ? "**APPLY**" : "DRY RUN (nothing written)"}`);
 say();
-say(`Run at ${new Date().toISOString()}. Batch size ${BATCH_SIZE}, offset ${OFFSET}, limit ${LIMIT}.`);
+say(
+  `Run at ${new Date().toISOString()}. Batch size ${BATCH_SIZE}, offset ${OFFSET}, limit ${LIMIT}.`,
+);
 say();
 
 mkdirSync(WORK_DIR, { recursive: true });
@@ -280,7 +301,11 @@ const games = [...live.values()]
 say(`- Live products: **${live.size}** · games: **${games.length}**`);
 
 const selected = ONLY
-  ? ONLY.split(",").map((s) => s.trim()).filter(Boolean).map((id) => live.get(id)).filter(Boolean)
+  ? ONLY.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((id) => live.get(id))
+      .filter(Boolean)
   : games.slice(OFFSET, OFFSET + LIMIT);
 say(`- Selected for this run: **${selected.length}**`);
 say();
@@ -289,13 +314,41 @@ say();
 
 /** Fields the page can answer that production may already have answered. */
 const RESEARCH_FIELDS = [
-  "publisher", "developer", "releaseDate", "genres", "ageRating", "supportedLanguages",
-  "numberOfPlayers", "size", "downloadSizeGb", "requiredSpaceGb", "microSdRecommended",
-  "nintendoPlayModes", "tvMode", "tabletopMode", "handheldMode",
-  "nintendoCloudSaves", "nsuid", "product_code", "title_id", "nintendoEshopUrl", "officialUrl",
-  "edition", "tagline", "dlc", "editionsList", "nintendoNotes", "arabicSupport",
-  "switch2UpgradePrice", "switch2Enhanced", "switch2Exclusive",
-  "description", "description_short", "mpLocalPlayers", "mpOnlinePlayers",
+  "publisher",
+  "developer",
+  "releaseDate",
+  "genres",
+  "ageRating",
+  "supportedLanguages",
+  "numberOfPlayers",
+  "size",
+  "downloadSizeGb",
+  "requiredSpaceGb",
+  "microSdRecommended",
+  "nintendoPlayModes",
+  "tvMode",
+  "tabletopMode",
+  "handheldMode",
+  "nintendoCloudSaves",
+  "nintendoOnlineRequired",
+  "nsuid",
+  "product_code",
+  "title_id",
+  "nintendoEshopUrl",
+  "officialUrl",
+  "edition",
+  "tagline",
+  "dlc",
+  "editionsList",
+  "nintendoNotes",
+  "arabicSupport",
+  "switch2UpgradePrice",
+  "switch2Enhanced",
+  "switch2Exclusive",
+  "description",
+  "description_short",
+  "mpLocalPlayers",
+  "mpOnlinePlayers",
 ];
 
 const totals = {
@@ -366,15 +419,28 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
       patch.languagesText = page.supportedLanguages;
       filledNames.push("languagesText");
     }
+    if (!filled(doc.devicePerformance)) {
+      patch.devicePerformance = [
+        {
+          device: "Nintendo Switch 2",
+          deviceSlug: "nintendo-switch-2",
+          informationStatus: "not_published",
+          unavailableReason:
+            "Nintendo lists compatibility, but game-specific Nintendo Switch 2 resolution and FPS are not published on this page.",
+          sourceName: "Nintendo eShop (US)",
+          sourceUrl: url,
+          verificationStatus: "official",
+        },
+      ];
+      filledNames.push("devicePerformance(Nintendo Switch 2 selected)");
+    }
 
     /* ---- the gallery ---- */
     const stored = galleryEntries(doc.galleryImages);
     let deadCount = 0;
     let aliveCount = 0;
     let hotlinked = 0;
-    const sample = String(
-      stored[0]?.url ?? stored[0]?.image ?? stored[0]?.src ?? "",
-    ).slice(0, 90);
+    const sample = String(stored[0]?.url ?? stored[0]?.image ?? stored[0]?.src ?? "").slice(0, 90);
     const kinds = await mapWithLimit(stored, 4, async (entry) => {
       const ref = classifyRef(entry.url ?? entry.image ?? entry.src);
       // Someone else's CDN is not ours to repair, and it is not broken.
@@ -398,7 +464,8 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
       they are someone else's server, and the brief is to hold this media in R2.
     */
     const allHotlinked = stored.length > 0 && hotlinked === stored.length;
-    const galleryBroken = stored.length === 0 || (deadCount > 0 && aliveCount === 0) || allHotlinked;
+    const galleryBroken =
+      stored.length === 0 || (deadCount > 0 && aliveCount === 0) || allHotlinked;
     say(
       `- Stored gallery: ${stored.length} entr${stored.length === 1 ? "y" : "ies"}` +
         (stored.length
@@ -450,11 +517,11 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
       );
     }
 
-    /* ---- the two single-asset roles, kept distinct from each other ---- */
+    /* ---- official single-asset roles, kept distinct from each other ---- */
     const coverUrl = coverFrom(product);
     const squareUrl = squareFrom(product);
     for (const [field, sourceUrl, name] of [
-      ["coverImage", coverUrl, "cover"],
+      ["cartridgeImage", coverUrl, "front-box"],
       ["nintendoCardImage", squareUrl, "square-card"],
     ]) {
       if (!sourceUrl) continue;
@@ -478,6 +545,11 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
       patch[field] = ref;
       filledNames.push(field);
       if (APPLY) totals.rolesStored++;
+    }
+    if (await refIsDead(doc.coverImage)) {
+      say(
+        "- Cover Image left for verified key-art research — a Nintendo gallery screenshot is never promoted into the details hero automatically.",
+      );
     }
 
     /* ---- record where it came from ---- */
@@ -529,7 +601,9 @@ for (let start = 0; start < selected.length; start += BATCH_SIZE) {
       say(`- Written and verified: ${changedFields.length} field(s) now present in production.`);
     } else {
       totals.writeFailed++;
-      say(`- **Read-after-write verification FAILED** for: ${missing.join(", ") || "the whole row"}`);
+      say(
+        `- **Read-after-write verification FAILED** for: ${missing.join(", ") || "the whole row"}`,
+      );
     }
     say();
     perProduct.push({ id, label, resolved: url, filled: filledNames });
@@ -560,11 +634,14 @@ say();
 if (nsuidConflicts.length) {
   say(`### Stored nsuid disagrees with the store page (${nsuidConflicts.length})`);
   say();
-  say(`The title and the console match, so the page was used — but the stored nsuid was left alone.`);
+  say(
+    `The title and the console match, so the page was used — but the stored nsuid was left alone.`,
+  );
   say();
   say(`| product | stored | page | page url |`);
   say(`| --- | --- | --- | --- |`);
-  for (const c of nsuidConflicts) say(`| ${c.label} | \`${c.stored}\` | \`${c.page}\` | ${c.url} |`);
+  for (const c of nsuidConflicts)
+    say(`| ${c.label} | \`${c.stored}\` | \`${c.page}\` | ${c.url} |`);
   say();
 }
 
@@ -580,7 +657,10 @@ if (unresolved.length) {
 if (!APPLY) say(`**Dry run — nothing written.** Re-run with \`--apply\`.`);
 
 writeFileSync("research-import.md", lines.join("\n") + "\n");
-writeFileSync(path.join(WORK_DIR, "run.json"), JSON.stringify({ totals, perProduct, unresolved }, null, 1));
+writeFileSync(
+  path.join(WORK_DIR, "run.json"),
+  JSON.stringify({ totals, perProduct, unresolved }, null, 1),
+);
 
 /*
   The report is written; the work is done. Node otherwise sat for six and a half

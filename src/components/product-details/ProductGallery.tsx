@@ -31,6 +31,12 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
   const usable = images.filter((_, index) => !broken.has(index));
   const current = images[active];
 
+  useEffect(() => {
+    // A product navigation can reuse this component instance with a shorter
+    // gallery.  Do not retain an index that no longer exists.
+    if (active >= images.length) setActive(0);
+  }, [active, images.length]);
+
   if (images.length === 0 || usable.length === 0) {
     return (
       <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-muted text-muted-foreground">
@@ -56,7 +62,14 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
             alt={alt}
             loading="eager"
             className="h-full w-full object-contain"
-            onError={() => setBroken((prev) => new Set(prev).add(active))}
+            onError={() => {
+              setBroken((prev) => {
+                const next = new Set(prev).add(active);
+                const replacement = images.findIndex((_, index) => !next.has(index));
+                if (replacement >= 0) setActive(replacement);
+                return next;
+              });
+            }}
           />
         ) : null}
 
