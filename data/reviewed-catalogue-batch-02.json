@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "batch": 2,
-  "apply": false,
+  "apply": true,
   "reviewedAt": "2026-09-02",
   "clearFields": [
     "characterName", "amiiboSeries", "figureType", "inGameUnlock", "compatibleGames",
