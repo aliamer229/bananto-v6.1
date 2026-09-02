@@ -280,7 +280,11 @@ for (const entry of products) {
     `- Nintendo identity: **verified** — ${entry.official.title} / ${entry.official.productCode}`,
   );
 
-  const requestedRoles = await rolesNeedingMedia(current);
+  const unhealthyRoles = await rolesNeedingMedia(current);
+  const forcedRoles = Array.isArray(entry.mediaRoles)
+    ? entry.mediaRoles.filter((role) => MEDIA_ROLES.includes(role))
+    : [];
+  const requestedRoles = [...new Set([...unhealthyRoles, ...forcedRoles])];
   const identity = {
     ...current,
     ...(entry.patch || {}),

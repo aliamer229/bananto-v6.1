@@ -173,6 +173,7 @@
     },
     {
       "id": "prd_b9c50887a24849fa",
+      "mediaRoles": ["nintendoCardImage"],
       "expected": {
         "documentSha256": "838bc263aced375e4259aabebcd7f8f1f302011ba50b5a7fe1b91fb84b0945a9",
         "title": "Super Smash Bros. Ultimate",
